@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // Subdomain detection (app. subdomain = web app, root domain = marketing)
 // -----------------------------------------------------------------------------
 
-const rootDomain = process.env.NEXT_PUBLIC_SITE_DOMAIN || "localhost:3000";
+const rootDomain = process.env.VERCEL_URL || "localhost:3000";
 
 /** Derive protocol from request — crucial for ngrok/proxy where TLS is terminated upstream */
 function getProtocol(request: Request): "http" | "https" {
