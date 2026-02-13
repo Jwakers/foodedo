@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "webworker"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +16,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
     "plugins": [
@@ -20,8 +25,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "convex/*": ["./convex/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "convex/*": [
+        "./convex/*"
+      ]
     }
   },
   "include": [
@@ -29,7 +38,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(app)/actions"
+    "src/app/(app)/actions",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
