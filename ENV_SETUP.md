@@ -112,7 +112,7 @@ CLERK_SECRET_KEY=sk_test_xyz789...
 CLERK_JWT_ISSUER_DOMAIN=my-foodedo.clerk.accounts.dev
 
 # OpenAI
-OPENAI_API_KEY=sk-proj-abc123...
+OPENAI_API_KEY=sk-REDACTED
 
 # Email
 CONTACT_EMAIL_ADDRESS=support@foodedo-app.com

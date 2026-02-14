@@ -13,10 +13,9 @@ Update app name to Foodedo
 - [ ] Change domain in vercel
 - [ ] Apply redirects in vercel
 
-- [ ] Summarize competitors, including their features, price points, and our competitive edge.
+- [ ] Set up the blog for the site (infrastructure).
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
-- [ ] Set up the blog for the site (infrastructure).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.
 
 Meal planning notes
