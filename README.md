@@ -7,10 +7,11 @@
 Update app name to Foodedo
 
 - [x] Apply code changes
-- [ ] Vercel env vars
+- [x] Vercel env vars
+- [x] Update github repo and local name
 - [ ] Change domain in vercel
-- [ ] Update Canny board domain
 - [ ] Apply redirects in vercel
+- [ ] Update Canny board domain
 
 - [ ] Summarize competitors, including their features, price points, and our competitive edge.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
