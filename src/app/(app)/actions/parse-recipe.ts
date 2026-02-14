@@ -755,7 +755,7 @@ export async function parseRecipeFromSiteWithAI(
         redirect: "manual", // Handle redirects manually
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (compatible; RecipeBot/1.0; +https://kitchen-sync.app)",
+            "Mozilla/5.0 (compatible; RecipeBot/1.0; +https://foodedo.app)",
         },
       });
 

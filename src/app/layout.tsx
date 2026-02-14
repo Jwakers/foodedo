@@ -21,7 +21,7 @@ const APP_URL = new URL(
   process.env.VERCEL_URL
     ? (process.env.NODE_ENV === "production" ? "https://" : "http://") +
       process.env.VERCEL_URL
-    : "https://kitchen-sync-app.com",
+    : "https://foodedo-app.com",
 );
 
 export const metadata: Metadata = {

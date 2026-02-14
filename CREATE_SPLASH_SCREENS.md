@@ -9,7 +9,7 @@ The splash screen shows blank because it's just the icon with no background/sizi
 This will automatically generate proper splash screens:
 
 ```bash
-cd /Users/jackwakeham/Documents/Projects/kitchen-sync
+cd /Users/jackwakeham/Documents/Projects/foodedo
 
 # Install the tool (if not already installed)
 npm install -g pwa-asset-generator
