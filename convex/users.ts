@@ -200,7 +200,7 @@ export const syncUserWithClerk = internalAction({
       // Update basic user data
       await ctx.runMutation(internal.users.updateSubscriptionTier, {
         externalId,
-        subscriptionTier: subItem.plan.slug,
+        subscriptionTier: subItem.plan?.slug ?? "free_user",
         subscriptionStatus: subItem.status,
         subscriptionId: subscription.id,
       });
