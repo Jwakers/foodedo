@@ -16,7 +16,7 @@ if (
   !process.env.HOSTINGER_CONTACT_PASSWORD
 ) {
   throw new Error(
-    "HOSTINGER_CONTACT_EMAIL and HOSTINGER_CONTACT_PASSWORD must be set"
+    "HOSTINGER_CONTACT_EMAIL and HOSTINGER_CONTACT_PASSWORD must be set",
   );
 }
 
@@ -56,7 +56,7 @@ export const sendContactEmail = action({
 
       // Email content
       const emailContent = {
-        from: `${process.env.APP_NAME || "Kitchen Sync"} App <${process.env.HOSTINGER_CONTACT_EMAIL}>`,
+        from: `${process.env.APP_NAME || "Foodedo"} App <${process.env.HOSTINGER_CONTACT_EMAIL}>`,
         to: CONTACT_EMAIL,
         subject: `Contact Form: ${escapeHtml(reason)}`,
         html: `

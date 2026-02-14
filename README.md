@@ -1,8 +1,16 @@
-# Kitchen Sync - Family Meal Planning Made Simple
+# Foodedo - Family Meal Planning Made Simple
 
 ---
 
 ### Next Immediate Steps
+
+Update app name to Foodedo
+
+- [x] Apply code changes
+- [ ] Vercel env vars
+- [ ] Change domain in vercel
+- [ ] Update Canny board domain
+- [ ] Apply redirects in vercel
 
 - [ ] Summarize competitors, including their features, price points, and our competitive edge.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.

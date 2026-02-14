@@ -32,7 +32,7 @@ export default function Home() {
             <Badge
               variant="secondary"
               className={cn(
-                "w-fit bg-primary/10 text-primary border-primary/20 text-sm px-4 py-2"
+                "w-fit bg-primary/10 text-primary border-primary/20 text-sm px-4 py-2",
               )}
             >
               <Sparkles className="size-4 mr-2" />
@@ -158,7 +158,7 @@ export default function Home() {
             <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
               <Image
                 src="/app-images/import-page.png"
-                alt="Import a recipe from a URL in Kitchen Sync"
+                alt="Import a recipe from a URL in Foodedo"
                 fill
                 className="object-cover"
               />
@@ -170,7 +170,7 @@ export default function Home() {
             <div className="order-2 lg:order-1 relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
               <Image
                 src="/app-images/my-recipes.png"
-                alt="My recipes and add recipe in Kitchen Sync"
+                alt="My recipes and add recipe in Foodedo"
                 fill
                 className="object-cover"
               />
@@ -203,7 +203,7 @@ export default function Home() {
             <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
               <Image
                 src="/app-images/recipe-page.png"
-                alt="Edit a recipe to make it your own in Kitchen Sync"
+                alt="Edit a recipe to make it your own in Foodedo"
                 fill
                 className="object-cover"
               />
@@ -215,7 +215,7 @@ export default function Home() {
             <div className="order-2 lg:order-1 relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
               <Image
                 src="/app-images/household-recipes.png"
-                alt="Share recipes with your household in Kitchen Sync"
+                alt="Share recipes with your household in Foodedo"
                 fill
                 className="object-cover"
               />
@@ -242,7 +242,7 @@ export default function Home() {
             <div className="relative p-6 pt-14 rounded-lg border border-border bg-card overflow-visible">
               <div
                 className={cn(
-                  "absolute top-4 right-4 size-12 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center"
+                  "absolute top-4 right-4 size-12 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center",
                 )}
               >
                 <CalendarCheck className="size-6 text-primary" />
@@ -267,7 +267,7 @@ export default function Home() {
             <div className="relative p-6 pt-14 rounded-lg border border-border bg-card overflow-visible">
               <div
                 className={cn(
-                  "absolute top-4 right-4 size-12 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center"
+                  "absolute top-4 right-4 size-12 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center",
                 )}
               >
                 <ClipboardList className="size-6 text-primary" />

@@ -1,6 +1,6 @@
 # PWA Assets & Branding Guide
 
-This guide outlines all the images and assets that need to be created/replaced for Kitchen Sync's launch.
+This guide outlines all the images and assets that need to be created/replaced for Foodedo's launch.
 
 ## Priority: High - Required for Launch
 
@@ -10,11 +10,11 @@ This guide outlines all the images and assets that need to be created/replaced f
 
 **Dimensions:** 1200 x 630 pixels
 
-**Purpose:** Used when sharing Kitchen Sync on social media (Facebook, Twitter, LinkedIn, etc.)
+**Purpose:** Used when sharing Foodedo on social media (Facebook, Twitter, LinkedIn, etc.)
 
 **Design Guidelines:**
 
-- Include "Kitchen Sync" branding/logo
+- Include "Foodedo" branding/logo
 - Clear, readable text even at smaller sizes
 - Consider tagline: "Family Meal Planning Made Simple"
 - Use brand colors (based on your theme)
@@ -95,12 +95,12 @@ This guide outlines all the images and assets that need to be created/replaced f
 
 **Options:**
 
-1. **Simple approach (Recommended for MVP):** Create one default splash screen with Kitchen Sync branding on a colored background
+1. **Simple approach (Recommended for MVP):** Create one default splash screen with Foodedo branding on a colored background
 2. **Advanced approach:** Create device-specific optimized splash screens
 
 **Design Guidelines:**
 
-- Brand colors with "Kitchen Sync" logo/text centered
+- Brand colors with "Foodedo" logo/text centered
 - Minimal design - users see this briefly
 - Consider using a gradient or solid color with logo
 
@@ -166,7 +166,7 @@ You can scale and convert these for all the other required sizes.
 
 ## Brand Suggestions
 
-Based on "Kitchen Sync":
+Based on "Foodedo":
 
 - **Colors:** Warm, inviting (oranges, yellows, greens)
 - **Icon ideas:**

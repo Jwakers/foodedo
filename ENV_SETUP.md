@@ -1,6 +1,6 @@
 # Environment Variables Setup Guide
 
-This file documents all required environment variables for Kitchen Sync. Create a `.env.local` file in the root directory with these values.
+This file documents all required environment variables for Foodedo. Create a `.env.local` file in the root directory with these values.
 
 ## Required Environment Variables
 

@@ -2,7 +2,7 @@
 
 ## What Was Done
 
-Your PWA Builder generated icons have been successfully integrated into Kitchen Sync!
+Your PWA Builder generated icons have been successfully integrated into Foodedo!
 
 ### Files Updated
 
@@ -71,7 +71,7 @@ When users install your PWA on their device, the system will automatically selec
 
 ### Apple Touch Icons
 
-iOS devices specifically look for apple touch icons. These are now properly configured in your `layout.tsx` and will be used when someone adds Kitchen Sync to their iOS home screen.
+iOS devices specifically look for apple touch icons. These are now properly configured in your `layout.tsx` and will be used when someone adds Foodedo to their iOS home screen.
 
 ### Browser Favicons
 
@@ -147,11 +147,11 @@ Only one visual asset remains for your launch:
 
 **File needed:** `/public/og-image.png`
 **Size:** 1200 x 630 pixels
-**Purpose:** Social media preview when sharing Kitchen Sync
+**Purpose:** Social media preview when sharing Foodedo
 
 **What it should include:**
 
-- Kitchen Sync branding/logo
+- Foodedo branding/logo
 - Tagline: "Family Meal Planning Made Simple"
 - Clean, readable design
 - Your brand colors

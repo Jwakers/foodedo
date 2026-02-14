@@ -1,6 +1,6 @@
 # Pre-Launch Testing Checklist
 
-Complete this checklist before launching Kitchen Sync to production. Test in a production-like environment (Vercel preview deployment recommended).
+Complete this checklist before launching Foodedo to production. Test in a production-like environment (Vercel preview deployment recommended).
 
 ---
 
@@ -477,15 +477,15 @@ Notes: [Additional context]
 
 ## Testing Sign-Off
 
-**Tested By:** ****\*\*\*\*****\_\_\_****\*\*\*\*****
+**Tested By:** \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
 
-**Date:** ****\*\*\*\*****\_\_\_****\*\*\*\*****
+**Date:** \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
 
 **Environment:** [ ] Staging [ ] Production Preview [ ] Production
 
 **Result:** [ ] Pass [ ] Pass with Issues [ ] Fail
 
-**Issues Found:** ****\*\*\*\*****\_\_\_****\*\*\*\*****
+**Issues Found:** \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
 
 **Ready for Launch:** [ ] Yes [ ] No [ ] Conditional
 
