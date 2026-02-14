@@ -6,9 +6,9 @@ import { IMAGE_LIMITS, RECIPE_CATEGORIES } from "convex/lib/constants";
 
 /**
  * Application name - used throughout the app for branding
- * Falls back to "Kitchen Sync" if environment variable is not set
+ * Falls back to "Foodedo" if environment variable is not set
  */
-export const APP_NAME = process.env.APP_NAME || "Kitchen Sync";
+export const APP_NAME = process.env.APP_NAME || "Foodedo";
 
 export const ROUTES = {
   HOME: "/",
@@ -95,7 +95,7 @@ export function validateImageFile(file: File): {
 
   if (
     !IMAGE_LIMITS.ALLOWED_TYPES.includes(
-      file.type as (typeof IMAGE_LIMITS.ALLOWED_TYPES)[number]
+      file.type as (typeof IMAGE_LIMITS.ALLOWED_TYPES)[number],
     ) &&
     !isHeicByExtension &&
     !isHeicByType

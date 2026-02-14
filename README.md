@@ -1,13 +1,21 @@
-# Kitchen Sync - Family Meal Planning Made Simple
+# Foodedo - Family Meal Planning Made Simple
 
 ---
 
 ### Next Immediate Steps
 
-- [ ] Summarize competitors, including their features, price points, and our competitive edge.
+Update app name to Foodedo
+
+- [x] Apply code changes
+- [x] Vercel env vars
+- [x] Update github repo and local name
+- [ ] Update Canny board domain
+- [ ] Change domain in vercel
+- [ ] Apply redirects in vercel
+
+- [ ] Set up the blog for the site (infrastructure).
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
-- [ ] Set up the blog for the site (infrastructure).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.
 
 Meal planning notes
@@ -95,7 +103,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] Share to the app. Investigate whether it is possible that, if a website is shared to this app, it can be immediately added to the import URL field on the import URL field, with a popup asking for confirmation to import this recipe
 - [ ] Add notes to recipes. This should be a new table (with a by_recipe_id index) so notes can be used for wider use cases down the line. Notes are not comments, they are private to the user and that should be made clear in the UI
 - [ ] Invites sent to users should open their app, not the browser. This may be possible with protocol handlers but it is not well supported at time of writing. Else a PWA app wrapper will need to be used.
-- [ ] Set up multi tenant in vercel/next and serve the app a subdomain app.kitchen-sync-app.com and the site through the main domain
+- [ ] Set up multi tenant in vercel/next and serve the app a subdomain app.foodedo-app.com and the site through the main domain
 - [ ] AI helper. I need to use vectors of all the user data so the AI can pick a meal plan for you. Save a meal plan for the week. Create shopping lists etc. Its a big feature but will be a helpful one, especially if it can look at previous weeks meal plans and adjust accordingly to keep things varied.
 
 ---

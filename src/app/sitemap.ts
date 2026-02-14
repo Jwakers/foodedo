@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.VERCEL_URL
     ? `${process.env.NODE_ENV === "production" ? "https://" : "http://"}${process.env.VERCEL_URL}`
-    : "https://kitchen-sync-app.com";
+    : "https://foodedo-app.com";
 
   return [
     {

@@ -1,4 +1,4 @@
-# Kitchen Sync - Launch Preparation Summary
+# Foodedo - Launch Preparation Summary
 
 ## ✅ Completed Implementation
 
@@ -54,7 +54,7 @@ All code changes have been implemented and are ready for your launch. Here's wha
 
 **What This Means:**
 
-- When someone shares Kitchen Sync on social media, it will show a preview card
+- When someone shares Foodedo on social media, it will show a preview card
 - Currently configured to use `/public/og-image.png` (1200x630px)
 - **Action Needed:** Create and add the `og-image.png` file (see PWA_ASSETS_GUIDE.md)
 
@@ -223,7 +223,7 @@ Before going live:
 
 ## 🎉 You're Almost Ready!
 
-Your Kitchen Sync app has:
+Your Foodedo app has:
 
 - ✅ Solid legal foundation
 - ✅ SEO optimization

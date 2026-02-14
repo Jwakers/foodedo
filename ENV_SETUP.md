@@ -1,6 +1,6 @@
 # Environment Variables Setup Guide
 
-This file documents all required environment variables for Kitchen Sync. Create a `.env.local` file in the root directory with these values.
+This file documents all required environment variables for Foodedo. Create a `.env.local` file in the root directory with these values.
 
 ## Required Environment Variables
 
@@ -109,14 +109,14 @@ NEXT_PUBLIC_CONVEX_URL=https://happy-example-123.convex.cloud
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_abc123...
 CLERK_SECRET_KEY=sk_test_xyz789...
-CLERK_JWT_ISSUER_DOMAIN=my-kitchen-sync.clerk.accounts.dev
+CLERK_JWT_ISSUER_DOMAIN=my-foodedo.clerk.accounts.dev
 
 # OpenAI
-OPENAI_API_KEY=sk-proj-abc123...
+OPENAI_API_KEY=sk-REDACTED
 
 # Email
-CONTACT_EMAIL_ADDRESS=support@kitchen-sync-app.com
-HOSTINGER_CONTACT_EMAIL=hello@kitchen-sync-app.com
+CONTACT_EMAIL_ADDRESS=support@foodedo-app.com
+HOSTINGER_CONTACT_EMAIL=hello@foodedo-app.com
 HOSTINGER_CONTACT_PASSWORD=your-secure-password-here
 ```
 
