@@ -101,7 +101,7 @@ export default defineSchema({
     complexityTier: v.optional(complexityTierUnion),
     cuisine: v.optional(v.array(cuisineUnion)), // Max 2 for fusion; validated in mutations
     totalTimeMinutes: v.optional(v.number()),
-    editorialBias: v.optional(v.number()), // [0, 2]; neutral = 1
+    editorialBias: v.optional(v.number()), // (0, 2]; neutral = 1
     isGeneratorEligible: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
