@@ -121,7 +121,7 @@ async function enrichSharedRecipe(
   if (!recipe) return null;
 
   const sharedByUser = await ctx.db.get(shared.sharedByUserId);
-  const owner = await ctx.db.get(recipe.userId);
+  const owner = recipe.userId ? await ctx.db.get(recipe.userId) : null;
 
   let image: string | null = null;
   if (recipe.image) {

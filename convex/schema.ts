@@ -1,9 +1,13 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import {
+  COMPLEXITY_TIERS,
+  CUISINES,
   PREPARATION_OPTIONS,
+  PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
   RECIPE_CREATION_SOURCES,
+  RECIPE_SOURCES,
   SUBSCRIPTION_TIERS,
   UNITS_FLAT,
 } from "./lib/constants";
@@ -13,11 +17,19 @@ const creationSourceUnion = v.union(...RECIPE_CREATION_SOURCES.map(v.literal));
 const preparationUnion = v.union(...PREPARATION_OPTIONS.map(v.literal));
 const unitsUnion = v.union(...UNITS_FLAT.map(v.literal));
 const subscriptionTiersUnion = v.union(...SUBSCRIPTION_TIERS.map(v.literal));
+const recipeSourceUnion = v.union(...RECIPE_SOURCES.map(v.literal));
+const primaryProteinUnion = v.union(...PRIMARY_PROTEINS.map(v.literal));
+const complexityTierUnion = v.union(...COMPLEXITY_TIERS.map(v.literal));
+const cuisineUnion = v.union(...CUISINES.map(v.literal));
 
 export {
   categoriesUnion,
+  complexityTierUnion,
   creationSourceUnion,
+  cuisineUnion,
   preparationUnion,
+  primaryProteinUnion,
+  recipeSourceUnion,
   subscriptionTiersUnion,
   unitsUnion,
 };
@@ -39,7 +51,7 @@ export default defineSchema({
   }).index("byExternalId", ["externalId"]),
 
   recipes: defineTable({
-    userId: v.id("users"),
+    userId: v.optional(v.id("users")), // Optional for system recipes
     title: v.string(),
     description: v.optional(v.string()),
     image: v.optional(v.id("_storage")),
@@ -83,11 +95,24 @@ export default defineSchema({
         carbohydrates: v.optional(v.number()),
       })
     ),
+    // Intelligent Weekly Generator metadata
+    source: v.optional(recipeSourceUnion),
+    primaryProtein: v.optional(primaryProteinUnion),
+    complexityTier: v.optional(complexityTierUnion),
+    cuisine: v.optional(v.array(cuisineUnion)), // Max 2 for fusion; validated in mutations
+    totalTimeMinutes: v.optional(v.number()),
+    editorialBias: v.optional(v.number()), // [0, 2]; neutral = 1
+    isGeneratorEligible: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
     .index("by_category", ["category"])
     .index("by_user_and_category", ["userId", "category"])
-    .index("by_user_updatedAt", ["userId", "updatedAt"]),
+    .index("by_user_updatedAt", ["userId", "updatedAt"])
+    .index("by_source", ["source"])
+    .index("by_cuisine", ["cuisine"])
+    .index("by_primaryProtein", ["primaryProtein"])
+    .index("by_complexityTier", ["complexityTier"])
+    .index("by_isGeneratorEligible", ["isGeneratorEligible"]),
 
   ingredients: defineTable({
     name: v.string(),
@@ -129,6 +154,20 @@ export default defineSchema({
     .index("by_token", ["token"])
     .index("by_user", ["invitedUserId"])
     .index("by_status", ["status"]),
+
+  recipeBehaviourStats: defineTable({
+    recipeId: v.id("recipes"),
+    actorType: v.union(v.literal("user"), v.literal("household")),
+    actorId: v.union(v.id("users"), v.id("households")),
+    suggestedCount: v.number(),
+    swappedCount: v.number(),
+    removedCount: v.number(),
+    lastSuggestedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_recipe_and_actor", ["recipeId", "actorType", "actorId"])
+    .index("by_actor", ["actorType", "actorId"])
+    .index("by_actor_lastSuggestedAt", ["actorType", "actorId", "lastSuggestedAt"]),
 
   householdRecipes: defineTable({
     householdId: v.id("households"),
@@ -185,11 +224,17 @@ export default defineSchema({
     endDate: v.number(), // start of day in ms
     startDate: v.optional(v.number()), // start of day in ms
     updatedAt: v.number(),
+    isGenerated: v.optional(v.boolean()), // Should be changed to required post data migration
+    generationSeed: v.optional(v.string()),
+    generationVersion: v.optional(v.number()),
+    generatedAt: v.optional(v.number()),
+    replacedByPlanId: v.optional(v.id("mealPlans")),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_endDate", ["userId", "endDate"])
     .index("by_household", ["householdId"])
-    .index("by_household_and_endDate", ["householdId", "endDate"]),
+    .index("by_household_and_endDate", ["householdId", "endDate"])
+    .index("by_replacedByPlanId", ["replacedByPlanId"]),
 
   mealPlanEntries: defineTable({
     mealPlanId: v.id("mealPlans"),
@@ -197,6 +242,7 @@ export default defineSchema({
     recipeId: v.id("recipes"),
     mealLabel: v.optional(v.string()),
     order: v.optional(v.number()),
+    isLocked: v.optional(v.boolean()),
   })
     .index("by_meal_plan", ["mealPlanId"])
     .index("by_meal_plan_and_date", ["mealPlanId", "date"]),
