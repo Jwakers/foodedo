@@ -143,10 +143,60 @@ export const UNITS_FLAT = [
   ...UNITS.items,
 ] as const;
 
+// Recipe source (ownership/visibility for pool building)
+export const RECIPE_SOURCES = ["user", "system", "community"] as const;
+
+// Primary protein for variety constraints
+export const PRIMARY_PROTEINS = [
+  "chicken",
+  "beef",
+  "pork",
+  "fish",
+  "seafood",
+  "vegetarian",
+  "vegan",
+  "lamb",
+  "turkey",
+  "other",
+  "none",
+] as const;
+
+// Complexity tier (not speed — prep/cook time cover that)
+export const COMPLEXITY_TIERS = ["simple", "moderate", "complex"] as const;
+
+// Cuisine / cuisine-type for diversification (e.g. Thai curry vs korma = different cuisines). Max 2 per recipe for fusion.
+export const CUISINES = [
+  "italian",
+  "indian",
+  "mexican",
+  "thai",
+  "chinese",
+  "japanese",
+  "korean",
+  "french",
+  "mediterranean",
+  "middle_eastern",
+  "british",
+  "american",
+  "caribbean",
+  "african",
+  "vietnamese",
+  "greek",
+  "spanish",
+  "other",
+] as const;
+
+/** Max cuisine selections per recipe (fusion food) */
+export const CUISINE_MAX_SELECTIONS = 2;
+
 // TypeScript types
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];
 export type PreparationOption = (typeof PREPARATION_OPTIONS)[number];
 export type Unit = (typeof UNITS_FLAT)[number];
+export type RecipeSource = (typeof RECIPE_SOURCES)[number];
+export type PrimaryProtein = (typeof PRIMARY_PROTEINS)[number];
+export type ComplexityTier = (typeof COMPLEXITY_TIERS)[number];
+export type Cuisine = (typeof CUISINES)[number];
 
 // Property names should match clerk subscription tiers
 export const SUBSCRIPTION_TIERS = ["free_user", "pro_user"] as const;

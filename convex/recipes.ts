@@ -52,7 +52,7 @@ export const getRecipe = query({
     // Get owner name if not the current user
     let ownerName = null;
     if (!isOwner) {
-      const owner = await ctx.db.get(recipe.userId);
+      const owner = recipe.userId ? await ctx.db.get(recipe.userId) : null;
       ownerName = owner?.name ?? "Unknown User";
     }
 
