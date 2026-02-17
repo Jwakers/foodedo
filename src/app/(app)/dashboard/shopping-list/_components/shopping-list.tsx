@@ -47,7 +47,6 @@ interface ShoppingListProps {
   onBack: () => void;
   onDone: () => void;
   onEdit: () => void;
-  selectedChalkboardItems: Set<Id<"chalkboardItems">>;
   setSelectedChalkboardItems: React.Dispatch<
     React.SetStateAction<Set<Id<"chalkboardItems">>>
   >;
@@ -465,10 +464,10 @@ export default function ShoppingList({
                                       (item.amount as number) - 1,
                                     )
                                   }
-                                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-muted transition-colors"
+                                  className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
                                   aria-label="Decrease amount"
                                 >
-                                  <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <Minus className="size-3.5 text-muted-foreground" />
                                 </button>
                                 <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
                                   {item.amount}
@@ -480,10 +479,10 @@ export default function ShoppingList({
                                       (item.amount as number) + 1,
                                     )
                                   }
-                                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-muted transition-colors"
+                                  className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
                                   aria-label="Increase amount"
                                 >
-                                  <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <Plus className="size-3.5 text-muted-foreground" />
                                 </button>
                               </>
                             ) : (
