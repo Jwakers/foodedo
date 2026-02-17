@@ -1,0 +1,602 @@
+{
+  "recipes": [
+    {
+      "title": "Lemon Garlic Butter Prawns",
+      "description": "Succulent prawns tossed in a zesty lemon garlic butter sauce, served over pasta.",
+      "prepTime": 10,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "prawns",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "de-boned"
+        },
+        {
+          "name": "butter",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "melted"
+        },
+        {
+          "name": "garlic",
+          "amount": 3,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "spaghetti",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "parsley",
+          "amount": 20,
+          "unit": "g",
+          "preparation": "chopped"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the pasta",
+          "description": "Boil spaghetti according to package instructions until al dente, then drain."
+        },
+        {
+          "title": "Prepare the sauce",
+          "description": "In a pan, melt butter and sauté garlic until fragrant. Add prawns and cook until pink."
+        },
+        {
+          "title": "Combine and serve",
+          "description": "Add cooked pasta to the pan, squeeze in lemon juice, and garnish with parsley."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 30,
+        "fat": 20,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "simple",
+      "cuisine": [
+        "italian"
+      ]
+    },
+    {
+      "title": "Thai Green Curry with Fish",
+      "description": "A fragrant, spicy green curry featuring tender fish fillets and vibrant vegetables.",
+      "prepTime": 15,
+      "cookTime": 25,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillets",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "coconut milk",
+          "amount": 400,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "green curry paste",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "courgette",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "basil",
+          "amount": 10,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the rice",
+          "description": "Prepare rice according to package instructions."
+        },
+        {
+          "title": "Make the curry",
+          "description": "In a pan, combine coconut milk and curry paste. Add fish, bell pepper, and courgette, simmer until cooked."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve the curry over rice, garnished with basil."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 35,
+        "fat": 30,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "thai"
+      ]
+    },
+    {
+      "title": "Mediterranean Baked Salmon",
+      "description": "Oven-baked salmon with Mediterranean herbs, served with roasted vegetables.",
+      "prepTime": 10,
+      "cookTime": 25,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "salmon fillets",
+          "amount": 4,
+          "unit": "fillet",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 30,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "mixed herbs",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "cherry tomatoes",
+          "amount": 250,
+          "unit": "g",
+          "preparation": "halved"
+        },
+        {
+          "name": "courgette",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "red onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat the oven",
+          "description": "Preheat your oven to 200°C (fan oven)."
+        },
+        {
+          "title": "Prepare the vegetables",
+          "description": "Toss tomatoes, courgette, and onion with olive oil and season. Spread on a baking tray."
+        },
+        {
+          "title": "Bake the salmon",
+          "description": "Place salmon on top of the vegetables, drizzle with olive oil and lemon juice, and sprinkle with herbs. Bake for 20 minutes."
+        }
+      ],
+      "nutrition": {
+        "calories": 700,
+        "protein": 40,
+        "fat": 40,
+        "carbohydrates": 20
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mediterranean"
+      ]
+    },
+    {
+      "title": "Fish Tacos with Mango Salsa",
+      "description": "Crispy fish in warm tortillas topped with fresh mango salsa.",
+      "prepTime": 15,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillets",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "tortillas",
+          "amount": 8,
+          "unit": "piece",
+          "preparation": null
+        },
+        {
+          "name": "mango",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "red onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "coriander",
+          "amount": 10,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "lime",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "cumin",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the salsa",
+          "description": "Mix mango, red onion, coriander, and lime juice in a bowl."
+        },
+        {
+          "title": "Cook the fish",
+          "description": "Season fish with cumin and cook in a pan until golden and cooked through."
+        },
+        {
+          "title": "Assemble the tacos",
+          "description": "Warm tortillas, fill with fish and top with mango salsa."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 25,
+        "fat": 15,
+        "carbohydrates": 65
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mexican"
+      ]
+    },
+    {
+      "title": "Chinese Lemon Fish Stir-Fry",
+      "description": "Quick stir-fry of fish fillets with vegetables in a tangy lemon sauce.",
+      "prepTime": 15,
+      "cookTime": 10,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillets",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "carrot",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "julienned"
+        },
+        {
+          "name": "broccoli",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "cornflour",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "soy sauce",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the sauce",
+          "description": "Mix soy sauce, cornflour, and juice of lemon in a bowl."
+        },
+        {
+          "title": "Stir-fry the ingredients",
+          "description": "In a hot pan, stir-fry fish, bell pepper, carrot, and broccoli until cooked, add sauce to thicken."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve immediately over rice or noodles."
+        }
+      ],
+      "nutrition": {
+        "calories": 450,
+        "protein": 30,
+        "fat": 10,
+        "carbohydrates": 55
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "simple",
+      "cuisine": [
+        "chinese"
+      ]
+    },
+    {
+      "title": "Prawn and Chorizo Risotto",
+      "description": "Creamy risotto with prawns and chorizo, perfect for a comforting dinner.",
+      "prepTime": 10,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "prawns",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "de-boned"
+        },
+        {
+          "name": "chorizo",
+          "amount": 100,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "arborio rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "chicken stock",
+          "amount": 1,
+          "unit": "l",
+          "preparation": null
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "parmesan",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "finely grated"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the onion and garlic",
+          "description": "In a pan, sauté onion and garlic until soft."
+        },
+        {
+          "title": "Add rice and stock",
+          "description": "Stir in rice and gradually add stock until creamy. Add prawns and chorizo until cooked."
+        },
+        {
+          "title": "Serve",
+          "description": "Stir in Parmesan and serve hot."
+        }
+      ],
+      "nutrition": {
+        "calories": 700,
+        "protein": 35,
+        "fat": 20,
+        "carbohydrates": 85
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "italian"
+      ]
+    },
+    {
+      "title": "Grilled Sardines with Lemon and Garlic",
+      "description": "Whole sardines grilled to perfection, served with a zesty lemon garlic dressing.",
+      "prepTime": 10,
+      "cookTime": 15,
+      "serves": 2,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "sardines",
+          "amount": 4,
+          "unit": "whole",
+          "preparation": "trimmed"
+        },
+        {
+          "name": "lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 30,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "parsley",
+          "amount": 10,
+          "unit": "g",
+          "preparation": "chopped"
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the sardines",
+          "description": "Drizzle sardines with olive oil, lemon juice, and garlic."
+        },
+        {
+          "title": "Grill the sardines",
+          "description": "Grill sardines for 3-4 minutes on each side until cooked through."
+        },
+        {
+          "title": "Serve",
+          "description": "Garnish with parsley and serve with a lemon wedge."
+        }
+      ],
+      "nutrition": {
+        "calories": 400,
+        "protein": 30,
+        "fat": 25,
+        "carbohydrates": 5
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mediterranean"
+      ]
+    },
+    {
+      "title": "Shrimp Fried Rice",
+      "description": "A quick and easy fried rice dish packed with shrimp and vegetables.",
+      "prepTime": 10,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "shrimp",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "de-boned"
+        },
+        {
+          "name": "cooked rice",
+          "amount": 400,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "peas",
+          "amount": 100,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "carrot",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "soy sauce",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "spring onion",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "egg",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "beaten"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the shrimp",
+          "description": "In a pan, cook shrimp until pink and set aside."
+        },
+        {
+          "title": "Fry the vegetables and rice",
+          "description": "In the same pan, add carrot, peas, and cooked rice. Stir in soy sauce."
+        },
+        {
+          "title": "Add shrimp and egg",
+          "description": "Stir in shrimp and beaten egg until egg is cooked. Garnish with sliced spring onion and serve hot."
+        }
+      ],
+      "nutrition": {
+        "calories": 500,
+        "protein": 25,
+        "fat": 10,
+        "carbohydrates": 75
+      },
+      "primaryProtein": "seafood",
+      "complexityTier": "simple",
+      "cuisine": [
+        "chinese"
+      ]
+    }
+  ]
+}

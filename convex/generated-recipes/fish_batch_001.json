@@ -1,0 +1,676 @@
+{
+  "recipes": [
+    {
+      "title": "Lemon Garlic Butter Salmon",
+      "description": "A simple and flavorful salmon dish, baked to perfection with garlic and lemon.",
+      "prepTime": 10,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "salmon fillet",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "butter",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "melted"
+        },
+        {
+          "name": "garlic",
+          "amount": 3,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "whole lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "fresh parsley",
+          "amount": 15,
+          "unit": "g",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the Oven",
+          "description": "Preheat the oven to 200°C (180°C fan)."
+        },
+        {
+          "title": "Mix the Butter Sauce",
+          "description": "In a bowl, combine melted butter, minced garlic, lemon juice, salt, and pepper."
+        },
+        {
+          "title": "Bake the Salmon",
+          "description": "Place the salmon in a baking dish, pour the butter sauce over it, and bake for 15-20 minutes."
+        },
+        {
+          "title": "Garnish and Serve",
+          "description": "Sprinkle with chopped parsley before serving."
+        }
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": 40,
+        "fat": 36,
+        "carbohydrates": 2
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    },
+    {
+      "title": "Thai Fish Curry",
+      "description": "A fragrant and creamy curry made with white fish and a blend of Thai spices.",
+      "prepTime": 15,
+      "cookTime": 25,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillet",
+          "amount": 600,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "coconut milk",
+          "amount": 400,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "red curry paste",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "broccoli",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "fresh coriander",
+          "amount": 15,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "lime",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the Vegetables",
+          "description": "In a pan, heat a little oil and sauté the sliced bell pepper and chopped broccoli for 5 minutes."
+        },
+        {
+          "title": "Add Curry Paste",
+          "description": "Stir in the red curry paste and cook for another minute."
+        },
+        {
+          "title": "Add Coconut Milk and Fish",
+          "description": "Pour in the coconut milk, bring to a simmer, then add the cubed fish and cook for 10 minutes."
+        },
+        {
+          "title": "Finish and Serve",
+          "description": "Stir in lime juice and chopped coriander before serving."
+        }
+      ],
+      "nutrition": {
+        "calories": 450,
+        "protein": 35,
+        "fat": 30,
+        "carbohydrates": 10
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "thai"
+      ]
+    },
+    {
+      "title": "Fish Tacos with Cabbage Slaw",
+      "description": "Crispy fish tacos topped with a fresh cabbage slaw, perfect for a quick dinner.",
+      "prepTime": 15,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillet",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "corn tortillas",
+          "amount": 8,
+          "unit": "piece",
+          "preparation": null
+        },
+        {
+          "name": "cabbage",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "shredded"
+        },
+        {
+          "name": "carrot",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "grated"
+        },
+        {
+          "name": "lime",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "cumin",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the Slaw",
+          "description": "In a bowl, mix the shredded cabbage, grated carrot, lime juice, olive oil, salt, and pepper."
+        },
+        {
+          "title": "Cook the Fish",
+          "description": "Season the fish slices with cumin, salt, and pepper, then pan-fry for 5-7 minutes until cooked through."
+        },
+        {
+          "title": "Warm the Tortillas",
+          "description": "Warm the corn tortillas in a dry pan or microwave."
+        },
+        {
+          "title": "Assemble Tacos",
+          "description": "Place the fish on the tortillas, top with cabbage slaw, and serve."
+        }
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": 30,
+        "fat": 18,
+        "carbohydrates": 50
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mexican"
+      ]
+    },
+    {
+      "title": "Oven-Baked Cod with Tomato and Basil",
+      "description": "A light and healthy cod dish baked with fresh tomatoes and basil.",
+      "prepTime": 10,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "cod fillet",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "cherry tomatoes",
+          "amount": 250,
+          "unit": "g",
+          "preparation": "halved"
+        },
+        {
+          "name": "fresh basil",
+          "amount": 15,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat the Oven",
+          "description": "Preheat the oven to 180°C (160°C fan)."
+        },
+        {
+          "title": "Prepare the Dish",
+          "description": "In a baking dish, place the cod fillet, top with halved cherry tomatoes, minced garlic, salt, and pepper."
+        },
+        {
+          "title": "Bake the Cod",
+          "description": "Drizzle with olive oil and bake for 15-20 minutes until cooked through."
+        },
+        {
+          "title": "Garnish and Serve",
+          "description": "Sprinkle with chopped basil before serving."
+        }
+      ],
+      "nutrition": {
+        "calories": 390,
+        "protein": 37,
+        "fat": 20,
+        "carbohydrates": 10
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mediterranean"
+      ]
+    },
+    {
+      "title": "Baked Pesto Fish with Vegetables",
+      "description": "A one-pan dish featuring fish topped with pesto and assorted vegetables.",
+      "prepTime": 10,
+      "cookTime": 25,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillet",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "pesto",
+          "amount": 4,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "courgette",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "red onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat the Oven",
+          "description": "Preheat the oven to 200°C."
+        },
+        {
+          "title": "Prepare the Vegetables",
+          "description": "In a baking tray, toss sliced courgette, bell pepper, and red onion with olive oil, salt, and pepper."
+        },
+        {
+          "title": "Add the Fish",
+          "description": "Place the fish fillet on top of the vegetables and spread pesto over the fish."
+        },
+        {
+          "title": "Bake",
+          "description": "Bake for 20-25 minutes until the fish is cooked through."
+        }
+      ],
+      "nutrition": {
+        "calories": 460,
+        "protein": 35,
+        "fat": 25,
+        "carbohydrates": 20
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "simple",
+      "cuisine": [
+        "italian"
+      ]
+    },
+    {
+      "title": "Grilled Mackerel with Lemon and Dill",
+      "description": "A quick and healthy dish featuring grilled mackerel fillets with a fresh lemon and dill dressing.",
+      "prepTime": 10,
+      "cookTime": 10,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "mackerel fillet",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "whole lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "fresh dill",
+          "amount": 15,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the Grill",
+          "description": "Preheat the grill to medium-high heat."
+        },
+        {
+          "title": "Season the Fish",
+          "description": "Rub the mackerel fillets with olive oil, salt, and pepper."
+        },
+        {
+          "title": "Grill the Fish",
+          "description": "Grill the mackerel for about 5 minutes on each side until cooked through."
+        },
+        {
+          "title": "Serve",
+          "description": "Drizzle with lemon juice and sprinkle with dill before serving."
+        }
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": 38,
+        "fat": 28,
+        "carbohydrates": 2
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "simple",
+      "cuisine": [
+        "british"
+      ]
+    },
+    {
+      "title": "Fish Pie",
+      "description": "A comforting fish pie made with a creamy white sauce topped with mashed potatoes.",
+      "prepTime": 20,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "white fish fillet",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "smoked haddock fillet",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "potatoes",
+          "amount": 800,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "milk",
+          "amount": 200,
+          "unit": "ml",
+          "preparation": "warmed"
+        },
+        {
+          "name": "butter",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "melted"
+        },
+        {
+          "name": "plain flour",
+          "amount": 50,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "frozen peas",
+          "amount": 150,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the Potatoes",
+          "description": "Boil the cubed potatoes in salted water until tender, then drain and mash."
+        },
+        {
+          "title": "Make the Sauce",
+          "description": "In a pan, melt butter, stir in flour, then gradually add warmed milk to create a smooth sauce."
+        },
+        {
+          "title": "Combine Fish and Sauce",
+          "description": "Add the cubed white fish and smoked haddock with peas to the sauce, season, and pour into a baking dish."
+        },
+        {
+          "title": "Top with Mash and Bake",
+          "description": "Spread mashed potatoes over the top and bake at 200°C for 25 minutes."
+        }
+      ],
+      "nutrition": {
+        "calories": 680,
+        "protein": 40,
+        "fat": 25,
+        "carbohydrates": 70
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "british"
+      ]
+    },
+    {
+      "title": "Baked Fish with Lemon and Herbs",
+      "description": "A healthy baked fish dish seasoned with lemon and fresh herbs.",
+      "prepTime": 10,
+      "cookTime": 25,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "haddock fillet",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "whole lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "fresh thyme",
+          "amount": 15,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat the Oven",
+          "description": "Preheat the oven to 200°C."
+        },
+        {
+          "title": "Prepare the Fish",
+          "description": "Place the haddock fillets in a baking tray, season with salt, pepper, and drizzle with olive oil."
+        },
+        {
+          "title": "Add Lemon and Herbs",
+          "description": "Pour lemon juice over the fish and sprinkle with chopped thyme."
+        },
+        {
+          "title": "Bake",
+          "description": "Bake for 20-25 minutes until the fish is cooked through."
+        }
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": 38,
+        "fat": 25,
+        "carbohydrates": 2
+      },
+      "primaryProtein": "fish",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "recipes": [
+    {
+      "title": "Beef and Mushroom Stroganoff",
+      "description": "A creamy and comforting beef stroganoff with tender mushrooms, served over egg noodles.",
+      "prepTime": 15,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "beef sirloin",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "mushrooms",
+          "amount": 250,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "beef stock",
+          "amount": 300,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "sour cream",
+          "amount": 200,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "egg noodles",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "parsley",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the noodles",
+          "description": "In a pot of salted boiling water, cook the egg noodles according to package instructions until al dente. Drain and set aside."
+        },
+        {
+          "title": "Sauté the beef",
+          "description": "In a large frying pan, heat olive oil over medium-high heat. Add the sliced beef, season with salt and black pepper, and cook until browned. Remove beef and set aside."
+        },
+        {
+          "title": "Cook the vegetables",
+          "description": "In the same pan, add the finely chopped onion and cook until softened. Add the garlic and sliced mushrooms, cooking until mushrooms are browned."
+        },
+        {
+          "title": "Make the sauce",
+          "description": "Pour in the beef stock and bring to a simmer. Stir in the sour cream and return the beef to the pan. Cook for a few minutes until heated through."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve the beef stroganoff over the cooked egg noodles and garnish with chopped parsley."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 40,
+        "fat": 30,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "beef",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    }
+  ]
+}

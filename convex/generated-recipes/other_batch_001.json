@@ -1,0 +1,406 @@
+{
+  "recipes": [
+    {
+      "title": "Duck Breast with Orange Sauce",
+      "description": "A classic French dish featuring pan-seared duck breast served with a tangy orange sauce, perfect for a weeknight dinner.",
+      "prepTime": 15,
+      "cookTime": 25,
+      "serves": 2,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "duck breast",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "orange juice",
+          "amount": 100,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "orange",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "zested"
+        },
+        {
+          "name": "honey",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "soy sauce",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "pinch",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "pinch",
+          "preparation": null
+        },
+        {
+          "name": "green beans",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "trimmed"
+        },
+        {
+          "name": "new potatoes",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "boiled"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the Duck",
+          "description": "Score the skin of the duck breast, season with salt and pepper. Place skin-side down in a cold pan and turn the heat to medium. Cook for about 6-8 minutes until the skin is crispy. Flip and cook for another 4-5 minutes for medium rare. Rest before slicing."
+        },
+        {
+          "title": "Make the Sauce",
+          "description": "In a saucepan, combine orange juice, honey, soy sauce, and orange zest. Simmer until slightly thickened."
+        },
+        {
+          "title": "Prepare the Vegetables",
+          "description": "Blanch the green beans in boiling water for 3-4 minutes until tender. Drain and season with salt."
+        },
+        {
+          "title": "Serve",
+          "description": "Slice the duck breast and serve with the orange sauce drizzled on top, alongside the green beans and boiled potatoes."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 40,
+        "fat": 40,
+        "carbohydrates": 30
+      },
+      "primaryProtein": "other",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "french"
+      ]
+    },
+    {
+      "title": "Venison Chilli",
+      "description": "A hearty and warming chilli made with lean venison, beans, and spices, perfect for a family meal.",
+      "prepTime": 10,
+      "cookTime": 35,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "venison mince",
+          "amount": 500,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "red onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "red bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "canned kidney beans",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "drained"
+        },
+        {
+          "name": "canned chopped tomatoes",
+          "amount": 400,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "chilli powder",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "cumin",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "pinch",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "pinch",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Sauté the Base",
+          "description": "Heat olive oil in a large pot. Add the chopped onion and cook until softened. Stir in the minced garlic and diced pepper, cooking for another 2-3 minutes."
+        },
+        {
+          "title": "Cook the Venison",
+          "description": "Add the venison mince to the pot, cooking until browned. Season with salt, pepper, chilli powder, and cumin."
+        },
+        {
+          "title": "Add the Tomatoes and Beans",
+          "description": "Stir in the chopped tomatoes and kidney beans. Bring to a simmer and cook for 20 minutes, stirring occasionally."
+        },
+        {
+          "title": "Serve",
+          "description": "Taste and adjust seasoning as necessary. Serve hot with bread or rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 45,
+        "fat": 20,
+        "carbohydrates": 40
+      },
+      "primaryProtein": "other",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    },
+    {
+      "title": "Tofu Stir-Fry with Broccoli and Peppers",
+      "description": "A quick and healthy stir-fry featuring marinated tofu, broccoli, and bell peppers, served over rice.",
+      "prepTime": 15,
+      "cookTime": 15,
+      "serves": 2,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "firm tofu",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "broccoli",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "red bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "soy sauce",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "sesame oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "ginger",
+          "amount": 1,
+          "unit": "piece",
+          "preparation": "grated"
+        },
+        {
+          "name": "cooked rice",
+          "amount": 250,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "spring onions",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "black sesame seeds",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Marinate the Tofu",
+          "description": "In a bowl, mix soy sauce, sesame oil, minced garlic, and grated ginger. Add cubed tofu and let it marinate for at least 10 minutes."
+        },
+        {
+          "title": "Stir-Fry the Vegetables",
+          "description": "Heat a non-stick pan over medium heat. Add the marinated tofu and cook until golden. Add chopped broccoli and sliced bell pepper, stir-frying for 5-7 minutes."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve the stir-fry over cooked rice and garnish with sliced spring onions and black sesame seeds."
+        }
+      ],
+      "nutrition": {
+        "calories": 450,
+        "protein": 25,
+        "fat": 15,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "other",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    },
+    {
+      "title": "Rabbit Stew with Root Vegetables",
+      "description": "A comforting stew made with tender rabbit, carrots, and potatoes, simmered in a rich broth.",
+      "prepTime": 20,
+      "cookTime": 60,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "rabbit meat",
+          "amount": 800,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "carrots",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "potatoes",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "chopped"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "chicken stock",
+          "amount": 500,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "bay leaf",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "thyme",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "pinch",
+          "preparation": null
+        },
+        {
+          "name": "black pepper",
+          "amount": 1,
+          "unit": "pinch",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Sauté the Vegetables",
+          "description": "In a large pot, heat olive oil and sauté the chopped onion and minced garlic until fragrant."
+        },
+        {
+          "title": "Brown the Rabbit",
+          "description": "Add the cubed rabbit meat, browning on all sides. Season with salt and pepper."
+        },
+        {
+          "title": "Add Vegetables and Stock",
+          "description": "Stir in the sliced carrots and diced potatoes. Add the chicken stock, bay leaf, and thyme."
+        },
+        {
+          "title": "Simmer",
+          "description": "Bring to a boil, then reduce heat and simmer for 45 minutes until the rabbit is tender and the vegetables are cooked through."
+        },
+        {
+          "title": "Serve",
+          "description": "Remove the bay leaf and serve the stew hot, garnished with fresh thyme if desired."
+        }
+      ],
+      "nutrition": {
+        "calories": 600,
+        "protein": 50,
+        "fat": 25,
+        "carbohydrates": 40
+      },
+      "primaryProtein": "other",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "other"
+      ]
+    }
+  ]
+}

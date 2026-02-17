@@ -8,7 +8,9 @@
     "build:production": "npx convex deploy --cmd 'pnpm build'",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate-recipes": "tsx scripts/generate-recipes.ts",
+    "validate-recipes": "tsx scripts/validate-recipes.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.0",
@@ -55,6 +57,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "tsx": "^4.19.0",
     "@eslint/eslintrc": "^3.2.0",
     "@serwist/next": "^9.2.1",
     "@tailwindcss/postcss": "^4.0.0",
