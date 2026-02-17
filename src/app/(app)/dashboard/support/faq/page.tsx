@@ -236,7 +236,7 @@ export default function FAQPage() {
 
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <HelpCircle className="h-6 w-6 text-primary" />
+            <HelpCircle className="size-6 text-primary" />
           </div>
           <h1 className="text-2xl font-bold">Frequently Asked Questions</h1>
         </div>

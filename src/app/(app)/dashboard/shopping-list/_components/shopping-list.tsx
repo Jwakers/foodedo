@@ -37,6 +37,10 @@ type ShoppingList = NonNullable<
   FunctionReturnType<typeof api.shoppingLists.getActiveShoppingList>
 >;
 
+function namesEqual(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 interface ShoppingListProps {
   shoppingList: ShoppingList;
   onConfirm: () => void;
@@ -106,9 +110,6 @@ export default function ShoppingList({
   // Calculate available items (excluding those already added to shopping list)
   const getAvailableChalkboardCount = () => {
     let count = 0;
-
-    const namesEqual = (a: string, b: string) =>
-      a.trim().toLowerCase() === b.trim().toLowerCase();
 
     // Count personal items not yet added
     if (personalChalkboard) {
@@ -180,8 +181,8 @@ export default function ShoppingList({
     ) {
       personalChalkboard.forEach((item) => {
         // Only add if not already in shopping list
-        const alreadyAdded = allIngredients.some(
-          (ing) => ing.name === item.text,
+        const alreadyAdded = allIngredients.some((ing) =>
+          namesEqual(ing.name, item.text),
         );
         if (!alreadyAdded) {
           itemsToAdd.push({
@@ -199,8 +200,8 @@ export default function ShoppingList({
         if (householdItems && householdItems.length > 0) {
           householdItems.forEach((item) => {
             // Only add if not already in shopping list
-            const alreadyAdded = allIngredients.some(
-              (ing) => ing.name === item.text,
+            const alreadyAdded = allIngredients.some((ing) =>
+              namesEqual(ing.name, item.text),
             );
             if (!alreadyAdded) {
               itemsToAdd.push({
@@ -600,7 +601,9 @@ export default function ShoppingList({
                   {(() => {
                     const availableItems = personalChalkboard?.filter(
                       (item) =>
-                        !allIngredients.some((ing) => ing.name === item.text),
+                        !allIngredients.some((ing) =>
+                          namesEqual(ing.name, item.text),
+                        ),
                     );
                     const count = availableItems?.length || 0;
                     return count > 0
@@ -617,7 +620,9 @@ export default function ShoppingList({
                   !personalChalkboard ||
                   personalChalkboard.filter(
                     (item) =>
-                      !allIngredients.some((ing) => ing.name === item.text),
+                      !allIngredients.some((ing) =>
+                        namesEqual(ing.name, item.text),
+                      ),
                   ).length === 0
                 }
               />
@@ -636,7 +641,9 @@ export default function ShoppingList({
                       allHouseholdChalkboards?.[household._id] || [];
                     const availableItems = householdItems.filter(
                       (item) =>
-                        !allIngredients.some((ing) => ing.name === item.text),
+                        !allIngredients.some((ing) =>
+                          namesEqual(ing.name, item.text),
+                        ),
                     );
                     const isSelected = selectedHouseholdIds.has(household._id);
                     return (
@@ -680,7 +687,11 @@ export default function ShoppingList({
 
               if (includePersonal && personalChalkboard) {
                 personalChalkboard.forEach((item) => {
-                  if (!allIngredients.some((ing) => ing.name === item.text)) {
+                  if (
+                    !allIngredients.some((ing) =>
+                      namesEqual(ing.name, item.text),
+                    )
+                  ) {
                     previewItems.push({ id: item._id, text: item.text });
                   }
                 });
@@ -691,7 +702,11 @@ export default function ShoppingList({
                   const householdItems =
                     allHouseholdChalkboards?.[householdId] || [];
                   householdItems?.forEach((item) => {
-                    if (!allIngredients.some((ing) => ing.name === item.text)) {
+                    if (
+                      !allIngredients.some((ing) =>
+                        namesEqual(ing.name, item.text),
+                      )
+                    ) {
                       previewItems.push({ id: item._id, text: item.text });
                     }
                   });

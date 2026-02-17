@@ -65,7 +65,7 @@ export default function HouseholdsPage() {
       {households.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Users className="h-16 w-16 text-muted-foreground mb-4" />
+            <Users className="size-16 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No households yet</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-md">
               Create a household to start sharing recipes with your family and

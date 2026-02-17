@@ -131,21 +131,24 @@ function validateRecipe(
     .join(" ");
   const allMethodText = methodText + " " + methodTitles;
 
+  const excludedIngredients = new Set([
+    "salt",
+    "pepper",
+    "black pepper",
+    "oil",
+    "olive oil",
+    "cooking oil",
+    "water",
+  ]);
+
   if (recipe.ingredients && recipe.method) {
     for (const ing of recipe.ingredients) {
+      const ingNameLower = ing.name.toLowerCase();
+      if (excludedIngredients.has(ingNameLower)) continue;
+
       const keywords = extractIngredientKeywords(ing.name);
-      if (
-        ing.name.toLowerCase() !== "salt" &&
-        ing.name.toLowerCase() !== "pepper" &&
-        ing.name.toLowerCase() !== "black pepper" &&
-        ing.name.toLowerCase() !== "oil" &&
-        ing.name.toLowerCase() !== "olive oil" &&
-        ing.name.toLowerCase() !== "cooking oil" &&
-        ing.name.toLowerCase() !== "water"
-      ) {
-        if (!methodMentionsIngredient(allMethodText, ing.name, keywords)) {
-          flags.push(`Ingredient "${ing.name}" may not be used in method`);
-        }
+      if (!methodMentionsIngredient(allMethodText, ing.name, keywords)) {
+        flags.push(`Ingredient "${ing.name}" may not be used in method`);
       }
     }
   }

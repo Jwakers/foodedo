@@ -124,7 +124,7 @@ export function RecipeCardSkeleton() {
             <Skeleton className="h-8 w-16" />
             <Skeleton className="h-8 w-16" />
           </div>
-          <Skeleton className="h-8 w-8" />
+          <Skeleton className="size-8" />
         </div>
       </CardFooter>
     </Card>

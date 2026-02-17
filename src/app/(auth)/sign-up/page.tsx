@@ -25,8 +25,8 @@ export default function SignUpPage() {
   return (
     <div className="lg:grid lg:grid-cols-2 min-h-screen">
       {/* Left Side - Image/Illustration */}
-      <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-primary/90 to-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary/60"></div>
+      <div className="hidden lg:flex lg:flex-1 bg-linear-to-br from-primary/90 to-primary relative overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-primary/80 to-primary/60"></div>
 
         {/* Decorative Elements */}
         <div className="absolute top-20 right-20 w-32 h-32 bg-primary-foreground/10 rounded-full"></div>
@@ -42,7 +42,7 @@ export default function SignUpPage() {
                 href="/"
                 className="inline-flex items-center space-x-2 mb-8"
               >
-                <Utensils className="h-8 w-8" />
+                <Utensils className="size-8" />
                 <span className="font-bold text-2xl">{APP_NAME}</span>
               </Link>
 
@@ -120,7 +120,7 @@ export default function SignUpPage() {
           {/* Header */}
           <div className="text-center space-y-2">
             <Link href="/" className="inline-flex items-center space-x-2">
-              <Utensils className="h-8 w-8 text-primary" />
+              <Utensils className="size-8 text-primary" />
               <span className="font-bold text-2xl">{APP_NAME}</span>
             </Link>
             <p className="text-muted-foreground">
