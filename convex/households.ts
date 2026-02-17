@@ -66,6 +66,10 @@ export async function canAccessRecipe(
     return { canAccess: false, isOwner: false };
   }
 
+  if (recipe.source === "system") {
+    return { canAccess: true, isOwner: false };
+  }
+
   // Check if user owns the recipe
   if (recipe.userId === userId) {
     return { canAccess: true, isOwner: true };

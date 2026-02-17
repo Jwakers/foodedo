@@ -1,0 +1,147 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { titleCase } from "@/lib/utils";
+import { RECIPE_CATEGORIES } from "convex/lib/constants";
+import { Filter, Search } from "lucide-react";
+import { ReactNode, useState } from "react";
+import {
+  LoadingState,
+  RecipeCard,
+  type RecipeListItem,
+} from "./recipe-card";
+
+type RecipeListGridProps = {
+  recipes: RecipeListItem[] | undefined;
+  title: string;
+  subtitle?: ReactNode;
+  emptyState?: ReactNode;
+  headerActions?: ReactNode;
+  footer?: ReactNode;
+  stats?: ReactNode;
+};
+
+export function RecipeListGrid({
+  recipes,
+  title,
+  subtitle,
+  emptyState,
+  headerActions,
+  footer,
+  stats,
+}: RecipeListGridProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const filteredRecipes =
+    recipes?.filter((recipe) => {
+      const matchesSearch =
+        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategory =
+        selectedCategory === "all" || recipe.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    }) ?? [];
+
+  const hasRecipes = recipes && recipes.length > 0;
+  const hasFilteredResults = filteredRecipes.length > 0;
+
+  return (
+    <div className="bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="text-muted-foreground text-lg">{subtitle}</p>
+              )}
+            </div>
+            {headerActions}
+          </div>
+
+          {stats}
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {RECIPE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {titleCase(category)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {recipes === undefined ? (
+          <LoadingState />
+        ) : !hasFilteredResults ? (
+          hasRecipes ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground">
+                No recipes match your search or selected category.
+              </p>
+              <Button
+                className="mt-4"
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            emptyState ?? (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground">No recipes found.</p>
+              </div>
+            )
+          )
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredRecipes.map((recipe) => (
+              <RecipeCard key={recipe._id} recipe={recipe} />
+            ))}
+          </div>
+        )}
+
+        {footer}
+      </div>
+    </div>
+  );
+}

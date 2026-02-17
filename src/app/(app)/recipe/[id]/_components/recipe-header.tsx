@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
+import { CATEGORY_COLORS } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, titleCase } from "@/lib/utils";
-import { ArrowLeft, Calendar, Clock, ImageIcon, Users } from "lucide-react";
+import { Calendar, Clock, ImageIcon, Users } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ChangeImageModal } from "./change-image-modal";
@@ -48,13 +47,6 @@ export function RecipeHeader({
 
   return (
     <div className="mb-8">
-      {/* Back Button */}
-      <Button asChild variant="ghost" className="mb-6 gap-2">
-        <Link href={ROUTES.MY_RECIPES}>
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to My Recipes
-        </Link>
-      </Button>
       {/* Recipe Image Placeholder */}
       <div className="aspect-[16/9] bg-gradient-to-br from-primary/20 to-primary/5 relative overflow-hidden rounded-lg mb-6 group">
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />

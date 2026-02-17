@@ -71,6 +71,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 
 ## Tech debt
 
+- [ ] **Discover and recipe browsing**: Refactor to server rendering for performance. Currently uses Convex client-side queries (`useQuery`). Server-rendering will improve initial load times and SEO for public recipe pages.
 - [ ] Image upload needs some work. Need to decouple logic from the FE with hooks and create reusable components for upload.
 - [ ] Shopping list is very complex. A refactor is needed keeping all state at the root and reducing complexity where possible. Components should be abstracted where possible and optimistic updates should also be added. This needs to be done manually and not with AI.
 

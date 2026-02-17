@@ -19,11 +19,35 @@ export const getRecipe = query({
     recipeId: v.id("recipes"),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new ConvexError("User not found");
     const recipe = await ctx.db.get(args.recipeId);
 
     if (!recipe) return null;
+
+    // System recipes: public access (no auth required) for SEO and unauthenticated visitors
+    if (recipe.source === "system") {
+      const image = recipe.image
+        ? await ctx.storage.getUrl(recipe.image)
+        : null;
+      const methodWithUrls = await Promise.all(
+        (recipe.method ?? []).map(async (step) => {
+          if (step.image) {
+            const stepImageUrl = await ctx.storage.getUrl(step.image);
+            return { ...step, imageUrl: stepImageUrl };
+          }
+          return { ...step, imageUrl: undefined };
+        }),
+      );
+      return {
+        ...recipe,
+        image,
+        method: methodWithUrls,
+        isOwner: false,
+        ownerName: null,
+      };
+    }
+
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new ConvexError("User not found");
 
     // Check if user can access this recipe (owns it or it's shared to their household)
     const { canAccess, isOwner } = await canAccessRecipe(
@@ -33,12 +57,10 @@ export const getRecipe = query({
     );
     if (!canAccess) return null;
 
-    let image = null;
-    if (recipe.image) {
-      image = await ctx.storage.getUrl(recipe.image);
-    }
+    const image = recipe.image
+      ? await ctx.storage.getUrl(recipe.image)
+      : null;
 
-    // Convert method step images from storage IDs to URLs
     const methodWithUrls = await Promise.all(
       (recipe.method ?? []).map(async (step) => {
         if (step.image) {
@@ -49,8 +71,7 @@ export const getRecipe = query({
       }),
     );
 
-    // Get owner name if not the current user
-    let ownerName = null;
+    let ownerName: string | null = null;
     if (!isOwner) {
       const owner = recipe.userId ? await ctx.db.get(recipe.userId) : null;
       ownerName = owner?.name ?? "Unknown User";
@@ -117,6 +138,27 @@ export const getAllUserRecipes = query({
       recipes.map(async (recipe) => ({
         ...recipe,
         image: recipe.image ? await ctx.storage.getUrl(recipe.image) : null,
+      })),
+    );
+  },
+});
+
+/**
+ * List all system recipes (public, no auth required).
+ * Used by Discover page for SEO and unauthenticated visitors.
+ */
+export const getSystemRecipes = query({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    return Promise.all(
+      recipes.map(async (r) => ({
+        ...r,
+        image: r.image ? await ctx.storage.getUrl(r.image) : null,
       })),
     );
   },

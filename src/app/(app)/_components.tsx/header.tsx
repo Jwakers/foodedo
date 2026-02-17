@@ -27,6 +27,7 @@ import {
   ChefHat,
   ChevronsUpDown,
   Clipboard,
+  Compass,
   Globe,
   Home,
   LogOut,
@@ -150,6 +151,26 @@ export function Header() {
                       </Button>
                     </li>
                   ) : null}
+                  <li>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-auto"
+                      asChild
+                    >
+                      <Link
+                        href={ROUTES.DISCOVER}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <Compass className="size-4 mr-3" />
+                        <div className="text-left">
+                          <div className="font-medium">Discover</div>
+                          <div className="text-sm text-muted-foreground">
+                            Browse our curated recipes
+                          </div>
+                        </div>
+                      </Link>
+                    </Button>
+                  </li>
                   <li>
                     <Button
                       variant="ghost"

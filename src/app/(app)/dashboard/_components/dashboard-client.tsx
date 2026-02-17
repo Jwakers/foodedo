@@ -22,6 +22,7 @@ import {
   ChefHat,
   Clipboard,
   Clock,
+  Compass,
   Globe,
   LucideIcon,
   MessageSquare,
@@ -531,6 +532,15 @@ function BentoGrid() {
         description="Save recipes from websites or copy and paste text"
         icon={Globe}
         href={ROUTES.IMPORT_RECIPE}
+        className="md:col-span-1 h-full"
+      />
+
+      {/* Discover */}
+      <FeatureCard
+        title="Discover"
+        description="Browse our curated recipes"
+        icon={Compass}
+        href={ROUTES.DISCOVER}
         className="md:col-span-1 h-full"
       />
     </div>

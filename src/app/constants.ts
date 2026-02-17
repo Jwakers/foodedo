@@ -25,6 +25,7 @@ export const ROUTES = {
   shoppingListWithId: (listId: string) =>
     `/dashboard/shopping-list?listId=${listId}`,
   HOUSEHOLDS: "/dashboard/households",
+  DISCOVER: "/discover",
   CHALKBOARD: "/dashboard/chalkboard",
   SUPPORT: "/dashboard/support",
   SUPPORT_FAQ: "/dashboard/support/faq",

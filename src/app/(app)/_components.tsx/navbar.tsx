@@ -2,7 +2,14 @@
 
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, ChefHat, Clipboard, Home, Plus } from "lucide-react";
+import {
+  CalendarCheck,
+  ChefHat,
+  Clipboard,
+  Compass,
+  Home,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { AddRecipeDrawer } from "./add-recipe-drawer";
@@ -60,6 +67,18 @@ export function Navbar() {
           >
             <Plus className="h-6 w-6" />
           </Button>
+
+          {/* Discover */}
+          <Link href={ROUTES.DISCOVER}>
+            <Button
+              variant="ghost"
+              className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
+              aria-label="Discover recipes"
+            >
+              <Compass className="h-5 w-5" />
+              <span className="text-[0.625rem] sm:text-xs">Discover</span>
+            </Button>
+          </Link>
 
           {/* Chalkboard */}
           <Link href={ROUTES.CHALKBOARD}>
