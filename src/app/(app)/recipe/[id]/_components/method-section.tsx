@@ -45,7 +45,7 @@ export function MethodSection({
               append({ title: "", description: "", image: undefined })
             }
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="size-4 mr-2" />
             Add Step
           </Button>
         </CardHeader>
@@ -109,7 +109,7 @@ export function MethodSection({
                     onClick={() => handleRemoveStep(index)}
                     className="h-8 w-8 p-0 mt-5"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                   </Button>
                 </div>
               ))

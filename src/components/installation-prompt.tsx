@@ -121,7 +121,7 @@ export default function InstallPrompt() {
         <div className="space-y-4">
           <div className="border border-primary/20 rounded-md p-4">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="size-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-xs font-bold text-primary-foreground">
                   1
                 </span>
@@ -142,7 +142,7 @@ export default function InstallPrompt() {
 
           <div className="border border-primary/20 rounded-md p-4">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="size-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-xs font-bold text-primary-foreground">
                   2
                 </span>
@@ -160,7 +160,7 @@ export default function InstallPrompt() {
 
           <div className="border border-primary/20 rounded-md p-4">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="size-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Check className="w-3 h-3 text-primary-foreground" />
               </div>
               <div>
@@ -183,7 +183,7 @@ export default function InstallPrompt() {
               <div
                 className={cn(
                   "w-2 h-2 rounded-full",
-                  deferredPrompt ? "bg-success" : "bg-yellow-500"
+                  deferredPrompt ? "bg-success" : "bg-yellow-500",
                 )}
               ></div>
               <span className="text-sm text-muted-foreground">

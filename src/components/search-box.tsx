@@ -74,7 +74,7 @@ export function Combobox({
         onClick={() => setOpen(true)}
       >
         {selectedOption ? selectedOption.label : placeholder}
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <Command>
@@ -92,8 +92,8 @@ export function Combobox({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      !value ? "opacity-100" : "opacity-0"
+                      "mr-2 size-4",
+                      !value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {clearText}
@@ -110,15 +110,15 @@ export function Combobox({
                       value={option.value}
                       onSelect={(currentValue) => {
                         onValueChange(
-                          currentValue === value ? "" : currentValue
+                          currentValue === value ? "" : currentValue,
                         );
                         setOpen(false);
                       }}
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4",
-                          value === option.value ? "opacity-100" : "opacity-0"
+                          "mr-2 size-4",
+                          value === option.value ? "opacity-100" : "opacity-0",
                         )}
                       />
                       {option.label}
@@ -140,8 +140,8 @@ export function Combobox({
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.value ? "opacity-100" : "opacity-0"
+                        "mr-2 size-4",
+                        value === option.value ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {option.label}

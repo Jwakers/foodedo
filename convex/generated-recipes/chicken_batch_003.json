@@ -1,0 +1,656 @@
+{
+  "recipes": [
+    {
+      "title": "Chicken Alfredo Pasta",
+      "description": "A creamy pasta dish with tender chicken and a rich Alfredo sauce.",
+      "prepTime": 10,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "fettuccine pasta",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "double cream",
+          "amount": 200,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "parmesan cheese",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "grated"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "parsley",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the pasta",
+          "description": "In a large pot of boiling salted water, cook the fettuccine according to package instructions. Drain and set aside."
+        },
+        {
+          "title": "Sauté the chicken",
+          "description": "In a large pan, heat olive oil over medium heat. Add the sliced chicken and cook until browned and cooked through."
+        },
+        {
+          "title": "Make the sauce",
+          "description": "Add the garlic to the pan with the chicken and sauté for 1 minute. Pour in the double cream and stir in the grated parmesan until melted."
+        },
+        {
+          "title": "Combine",
+          "description": "Add the cooked pasta to the sauce and mix until well coated. Stir in the chopped parsley before serving."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 38,
+        "fat": 30,
+        "carbohydrates": 63
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "italian"
+      ]
+    },
+    {
+      "title": "Chicken and Vegetable Stir-Fry",
+      "description": "A quick and colourful stir-fry with chicken and seasonal vegetables.",
+      "prepTime": 10,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken thigh",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "broccoli",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "carrot",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "thinly sliced"
+        },
+        {
+          "name": "soy sauce",
+          "amount": 60,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "sesame oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "ginger",
+          "amount": 1,
+          "unit": "piece",
+          "preparation": "minced"
+        },
+        {
+          "name": "spring onion",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "sliced"
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the ingredients",
+          "description": "Gather and prepare all the vegetables and chicken."
+        },
+        {
+          "title": "Cook the chicken",
+          "description": "In a wok or large frying pan, heat sesame oil over high heat. Add the diced chicken and cook until browned."
+        },
+        {
+          "title": "Add vegetables",
+          "description": "Add the chopped broccoli, sliced bell pepper, carrot, and ginger. Stir-fry for 5-7 minutes."
+        },
+        {
+          "title": "Finish with sauce",
+          "description": "Pour in the soy sauce and stir well, cooking for an additional 2 minutes. Garnish with sliced spring onion and serve with rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 450,
+        "protein": 34,
+        "fat": 20,
+        "carbohydrates": 30
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "chinese"
+      ]
+    },
+    {
+      "title": "Chicken Tacos with Salsa",
+      "description": "Flavourful chicken tacos topped with fresh salsa and avocado.",
+      "prepTime": 15,
+      "cookTime": 10,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "tortillas",
+          "amount": 8,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "tomato",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "red onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "coriander",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        },
+        {
+          "name": "lime",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "avocado",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "olive oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the chicken",
+          "description": "In a frying pan, heat olive oil over medium heat. Add the diced chicken and cook until browned and cooked through."
+        },
+        {
+          "title": "Make the salsa",
+          "description": "In a bowl, combine diced tomato, finely chopped red onion, chopped coriander, and lime juice."
+        },
+        {
+          "title": "Assemble tacos",
+          "description": "Warm the tortillas and fill them with the cooked chicken, salsa, and sliced avocado."
+        }
+      ],
+      "nutrition": {
+        "calories": 500,
+        "protein": 35,
+        "fat": 25,
+        "carbohydrates": 40
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mexican"
+      ]
+    },
+    {
+      "title": "Thai Green Curry Chicken",
+      "description": "A fragrant and spicy green curry with chicken and vegetables.",
+      "prepTime": 15,
+      "cookTime": 25,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken thigh",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "coconut milk",
+          "amount": 400,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "green curry paste",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "aubergine",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "cubed"
+        },
+        {
+          "name": "basil",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        },
+        {
+          "name": "lime",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the rice",
+          "description": "Prepare the rice according to package instructions."
+        },
+        {
+          "title": "Make the curry",
+          "description": "In a large pot, heat coconut milk and stir in green curry paste. Add the sliced chicken, bell pepper, and cubed aubergine."
+        },
+        {
+          "title": "Simmer",
+          "description": "Let the curry simmer for about 15 minutes, until chicken is cooked through and vegetables are tender."
+        },
+        {
+          "title": "Finish and serve",
+          "description": "Stir in chopped basil and lime juice before serving with rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 620,
+        "protein": 36,
+        "fat": 40,
+        "carbohydrates": 40
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "thai"
+      ]
+    },
+    {
+      "title": "Lemon Herb Roasted Chicken Thighs",
+      "description": "Juicy chicken thighs roasted with lemon and fresh herbs.",
+      "prepTime": 10,
+      "cookTime": 35,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken thigh",
+          "amount": 800,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "garlic",
+          "amount": 4,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "thyme",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "potatoes",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "cubed"
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat oven",
+          "description": "Preheat the oven to 200°C."
+        },
+        {
+          "title": "Prepare the chicken",
+          "description": "In a bowl, mix olive oil, lemon juice, minced garlic, and chopped thyme. Toss chicken thighs in the mixture."
+        },
+        {
+          "title": "Roast",
+          "description": "Place chicken in a roasting dish with cubed potatoes. Roast for 35 minutes until chicken is cooked through."
+        }
+      ],
+      "nutrition": {
+        "calories": 680,
+        "protein": 45,
+        "fat": 40,
+        "carbohydrates": 35
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "british"
+      ]
+    },
+    {
+      "title": "Chicken Shawarma Wraps",
+      "description": "Spiced chicken wrapped in soft pita bread with fresh vegetables.",
+      "prepTime": 15,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "pita bread",
+          "amount": 4,
+          "unit": "whole",
+          "preparation": null
+        },
+        {
+          "name": "cucumber",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "tomato",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "garlic",
+          "amount": 1,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "yogurt",
+          "amount": 200,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "cumin",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "paprika",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Prepare the chicken",
+          "description": "In a bowl, mix the sliced chicken with cumin, paprika, and minced garlic."
+        },
+        {
+          "title": "Cook the chicken",
+          "description": "In a frying pan over medium heat, cook the chicken until browned and cooked through."
+        },
+        {
+          "title": "Assemble wraps",
+          "description": "Spread yogurt on pita bread, add the cooked chicken, cucumber, and sliced tomato. Wrap tightly and serve."
+        }
+      ],
+      "nutrition": {
+        "calories": 500,
+        "protein": 36,
+        "fat": 20,
+        "carbohydrates": 45
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "middle_eastern"
+      ]
+    },
+    {
+      "title": "Baked Chicken and Rice Casserole",
+      "description": "A comforting one-pan chicken and rice dish baked to perfection.",
+      "prepTime": 10,
+      "cookTime": 45,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "rice",
+          "amount": 250,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "chicken stock",
+          "amount": 600,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "peas",
+          "amount": 150,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "carrot",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat oven",
+          "description": "Preheat the oven to 180°C."
+        },
+        {
+          "title": "Sauté vegetables",
+          "description": "In a large ovenproof dish, heat olive oil and sauté the onion and carrot until soft."
+        },
+        {
+          "title": "Combine and bake",
+          "description": "Add the cubed chicken, rice, chicken stock, and peas. Stir well and cover. Bake for 45 minutes."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 40,
+        "fat": 15,
+        "carbohydrates": 65
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    },
+    {
+      "title": "Chicken and Chorizo Paella",
+      "description": "A Spanish-inspired paella with chicken and spicy chorizo.",
+      "prepTime": 15,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken thigh",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "chorizo",
+          "amount": 150,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "chicken stock",
+          "amount": 600,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "tomato",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Sauté chicken and chorizo",
+          "description": "In a large pan, heat olive oil over medium heat. Add chicken and chorizo, cooking until browned."
+        },
+        {
+          "title": "Add vegetables and rice",
+          "description": "Stir in sliced bell pepper, diced tomato, and minced garlic. Add rice and chicken stock."
+        },
+        {
+          "title": "Cook the paella",
+          "description": "Bring to a simmer, cover, and cook for 30 minutes until rice is tender and liquid is absorbed."
+        }
+      ],
+      "nutrition": {
+        "calories": 700,
+        "protein": 40,
+        "fat": 30,
+        "carbohydrates": 50
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "spanish"
+      ]
+    }
+  ]
+}

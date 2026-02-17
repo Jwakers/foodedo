@@ -47,6 +47,7 @@ export const PREPARATION_OPTIONS = [
   "halved",
   "whole",
   "crushed",
+  "crumbled",
   "mashed",
   "pureed",
   // Temperature states

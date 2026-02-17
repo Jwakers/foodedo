@@ -1,0 +1,459 @@
+{
+  "recipes": [
+    {
+      "title": "Beef Stroganoff",
+      "description": "A creamy and comforting beef stroganoff served over egg noodles.",
+      "prepTime": 10,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "beef sirloin",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "mushrooms",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "beef stock",
+          "amount": 250,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "sour cream",
+          "amount": 150,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "egg noodles",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "parsley",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the noodles",
+          "description": "Boil the egg noodles according to package instructions, then drain and set aside."
+        },
+        {
+          "title": "Sauté the beef",
+          "description": "In a pan, heat olive oil over medium heat and sauté the sliced beef until browned. Remove and set aside."
+        },
+        {
+          "title": "Cook the vegetables",
+          "description": "In the same pan, add onion, garlic, and mushrooms. Cook until softened."
+        },
+        {
+          "title": "Combine and simmer",
+          "description": "Return beef to the pan, add beef stock and simmer for 5 minutes. Stir in sour cream and heat through."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve the stroganoff over the egg noodles and garnish with parsley."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 40,
+        "fat": 30,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "beef",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    },
+    {
+      "title": "Beef Tacos",
+      "description": "Spicy beef tacos served with fresh toppings in soft tortillas.",
+      "prepTime": 15,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "minced beef",
+          "amount": 500,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "taco seasoning",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "red pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "tortillas",
+          "amount": 8,
+          "unit": "piece",
+          "preparation": null
+        },
+        {
+          "name": "lettuce",
+          "amount": 100,
+          "unit": "g",
+          "preparation": "shredded"
+        },
+        {
+          "name": "tomato",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "diced"
+        },
+        {
+          "name": "cheddar cheese",
+          "amount": 100,
+          "unit": "g",
+          "preparation": "grated"
+        },
+        {
+          "name": "sour cream",
+          "amount": 100,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the beef",
+          "description": "In a pan, heat olive oil and sauté the onion until soft. Add minced beef and cook until browned. Stir in taco seasoning."
+        },
+        {
+          "title": "Prepare toppings",
+          "description": "Chop the lettuce, tomatoes, and red pepper."
+        },
+        {
+          "title": "Assemble tacos",
+          "description": "Warm the tortillas and fill with the beef mixture, then top with lettuce, tomatoes, cheese, and sour cream."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 35,
+        "fat": 25,
+        "carbohydrates": 40
+      },
+      "primaryProtein": "beef",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mexican"
+      ]
+    },
+    {
+      "title": "Beef and Broccoli Stir-Fry",
+      "description": "A quick and healthy beef and broccoli stir-fry served over rice.",
+      "prepTime": 10,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "beef flank steak",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "broccoli",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "soy sauce",
+          "amount": 60,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "ginger",
+          "amount": 1,
+          "unit": "piece",
+          "preparation": "grated"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "vegetable oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Stir-fry the beef",
+          "description": "In a wok, heat vegetable oil and stir-fry the sliced beef until browned. Remove and set aside."
+        },
+        {
+          "title": "Cook the vegetables",
+          "description": "In the same wok, add garlic, ginger, and broccoli. Stir-fry until tender."
+        },
+        {
+          "title": "Combine and finish",
+          "description": "Return the beef to the wok, add soy sauce, and stir-fry for another minute."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve the stir-fry over cooked rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": 38,
+        "fat": 20,
+        "carbohydrates": 45
+      },
+      "primaryProtein": "beef",
+      "complexityTier": "simple",
+      "cuisine": [
+        "chinese"
+      ]
+    },
+    {
+      "title": "Italian Beef Meatballs",
+      "description": "Juicy beef meatballs simmered in a rich tomato sauce served with spaghetti.",
+      "prepTime": 15,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "minced beef",
+          "amount": 500,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "bread crumbs",
+          "amount": 100,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "egg",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "beaten"
+        },
+        {
+          "name": "parmesan cheese",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "grated"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "minced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "tomato sauce",
+          "amount": 400,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "spaghetti",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "basil",
+          "amount": 1,
+          "unit": "bunch",
+          "preparation": "chopped"
+        }
+      ],
+      "method": [
+        {
+          "title": "Make meatballs",
+          "description": "In a bowl, combine minced beef, bread crumbs, beaten egg, parmesan, garlic, and onion. Form into meatballs."
+        },
+        {
+          "title": "Cook meatballs",
+          "description": "In a pan, heat olive oil and brown the meatballs. Add tomato sauce and simmer for 20 minutes."
+        },
+        {
+          "title": "Cook spaghetti",
+          "description": "Cook spaghetti according to package instructions, then drain."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve meatballs over spaghetti and garnish with basil."
+        }
+      ],
+      "nutrition": {
+        "calories": 700,
+        "protein": 45,
+        "fat": 25,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "beef",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "italian"
+      ]
+    },
+    {
+      "title": "Beef and Vegetable Traybake",
+      "description": "A simple one-pan beef and vegetable traybake, perfect for busy evenings.",
+      "prepTime": 10,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "beef stew meat",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "carrots",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "potatoes",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "red onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "quartered"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "mixed herbs",
+          "amount": 1,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat oven",
+          "description": "Preheat the oven to 200°C (180°C fan)."
+        },
+        {
+          "title": "Prepare ingredients",
+          "description": "In a large bowl, combine beef, carrots, potatoes, red onion, olive oil, mixed herbs, salt, and pepper."
+        },
+        {
+          "title": "Bake",
+          "description": "Spread the mixture onto a baking tray and bake for 30 minutes, or until the beef is cooked and vegetables are tender."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 40,
+        "fat": 25,
+        "carbohydrates": 45
+      },
+      "primaryProtein": "beef",
+      "complexityTier": "simple",
+      "cuisine": [
+        "british"
+      ]
+    }
+  ]
+}

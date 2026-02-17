@@ -94,7 +94,7 @@ export function ImageUploadButton({
           className="absolute top-2 right-2"
           disabled={disabled}
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </Button>
       </div>
     );
@@ -116,17 +116,17 @@ export function ImageUploadButton({
         className={cn(
           "flex items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent transition-colors",
           sizeClasses[size],
-          (disabled || upload.isUploading) && "opacity-50 cursor-not-allowed"
+          (disabled || upload.isUploading) && "opacity-50 cursor-not-allowed",
         )}
       >
         {upload.isUploading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Upload className="h-5 w-5 animate-pulse" />
+            <Upload className="size-5 animate-pulse" />
             <span className="text-sm">Uploading...</span>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-muted-foreground">
-            <ImageIcon className="h-5 w-5" />
+            <ImageIcon className="size-5" />
             <span className="text-sm">{label}</span>
           </div>
         )}

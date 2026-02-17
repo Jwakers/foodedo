@@ -53,7 +53,7 @@ export function RecipeAttribution({ recipe }: RecipeAttributionProps) {
             <div className="space-y-2">
               {recipe.originalAuthor && (
                 <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <User className="size-4 text-muted-foreground flex-shrink-0" />
                   <span className="text-foreground">
                     <span className="text-muted-foreground">By</span>{" "}
                     <span className="font-medium">{recipe.originalAuthor}</span>
@@ -63,7 +63,7 @@ export function RecipeAttribution({ recipe }: RecipeAttributionProps) {
 
               {publishedDate && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <Calendar className="size-4 text-muted-foreground flex-shrink-0" />
                   <span className="text-foreground">
                     <span className="text-muted-foreground">Published</span>{" "}
                     <span className="font-medium">{publishedDate}</span>
@@ -74,7 +74,7 @@ export function RecipeAttribution({ recipe }: RecipeAttributionProps) {
 
             {recipe.originalUrl && (
               <div className="flex items-start gap-2 text-sm">
-                <ExternalLink className="h-4 w-4 text-primary flex-shrink-0" />
+                <ExternalLink className="size-4 text-primary flex-shrink-0" />
                 <a
                   href={recipe.originalUrl}
                   target="_blank"

@@ -66,6 +66,10 @@ export async function canAccessRecipe(
     return { canAccess: false, isOwner: false };
   }
 
+  if (recipe.source === "system") {
+    return { canAccess: true, isOwner: false };
+  }
+
   // Check if user owns the recipe
   if (recipe.userId === userId) {
     return { canAccess: true, isOwner: true };
@@ -405,8 +409,39 @@ export const getHouseholdsByRecipeId = query({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
-    const { canAccess } = await canAccessRecipe(ctx, user._id, args.recipeId);
+    const recipe = await ctx.db.get(args.recipeId);
 
+    if (!recipe) {
+      throw new ConvexError("Recipe not found");
+    }
+
+    // System recipes: do not expose household associations. Only return households
+    // where the user is a member (no global access to household membership).
+    if (recipe.source === "system") {
+      const householdRecipes = await ctx.db
+        .query("householdRecipes")
+        .withIndex("by_recipe", (q) => q.eq("recipeId", args.recipeId))
+        .collect();
+
+      const filtered: typeof householdRecipes = [];
+      for (const hr of householdRecipes) {
+        const isMember = await isHouseholdMember(
+          ctx,
+          user._id,
+          hr.householdId
+        );
+        if (isMember) {
+          filtered.push(hr);
+        }
+      }
+
+      if (!filtered.length) {
+        return null;
+      }
+      return filtered;
+    }
+
+    const { canAccess } = await canAccessRecipe(ctx, user._id, args.recipeId);
     if (!canAccess) {
       throw new ConvexError("You do not have access to this recipe");
     }

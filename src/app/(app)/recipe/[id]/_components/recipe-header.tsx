@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
+import { CATEGORY_COLORS } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, titleCase } from "@/lib/utils";
-import { ArrowLeft, Calendar, Clock, ImageIcon, Users } from "lucide-react";
+import { Calendar, Clock, ImageIcon, Users } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ChangeImageModal } from "./change-image-modal";
@@ -48,13 +47,6 @@ export function RecipeHeader({
 
   return (
     <div className="mb-8">
-      {/* Back Button */}
-      <Button asChild variant="ghost" className="mb-6 gap-2">
-        <Link href={ROUTES.MY_RECIPES}>
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to My Recipes
-        </Link>
-      </Button>
       {/* Recipe Image Placeholder */}
       <div className="aspect-[16/9] bg-gradient-to-br from-primary/20 to-primary/5 relative overflow-hidden rounded-lg mb-6 group">
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -72,7 +64,10 @@ export function RecipeHeader({
         <div className="absolute top-2 right-2 z-10">
           <Badge
             variant="secondary"
-            className={cn(categoryColor, "border-0 font-medium text-sm px-3 py-1")}
+            className={cn(
+              categoryColor,
+              "border-0 font-medium text-sm px-3 py-1",
+            )}
           >
             {categoryLabel}
           </Badge>
@@ -88,7 +83,7 @@ export function RecipeHeader({
               onClick={() => setIsImageModalOpen(true)}
               className="gap-2 shadow-lg"
             >
-              <ImageIcon className="h-4 w-4" />
+              <ImageIcon className="size-4" />
               {recipe.image ? "Change Image" : "Add Image"}
             </Button>
           </div>
@@ -141,7 +136,7 @@ export function RecipeHeader({
       {/* Recipe Meta */}
       <div className="flex flex-wrap items-center gap-6 mb-6">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Clock className="h-5 w-5" />
+          <Clock className="size-5" />
           <span className="font-medium">
             {Math.max(0, totalTime)}{" "}
             {Math.max(0, totalTime) === 1 ? "minute" : "minutes"} total
@@ -151,14 +146,14 @@ export function RecipeHeader({
           </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Users className="h-5 w-5" />
+          <Users className="size-5" />
           <span className="font-medium">Serves {recipe.serves}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="h-5 w-5" />
+          <Calendar className="size-5" />
           <span className="font-medium">
             {new Date(
-              recipe.updatedAt ?? recipe._creationTime
+              recipe.updatedAt ?? recipe._creationTime,
             ).toLocaleDateString()}
           </span>
         </div>

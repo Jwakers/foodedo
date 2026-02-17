@@ -285,11 +285,11 @@ function RecipeControls({
             variant="outline"
             onClick={onToggleEditMode}
           >
-            <X className="h-4 w-4" />
+            <X className="size-4" />
             Cancel
           </Button>
           <Button type="submit" size="lg" className="ml-auto">
-            <Save className="h-4 w-4" />
+            <Save className="size-4" />
             Save Changes
           </Button>
         </>
@@ -302,7 +302,7 @@ function RecipeControls({
               className="gap-2"
               onClick={onStartCooking}
             >
-              <ChefHat className="h-4 w-4" aria-hidden />
+              <ChefHat className="size-4" aria-hidden />
               Start Cooking
             </Button>
           )}
@@ -327,7 +327,7 @@ function RecipeControls({
                   variant="ghost"
                   aria-label="More Actions"
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -336,7 +336,7 @@ function RecipeControls({
                   onClick={onToggleEditMode}
                   disabled={!isRecipeForEditLoaded}
                 >
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="size-4 mr-2" />
                   Edit Recipe
                   {!isRecipeForEditLoaded && " (Loading...)"}
                 </DropdownMenuItem>
@@ -345,7 +345,7 @@ function RecipeControls({
                   onClick={() => onDelete(recipe)}
                   className="text-destructive"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="size-4 mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>

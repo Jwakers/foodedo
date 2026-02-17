@@ -108,7 +108,7 @@ export function EditImportedRecipe({
             onClick={onCancel}
             disabled={isSaving}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="size-5" />
           </Button>
           <div>
             <h2 className="text-2xl font-bold">Edit Recipe</h2>
@@ -175,7 +175,7 @@ export function EditImportedRecipe({
                           field.onChange(
                             e.target.value === ""
                               ? undefined
-                              : Number(e.target.value)
+                              : Number(e.target.value),
                           )
                         }
                       />
@@ -200,7 +200,7 @@ export function EditImportedRecipe({
                           field.onChange(
                             e.target.value === ""
                               ? undefined
-                              : Number(e.target.value)
+                              : Number(e.target.value),
                           )
                         }
                       />
@@ -225,7 +225,7 @@ export function EditImportedRecipe({
                           field.onChange(
                             e.target.value === ""
                               ? undefined
-                              : Number(e.target.value)
+                              : Number(e.target.value),
                           )
                         }
                       />
@@ -289,7 +289,7 @@ export function EditImportedRecipe({
                   })
                 }
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="size-4 mr-1" />
                 Add Ingredient
               </Button>
             </div>
@@ -340,7 +340,7 @@ export function EditImportedRecipe({
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : Number(e.target.value)
+                                        : Number(e.target.value),
                                     )
                                   }
                                 />
@@ -392,7 +392,7 @@ export function EditImportedRecipe({
                       onClick={() => removeIngredient(index)}
                       className="h-8 w-8"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="size-4" />
                     </Button>
                   </div>
                 </Card>
@@ -421,7 +421,7 @@ export function EditImportedRecipe({
                   })
                 }
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="size-4 mr-1" />
                 Add Step
               </Button>
             </div>
@@ -479,7 +479,7 @@ export function EditImportedRecipe({
                       onClick={() => removeMethodStep(index)}
                       className="h-8 w-8"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="size-4" />
                     </Button>
                   </div>
                 </Card>
@@ -596,7 +596,7 @@ export function EditImportedRecipe({
                   </p>
                   <p className="text-sm">
                     {new Date(
-                      recipe.originalPublishedDate
+                      recipe.originalPublishedDate,
                     ).toLocaleDateString()}
                   </p>
                 </div>
@@ -619,7 +619,7 @@ export function EditImportedRecipe({
           <Button type="submit" disabled={isSaving} className="flex-1">
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Saving...
               </>
             ) : (

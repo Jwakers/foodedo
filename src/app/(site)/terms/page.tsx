@@ -7,8 +7,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description:
-    `Read the terms and conditions for using ${APP_NAME} meal planning application.`,
+  description: `Read the terms and conditions for using ${APP_NAME} meal planning application.`,
 };
 
 const TERMS_OF_SERVICE_LAST_UPDATED = "3 December 2025"; // update manually when terms change
@@ -19,7 +18,7 @@ export default function TermsPage() {
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Button variant="ghost" asChild className="mb-6">
           <Link href={ROUTES.HOME}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 size-4" />
             Back to Home
           </Link>
         </Button>
@@ -38,9 +37,9 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose prose-slate dark:prose-invert max-w-none">
               <p>
-                By accessing and using {APP_NAME} (&quot;the Service&quot;),
-                you accept and agree to be bound by these Terms of Service. If
-                you do not agree to these terms, please do not use the Service.
+                By accessing and using {APP_NAME} (&quot;the Service&quot;), you
+                accept and agree to be bound by these Terms of Service. If you
+                do not agree to these terms, please do not use the Service.
               </p>
             </CardContent>
           </Card>
@@ -198,9 +197,9 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose prose-slate dark:prose-invert max-w-none">
               <p>
-                {APP_NAME} and its original content, features, and
-                functionality are owned by us and are protected by international
-                copyright, trademark, and other intellectual property laws.
+                {APP_NAME} and its original content, features, and functionality
+                are owned by us and are protected by international copyright,
+                trademark, and other intellectual property laws.
               </p>
             </CardContent>
           </Card>
@@ -211,9 +210,9 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose prose-slate dark:prose-invert max-w-none">
               <p>
-                To the fullest extent permitted by law, {APP_NAME} shall not
-                be liable for any indirect, incidental, special, consequential,
-                or punitive damages resulting from:
+                To the fullest extent permitted by law, {APP_NAME} shall not be
+                liable for any indirect, incidental, special, consequential, or
+                punitive damages resulting from:
               </p>
               <ul>
                 <li>Your use or inability to use the Service</li>

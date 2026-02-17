@@ -1,0 +1,750 @@
+{
+  "recipes": [
+    {
+      "title": "Chicken Tikka Masala",
+      "description": "A classic Indian dish with marinated chicken in a spiced tomato sauce, served with rice.",
+      "prepTime": 15,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 600,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "garlic",
+          "amount": 3,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "ginger",
+          "amount": 20,
+          "unit": "g",
+          "preparation": "grated"
+        },
+        {
+          "name": "canned tomatoes",
+          "amount": 400,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "coconut milk",
+          "amount": 400,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "garam masala",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook the rice",
+          "description": "In a saucepan, cook the rice according to package instructions."
+        },
+        {
+          "title": "Sauté the onion",
+          "description": "In a large pan, heat oil and sauté the onion until soft."
+        },
+        {
+          "title": "Add garlic and ginger",
+          "description": "Stir in the garlic and ginger, cooking for 1 minute."
+        },
+        {
+          "title": "Cook chicken",
+          "description": "Add the chicken and cook until browned."
+        },
+        {
+          "title": "Add spices and tomatoes",
+          "description": "Mix in garam masala, canned tomatoes, and coconut milk. Simmer for 20 minutes."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve the tikka masala over cooked rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 40,
+        "fat": 30,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "indian"
+      ]
+    },
+    {
+      "title": "One-Pan Lemon Herb Chicken and Vegetables",
+      "description": "A simple one-pan meal with chicken, potatoes, and seasonal vegetables, all roasted together.",
+      "prepTime": 10,
+      "cookTime": 35,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken thighs",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "potatoes",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "quartered"
+        },
+        {
+          "name": "carrots",
+          "amount": 300,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "olive oil",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "lemon",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        },
+        {
+          "name": "mixed herbs",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat oven",
+          "description": "Preheat the oven to 200°C."
+        },
+        {
+          "title": "Prepare vegetables",
+          "description": "In a large bowl, toss the potatoes and carrots with olive oil, salt, and pepper."
+        },
+        {
+          "title": "Add chicken",
+          "description": "Add chicken thighs to the bowl, drizzle with lemon juice and herbs."
+        },
+        {
+          "title": "Roast",
+          "description": "Spread everything on a baking tray and roast for 30-35 minutes."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 38,
+        "fat": 28,
+        "carbohydrates": 45
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "british"
+      ]
+    },
+    {
+      "title": "Chicken Fajitas",
+      "description": "Spicy chicken strips served with peppers and onions, perfect for wrapping in tortillas.",
+      "prepTime": 15,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "bell pepper",
+          "amount": 2,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "onion",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "fajita seasoning",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "tortillas",
+          "amount": 8,
+          "unit": "piece",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "lime",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "whole"
+        }
+      ],
+      "method": [
+        {
+          "title": "Sauté vegetables",
+          "description": "In a pan, heat olive oil and sauté bell peppers and onion until soft."
+        },
+        {
+          "title": "Cook chicken",
+          "description": "Add chicken, seasoning, and salt, and cook until chicken is done."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve warm in tortillas with lime juice."
+        }
+      ],
+      "nutrition": {
+        "calories": 600,
+        "protein": 40,
+        "fat": 20,
+        "carbohydrates": 55
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mexican"
+      ]
+    },
+    {
+      "title": "Chicken Stir-Fry",
+      "description": "A quick and healthy stir-fry with chicken and fresh vegetables served with rice.",
+      "prepTime": 10,
+      "cookTime": 15,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 500,
+          "unit": "g",
+          "preparation": "sliced"
+        },
+        {
+          "name": "broccoli",
+          "amount": 200,
+          "unit": "g",
+          "preparation": "chopped"
+        },
+        {
+          "name": "carrot",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "bell pepper",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "sliced"
+        },
+        {
+          "name": "soy sauce",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "ginger",
+          "amount": 10,
+          "unit": "g",
+          "preparation": "grated"
+        },
+        {
+          "name": "oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook rice",
+          "description": "Prepare rice according to package instructions."
+        },
+        {
+          "title": "Sauté chicken",
+          "description": "In a pan, heat oil and sauté chicken until cooked."
+        },
+        {
+          "title": "Add vegetables",
+          "description": "Add broccoli, carrot, and bell pepper, cooking until tender."
+        },
+        {
+          "title": "Add sauce",
+          "description": "Stir in soy sauce and ginger, cooking for another minute."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve stir-fry over rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 550,
+        "protein": 43,
+        "fat": 15,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "chinese"
+      ]
+    },
+    {
+      "title": "Mediterranean Chicken Bake",
+      "description": "Baked chicken with olives, tomatoes, and herbs, served with couscous.",
+      "prepTime": 15,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken thighs",
+          "amount": 600,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "canned tomatoes",
+          "amount": 400,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "kalamata olives",
+          "amount": 100,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "garlic",
+          "amount": 3,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "couscous",
+          "amount": 250,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "mixed herbs",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Preheat oven",
+          "description": "Preheat the oven to 200°C."
+        },
+        {
+          "title": "Prepare chicken",
+          "description": "In a baking dish, place chicken thighs, canned tomatoes, olives, garlic, and oil."
+        },
+        {
+          "title": "Season",
+          "description": "Sprinkle with herbs, salt, and pepper."
+        },
+        {
+          "title": "Bake",
+          "description": "Bake for 30 minutes until chicken is cooked through."
+        },
+        {
+          "title": "Prepare couscous",
+          "description": "Meanwhile, prepare couscous according to package instructions."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve chicken with couscous."
+        }
+      ],
+      "nutrition": {
+        "calories": 600,
+        "protein": 42,
+        "fat": 28,
+        "carbohydrates": 50
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "mediterranean"
+      ]
+    },
+    {
+      "title": "Chicken Katsu Curry",
+      "description": "Crispy chicken cutlets served with a rich Japanese curry sauce over rice.",
+      "prepTime": 20,
+      "cookTime": 30,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 600,
+          "unit": "g",
+          "preparation": "butterflied"
+        },
+        {
+          "name": "panko breadcrumbs",
+          "amount": 150,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "plain flour",
+          "amount": 100,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "egg",
+          "amount": 1,
+          "unit": "whole",
+          "preparation": "beaten"
+        },
+        {
+          "name": "curry paste",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "coconut milk",
+          "amount": 400,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "oil",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook rice",
+          "description": "Prepare rice according to package instructions."
+        },
+        {
+          "title": "Prepare chicken",
+          "description": "Coat chicken in flour, then dip in egg, and finally in panko."
+        },
+        {
+          "title": "Fry chicken",
+          "description": "In a pan, heat oil and fry chicken until golden and cooked through."
+        },
+        {
+          "title": "Make curry sauce",
+          "description": "In a saucepan, heat curry paste, add coconut milk, and simmer."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve chicken katsu with curry sauce over rice."
+        }
+      ],
+      "nutrition": {
+        "calories": 700,
+        "protein": 45,
+        "fat": 35,
+        "carbohydrates": 60
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "japanese"
+      ]
+    },
+    {
+      "title": "Chicken and Spinach Pasta",
+      "description": "A creamy pasta dish with chicken and spinach, perfect for a quick weeknight dinner.",
+      "prepTime": 10,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "pasta",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "chicken breast",
+          "amount": 400,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "spinach",
+          "amount": 150,
+          "unit": "g",
+          "preparation": "roughly chopped"
+        },
+        {
+          "name": "cream",
+          "amount": 200,
+          "unit": "ml",
+          "preparation": null
+        },
+        {
+          "name": "parmesan cheese",
+          "amount": 50,
+          "unit": "g",
+          "preparation": "grated"
+        },
+        {
+          "name": "garlic",
+          "amount": 2,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "salt",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        },
+        {
+          "name": "pepper",
+          "amount": 1,
+          "unit": "tsp",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook pasta",
+          "description": "Cook pasta according to package instructions."
+        },
+        {
+          "title": "Sauté chicken",
+          "description": "In a pan, heat olive oil and sauté chicken until cooked."
+        },
+        {
+          "title": "Add garlic and spinach",
+          "description": "Stir in garlic and spinach, cooking until spinach wilts."
+        },
+        {
+          "title": "Add cream and cheese",
+          "description": "Pour in cream, add parmesan, and stir until combined."
+        },
+        {
+          "title": "Combine",
+          "description": "Mix cooked pasta with the chicken and sauce."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve warm, garnished with extra parmesan."
+        }
+      ],
+      "nutrition": {
+        "calories": 650,
+        "protein": 40,
+        "fat": 30,
+        "carbohydrates": 55
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "moderate",
+      "cuisine": [
+        "italian"
+      ]
+    },
+    {
+      "title": "Honey Garlic Chicken",
+      "description": "Sweet and savory chicken glazed with honey and garlic, served with stir-fried vegetables.",
+      "prepTime": 10,
+      "cookTime": 20,
+      "serves": 4,
+      "category": "dinner",
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "amount": 600,
+          "unit": "g",
+          "preparation": "cubed"
+        },
+        {
+          "name": "honey",
+          "amount": 4,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "soy sauce",
+          "amount": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "garlic",
+          "amount": 3,
+          "unit": "clove",
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "mixed vegetables",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        },
+        {
+          "name": "oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "rice",
+          "amount": 300,
+          "unit": "g",
+          "preparation": null
+        }
+      ],
+      "method": [
+        {
+          "title": "Cook rice",
+          "description": "Prepare rice according to package instructions."
+        },
+        {
+          "title": "Cook chicken",
+          "description": "In a pan, heat oil and cook chicken until browned."
+        },
+        {
+          "title": "Add sauce",
+          "description": "Add honey, soy sauce, and garlic, cooking until thickened."
+        },
+        {
+          "title": "Stir-fry vegetables",
+          "description": "In another pan, stir-fry mixed vegetables until tender."
+        },
+        {
+          "title": "Serve",
+          "description": "Serve honey garlic chicken over rice with vegetables."
+        }
+      ],
+      "nutrition": {
+        "calories": 600,
+        "protein": 38,
+        "fat": 15,
+        "carbohydrates": 70
+      },
+      "primaryProtein": "chicken",
+      "complexityTier": "simple",
+      "cuisine": [
+        "other"
+      ]
+    }
+  ]
+}
