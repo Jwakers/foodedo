@@ -56,25 +56,25 @@ export default function SignInPage() {
             {/* Feature Highlights */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <ChefHat className="h-5 w-5 text-primary-foreground/80" />
+                <ChefHat className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Access your recipe collection
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Calendar className="h-5 w-5 text-primary-foreground/80" />
+                <Calendar className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Continue your meal planning
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <ShoppingCart className="h-5 w-5 text-primary-foreground/80" />
+                <ShoppingCart className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Generate shopping lists
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Users className="h-5 w-5 text-primary-foreground/80" />
+                <Users className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Sync with your family
                 </span>
@@ -94,7 +94,7 @@ export default function SignInPage() {
                 href="/"
                 className="flex items-center text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="size-4 mr-2" />
                 Back to Home
               </Link>
             </Button>

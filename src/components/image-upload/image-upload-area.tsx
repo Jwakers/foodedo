@@ -121,7 +121,7 @@ export function ImageUploadArea({
                 onClick={handleRemove}
                 disabled={disabled}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="size-4 mr-2" />
                 Remove Image
               </Button>
             </div>
@@ -153,7 +153,7 @@ export function ImageUploadArea({
           isDragging
             ? "border-primary bg-primary/10"
             : "border-dashed border-muted-foreground/25 hover:border-primary/50",
-          (disabled || upload.isUploading) && "opacity-50 cursor-not-allowed"
+          (disabled || upload.isUploading) && "opacity-50 cursor-not-allowed",
         )}
       >
         <div className="absolute inset-0 flex flex-col items-center justify-center">

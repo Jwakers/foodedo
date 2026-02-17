@@ -64,7 +64,10 @@ export function RecipeHeader({
         <div className="absolute top-2 right-2 z-10">
           <Badge
             variant="secondary"
-            className={cn(categoryColor, "border-0 font-medium text-sm px-3 py-1")}
+            className={cn(
+              categoryColor,
+              "border-0 font-medium text-sm px-3 py-1",
+            )}
           >
             {categoryLabel}
           </Badge>
@@ -80,7 +83,7 @@ export function RecipeHeader({
               onClick={() => setIsImageModalOpen(true)}
               className="gap-2 shadow-lg"
             >
-              <ImageIcon className="h-4 w-4" />
+              <ImageIcon className="size-4" />
               {recipe.image ? "Change Image" : "Add Image"}
             </Button>
           </div>
@@ -133,7 +136,7 @@ export function RecipeHeader({
       {/* Recipe Meta */}
       <div className="flex flex-wrap items-center gap-6 mb-6">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Clock className="h-5 w-5" />
+          <Clock className="size-5" />
           <span className="font-medium">
             {Math.max(0, totalTime)}{" "}
             {Math.max(0, totalTime) === 1 ? "minute" : "minutes"} total
@@ -143,14 +146,14 @@ export function RecipeHeader({
           </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Users className="h-5 w-5" />
+          <Users className="size-5" />
           <span className="font-medium">Serves {recipe.serves}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="h-5 w-5" />
+          <Calendar className="size-5" />
           <span className="font-medium">
             {new Date(
-              recipe.updatedAt ?? recipe._creationTime
+              recipe.updatedAt ?? recipe._creationTime,
             ).toLocaleDateString()}
           </span>
         </div>

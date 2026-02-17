@@ -19,8 +19,8 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
-        <Plus className="h-12 w-12 text-muted-foreground" />
+      <div className="size-24 bg-muted rounded-full flex items-center justify-center mb-6">
+        <Plus className="size-12 text-muted-foreground" />
       </div>
       <h3 className="text-2xl font-bold text-foreground mb-2">
         No recipes yet
@@ -30,7 +30,7 @@ function EmptyState({
         Share your culinary creations with the world!
       </p>
       <Button size="lg" onClick={() => setAddRecipeDrawerOpen(true)}>
-        <Plus className="h-5 w-5" />
+        <Plus className="size-5" />
         Create Your First Recipe
       </Button>
     </div>
@@ -50,22 +50,21 @@ export default function RecipeListing() {
       subtitle={
         <>
           Manage and organise your culinary creations.{" "}
-          <Link
-            href={ROUTES.DISCOVER}
-            className="text-primary hover:underline"
-          >
+          <Link href={ROUTES.DISCOVER} className="text-primary hover:underline">
             Discover more recipes
           </Link>
         </>
       }
-      emptyState={<EmptyState setAddRecipeDrawerOpen={setShowAddRecipeDrawer} />}
+      emptyState={
+        <EmptyState setAddRecipeDrawerOpen={setShowAddRecipeDrawer} />
+      }
       headerActions={
         <Button
           size="lg"
           onClick={() => setShowAddRecipeDrawer(true)}
           className="hidden md:flex"
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="size-5" />
           Add Recipe
         </Button>
       }
@@ -74,7 +73,7 @@ export default function RecipeListing() {
         recipes.length > 0 && (
           <div className="flex items-center gap-6 mb-6 flex-wrap">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-primary rounded-full" />
+              <div className="size-3 bg-primary rounded-full" />
               <span className="text-sm font-medium">
                 {recipes.length} {recipes.length === 1 ? "Recipe" : "Recipes"}
               </span>

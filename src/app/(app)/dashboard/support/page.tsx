@@ -59,7 +59,7 @@ export default function SupportPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <HelpCircle className="size-5 text-blue-600 dark:text-blue-400" />
               </div>
               <CardTitle className="text-lg">FAQ</CardTitle>
             </div>
@@ -79,7 +79,7 @@ export default function SupportPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <BookOpen className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <BookOpen className="size-5 text-green-600 dark:text-green-400" />
               </div>
               <CardTitle className="text-lg">How to Use</CardTitle>
             </div>
@@ -99,7 +99,7 @@ export default function SupportPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Mail className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <Mail className="size-5 text-purple-600 dark:text-purple-400" />
               </div>
               <CardTitle className="text-lg">Contact Us</CardTitle>
             </div>
@@ -120,7 +120,7 @@ export default function SupportPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="size-5" />
             Quick Answers
           </CardTitle>
           <CardDescription>
@@ -148,7 +148,7 @@ export default function SupportPage() {
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Utensils className="h-5 w-5" />
+            <Utensils className="size-5" />
             Quick Links
           </CardTitle>
           <CardDescription>
@@ -159,31 +159,31 @@ export default function SupportPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Button variant="outline" asChild className="justify-start">
               <Link href={ROUTES.MEAL_PLAN}>
-                <CalendarCheck className="h-4 w-4 mr-2" />
+                <CalendarCheck className="size-4 mr-2" />
                 Meal planning
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
               <Link href={ROUTES.SHOPPING_LIST}>
-                <Utensils className="h-4 w-4 mr-2" />
+                <Utensils className="size-4 mr-2" />
                 Shopping list
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
               <Link href={ROUTES.MY_RECIPES}>
-                <Utensils className="h-4 w-4 mr-2" />
+                <Utensils className="size-4 mr-2" />
                 My Recipes
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
               <Link href={ROUTES.HOUSEHOLDS}>
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="size-4 mr-2" />
                 Households
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
               <Link href={ROUTES.CHALKBOARD}>
-                <MessageSquare className="h-4 w-4 mr-2" />
+                <MessageSquare className="size-4 mr-2" />
                 Kitchen Chalkboard
               </Link>
             </Button>
@@ -195,7 +195,7 @@ export default function SupportPage() {
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="size-5" />
             Help Us Improve {APP_NAME}
           </CardTitle>
           <CardDescription>
@@ -217,7 +217,7 @@ export default function SupportPage() {
                 rel="noreferrer"
                 target="_blank"
               >
-                <MessageSquare className="mr-2 h-4 w-4" />
+                <MessageSquare className="mr-2 size-4" />
                 Share Your Feedback
               </a>
             </Button>

@@ -142,14 +142,14 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
         </div>
         <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+            <Clock className="size-4" />
             <span className="font-medium">{totalTime} minutes total</span>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="size-4" />
             <span className="font-medium">
               {new Date(
-                recipe.updatedAt ?? recipe._creationTime
+                recipe.updatedAt ?? recipe._creationTime,
               ).toLocaleDateString()}
             </span>
           </div>

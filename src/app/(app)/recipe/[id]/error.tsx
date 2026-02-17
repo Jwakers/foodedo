@@ -44,13 +44,13 @@ export default function RecipeError({ error, reset }: ErrorProps) {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button onClick={reset} size="lg" variant="default">
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="size-4" />
             Try Again
           </Button>
 
           <Link href={ROUTES.DASHBOARD}>
             <Button size="lg" variant="outline" className="gap-2 w-full">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-4" />
               Back to Dashboard
             </Button>
           </Link>

@@ -107,7 +107,7 @@ export function HouseholdMemberList({
                     <div className="font-medium flex items-center gap-2">
                       {member.name}
                       {member.role === "owner" && (
-                        <Crown className="h-4 w-4 text-yellow-500" />
+                        <Crown className="size-4 text-yellow-500" />
                       )}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export function HouseholdMemberList({
                     onClick={() => setMemberToRemove(member)}
                     aria-label={`Remove ${member.name}`}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="size-4 text-destructive" />
                   </Button>
                 )}
               </div>

@@ -112,7 +112,7 @@ function validateRecipe(
       }
       const prep = ing.preparation;
       if (prep !== null && prep !== undefined && typeof prep === "string") {
-        if (PREP_FIXES[prep]) {
+        if (Object.prototype.hasOwnProperty.call(PREP_FIXES, prep)) {
           ing.preparation = PREP_FIXES[prep];
           fixes++;
         } else if (!VALID_PREPARATIONS.has(prep as (typeof PREPARATION_OPTIONS)[number])) {

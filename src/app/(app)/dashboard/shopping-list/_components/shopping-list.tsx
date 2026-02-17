@@ -77,7 +77,7 @@ export default function ShoppingList({
   const households = useQuery(api.households.getUserHouseholds);
   const personalChalkboard = useQuery(api.chalkboard.getPersonalChalkboard);
   const allHouseholdChalkboards = useQuery(
-    api.chalkboard.getAllHouseholdChalkboards
+    api.chalkboard.getAllHouseholdChalkboards,
   );
 
   // Auto-select all households by default
@@ -113,7 +113,8 @@ export default function ShoppingList({
     // Count personal items not yet added
     if (personalChalkboard) {
       count += personalChalkboard.filter(
-        (item) => !allIngredients.some((ing) => namesEqual(ing.name, item.text))
+        (item) =>
+          !allIngredients.some((ing) => namesEqual(ing.name, item.text)),
       ).length;
     }
 
@@ -122,7 +123,7 @@ export default function ShoppingList({
       Object.values(allHouseholdChalkboards).forEach((items) => {
         count += items.filter(
           (item) =>
-            !allIngredients.some((ing) => namesEqual(ing.name, item.text))
+            !allIngredients.some((ing) => namesEqual(ing.name, item.text)),
         ).length;
       });
     }
@@ -134,7 +135,7 @@ export default function ShoppingList({
 
   const handleAmountChange = async (
     itemId: Id<"shoppingListItems">,
-    newAmount: number
+    newAmount: number,
   ) => {
     try {
       await updateItemAmount({
@@ -180,7 +181,7 @@ export default function ShoppingList({
       personalChalkboard.forEach((item) => {
         // Only add if not already in shopping list
         const alreadyAdded = allIngredients.some(
-          (ing) => ing.name === item.text
+          (ing) => ing.name === item.text,
         );
         if (!alreadyAdded) {
           itemsToAdd.push({
@@ -199,7 +200,7 @@ export default function ShoppingList({
           householdItems.forEach((item) => {
             // Only add if not already in shopping list
             const alreadyAdded = allIngredients.some(
-              (ing) => ing.name === item.text
+              (ing) => ing.name === item.text,
             );
             if (!alreadyAdded) {
               itemsToAdd.push({
@@ -236,7 +237,7 @@ export default function ShoppingList({
       setShowChalkboardDialog(false);
 
       toast.success(
-        `Added ${itemsToAdd.length} item${itemsToAdd.length > 1 ? "s" : ""} from chalkboard`
+        `Added ${itemsToAdd.length} item${itemsToAdd.length > 1 ? "s" : ""} from chalkboard`,
       );
     } catch (error) {
       console.error("Failed to add chalkboard items:", error);
@@ -317,7 +318,7 @@ export default function ShoppingList({
             onClick={onBack}
             className="gap-2 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             Back to Recipe Selection
           </Button>
         ) : (
@@ -327,7 +328,7 @@ export default function ShoppingList({
             onClick={onEdit}
             className="gap-2 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             Edit Shopping List
           </Button>
         )}
@@ -336,7 +337,7 @@ export default function ShoppingList({
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-primary" />
+                <ShoppingCart className="size-5 text-primary" />
                 <h3 className="text-xl font-bold">
                   {isFinalised ? "Your Shopping List" : "Review Shopping List"}
                 </h3>
@@ -354,7 +355,7 @@ export default function ShoppingList({
                   className="w-full shadow-lg"
                   onClick={() => setShowChalkboardDialog(true)}
                 >
-                  <Clipboard className="h-5 w-5" />
+                  <Clipboard className="size-5" />
                   Add from Kitchen Chalkboard
                   <Badge
                     variant="secondary"
@@ -370,7 +371,7 @@ export default function ShoppingList({
             {isFinalised && (
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
                 <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4" />
+                  <ShoppingCart className="size-4" />
                   Ready to shop! Here&apos;s how to use your list:
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
@@ -417,7 +418,7 @@ export default function ShoppingList({
                       "flex items-center gap-3 p-3 rounded-lg border transition-all",
                       isFinalised && item.checked
                         ? "bg-muted/50 opacity-60"
-                        : "hover:bg-muted/30 hover:border-primary/30"
+                        : "hover:bg-muted/30 hover:border-primary/30",
                     )}
                   >
                     {/* Checkbox (only in finalized state) */}
@@ -425,7 +426,7 @@ export default function ShoppingList({
                       <Checkbox
                         checked={item.checked}
                         onCheckedChange={() => handleCheckItem(item._id)}
-                        className="h-5 w-5"
+                        className="size-5"
                       />
                     )}
 
@@ -435,7 +436,7 @@ export default function ShoppingList({
                         <p
                           className={cn(
                             "font-medium capitalize",
-                            isFinalised && item.checked && "line-through"
+                            isFinalised && item.checked && "line-through",
                           )}
                         >
                           {item.name}
@@ -460,7 +461,7 @@ export default function ShoppingList({
                                   onClick={() =>
                                     handleAmountChange(
                                       item._id,
-                                      (item.amount as number) - 1
+                                      (item.amount as number) - 1,
                                     )
                                   }
                                   className="flex items-center justify-center w-6 h-6 rounded hover:bg-muted transition-colors"
@@ -475,7 +476,7 @@ export default function ShoppingList({
                                   onClick={() =>
                                     handleAmountChange(
                                       item._id,
-                                      (item.amount as number) + 1
+                                      (item.amount as number) + 1,
                                     )
                                   }
                                   className="flex items-center justify-center w-6 h-6 rounded hover:bg-muted transition-colors"
@@ -507,7 +508,7 @@ export default function ShoppingList({
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleRemoveItem(item._id)}
                       >
-                        <X className="h-4 w-4" />
+                        <X className="size-4" />
                         <span className="sr-only">Remove {item.name}</span>
                       </Button>
                     )}
@@ -535,7 +536,7 @@ export default function ShoppingList({
                   className="flex-1"
                   onClick={handlePrint}
                 >
-                  <Printer className="h-4 w-4 mr-2" />
+                  <Printer className="size-4 mr-2" />
                   Print List
                 </Button>
                 <Button
@@ -543,11 +544,11 @@ export default function ShoppingList({
                   className="flex-1"
                   onClick={handleShare}
                 >
-                  <Share2 className="h-4 w-4 mr-2" />
+                  <Share2 className="size-4 mr-2" />
                   Share
                 </Button>
                 <Button className="w-full sm:w-auto sm:flex-1" onClick={onDone}>
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="size-4 mr-2" />
                   Done Shopping
                 </Button>
               </div>
@@ -562,7 +563,7 @@ export default function ShoppingList({
                   onClick={onConfirm}
                   disabled={allIngredients.length === 0}
                 >
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="size-4 mr-2" />
                   Confirm Shopping List
                 </Button>
               </div>
@@ -599,7 +600,7 @@ export default function ShoppingList({
                   {(() => {
                     const availableItems = personalChalkboard?.filter(
                       (item) =>
-                        !allIngredients.some((ing) => ing.name === item.text)
+                        !allIngredients.some((ing) => ing.name === item.text),
                     );
                     const count = availableItems?.length || 0;
                     return count > 0
@@ -616,7 +617,7 @@ export default function ShoppingList({
                   !personalChalkboard ||
                   personalChalkboard.filter(
                     (item) =>
-                      !allIngredients.some((ing) => ing.name === item.text)
+                      !allIngredients.some((ing) => ing.name === item.text),
                   ).length === 0
                 }
               />
@@ -635,7 +636,7 @@ export default function ShoppingList({
                       allHouseholdChalkboards?.[household._id] || [];
                     const availableItems = householdItems.filter(
                       (item) =>
-                        !allIngredients.some((ing) => ing.name === item.text)
+                        !allIngredients.some((ing) => ing.name === item.text),
                     );
                     const isSelected = selectedHouseholdIds.has(household._id);
                     return (

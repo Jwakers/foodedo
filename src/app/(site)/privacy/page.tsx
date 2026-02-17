@@ -7,8 +7,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description:
-    `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
+  description: `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
 };
 
 const PRIVACY_POLICY_LAST_UPDATED = "3 December 2025"; // update manually when terms change
@@ -19,7 +18,7 @@ export default function PrivacyPage() {
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Button variant="ghost" asChild className="mb-6">
           <Link href={ROUTES.HOME}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 size-4" />
             Back to Home
           </Link>
         </Button>
@@ -38,10 +37,10 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="prose prose-slate dark:prose-invert max-w-none">
               <p>
-                {APP_NAME} (&quot;we&quot;, &quot;our&quot;, or
-                &quot;us&quot;) is committed to protecting your privacy. This
-                Privacy Policy explains how we collect, use, and safeguard your
-                information when you use our meal planning application.
+                {APP_NAME} (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;)
+                is committed to protecting your privacy. This Privacy Policy
+                explains how we collect, use, and safeguard your information
+                when you use our meal planning application.
               </p>
             </CardContent>
           </Card>
@@ -184,9 +183,9 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="prose prose-slate dark:prose-invert max-w-none">
               <p>
-                {APP_NAME} uses essential cookies and local storage to
-                maintain your session and provide core functionality. We do not
-                use advertising or third-party tracking cookies.
+                {APP_NAME} uses essential cookies and local storage to maintain
+                your session and provide core functionality. We do not use
+                advertising or third-party tracking cookies.
               </p>
             </CardContent>
           </Card>

@@ -30,13 +30,13 @@ export default function NotFound() {
           <div className="flex flex-col gap-3 pt-2">
             <Button asChild size="lg" className="w-full">
               <Link href={ROUTES.DASHBOARD}>
-                <Home className="mr-2 h-5 w-5" />
+                <Home className="mr-2 size-5" />
                 Go to Dashboard
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full">
               <Link href={ROUTES.MY_RECIPES}>
-                <ListOrdered className="mr-2 h-5 w-5" />
+                <ListOrdered className="mr-2 size-5" />
                 View My Recipes
               </Link>
             </Button>

@@ -118,7 +118,7 @@ export default function HouseholdSettingsPage({
             </p>
             <Button asChild className="mt-4">
               <Link href="/dashboard/households">
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 size-4" />
                 Back to Households
               </Link>
             </Button>
@@ -133,7 +133,7 @@ export default function HouseholdSettingsPage({
       <div className="flex items-center gap-4 mb-8">
         <Button variant="ghost" size="icon" asChild>
           <Link href={`/dashboard/households/${id}`}>
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
           </Link>
         </Button>
         <div>
@@ -190,7 +190,7 @@ export default function HouseholdSettingsPage({
                 variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 size-4" />
                 Delete
               </Button>
             </div>

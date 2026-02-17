@@ -21,7 +21,7 @@ export function Navbar() {
   useLayoutEffect(() => {
     document.body.style.setProperty(
       "--nav-height",
-      `${navRef.current?.clientHeight}px`
+      `${navRef.current?.clientHeight}px`,
     );
   }, []);
 
@@ -38,7 +38,7 @@ export function Navbar() {
               variant="ghost"
               className="h-auto flex flex-col items-center gap-1 px-3 py-2 w-full"
             >
-              <Home className="h-5 w-5" />
+              <Home className="size-5" />
               <span className="text-[0.625rem] sm:text-xs">Home</span>
             </Button>
           </Link>
@@ -50,7 +50,7 @@ export function Navbar() {
               className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
               aria-label="Meal planning"
             >
-              <CalendarCheck className="h-5 w-5" />
+              <CalendarCheck className="size-5" />
               <span className="text-[0.625rem] sm:text-xs">
                 <span className="sm:hidden">Meals</span>
                 <span className="hidden sm:inline">Meal plan</span>
@@ -75,7 +75,7 @@ export function Navbar() {
               className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
               aria-label="Discover recipes"
             >
-              <Compass className="h-5 w-5" />
+              <Compass className="size-5" />
               <span className="text-[0.625rem] sm:text-xs">Discover</span>
             </Button>
           </Link>
@@ -86,7 +86,7 @@ export function Navbar() {
               variant="ghost"
               className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
             >
-              <Clipboard className="h-5 w-5" />
+              <Clipboard className="size-5" />
               <span className="text-[0.625rem] sm:text-xs">Chalkboard</span>
             </Button>
           </Link>
@@ -97,7 +97,7 @@ export function Navbar() {
               variant="ghost"
               className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
             >
-              <ChefHat className="h-5 w-5" />
+              <ChefHat className="size-5" />
               <span className="text-[0.625rem] sm:text-xs">
                 <span className="sm:hidden">Recipes</span>
                 <span className="hidden sm:inline">My Recipes</span>

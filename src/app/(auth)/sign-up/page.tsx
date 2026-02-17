@@ -58,31 +58,31 @@ export default function SignUpPage() {
             {/* Feature Highlights */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <Sparkles className="h-5 w-5 text-primary-foreground/80" />
+                <Sparkles className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Create unlimited recipes
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Calendar className="h-5 w-5 text-primary-foreground/80" />
+                <Calendar className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Plan weekly meals in minutes
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <ShoppingCart className="h-5 w-5 text-primary-foreground/80" />
+                <ShoppingCart className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Generate smart shopping lists
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Users className="h-5 w-5 text-primary-foreground/80" />
+                <Users className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Collaborate with your family
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Heart className="h-5 w-5 text-primary-foreground/80" />
+                <Heart className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Import recipes from any website
                 </span>
@@ -111,7 +111,7 @@ export default function SignUpPage() {
                 href="/"
                 className="flex items-center text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="size-4 mr-2" />
                 Back to Home
               </Link>
             </Button>

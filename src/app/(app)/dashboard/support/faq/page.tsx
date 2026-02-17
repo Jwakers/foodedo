@@ -25,7 +25,7 @@ import Link from "next/link";
 export const faqSections = [
   {
     title: "Getting Started",
-    icon: <Utensils className="h-5 w-5" />,
+    icon: <Utensils className="size-5" />,
     color: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
     questions: [
       {
@@ -47,7 +47,7 @@ export const faqSections = [
   },
   {
     title: "Recipe Features",
-    icon: <Utensils className="h-5 w-5" />,
+    icon: <Utensils className="size-5" />,
     color: "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400",
     questions: [
       {
@@ -69,7 +69,7 @@ export const faqSections = [
   },
   {
     title: "Meal planning",
-    icon: <CalendarCheck className="h-5 w-5" />,
+    icon: <CalendarCheck className="size-5" />,
     color:
       "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
     questions: [
@@ -97,7 +97,7 @@ export const faqSections = [
   },
   {
     title: "Shopping lists",
-    icon: <Users className="h-5 w-5" />,
+    icon: <Users className="size-5" />,
     color:
       "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400",
     questions: [
@@ -115,7 +115,7 @@ export const faqSections = [
   },
   {
     title: "Households & Sharing",
-    icon: <Users className="h-5 w-5" />,
+    icon: <Users className="size-5" />,
     color:
       "bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400",
     questions: [
@@ -143,7 +143,7 @@ export const faqSections = [
   },
   {
     title: "Kitchen Chalkboard",
-    icon: <HelpCircle className="h-5 w-5" />,
+    icon: <HelpCircle className="size-5" />,
     color: "bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400",
     questions: [
       {
@@ -160,7 +160,7 @@ export const faqSections = [
   },
   {
     title: "Account & Privacy",
-    icon: <Shield className="h-5 w-5" />,
+    icon: <Shield className="size-5" />,
     color: "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400",
     questions: [
       {
@@ -182,7 +182,7 @@ export const faqSections = [
   },
   {
     title: "Troubleshooting",
-    icon: <Wrench className="h-5 w-5" />,
+    icon: <Wrench className="size-5" />,
     color:
       "bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400",
     questions: [
@@ -205,7 +205,7 @@ export const faqSections = [
   },
   {
     title: "Technical Questions",
-    icon: <Smartphone className="h-5 w-5" />,
+    icon: <Smartphone className="size-5" />,
     color:
       "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400",
     questions: [
@@ -229,7 +229,7 @@ export default function FAQPage() {
       <div className="mb-6">
         <Button variant="ghost" asChild className="mb-4">
           <Link href={ROUTES.SUPPORT} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             Back to Support
           </Link>
         </Button>

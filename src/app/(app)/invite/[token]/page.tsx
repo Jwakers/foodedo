@@ -22,7 +22,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const { token } = use(params);
   const [isAccepting, setIsAccepting] = useState(false);
   const [acceptedHouseholdId, setAcceptedHouseholdId] = useState<string | null>(
-    null
+    null,
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +65,7 @@ export default function InvitePage({ params }: InvitePageProps) {
     } catch (error: unknown) {
       console.error("Error accepting invitation:", error);
       setError(
-        error instanceof Error ? error.message : "Failed to accept invitation."
+        error instanceof Error ? error.message : "Failed to accept invitation.",
       );
     } finally {
       setIsAccepting(false);
@@ -141,7 +141,7 @@ export default function InvitePage({ params }: InvitePageProps) {
       </p>
 
       <Alert className="mb-6">
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircle className="size-4" />
         <AlertDescription>
           This invitation can only be used once. If you accept, no one else can
           use this link.

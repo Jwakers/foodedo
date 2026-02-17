@@ -16,7 +16,7 @@ export function RecipeNotFound() {
         </p>
         <Button size="lg" asChild>
           <Link href={ROUTES.MY_RECIPES}>
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             Back to My Recipes
           </Link>
         </Button>

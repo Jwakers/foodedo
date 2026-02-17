@@ -176,33 +176,51 @@ type JsonRecipe = (typeof ALL_RECIPE_BATCHES)[number]["recipes"][number];
 
 function mapJsonRecipeToDb(r: JsonRecipe): WithoutSystemFields<Doc<"recipes">> {
   const now = Date.now();
-  return {
-    userId: undefined,
+
+  const ingredients = r.ingredients?.map((ing) => {
+    const obj: {
+      name: string;
+      amount?: number;
+      unit?: Unit;
+      preparation?: PreparationOption;
+    } = { name: ing.name };
+    if (ing.amount != null) obj.amount = ing.amount;
+    if (ing.unit != null) obj.unit = ing.unit as Unit;
+    if (ing.preparation != null)
+      obj.preparation = ing.preparation as PreparationOption;
+    return obj;
+  });
+
+  const method = r.method?.map((m) => {
+    const obj: { title: string; description?: string } = { title: m.title };
+    if (m.description != null && m.description !== "") obj.description = m.description;
+    return obj;
+  });
+
+  const result: Record<string, unknown> = {
     title: r.title,
-    description: r.description ?? undefined,
     prepTime: r.prepTime,
-    cookTime: r.cookTime ?? undefined,
     serves: r.serves,
     category: r.category as RecipeCategory,
-    ingredients: r.ingredients?.map((ing) => ({
-      name: ing.name,
-      amount: ing.amount ?? undefined,
-      unit: (ing.unit as Unit) ?? undefined,
-      preparation: (ing.preparation as PreparationOption) ?? undefined,
-    })),
-    method: r.method?.map((m) => ({
-      title: m.title,
-      description: m.description ?? undefined,
-    })),
-    nutrition: r.nutrition,
     source: "system" as const,
-    primaryProtein: (r.primaryProtein as PrimaryProtein) ?? undefined,
-    complexityTier: (r.complexityTier as ComplexityTier) ?? undefined,
-    cuisine: (r.cuisine as Cuisine[]) ?? undefined,
     totalTimeMinutes: r.prepTime + (r.cookTime ?? 0),
     isGeneratorEligible: true,
     updatedAt: now,
   };
+  if (r.description != null && r.description !== "")
+    result.description = r.description;
+  if (r.cookTime != null) result.cookTime = r.cookTime;
+  if (ingredients) result.ingredients = ingredients;
+  if (method) result.method = method;
+  if (r.nutrition) result.nutrition = r.nutrition;
+  if (r.primaryProtein != null)
+    result.primaryProtein = r.primaryProtein as PrimaryProtein;
+  if (r.complexityTier != null)
+    result.complexityTier = r.complexityTier as ComplexityTier;
+  if (r.cuisine != null && r.cuisine.length > 0)
+    result.cuisine = r.cuisine as Cuisine[];
+
+  return result as WithoutSystemFields<Doc<"recipes">>;
 }
 
 /**

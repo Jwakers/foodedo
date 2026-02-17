@@ -68,11 +68,11 @@ export function RecipeCard({ recipe }: { recipe: RecipeListItem }) {
           <div className="space-y-3">
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+                <Clock className="size-4" />
                 <span>{totalTime} min</span>
               </div>
               <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+                <Users className="size-4" />
                 <span>Serves {recipe.serves}</span>
               </div>
             </div>

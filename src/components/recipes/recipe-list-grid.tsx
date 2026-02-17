@@ -13,11 +13,7 @@ import { titleCase } from "@/lib/utils";
 import { RECIPE_CATEGORIES } from "convex/lib/constants";
 import { Filter, Search } from "lucide-react";
 import { ReactNode, useState } from "react";
-import {
-  LoadingState,
-  RecipeCard,
-  type RecipeListItem,
-} from "./recipe-card";
+import { LoadingState, RecipeCard, type RecipeListItem } from "./recipe-card";
 
 type RecipeListGridProps = {
   recipes: RecipeListItem[] | undefined;
@@ -43,9 +39,10 @@ export function RecipeListGrid({
 
   const filteredRecipes =
     recipes?.filter((recipe) => {
+      const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
-        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        recipe.title.toLowerCase().includes(searchLower) ||
+        (recipe.description ?? "").toLowerCase().includes(searchLower);
 
       const matchesCategory =
         selectedCategory === "all" || recipe.category === selectedCategory;
@@ -76,7 +73,7 @@ export function RecipeListGrid({
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 placeholder="Search recipes..."
                 value={searchQuery}
@@ -85,7 +82,7 @@ export function RecipeListGrid({
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Filter className="size-4 text-muted-foreground" />
               <Select
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
@@ -126,11 +123,11 @@ export function RecipeListGrid({
               </Button>
             </div>
           ) : (
-            emptyState ?? (
+            (emptyState ?? (
               <div className="text-center py-16">
                 <p className="text-muted-foreground">No recipes found.</p>
               </div>
-            )
+            ))
           )
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

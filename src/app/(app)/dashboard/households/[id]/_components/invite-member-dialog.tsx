@@ -51,7 +51,7 @@ export function InviteMemberDialog({
     } catch (error: unknown) {
       console.error("Error creating invitation:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create invitation"
+        error instanceof Error ? error.message : "Failed to create invitation",
       );
     } finally {
       setIsLoading(false);
@@ -78,7 +78,7 @@ export function InviteMemberDialog({
       await share(
         `Join ${householdName} on ${APP_NAME}`,
         `You've been invited to join ${householdName}! Click the link to accept.`,
-        invitationUrl
+        invitationUrl,
       );
 
       toast.success("Invitation shared!");
@@ -120,12 +120,12 @@ export function InviteMemberDialog({
         {invitationToken ? (
           <div className="py-4 space-y-4">
             <div className="flex items-center gap-2 text-primary">
-              <Check className="h-5 w-5" />
+              <Check className="size-5" />
               <span className="font-medium">Invitation Link Created!</span>
             </div>
 
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="size-4" />
               <AlertDescription>
                 This link can only be used once. After someone accepts,
                 you&apos;ll need to create a new link for the next person.
@@ -143,9 +143,9 @@ export function InviteMemberDialog({
                   title="Copy link"
                 >
                   {copied ? (
-                    <Check className="h-4 w-4" />
+                    <Check className="size-4" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <Copy className="size-4" />
                   )}
                 </Button>
               </div>
@@ -160,7 +160,7 @@ export function InviteMemberDialog({
                 className="flex-1"
                 variant="default"
               >
-                <Share2 className="mr-2 h-4 w-4" />
+                <Share2 className="mr-2 size-4" />
                 Share Link
               </Button>
               <Button
@@ -175,7 +175,7 @@ export function InviteMemberDialog({
         ) : (
           <div className="py-4 space-y-4">
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="size-4" />
               <AlertDescription>
                 Each invitation link can only be used by one person. You can
                 create multiple links to invite multiple people.

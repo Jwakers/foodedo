@@ -46,7 +46,7 @@ CRITICAL CONSTRAINTS:
    ]
 
 4. Distribution Rules (VERY IMPORTANT):
-   - At least 40% must be 30 minutes or under total time
+   - At least 40% must be 45 minutes or under total time
    - At least 30% must be simple traybake / one-pan / low complexity meals
    - Meals must feel meaningfully different from each other
    - Vary cooking methods (roasted, grilled, pan-fried, baked, etc.)
@@ -88,6 +88,9 @@ CRITICAL CONSTRAINTS:
 
 6. Schema Alignment:
    Output must strictly follow this shape:
+   - prepTime (number) and cookTime (number, optional) - total time = prepTime + cookTime
+   - complexityTier must be one of: "simple" | "moderate" | "complex"
+   - ingredients[].preparation may be null (no prep needed) or a value from the allowed list
 
 {
 recipes: [
@@ -95,7 +98,7 @@ recipes: [
 title: string,
 description: string,
 prepTime: number,
-cookTime: number,
+cookTime: number | null,
 serves: number,
 category: "dinner",
 ingredients: [
@@ -103,7 +106,7 @@ ingredients: [
 name: string,
 amount: number,
 unit: string,
-preparation: string
+preparation: string | null
 }
 ],
 method: [
@@ -119,7 +122,7 @@ fat: number,
 carbohydrates: number
 },
 primaryProtein: "{{PRIMARY_PROTEIN}}",
-complexityTier: "easy" | "medium" | "advanced",
+complexityTier: "simple" | "moderate" | "complex",
 cuisine: ["one_value_from_allowed_list"]
 }
 ]

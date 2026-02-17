@@ -60,7 +60,7 @@ export default function HouseholdDetailPage({
             <p className="text-muted-foreground">Household not found</p>
             <Button asChild className="mt-4">
               <Link href="/dashboard/households">
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 size-4" />
                 Back to Households
               </Link>
             </Button>
@@ -76,7 +76,7 @@ export default function HouseholdDetailPage({
         <div className="flex items-center gap-4 flex-wrap">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard/households">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-4" />
             </Link>
           </Button>
           <div className="flex-1">
@@ -93,12 +93,12 @@ export default function HouseholdDetailPage({
         {household.isOwner && (
           <div className="flex gap-2 justify-end ml-auto">
             <Button onClick={() => setIsInviteDialogOpen(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
+              <UserPlus className="mr-2 size-4" />
               Invite Member
             </Button>
             <Button variant="outline" asChild>
               <Link href={`/dashboard/households/${id}/settings`}>
-                <Settings className="mr-2 h-4 w-4" />
+                <Settings className="mr-2 size-4" />
                 Settings
               </Link>
             </Button>

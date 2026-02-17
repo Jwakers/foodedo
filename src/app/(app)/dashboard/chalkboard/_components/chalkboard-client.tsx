@@ -37,7 +37,7 @@ const MAX_TEXT_LENGTH = TEXT_LIMITS.CHALKBOARD_MAX_LENGTH;
 
 export default function ChalkboardClient() {
   const [activeTab, setActiveTab] = useState<"personal" | "household">(
-    "household"
+    "household",
   );
   const households = useQuery(api.households.getUserHouseholds);
   const personalItems = useQuery(api.chalkboard.getPersonalChalkboard);
@@ -46,7 +46,7 @@ export default function ChalkboardClient() {
 
   const householdItems = useQuery(
     api.chalkboard.getHouseholdChalkboard,
-    selectedHouseholdId ? { householdId: selectedHouseholdId } : "skip"
+    selectedHouseholdId ? { householdId: selectedHouseholdId } : "skip",
   );
 
   const [personalInputText, setPersonalInputText] = useState("");
@@ -60,10 +60,10 @@ export default function ChalkboardClient() {
   const deletePersonalItem = useMutation(api.chalkboard.deletePersonalItem);
   const deleteHouseholdItem = useMutation(api.chalkboard.deleteHouseholdItem);
   const clearPersonalChalkboard = useMutation(
-    api.chalkboard.clearPersonalChalkboard
+    api.chalkboard.clearPersonalChalkboard,
   );
   const clearHouseholdChalkboard = useMutation(
-    api.chalkboard.clearHouseholdChalkboard
+    api.chalkboard.clearHouseholdChalkboard,
   );
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function ChalkboardClient() {
       toast.success("Item added to your personal chalkboard");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to add item"
+        error instanceof Error ? error.message : "Failed to add item",
       );
     }
   };
@@ -99,7 +99,7 @@ export default function ChalkboardClient() {
       toast.success("Item added to household chalkboard");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to add item"
+        error instanceof Error ? error.message : "Failed to add item",
       );
     }
   };
@@ -110,7 +110,7 @@ export default function ChalkboardClient() {
       toast.success("Item removed");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete item"
+        error instanceof Error ? error.message : "Failed to delete item",
       );
     }
   };
@@ -121,7 +121,7 @@ export default function ChalkboardClient() {
       toast.success("Item removed");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete item"
+        error instanceof Error ? error.message : "Failed to delete item",
       );
     }
   };
@@ -131,11 +131,11 @@ export default function ChalkboardClient() {
       const result = await clearPersonalChalkboard();
       setShowClearPersonalDialog(false);
       toast.success(
-        `Cleared ${result.deletedCount} items from personal chalkboard`
+        `Cleared ${result.deletedCount} items from personal chalkboard`,
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to clear chalkboard"
+        error instanceof Error ? error.message : "Failed to clear chalkboard",
       );
     }
   };
@@ -149,17 +149,17 @@ export default function ChalkboardClient() {
       });
       setShowClearHouseholdDialog(false);
       toast.success(
-        `Cleared ${result.deletedCount} items from household chalkboard`
+        `Cleared ${result.deletedCount} items from household chalkboard`,
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to clear chalkboard"
+        error instanceof Error ? error.message : "Failed to clear chalkboard",
       );
     }
   };
 
   const selectedHousehold = households?.find(
-    (h) => h._id === selectedHouseholdId
+    (h) => h._id === selectedHouseholdId,
   );
 
   return (
@@ -182,7 +182,7 @@ export default function ChalkboardClient() {
 
         {/* Info Banner */}
         <Alert variant="default">
-          <CircleQuestionMark className="h-5 w-5 text-primary" />
+          <CircleQuestionMark className="size-5 text-primary" />
           <AlertTitle>How the Chalkboard Works</AlertTitle>
           <AlertDescription>
             Add items here as you think of them throughout the week. When
@@ -201,7 +201,7 @@ export default function ChalkboardClient() {
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="household">
-              <Home className="h-4 w-4" />
+              <Home className="size-4" />
               Household
               {householdItems && householdItems.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
@@ -210,7 +210,7 @@ export default function ChalkboardClient() {
               )}
             </TabsTrigger>
             <TabsTrigger value="personal">
-              <User className="h-4 w-4" />
+              <User className="size-4" />
               Personal
               {personalItems && personalItems.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
@@ -292,7 +292,7 @@ export default function ChalkboardClient() {
                           type="submit"
                           disabled={!householdInputText.trim()}
                         >
-                          <Plus className="h-4 w-4 mr-2" />
+                          <Plus className="size-4 mr-2" />
                           Add
                         </Button>
                       </form>
@@ -354,7 +354,7 @@ export default function ChalkboardClient() {
                       className="flex-1"
                     />
                     <Button type="submit" disabled={!personalInputText.trim()}>
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="size-4 mr-2" />
                       Add
                     </Button>
                   </form>
@@ -463,7 +463,7 @@ function ChalkboardItemsList({
             className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
             onClick={() => onDelete(item._id)}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="size-4" />
             <span className="sr-only">Delete item</span>
           </Button>
         </div>

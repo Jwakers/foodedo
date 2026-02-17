@@ -241,7 +241,7 @@ export function ImportRecipeClient() {
             Your recipe has been added to your collection.
           </p>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
             <span className="text-sm">Redirecting to recipe...</span>
           </div>
         </Card>
@@ -271,7 +271,7 @@ export function ImportRecipeClient() {
               router.push(ROUTES.MY_RECIPES);
             }}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="size-5" />
             <span className="sr-only">Back</span>
           </Button>
           <div>
@@ -333,12 +333,12 @@ export function ImportRecipeClient() {
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 size-4 animate-spin" />
                         Importing...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="mr-2 h-4 w-4" />
+                        <Sparkles className="mr-2 size-4" />
                         Import Recipe
                       </>
                     )}
@@ -363,7 +363,7 @@ export function ImportRecipeClient() {
                     </p>
                   </div>
                   <Alert>
-                    <FileText className="h-4 w-4" />
+                    <FileText className="size-4" />
                     <AlertTitle>Can&apos;t import from URL?</AlertTitle>
                     <AlertDescription>
                       <p className="mb-2">
@@ -376,7 +376,7 @@ export function ImportRecipeClient() {
                         onClick={() => setShowTextParser(true)}
                         className="mt-2"
                       >
-                        <FileText className="mr-2 h-4 w-4" />
+                        <FileText className="mr-2 size-4" />
                         Paste Recipe Text
                       </Button>
                     </AlertDescription>
@@ -391,7 +391,7 @@ export function ImportRecipeClient() {
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-muted rounded-lg">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <FileText className="size-5 text-muted-foreground" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">
@@ -407,7 +407,7 @@ export function ImportRecipeClient() {
                     size="sm"
                     onClick={() => setShowTextParser(true)}
                   >
-                    <FileText className="mr-2 h-4 w-4" />
+                    <FileText className="mr-2 size-4" />
                     Paste Text
                   </Button>
                 </div>
@@ -425,7 +425,7 @@ export function ImportRecipeClient() {
               onClick={() => setShowTextParser(false)}
               className="mb-2"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 size-4" />
               Back to URL Import
             </Button>
             <TextToRecipeParser
@@ -453,7 +453,7 @@ export function ImportRecipeClient() {
 
               {/* Tips for best results */}
               <Alert className="mb-6">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="size-4" />
                 <AlertTitle>Tips for best results</AlertTitle>
                 <AlertDescription>
                   <ul className="list-disc list-inside space-y-1 text-sm mt-2">
@@ -480,12 +480,12 @@ export function ImportRecipeClient() {
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                       Parsing...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="mr-2 size-4" />
                       Parse Recipe
                     </>
                   )}
@@ -573,7 +573,7 @@ export function ImportRecipeClient() {
             >
               {recipeSave.isSaving ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Saving...
                 </>
               ) : (
@@ -617,16 +617,21 @@ function LoadingStep({
     <div className="flex items-start gap-3">
       <div className="flex-shrink-0 mt-0.5">
         {isComplete ? (
-          <CheckCircle2 className="h-5 w-5 text-green-500" />
+          <CheckCircle2 className="size-5 text-green-500" />
         ) : isActive ? (
-          <Loader2 className="h-5 w-5 text-primary animate-spin" />
+          <Loader2 className="size-5 text-primary animate-spin" />
         ) : (
-          <div className="h-5 w-5 rounded-full border-2 border-muted" />
+          <div className="size-5 rounded-full border-2 border-muted" />
         )}
       </div>
       <div>
         <p
-          className={cn("font-medium", (isActive || isComplete) ? "text-foreground" : "text-muted-foreground")}
+          className={cn(
+            "font-medium",
+            isActive || isComplete
+              ? "text-foreground"
+              : "text-muted-foreground",
+          )}
         >
           {title}
         </p>
@@ -679,13 +684,13 @@ function RecipePreview({
             <div className="flex flex-wrap gap-4">
               {recipe.prepTime > 0 && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <Clock className="size-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Prep:</span>
                   <span className="font-medium">{recipe.prepTime} min</span>
                 </div>
               )}
               <div className="flex items-center gap-2 text-sm">
-                <ChefHat className="h-4 w-4 text-muted-foreground" />
+                <ChefHat className="size-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Cook:</span>
                 <span className="font-medium">
                   {recipe.cookTime === undefined || recipe.cookTime === 0
@@ -695,7 +700,7 @@ function RecipePreview({
               </div>
               {recipe.serves > 0 && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="size-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Serves:</span>
                   <span className="font-medium">{recipe.serves}</span>
                 </div>

@@ -59,7 +59,10 @@ function MealPlanOverviewSection() {
   // Group meals by date - must be called before early returns to follow Rules of Hooks
   const mealsByDate = useMemo(() => {
     if (!currentPlan?.entries) return [];
-    const grouped = new Map<number, Array<{ title: string; mealLabel?: string }>>();
+    const grouped = new Map<
+      number,
+      Array<{ title: string; mealLabel?: string }>
+    >();
     currentPlan.entries.forEach((entry) => {
       const dateKey = startOfDayMs(entry.date);
       if (!grouped.has(dateKey)) {
@@ -217,13 +220,13 @@ function HeroSection() {
         <div className="flex flex-wrap gap-3">
           <Button asChild className="shadow-md">
             <Link href={ROUTES.MEAL_PLAN}>
-              <CalendarCheck className="h-4 w-4 mr-2" />
+              <CalendarCheck className="size-4 mr-2" />
               Meal plan
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href={ROUTES.SHOPPING_LIST}>
-              <ShoppingCart className="h-4 w-4 mr-2" />
+              <ShoppingCart className="size-4 mr-2" />
               Shopping list
             </Link>
           </Button>
@@ -288,7 +291,7 @@ function RecentActivitySection({ data }: { data: RecentActivity | undefined }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+            <Sparkles className="size-5" />
             Recent Activity
           </CardTitle>
         </CardHeader>
@@ -319,7 +322,7 @@ function RecentActivitySection({ data }: { data: RecentActivity | undefined }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5" />
+          <Sparkles className="size-5" />
           Recent Activity
         </CardTitle>
         <CardDescription>Your latest recipes</CardDescription>
@@ -372,12 +375,15 @@ function FeatureCard({
   return (
     <Link href={href}>
       <Card
-        className={cn("group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer", className)}
+        className={cn(
+          "group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer",
+          className,
+        )}
       >
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-              <Icon className="h-5 w-5 text-primary" />
+              <Icon className="size-5 text-primary" />
             </div>
             <div>
               <CardTitle className="text-lg">{title}</CardTitle>
@@ -423,13 +429,13 @@ function HouseholdsSection() {
         <div className="flex flex-wrap gap-3">
           <Button asChild className="shadow-md">
             <Link href={ROUTES.HOUSEHOLDS}>
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="size-4 mr-2" />
               Manage Households
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href={ROUTES.HOUSEHOLDS}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="size-4 mr-2" />
               Create New Household
             </Link>
           </Button>
@@ -477,7 +483,7 @@ function FeedbackSection() {
               rel="noreferrer"
               target="_blank"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
+              <MessageSquare className="size-4 mr-2" />
               Share Feedback
             </a>
           </Button>
