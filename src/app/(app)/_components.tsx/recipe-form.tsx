@@ -182,13 +182,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
     } catch (error) {
       console.error("Failed to save draft on navigation:", error);
     }
-  }, [
-    form,
-    getMethodData,
-    hasFormData,
-    recipeId,
-    updateRecipeMutation,
-  ]);
+  }, [form, getMethodData, hasFormData, recipeId, updateRecipeMutation]);
 
   const onSubmit = async (values: RecipeCreateFormData) => {
     // Only allow submission when on the review step and not already saved
@@ -689,9 +683,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => removeIngredient(index)}
-                          className="h-8 w-8"
+                          className="size-8"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="size-8" />
                         </Button>
                       </motion.div>
                     </div>
@@ -716,7 +710,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
               >
                 <Card className="p-6 border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors">
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Plus className="h-5 w-5" />
+                    <Plus className="size-5" />
                     <span className="font-medium">Add Ingredient</span>
                   </div>
                 </Card>
@@ -804,9 +798,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => removeMethodStep(index)}
-                          className="h-8 w-8"
+                          className="size-8"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="size-8" />
                         </Button>
                       </motion.div>
                     </div>
@@ -831,7 +825,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
               >
                 <Card className="p-6 border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors">
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Plus className="h-5 w-5" />
+                    <Plus className="size-5" />
                     <span className="font-medium">Add Step</span>
                   </div>
                 </Card>
@@ -1012,7 +1006,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                   className="w-full"
                   disabled={currentStepIndex === 0}
                 >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  <ArrowLeft className="size-4 mr-1" />
                   Back
                 </Button>
               </motion.div>
@@ -1021,7 +1015,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                 <motion.div className="flex-1" whileTap={{ scale: 0.98 }}>
                   <Button type="button" onClick={nextStep} className="w-full">
                     Next
-                    <ArrowRight className="h-4 w-4 ml-1" />
+                    <ArrowRight className="size-4 ml-1" />
                   </Button>
                 </motion.div>
               ) : (
@@ -1039,7 +1033,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                   >
                     {form.formState.isSubmitting ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="size-4 mr-2 animate-spin" />
                         Saving...
                       </>
                     ) : isSaved ? (

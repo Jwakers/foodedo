@@ -52,7 +52,7 @@ export function IngredientsSection({
               })
             }
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="size-4 mr-2" />
             Add
           </Button>
         </CardHeader>
@@ -115,7 +115,7 @@ export function IngredientsSection({
                           `ingredients.${index}.unit`,
                           value === "none"
                             ? undefined
-                            : (value as (typeof UNITS_FLAT)[number])
+                            : (value as (typeof UNITS_FLAT)[number]),
                         )
                       }
                     >
@@ -148,7 +148,7 @@ export function IngredientsSection({
                           `ingredients.${index}.preparation`,
                           value === "none"
                             ? undefined
-                            : (value as (typeof PREPARATION_OPTIONS)[number])
+                            : (value as (typeof PREPARATION_OPTIONS)[number]),
                         )
                       }
                     >
@@ -173,7 +173,7 @@ export function IngredientsSection({
                       onClick={() => remove(index)}
                       className="h-9 w-9 p-0"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="size-4" />
                     </Button>
                   </div>
                 </div>

@@ -33,6 +33,9 @@ export function Header() {
 
         <div className="flex items-center gap-x-4">
           <Button variant="ghost" asChild className="hidden md:block">
+            <Link href={ROUTES.DISCOVER}>Discover</Link>
+          </Button>
+          <Button variant="ghost" asChild className="hidden md:block">
             <Link href={ROUTES.PRICING}>Pricing</Link>
           </Button>
           {/* Desktop Auth Buttons */}
@@ -68,7 +71,7 @@ export function Header() {
             </Authenticated>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
+                <Menu className="size-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
@@ -84,6 +87,15 @@ export function Header() {
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                     Product
                   </h3>
+                  <Link
+                    href={ROUTES.DISCOVER}
+                    className="block text-foreground hover:text-primary transition-colors"
+                    onClick={() => {
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Discover
+                  </Link>
                   <Link
                     href={ROUTES.PRICING}
                     className="block text-foreground hover:text-primary transition-colors"

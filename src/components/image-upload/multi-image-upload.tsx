@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { IMAGE_LIMITS, RECIPE_LIMITS } from "convex/lib/constants";
-import {
-  isHeicFile,
-  processImageFile,
-} from "@/lib/utils/heic-conversion";
+import { isHeicFile, processImageFile } from "@/lib/utils/heic-conversion";
 import { Camera, ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -63,7 +60,7 @@ export function MultiImageUpload({
           let processedFile = file;
           if (isHeicFile(file)) {
             const conversionPromise = processImageFile(file);
-            
+
             // Use toast.promise to show animated loading/success/error states
             toast.promise(conversionPromise, {
               loading: `Converting ${file.name}...`,
@@ -224,14 +221,14 @@ export function MultiImageUpload({
             isDragging
               ? "border-primary bg-primary/10"
               : "border-muted-foreground/25 hover:border-primary/50",
-            disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+            disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
           )}
         >
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="flex items-center gap-2">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              <ImageIcon className="size-8 text-muted-foreground" />
               {showCamera && (
-                <Camera className="h-8 w-8 text-muted-foreground" />
+                <Camera className="size-8 text-muted-foreground" />
               )}
             </div>
             <div className="text-center">
@@ -253,7 +250,7 @@ export function MultiImageUpload({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={disabled}
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="size-4 mr-2" />
                 Choose Files
               </Button>
               {showCamera && (
@@ -264,7 +261,7 @@ export function MultiImageUpload({
                   onClick={() => cameraInputRef.current?.click()}
                   disabled={disabled}
                 >
-                  <Camera className="h-4 w-4 mr-2" />
+                  <Camera className="size-4 mr-2" />
                   Take Photo
                 </Button>
               )}
@@ -309,9 +306,9 @@ export function MultiImageUpload({
                       size="icon"
                       onClick={() => removeImage(image.id)}
                       disabled={disabled}
-                      className="h-8 w-8"
+                      className="size-8"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="size-4" />
                     </Button>
                   </div>
                 </div>

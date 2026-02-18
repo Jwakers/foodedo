@@ -13,6 +13,10 @@ Update app name to Foodedo
 - [ ] Change domain in vercel
 - [ ] Apply redirects in vercel
 
+- [ ] Titles on listing cards need either a gradient or blurred background
+- [ ] Update the filtering on the Discover page, remove category.
+- [ ] Change order of Discover page to alphabetical
+- [ ] Use next/image for public images on the Discover page
 - [ ] Set up the blog for the site (infrastructure).
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
@@ -71,6 +75,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 
 ## Tech debt
 
+- [ ] **Discover and recipe browsing**: Refactor to server rendering for performance. Currently, uses Convex client-side queries (`useQuery`). Server-rendering will improve initial load times and SEO for public recipe pages.
 - [ ] Image upload needs some work. Need to decouple logic from the FE with hooks and create reusable components for upload.
 - [ ] Shopping list is very complex. A refactor is needed keeping all state at the root and reducing complexity where possible. Components should be abstracted where possible and optimistic updates should also be added. This needs to be done manually and not with AI.
 

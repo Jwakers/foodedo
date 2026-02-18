@@ -26,7 +26,7 @@ export default function PricingPage() {
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <Button variant="ghost" asChild className="mb-6">
           <Link href={ROUTES.HOME}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 size-4" />
             Back to Home
           </Link>
         </Button>
@@ -38,33 +38,33 @@ export default function PricingPage() {
               variant="secondary"
               className="w-fit bg-primary/10 text-primary border-primary/20 text-sm px-4 py-2 mx-auto"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="size-4 mr-2" />
               Beta
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold">
               Simple, Transparent Pricing
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We&apos;re currently in beta. Everyone gets access to all features,
-              including premium — no plan limits while we build.
+              We&apos;re currently in beta. Everyone gets access to all
+              features, including premium — no plan limits while we build.
             </p>
           </div>
 
           {/* Pricing Card */}
           <div className="max-w-md mx-auto">
             <PricingTable
-            checkoutProps={{
-              appearance: {
-                elements: {
-                  drawerRoot: {
-                    zIndex: 50,
+              checkoutProps={{
+                appearance: {
+                  elements: {
+                    drawerRoot: {
+                      zIndex: 50,
+                    },
                   },
-                }
-              }
-            }}
-            appearance={{
+                },
+              }}
+              appearance={{
                 theme: resolvedTheme === "dark" ? dark : undefined,
-            }}
+              }}
             />
           </div>
 
@@ -79,12 +79,12 @@ export default function PricingPage() {
                   <p>
                     {APP_NAME} is currently in beta. During this time, everyone
                     gets access to all features, including premium — there are
-                    no plan limits. Your feedback is invaluable as we improve and
-                    refine the platform.
+                    no plan limits. Your feedback is invaluable as we improve
+                    and refine the platform.
                   </p>
                   <p className="font-medium text-foreground">
-                    Join now and use everything we offer. We&apos;ll share updates
-                    when plans change in the future.
+                    Join now and use everything we offer. We&apos;ll share
+                    updates when plans change in the future.
                   </p>
                 </div>
               </CardContent>
@@ -158,7 +158,7 @@ export default function PricingPage() {
                 <Button asChild size="lg" className="text-lg px-8">
                   <Link href={ROUTES.DASHBOARD}>
                     Go to Dashboard
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 size-5" />
                   </Link>
                 </Button>
               </Authenticated>
@@ -166,7 +166,7 @@ export default function PricingPage() {
                 <SignUpButton mode="modal">
                   <Button size="lg" className="text-lg px-8">
                     Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>
               </Unauthenticated>

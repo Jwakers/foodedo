@@ -14,6 +14,7 @@ import type * as crons from "../crons.js";
 import type * as households from "../households.js";
 import type * as http from "../http.js";
 import type * as lib_constants from "../lib/constants.js";
+import type * as lib_systemRecipes from "../lib/systemRecipes.js";
 import type * as mealPlans from "../mealPlans.js";
 import type * as migrations from "../migrations.js";
 import type * as recipes from "../recipes.js";
@@ -26,14 +27,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
   chalkboard: typeof chalkboard;
   contact: typeof contact;
@@ -41,20 +34,37 @@ declare const fullApi: ApiFromModules<{
   households: typeof households;
   http: typeof http;
   "lib/constants": typeof lib_constants;
+  "lib/systemRecipes": typeof lib_systemRecipes;
   mealPlans: typeof mealPlans;
   migrations: typeof migrations;
   recipes: typeof recipes;
   shoppingLists: typeof shoppingLists;
   users: typeof users;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 

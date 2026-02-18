@@ -242,6 +242,7 @@ export const createMealPlan = mutation({
       endDate,
       startDate: args.startDate,
       updatedAt: now,
+      isGenerated: false,
     });
     return { planId };
   },

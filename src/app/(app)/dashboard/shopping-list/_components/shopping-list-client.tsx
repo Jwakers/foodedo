@@ -74,15 +74,15 @@ export default function ShoppingListClient() {
   const userRecipes = useQuery(api.recipes.getAllUserRecipes);
   const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
   const accessibleLists = useQuery(
-    api.shoppingLists.getAccessibleShoppingLists
+    api.shoppingLists.getAccessibleShoppingLists,
   );
   const listFromUrl = useQuery(
     api.shoppingLists.getShoppingListById,
-    listIdFromUrl ? { listId: listIdFromUrl as Id<"shoppingLists"> } : "skip"
+    listIdFromUrl ? { listId: listIdFromUrl as Id<"shoppingLists"> } : "skip",
   );
   const activeShoppingList = useQuery(api.shoppingLists.getActiveShoppingList);
   const allActiveShoppingLists = useQuery(
-    api.shoppingLists.getAllActiveShoppingLists
+    api.shoppingLists.getAllActiveShoppingLists,
   );
   const subscription = useSubscription();
 
@@ -115,11 +115,11 @@ export default function ShoppingListClient() {
 
   const selectedRecipes = useMemo(
     () => allRecipes.filter((r) => selectedRecipeIds.has(r._id)) || [],
-    [allRecipes, selectedRecipeIds]
+    [allRecipes, selectedRecipeIds],
   );
   const flatIngredients = useMemo(
     () => buildShoppingListItems(selectedRecipes ?? []),
-    [selectedRecipes]
+    [selectedRecipes],
   );
   const [showDoneDialog, setShowDoneDialog] = useState(false);
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
@@ -129,13 +129,13 @@ export default function ShoppingListClient() {
   // Mutations
   const createShoppingList = useMutation(api.shoppingLists.createShoppingList);
   const finaliseShoppingList = useMutation(
-    api.shoppingLists.finaliseShoppingList
+    api.shoppingLists.finaliseShoppingList,
   );
   const completeShoppingList = useMutation(
-    api.shoppingLists.completeShoppingList
+    api.shoppingLists.completeShoppingList,
   );
   const unfinaliseShoppingList = useMutation(
-    api.shoppingLists.unfinaliseShoppingList
+    api.shoppingLists.unfinaliseShoppingList,
   );
   const deleteShoppingList = useMutation(api.shoppingLists.deleteShoppingList);
 
@@ -148,7 +148,7 @@ export default function ShoppingListClient() {
           recipe.description?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesSearch;
       }),
-    [allRecipes, searchQuery]
+    [allRecipes, searchQuery],
   );
 
   const handleToggleRecipe = (recipeId: Id<"recipes">) => {
@@ -186,7 +186,7 @@ export default function ShoppingListClient() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create shopping list"
+          : "Failed to create shopping list",
       );
     }
   };
@@ -207,7 +207,7 @@ export default function ShoppingListClient() {
         toast.success(
           `Shopping list confirmed! ${selectedChalkboardItems.size} chalkboard item${
             selectedChalkboardItems.size > 1 ? "s" : ""
-          } cleared.`
+          } cleared.`,
         );
       } else {
         toast.success("Shopping list confirmed!");
@@ -274,7 +274,7 @@ export default function ShoppingListClient() {
       setSelectedChalkboardItems(
         displayList.chalkboardItemIds.length > 0
           ? new Set(displayList.chalkboardItemIds)
-          : new Set()
+          : new Set(),
       );
     }
   }, [displayList, listIdFromUrl, listFromUrl, router]);
@@ -329,7 +329,6 @@ export default function ShoppingListClient() {
                 onDone={() => setShowDoneDialog(true)}
                 onBack={handleBack}
                 onEdit={handleEditList}
-                selectedChalkboardItems={selectedChalkboardItems}
                 setSelectedChalkboardItems={setSelectedChalkboardItems}
               />
             </div>
@@ -377,11 +376,12 @@ export default function ShoppingListClient() {
                                   month: "short",
                                   day: "numeric",
                                   year:
-                                    new Date(list._creationTime).getFullYear() !==
-                                    new Date().getFullYear()
+                                    new Date(
+                                      list._creationTime,
+                                    ).getFullYear() !== new Date().getFullYear()
                                       ? "numeric"
                                       : undefined,
-                                }
+                                },
                               )}
                             </p>
                           </div>
@@ -435,7 +435,7 @@ export default function ShoppingListClient() {
                 <Card className="bg-primary/5 border-primary/20 mb-6">
                   <CardContent className="p-4">
                     <div className="flex gap-3">
-                      <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <AlertCircle className="size-5 text-primary shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium text-sm mb-1">
                           Smart Ingredient Combining
@@ -455,7 +455,7 @@ export default function ShoppingListClient() {
                 {/* Search and Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
                       placeholder="Search recipes..."
                       value={searchQuery}
@@ -474,8 +474,8 @@ export default function ShoppingListClient() {
                 <LoadingState />
               ) : filteredRecipes.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6 mx-auto">
-                    <ChefHat className="h-12 w-12 text-muted-foreground" />
+                  <div className="size-24 bg-muted rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <ChefHat className="size-12 text-muted-foreground" />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {allRecipes.length === 0
@@ -519,7 +519,7 @@ export default function ShoppingListClient() {
                     className="w-full shadow-lg"
                     onClick={handleGenerateList}
                   >
-                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    <ShoppingCart className="size-5 mr-2" />
                     Create Shopping List ({selectedRecipeIds.size}{" "}
                     {selectedRecipeIds.size === 1 ? "recipe" : "recipes"})
                   </Button>
@@ -572,7 +572,7 @@ function RecipeSelectionCard({
     <Card
       className={cn(
         "group relative overflow-hidden transition-all duration-300 hover:shadow-lg",
-        isSelected && "ring-2 ring-primary shadow-xl"
+        isSelected && "ring-2 ring-primary shadow-xl",
       )}
     >
       <div className="flex flex-col">
@@ -585,7 +585,7 @@ function RecipeSelectionCard({
           <div
             className={cn(
               "relative size-24 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 transition-all duration-300",
-              isSelected && "ring-2 ring-primary/50"
+              isSelected && "ring-2 ring-primary/50",
             )}
           >
             {recipe.image && (
@@ -600,13 +600,13 @@ function RecipeSelectionCard({
             )}
             {!recipe.image && (
               <div className="flex items-center justify-center h-full w-full">
-                <ChefHat className="h-10 w-10 text-muted-foreground" />
+                <ChefHat className="size-10 text-muted-foreground" />
               </div>
             )}
             {isSelected && (
               <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                 <div className="bg-primary text-primary-foreground rounded-full p-1">
-                  <Check className="h-4 w-4" />
+                  <Check className="size-4" />
                 </div>
               </div>
             )}
@@ -644,15 +644,15 @@ function RecipeSelectionCard({
 
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+                <Clock className="size-4" />
                 <span className="font-medium">{totalTime}min</span>
               </div>
               <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+                <Users className="size-4" />
                 <span className="font-medium">{recipe.serves}</span>
               </div>
               <div className="flex items-center gap-1">
-                <ListChecks className="h-4 w-4 text-primary" />
+                <ListChecks className="size-4 text-primary" />
                 <span className="font-medium text-primary">
                   {ingredientCount} ingredients
                 </span>
@@ -715,7 +715,7 @@ function LoadingState() {
       {Array.from({ length: 5 }).map((_, index) => (
         <Card key={index} className="p-4">
           <div className="flex gap-4">
-            <Skeleton className="h-5 w-5 rounded" />
+            <Skeleton className="size-5 rounded" />
             <Skeleton className="h-20 w-20 rounded-md" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-3/4" />
@@ -734,7 +734,7 @@ function SelectedRecipesList({ recipes }: { recipes: Recipe[] }) {
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <CheckCircle2 className="h-5 w-5 text-primary" />
+        <CheckCircle2 className="size-5 text-primary" />
         <h3 className="font-semibold">Selected Recipes ({recipes.length})</h3>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -809,6 +809,6 @@ const buildShoppingListItems = (recipes: Recipe[]) => {
   });
 
   return Array.from(combined.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name),
   );
 };

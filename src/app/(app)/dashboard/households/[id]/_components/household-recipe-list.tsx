@@ -114,7 +114,7 @@ export function HouseholdRecipeList({
                     size="icon"
                     onClick={() => setRecipeToUnshare(recipe)}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="size-4 text-destructive" />
                   </Button>
                 )}
               </div>
@@ -125,11 +125,11 @@ export function HouseholdRecipeList({
             <CardContent>
               <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                 <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="size-4" />
                   <span>{recipe.prepTime + (recipe.cookTime || 0)} min</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <UsersIcon className="h-4 w-4" />
+                  <UsersIcon className="size-4" />
                   <span>{recipe.serves}</span>
                 </div>
               </div>

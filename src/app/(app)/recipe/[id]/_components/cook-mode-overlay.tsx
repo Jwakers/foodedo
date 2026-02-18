@@ -111,7 +111,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
               className="rounded-full fixed top-4 right-4 z-10"
               aria-label="Close cooking mode"
             >
-              <X className="h-5 w-5" />
+              <X className="size-5" />
             </Button>
           </DialogClose>
 
@@ -173,7 +173,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
               onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
               aria-label="Previous step"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="size-5" />
               Previous
             </Button>
             {isCompleteSlide ? (
@@ -194,7 +194,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
                 aria-label="Next step"
               >
                 Next
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="size-5" />
               </Button>
             )}
           </footer>

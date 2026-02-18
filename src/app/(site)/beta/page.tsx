@@ -27,9 +27,9 @@ export default function BetaLandingPage() {
               {APP_NAME} Beta
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
-              Build a repeatable meal planning rhythm for your household. We&apos;re
-              looking for people who cook regularly and want to help shape the
-              product through honest feedback.
+              Build a repeatable meal planning rhythm for your household.
+              We&apos;re looking for people who cook regularly and want to help
+              shape the product through honest feedback.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -37,7 +37,7 @@ export default function BetaLandingPage() {
                 <Button asChild size="lg" className="text-lg px-8">
                   <Link href={ROUTES.DASHBOARD}>
                     Go to Dashboard
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 size-5" />
                   </Link>
                 </Button>
               </Authenticated>
@@ -45,7 +45,7 @@ export default function BetaLandingPage() {
                 <SignUpButton mode="modal">
                   <Button size="lg" className="text-lg px-8">
                     Join the Beta
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>
               </Unauthenticated>
@@ -54,7 +54,10 @@ export default function BetaLandingPage() {
             <Unauthenticated>
               <p className="text-sm text-muted-foreground">
                 Already have access?{" "}
-                <Link href={ROUTES.SIGN_IN} className="text-primary hover:text-primary/80">
+                <Link
+                  href={ROUTES.SIGN_IN}
+                  className="text-primary hover:text-primary/80"
+                >
                   Sign in here
                 </Link>
                 .
@@ -75,23 +78,23 @@ export default function BetaLandingPage() {
               <h2 className="text-2xl font-semibold mb-4">What it does</h2>
               <ul className="space-y-3 text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <CheckCircle className="size-5 text-primary mt-0.5" />
                   Create, edit, and organise recipes in one place.
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <CheckCircle className="size-5 text-primary mt-0.5" />
                   Import recipes from websites and refine them to your taste.
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <CheckCircle className="size-5 text-primary mt-0.5" />
                   Build shopping lists from recipes and check items as you shop.
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <CheckCircle className="size-5 text-primary mt-0.5" />
                   Share recipes, lists, and chalkboard notes with a household.
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <CheckCircle className="size-5 text-primary mt-0.5" />
                   Keep quick kitchen notes in the shared chalkboard.
                 </li>
               </ul>
@@ -100,10 +103,18 @@ export default function BetaLandingPage() {
             <Card className="p-6">
               <h2 className="text-2xl font-semibold mb-4">Who it’s for</h2>
               <ul className="space-y-3 text-muted-foreground">
-                <li>Home cooks who want their recipes in one reliable place.</li>
-                <li>People who save recipes online and enjoy refining them over time.</li>
+                <li>
+                  Home cooks who want their recipes in one reliable place.
+                </li>
+                <li>
+                  People who save recipes online and enjoy refining them over
+                  time.
+                </li>
                 <li>Anyone who wants the recipe without the long scroll.</li>
-                <li>Households looking for a simpler weekly rhythm for shopping and meals.</li>
+                <li>
+                  Households looking for a simpler weekly rhythm for shopping
+                  and meals.
+                </li>
               </ul>
             </Card>
 
@@ -122,7 +133,10 @@ export default function BetaLandingPage() {
                 <li>Sign up and add a few recipes you already love.</li>
                 <li>Plan a week of meals and build your shopping list.</li>
                 <li>Use {APP_NAME} as you normally would during the week.</li>
-                <li>Share feedback or feature requests whenever something stands out.</li>
+                <li>
+                  Share feedback or feature requests whenever something stands
+                  out.
+                </li>
               </ol>
               <p className="mt-4 text-sm text-muted-foreground">
                 We use feedback to shape what gets built next.
@@ -137,15 +151,15 @@ export default function BetaLandingPage() {
           <div className="mx-auto max-w-2xl space-y-4">
             <h2 className="text-3xl font-bold">Ready to join the beta?</h2>
             <p className="text-muted-foreground">
-              We&apos;re keeping the beta small so we can listen closely to feedback.
-              Sign up to get started right away.
+              We&apos;re keeping the beta small so we can listen closely to
+              feedback. Sign up to get started right away.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Authenticated>
                 <Button asChild size="lg" className="text-lg px-8">
                   <Link href={ROUTES.DASHBOARD}>
                     Go to Dashboard
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 size-5" />
                   </Link>
                 </Button>
               </Authenticated>
@@ -153,10 +167,15 @@ export default function BetaLandingPage() {
                 <SignUpButton mode="modal">
                   <Button size="lg" className="text-lg px-8">
                     Sign Up
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>
-                <Button asChild variant="outline" size="lg" className="text-lg px-8">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-8"
+                >
                   <Link href={ROUTES.SIGN_IN}>Sign In</Link>
                 </Button>
               </Unauthenticated>
@@ -167,4 +186,3 @@ export default function BetaLandingPage() {
     </div>
   );
 }
-

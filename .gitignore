@@ -49,3 +49,7 @@ next-env.d.ts
 certificates
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Generated recipe data (not committed)
+/scripts/generated-recipes/
+/scripts/generated-recipe-images/

@@ -25,14 +25,14 @@ export default function SignUpPage() {
   return (
     <div className="lg:grid lg:grid-cols-2 min-h-screen">
       {/* Left Side - Image/Illustration */}
-      <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-primary/90 to-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary/60"></div>
+      <div className="hidden lg:flex lg:flex-1 bg-linear-to-br from-primary/90 to-primary relative overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-primary/80 to-primary/60"></div>
 
         {/* Decorative Elements */}
-        <div className="absolute top-20 right-20 w-32 h-32 bg-primary-foreground/10 rounded-full"></div>
-        <div className="absolute bottom-32 left-16 w-24 h-24 bg-primary-foreground/10 rounded-full"></div>
-        <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-primary-foreground/5 rounded-full"></div>
-        <div className="absolute bottom-1/4 right-1/3 w-20 h-20 bg-primary-foreground/5 rounded-full"></div>
+        <div className="absolute top-20 right-20 size-32 bg-primary-foreground/10 rounded-full"></div>
+        <div className="absolute bottom-32 left-16 size-24 bg-primary-foreground/10 rounded-full"></div>
+        <div className="absolute top-1/3 right-1/4 size-16 bg-primary-foreground/5 rounded-full"></div>
+        <div className="absolute bottom-1/4 right-1/3 size-20 bg-primary-foreground/5 rounded-full"></div>
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center p-16 text-primary-foreground">
@@ -42,7 +42,7 @@ export default function SignUpPage() {
                 href="/"
                 className="inline-flex items-center space-x-2 mb-8"
               >
-                <Utensils className="h-8 w-8" />
+                <Utensils className="size-8" />
                 <span className="font-bold text-2xl">{APP_NAME}</span>
               </Link>
 
@@ -58,31 +58,31 @@ export default function SignUpPage() {
             {/* Feature Highlights */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <Sparkles className="h-5 w-5 text-primary-foreground/80" />
+                <Sparkles className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Create unlimited recipes
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Calendar className="h-5 w-5 text-primary-foreground/80" />
+                <Calendar className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Plan weekly meals in minutes
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <ShoppingCart className="h-5 w-5 text-primary-foreground/80" />
+                <ShoppingCart className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Generate smart shopping lists
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Users className="h-5 w-5 text-primary-foreground/80" />
+                <Users className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Collaborate with your family
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Heart className="h-5 w-5 text-primary-foreground/80" />
+                <Heart className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
                   Import recipes from any website
                 </span>
@@ -111,7 +111,7 @@ export default function SignUpPage() {
                 href="/"
                 className="flex items-center text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="size-4 mr-2" />
                 Back to Home
               </Link>
             </Button>
@@ -120,7 +120,7 @@ export default function SignUpPage() {
           {/* Header */}
           <div className="text-center space-y-2">
             <Link href="/" className="inline-flex items-center space-x-2">
-              <Utensils className="h-8 w-8 text-primary" />
+              <Utensils className="size-8 text-primary" />
               <span className="font-bold text-2xl">{APP_NAME}</span>
             </Link>
             <p className="text-muted-foreground">

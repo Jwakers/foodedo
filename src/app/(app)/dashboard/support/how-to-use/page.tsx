@@ -38,35 +38,35 @@ export default function HowToUsePage() {
       step: 1,
       title: "Sign up for an account",
       description: `Create your ${APP_NAME} account to start organising your recipes and meal planning.`,
-      icon: <Users className="h-5 w-5" />,
+      icon: <Users className="size-5" />,
     },
     {
       step: 2,
       title: "Create your first recipe",
       description:
         "Add a recipe you love to get started. You can create one from scratch or import from a website.",
-      icon: <Plus className="h-5 w-5" />,
+      icon: <Plus className="size-5" />,
     },
     {
       step: 3,
       title: "Set up your household",
       description:
         "Invite family members or room-mates to collaborate on meal planning and share recipes.",
-      icon: <Home className="h-5 w-5" />,
+      icon: <Home className="size-5" />,
     },
     {
       step: 4,
       title: "Plan your week and create a shopping list",
       description:
         "Create a meal plan with an end date, add meals from your recipes, then generate a shopping list from the plan. You can also create ad-hoc shopping lists from the Shopping list page.",
-      icon: <CalendarCheck className="h-5 w-5" />,
+      icon: <CalendarCheck className="size-5" />,
     },
   ];
 
   const featureGuides = [
     {
       title: "Recipe Management",
-      icon: <Utensils className="h-5 w-5" />,
+      icon: <Utensils className="size-5" />,
       color: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
       sections: [
         {
@@ -105,7 +105,7 @@ export default function HowToUsePage() {
     },
     {
       title: "Importing Recipes",
-      icon: <Globe className="h-5 w-5" />,
+      icon: <Globe className="size-5" />,
       color:
         "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400",
       sections: [
@@ -143,7 +143,7 @@ export default function HowToUsePage() {
     },
     {
       title: "Meal planning",
-      icon: <CalendarCheck className="h-5 w-5" />,
+      icon: <CalendarCheck className="size-5" />,
       color:
         "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
       sections: [
@@ -188,7 +188,7 @@ export default function HowToUsePage() {
     },
     {
       title: "Shopping lists",
-      icon: <ShoppingCart className="h-5 w-5" />,
+      icon: <ShoppingCart className="size-5" />,
       color:
         "bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400",
       sections: [
@@ -213,7 +213,7 @@ export default function HowToUsePage() {
     },
     {
       title: "Households & Collaboration",
-      icon: <Users className="h-5 w-5" />,
+      icon: <Users className="size-5" />,
       color:
         "bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400",
       sections: [
@@ -249,7 +249,7 @@ export default function HowToUsePage() {
     },
     {
       title: "Kitchen Chalkboard",
-      icon: <Clipboard className="h-5 w-5" />,
+      icon: <Clipboard className="size-5" />,
       color: "bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-400",
       sections: [
         {
@@ -282,7 +282,7 @@ export default function HowToUsePage() {
       <div className="mb-6">
         <Button variant="ghost" asChild className="mb-4">
           <Link href={ROUTES.SUPPORT} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             Back to Support
           </Link>
         </Button>
@@ -304,7 +304,7 @@ export default function HowToUsePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <CheckCircle className="size-5 text-green-600 dark:text-green-400" />
             </div>
             Getting Started
           </CardTitle>
@@ -399,7 +399,7 @@ export default function HowToUsePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-              <Search className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <Search className="size-5 text-yellow-600 dark:text-yellow-400" />
             </div>
             Quick Tips
           </CardTitle>

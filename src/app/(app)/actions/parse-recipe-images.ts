@@ -4,7 +4,6 @@ import {
   type ParsedRecipeForDB,
   type ParsedRecipeFromText,
 } from "@/lib/types/recipe-parser";
-import { openai } from "@ai-sdk/openai";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { RECIPE_LIMITS } from "convex/lib/constants";
 import {
@@ -15,13 +14,6 @@ import {
   generateUnitsString,
 } from "./recipe-parsing-helpers";
 import { ImageRecipeSchema } from "./recipe-schemas";
-
-// ============================================================================
-// Model Configuration
-// ============================================================================
-
-// Use GPT-4o for vision capabilities (supports image input)
-const model = openai("gpt-4o");
 
 // ============================================================================
 // Helper Functions (imported from shared module)
@@ -173,7 +165,7 @@ async function parseImagesWithAI(images: string[]): Promise<
 
   try {
     const result = await generateText({
-      model,
+      model: "openai/gpt-4o-mini",
       system: systemPrompt,
       messages: [userMessage],
       output: Output.object({

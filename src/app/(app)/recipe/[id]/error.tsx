@@ -20,8 +20,8 @@ export default function RecipeError({ error, reset }: ErrorProps) {
   return (
     <div className="h-full py-10 bg-background flex items-center justify-center">
       <div className="text-center max-w-md px-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-6">
-          <AlertCircle className="h-8 w-8 text-destructive" />
+        <div className="inline-flex items-center justify-center size-16 rounded-full bg-destructive/10 mb-6">
+          <AlertCircle className="size-8 text-destructive" />
         </div>
 
         <h1 className="text-4xl font-bold text-foreground mb-4">
@@ -44,13 +44,13 @@ export default function RecipeError({ error, reset }: ErrorProps) {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button onClick={reset} size="lg" variant="default">
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="size-4" />
             Try Again
           </Button>
 
           <Link href={ROUTES.DASHBOARD}>
             <Button size="lg" variant="outline" className="gap-2 w-full">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-4" />
               Back to Dashboard
             </Button>
           </Link>

@@ -47,6 +47,7 @@ export const PREPARATION_OPTIONS = [
   "halved",
   "whole",
   "crushed",
+  "crumbled",
   "mashed",
   "pureed",
   // Temperature states
@@ -74,6 +75,7 @@ export const PREPARATION_OPTIONS = [
   "stemmed",
   "zested",
   "de-boned",
+  "deveined",
   "filleted",
   "butterflied",
   // Cooking methods (pre-cooked ingredients)
@@ -143,10 +145,60 @@ export const UNITS_FLAT = [
   ...UNITS.items,
 ] as const;
 
+// Recipe source (ownership/visibility for pool building)
+export const RECIPE_SOURCES = ["user", "system", "community"] as const;
+
+// Primary protein for variety constraints
+export const PRIMARY_PROTEINS = [
+  "chicken",
+  "beef",
+  "pork",
+  "fish",
+  "seafood",
+  "vegetarian",
+  "vegan",
+  "lamb",
+  "turkey",
+  "other",
+  "none",
+] as const;
+
+// Complexity tier (not speed — prep/cook time cover that)
+export const COMPLEXITY_TIERS = ["simple", "moderate", "complex"] as const;
+
+// Cuisine / cuisine-type for diversification (e.g. Thai curry vs korma = different cuisines). Max 2 per recipe for fusion.
+export const CUISINES = [
+  "italian",
+  "indian",
+  "mexican",
+  "thai",
+  "chinese",
+  "japanese",
+  "korean",
+  "french",
+  "mediterranean",
+  "middle_eastern",
+  "british",
+  "american",
+  "caribbean",
+  "african",
+  "vietnamese",
+  "greek",
+  "spanish",
+  "other",
+] as const;
+
+/** Max cuisine selections per recipe (fusion food) */
+export const CUISINE_MAX_SELECTIONS = 2;
+
 // TypeScript types
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];
 export type PreparationOption = (typeof PREPARATION_OPTIONS)[number];
 export type Unit = (typeof UNITS_FLAT)[number];
+export type RecipeSource = (typeof RECIPE_SOURCES)[number];
+export type PrimaryProtein = (typeof PRIMARY_PROTEINS)[number];
+export type ComplexityTier = (typeof COMPLEXITY_TIERS)[number];
+export type Cuisine = (typeof CUISINES)[number];
 
 // Property names should match clerk subscription tiers
 export const SUBSCRIPTION_TIERS = ["free_user", "pro_user"] as const;
@@ -160,17 +212,17 @@ type PlanLimits = {
 
 /** Plan limits by subscription tier. Use -1 to represent unlimited. */
 export const PLANS: Record<SubscriptionTier, PlanLimits> = {
-   // Beta: increased free tier limits. Original values: maxRecipes 15, maxHouseholds 1, maxActiveShoppingLists 3
-   free_user: {
-     maxRecipes: 100,
-     maxHouseholds: 5,
-     maxActiveShoppingLists: 10,
-   },
-   pro_user: {
-     maxRecipes: -1, // unlimited
-     maxHouseholds: -1, // unlimited
-     maxActiveShoppingLists: -1, // unlimited
-   },
+  // Beta: increased free tier limits. Original values: maxRecipes 15, maxHouseholds 1, maxActiveShoppingLists 3
+  free_user: {
+    maxRecipes: 100,
+    maxHouseholds: 5,
+    maxActiveShoppingLists: 10,
+  },
+  pro_user: {
+    maxRecipes: -1, // unlimited
+    maxHouseholds: -1, // unlimited
+    maxActiveShoppingLists: -1, // unlimited
+  },
 } as const satisfies Record<SubscriptionTier, PlanLimits>;
 
 export const FREE_TIER_LIMITS = PLANS.free_user;
@@ -233,3 +285,11 @@ export const IMAGE_COMPRESSION = {
   /** JPEG quality for compression (0-1) */
   QUALITY: 0.8,
 } as const;
+
+/**
+ * Clamp editorialBias to schema invariant (0, 2]; neutral = 1.
+ * Use in any mutation that writes recipe generator metadata (editorialBias).
+ */
+export function clampEditorialBias(value: number): number {
+  return Math.min(Math.max(value, 0.001), 2);
+}

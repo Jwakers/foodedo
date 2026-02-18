@@ -85,7 +85,7 @@ export function TextToRecipeParser({
         {/* Instructions */}
         {!showAsError && (
           <Alert>
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="size-4" />
             <AlertTitle>How it works</AlertTitle>
             <AlertDescription>
               Copy recipe text from anywhere - a website, a message, or your own
@@ -97,7 +97,7 @@ export function TextToRecipeParser({
 
         {/* Image notice */}
         <Alert>
-          <ImagePlus className="h-4 w-4" />
+          <ImagePlus className="size-4" />
           <AlertDescription>
             <span className="font-medium">Note:</span> Images aren&apos;t
             included with this method. You&apos;ll be able to add your own image
@@ -152,7 +152,7 @@ Instructions:
                   ? "text-destructive font-medium"
                   : isNearLimit
                     ? "text-muted-foreground font-medium"
-                    : "text-muted-foreground"
+                    : "text-muted-foreground",
               )}
             >
               {characterCount.toLocaleString()} /{" "}
@@ -164,7 +164,7 @@ Instructions:
         {/* Error Message */}
         {error && (
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="size-4" />
             <AlertTitle>Couldn&apos;t create recipe</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -180,12 +180,12 @@ Instructions:
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Creating Recipe...
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className="mr-2 size-4" />
                 Create Recipe
               </>
             )}
@@ -226,7 +226,7 @@ export function RecipeParsedSuccess({
 }) {
   return (
     <Alert>
-      <CheckCircle2 className="h-4 w-4" />
+      <CheckCircle2 className="size-4" />
       <AlertTitle>Recipe created successfully!</AlertTitle>
       <AlertDescription>
         <p className="mb-2">

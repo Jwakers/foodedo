@@ -32,7 +32,7 @@ export function ChangeImageModal({
   existingImageUrl,
 }: ChangeImageModalProps) {
   const updateRecipeImage = useMutation(
-    api.recipes.updateRecipeImageAndDeleteOld
+    api.recipes.updateRecipeImageAndDeleteOld,
   );
 
   const imageUpload = useImageUpload({
@@ -118,12 +118,12 @@ export function ChangeImageModal({
           >
             {imageUpload.isUploading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="size-4 mr-2 animate-spin" />
                 Uploading...
               </>
             ) : (
               <>
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="size-4 mr-2" />
                 Upload Image
               </>
             )}

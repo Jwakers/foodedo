@@ -22,7 +22,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const { token } = use(params);
   const [isAccepting, setIsAccepting] = useState(false);
   const [acceptedHouseholdId, setAcceptedHouseholdId] = useState<string | null>(
-    null
+    null,
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +65,7 @@ export default function InvitePage({ params }: InvitePageProps) {
     } catch (error: unknown) {
       console.error("Error accepting invitation:", error);
       setError(
-        error instanceof Error ? error.message : "Failed to accept invitation."
+        error instanceof Error ? error.message : "Failed to accept invitation.",
       );
     } finally {
       setIsAccepting(false);
@@ -79,7 +79,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   if (errorMessage) {
     return (
       <InviteCard className="border-destructive">
-        <XCircle className="h-16 w-16 text-destructive mb-4" />
+        <XCircle className="size-16 text-destructive mb-4" />
         <h3 className="text-xl font-semibold mb-2">Invitation Invalid</h3>
         <p className="text-muted-foreground text-center mb-6">{errorMessage}</p>
         <Button asChild>
@@ -92,7 +92,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   if (isAccepting) {
     return (
       <InviteCard>
-        <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+        <Loader2 className="size-16 text-primary animate-spin mb-4" />
         <h3 className="text-xl font-semibold mb-2">Accepting Invitation...</h3>
         <p className="text-muted-foreground text-center">
           Please wait whilst we add you to the household
@@ -104,7 +104,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   if (isSuccess) {
     return (
       <InviteCard className="border-primary">
-        <CheckCircle className="h-16 w-16 text-primary mb-4" />
+        <CheckCircle className="size-16 text-primary mb-4" />
         <h3 className="text-xl font-semibold mb-2">Invitation Accepted!</h3>
         <p className="text-muted-foreground text-center mb-6">
           You&apos;ve successfully joined the household. You can now view and
@@ -129,7 +129,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   return (
     <InviteCard>
       <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <CheckCircle className="h-10 w-10 text-primary" />
+        <CheckCircle className="size-10 text-primary" />
       </div>
       <h3 className="text-xl font-semibold mb-2">You&apos;re Invited!</h3>
       <p className="text-muted-foreground text-center mb-2">
@@ -141,7 +141,7 @@ export default function InvitePage({ params }: InvitePageProps) {
       </p>
 
       <Alert className="mb-6">
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircle className="size-4" />
         <AlertDescription>
           This invitation can only be used once. If you accept, no one else can
           use this link.

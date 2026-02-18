@@ -63,7 +63,7 @@ export default function DashboardLoading() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Skeleton className="h-5 w-5" />
+                <Skeleton className="size-5" />
                 <Skeleton className="h-6 w-32" />
               </div>
               <Skeleton className="h-4 w-48" />

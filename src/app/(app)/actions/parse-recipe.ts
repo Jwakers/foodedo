@@ -10,7 +10,6 @@ import {
   validateUnit,
 } from "@/lib/utils/recipe-validation";
 import { validateUrlForSSRF } from "@/lib/utils/secure-fetch";
-import { openai } from "@ai-sdk/openai";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import * as cheerio from "cheerio";
 import { RECIPE_CATEGORIES, TEXT_LIMITS } from "convex/lib/constants";
@@ -21,13 +20,6 @@ import {
   generateUnitsString,
 } from "./recipe-parsing-helpers";
 import { HtmlRecipeSchema, TextRecipeSchema } from "./recipe-schemas";
-
-// ============================================================================
-// Shared Model Configuration
-// ============================================================================
-
-// API key is automatically read from process.env.OPENAI_API_KEY
-const model = openai("gpt-4o-mini");
 
 // ============================================================================
 // Shared Helper Functions (imported from shared module)
@@ -425,7 +417,7 @@ NOT valid recipes:
 
   try {
     const result = await generateText({
-      model,
+      model: "openai/gpt-4o-mini",
       system: fullPrompt,
       prompt: `Parse this recipe:\n\n${text}`,
       output: Output.object({
@@ -653,7 +645,7 @@ async function parseHtmlWithAI(
 
   try {
     const result = await generateText({
-      model,
+      model: "openai/gpt-4o-mini",
       system: systemPrompt,
       prompt: `Extract the recipe from this webpage text:\n\n${pageText}`,
       output: Output.object({

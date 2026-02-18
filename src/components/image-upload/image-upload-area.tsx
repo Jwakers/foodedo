@@ -121,7 +121,7 @@ export function ImageUploadArea({
                 onClick={handleRemove}
                 disabled={disabled}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="size-4 mr-2" />
                 Remove Image
               </Button>
             </div>
@@ -153,18 +153,18 @@ export function ImageUploadArea({
           isDragging
             ? "border-primary bg-primary/10"
             : "border-dashed border-muted-foreground/25 hover:border-primary/50",
-          (disabled || upload.isUploading) && "opacity-50 cursor-not-allowed"
+          (disabled || upload.isUploading) && "opacity-50 cursor-not-allowed",
         )}
       >
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {upload.isUploading ? (
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <Upload className="h-12 w-12 animate-pulse" />
+              <Upload className="size-12 animate-pulse" />
               <span className="text-sm">Uploading...</span>
             </div>
           ) : (
             <>
-              <ImageIcon className="h-12 w-12 text-muted-foreground mb-2" />
+              <ImageIcon className="size-12 text-muted-foreground mb-2" />
               <span className="text-sm text-muted-foreground">{label}</span>
               <span className="text-xs text-muted-foreground mt-1">
                 Max {IMAGE_LIMITS.MAX_FILE_SIZE_MB}MB

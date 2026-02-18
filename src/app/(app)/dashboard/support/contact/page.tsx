@@ -92,7 +92,7 @@ export default function ContactPage() {
       <div className="mb-6">
         <Button variant="ghost" asChild className="mb-4">
           <Link href={ROUTES.SUPPORT} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             Back to Support
           </Link>
         </Button>
@@ -182,12 +182,12 @@ export default function ContactPage() {
               >
                 {form.formState.isSubmitting ? (
                   <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                    <div className="mr-2 size-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
                     Sending...
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
+                    <Send className="mr-2 size-4" />
                     Send Message
                   </>
                 )}

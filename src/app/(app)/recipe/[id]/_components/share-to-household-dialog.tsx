@@ -45,12 +45,12 @@ export function ShareToHouseholdDialog({
     api.households.getHouseholdsByRecipeId,
     {
       recipeId,
-    }
+    },
   );
 
   const handleCheckboxChange = async (
     householdId: Id<"households">,
-    isChecked: boolean
+    isChecked: boolean,
   ) => {
     // Add to pending state
     setIsPending(true);
@@ -68,7 +68,7 @@ export function ShareToHouseholdDialog({
     } catch (error: unknown) {
       console.error("Error updating recipe share:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to share recipe"
+        error instanceof Error ? error.message : "Failed to share recipe",
       );
     } finally {
       // Remove from pending state
@@ -122,7 +122,9 @@ export function ShareToHouseholdDialog({
                     htmlFor={household._id}
                     className={cn(
                       "w-full flex items-center space-x-3 p-3 rounded-lg border transition-colors",
-                      isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                      isPending
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer",
                     )}
                   >
                     <Checkbox
@@ -144,7 +146,7 @@ export function ShareToHouseholdDialog({
                       </div>
                     ) : (
                       selectedHouseholds.has(household._id) && (
-                        <Check className="h-4 w-4 text-primary ml-auto" />
+                        <Check className="size-4 text-primary ml-auto" />
                       )
                     )}
                   </Label>

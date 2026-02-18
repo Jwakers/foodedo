@@ -48,7 +48,7 @@ export default function HouseholdsPage() {
         </div>
         <div className="flex items-center gap-4">
           <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 size-4" />
             Create Household
           </Button>
         </div>
@@ -65,14 +65,14 @@ export default function HouseholdsPage() {
       {households.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Users className="h-16 w-16 text-muted-foreground mb-4" />
+            <Users className="size-16 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No households yet</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-md">
               Create a household to start sharing recipes with your family and
               friends
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 size-4" />
               Create Your First Household
             </Button>
           </CardContent>
@@ -113,14 +113,14 @@ export default function HouseholdsPage() {
                           window.location.href = `/dashboard/households/${household._id}/settings`;
                         }}
                       >
-                        <Settings className="h-4 w-4" />
+                        <Settings className="size-4" />
                       </Button>
                     )}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Users className="h-4 w-4 mr-2" />
+                    <Users className="size-4 mr-2" />
                     View members and recipes
                   </div>
                 </CardContent>
