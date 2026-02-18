@@ -217,7 +217,7 @@ export const patchSystemRecipesFromFile = internalMutation({
         });
         patched++;
       } else {
-        await ctx.db.insert("recipes", {
+        const doc = {
           title: r.title,
           prepTime: r.prepTime,
           serves: r.serves,
@@ -242,7 +242,8 @@ export const patchSystemRecipesFromFile = internalMutation({
             isGeneratorEligible: r.isGeneratorEligible,
           }),
           source: (r.source as RecipeSource) ?? "system",
-        });
+        };
+        await ctx.db.replace(id, doc as Doc<"recipes">);
         inserted++;
       }
     }
