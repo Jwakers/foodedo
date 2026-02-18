@@ -1,5 +1,6 @@
+import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import {
   ComplexityTier,
   Cuisine,
@@ -26,6 +27,36 @@ import vegetarianBatch001 from "./generated-recipes/vegetarian_batch_001.json";
 import vegetarianBatch002 from "./generated-recipes/vegetarian_batch_002.json";
 import vegetarianBatch003 from "./generated-recipes/vegetarian_batch_003.json";
 import { WithoutSystemFields } from "convex/server";
+import { SYSTEM_RECIPES } from "./lib/systemRecipes";
+
+/**
+ * Migration to clear image on all system recipes (e.g. before regenerating images).
+ * Run: npx convex run migrations:clearSystemRecipeImages
+ */
+export const clearSystemRecipeImages = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    let updatedCount = 0;
+    for (const recipe of recipes) {
+      if (recipe.image != null) {
+        const { image, ...rest } = recipe;
+        await ctx.db.replace(recipe._id, rest);
+        updatedCount++;
+      }
+    }
+
+    return {
+      message: `Cleared image on ${updatedCount} system recipes`,
+      totalSystemRecipes: recipes.length,
+      updatedCount,
+    };
+  },
+});
 
 /**
  * Migration to remove the status field from all recipes
@@ -193,7 +224,8 @@ function mapJsonRecipeToDb(r: JsonRecipe): WithoutSystemFields<Doc<"recipes">> {
 
   const method = r.method?.map((m) => {
     const obj: { title: string; description?: string } = { title: m.title };
-    if (m.description != null && m.description !== "") obj.description = m.description;
+    if (m.description != null && m.description !== "")
+      obj.description = m.description;
     return obj;
   });
 
@@ -265,5 +297,129 @@ export const importGeneratedRecipes = internalMutation({
       inserted,
       skipped,
     };
+  },
+});
+
+/**
+ * Migration to patch or create system recipes from convex/lib/system-recipes.ts.
+ * - If a recipe with the same _id exists: replace its ingredients and method (image unchanged).
+ * - If it does not exist: insert a new recipe with all fields except image.
+ * Run: npx convex run migrations:patchSystemRecipesFromFile
+ */
+export const patchSystemRecipesFromFile = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    let patched = 0;
+    let inserted = 0;
+
+    for (const r of SYSTEM_RECIPES) {
+      const id = r._id as Id<"recipes">;
+      const existing = await ctx.db.get(id);
+
+      const ingredients = (r.ingredients ?? []).map((ing) => ({
+        name: ing.name,
+        ...(ing.amount != null && { amount: ing.amount }),
+        ...(ing.unit != null && { unit: ing.unit as Unit }),
+        ...(ing.preparation != null && {
+          preparation: ing.preparation as PreparationOption,
+        }),
+      }));
+
+      const method = (r.method ?? []).map((step) => ({
+        title: step.title,
+        ...(step.description != null &&
+          step.description !== "" && { description: step.description }),
+      }));
+
+      if (existing) {
+        await ctx.db.patch(id, {
+          ingredients,
+          method,
+          updatedAt: r.updatedAt ?? now,
+        });
+        patched++;
+      } else {
+        await ctx.db.insert("recipes", {
+          title: r.title,
+          prepTime: r.prepTime,
+          serves: r.serves,
+          category: r.category as RecipeCategory,
+          updatedAt: r.updatedAt ?? now,
+          ...(r.description != null &&
+            r.description !== "" && { description: r.description }),
+          ...(r.cookTime != null && { cookTime: r.cookTime }),
+          ...(ingredients.length > 0 && { ingredients }),
+          ...(method.length > 0 && { method }),
+          ...(r.nutrition != null && { nutrition: r.nutrition }),
+          ...(r.primaryProtein != null && {
+            primaryProtein: r.primaryProtein as PrimaryProtein,
+          }),
+          ...(r.complexityTier != null && {
+            complexityTier: r.complexityTier as ComplexityTier,
+          }),
+          ...(r.cuisine != null &&
+            r.cuisine.length > 0 && { cuisine: r.cuisine as Cuisine[] }),
+          ...(r.totalTimeMinutes != null && {
+            totalTimeMinutes: r.totalTimeMinutes,
+          }),
+          ...(r.isGeneratorEligible != null && {
+            isGeneratorEligible: r.isGeneratorEligible,
+          }),
+          source: (r.source as RecipeSource) ?? "system",
+        });
+        inserted++;
+      }
+    }
+
+    return {
+      message: `Patch complete: ${patched} updated, ${inserted} created`,
+      totalInFile: SYSTEM_RECIPES.length,
+      patched,
+      inserted,
+    };
+  },
+});
+
+/**
+ * Internal: Generate upload URL for recipe image script.
+ * No auth - only callable from Convex (HTTP action).
+ */
+export const getStorageUploadUrl = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+/**
+ * Internal: Set image on a system recipe. Only allows system recipes.
+ * Callable from Convex (HTTP action) only.
+ */
+export const setSystemRecipeImage = internalMutation({
+  args: {
+    recipeId: v.id("recipes"),
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const recipe = await ctx.db.get(args.recipeId);
+    if (!recipe) throw new Error("Recipe not found");
+    if (recipe.source !== "system") {
+      throw new Error("Only system recipes can be updated by this mutation");
+    }
+
+    const oldImageId = recipe.image;
+    await ctx.db.patch(args.recipeId, {
+      image: args.storageId,
+      updatedAt: Date.now(),
+    });
+
+    if (oldImageId) {
+      try {
+        await ctx.storage.delete(oldImageId);
+      } catch (e) {
+        console.warn("Old image delete failed", { oldImageId, e });
+      }
+    }
   },
 });

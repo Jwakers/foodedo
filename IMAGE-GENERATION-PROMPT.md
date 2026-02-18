@@ -6,6 +6,9 @@ RECIPE TITLE:
 RECIPE DESCRIPTION:
 {{DESCRIPTION}}
 
+METHOD (how the dish is made – use this to infer plating, garnishes, and final appearance):
+{{METHOD_STEPS}}
+
 STYLE GUIDELINES:
 
 - Clean, natural food photography
@@ -14,7 +17,6 @@ STYLE GUIDELINES:
 - Slight shallow depth of field (food in focus)
 - Neutral background (wooden table / light marble etc)
 - Simple plating (no distracting props)
-- Slight steam or shine to make food look fresh and appealing if appropriate
 - Close-crop that shows the whole meal
 - No text overlays or logos
 

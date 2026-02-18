@@ -68,18 +68,6 @@ export function Navbar() {
             <Plus className="h-6 w-6" />
           </Button>
 
-          {/* Discover */}
-          <Link href={ROUTES.DISCOVER}>
-            <Button
-              variant="ghost"
-              className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
-              aria-label="Discover recipes"
-            >
-              <Compass className="size-5" />
-              <span className="text-[0.625rem] sm:text-xs">Discover</span>
-            </Button>
-          </Link>
-
           {/* Chalkboard */}
           <Link href={ROUTES.CHALKBOARD}>
             <Button
