@@ -144,6 +144,33 @@ export const getAllUserRecipes = query({
 });
 
 /**
+ * Get system recipes without images for the image generation script.
+ * Returns minimal fields: _id, title, description.
+ * Used by: pnpm run generate-recipe-images
+ */
+export const getSystemRecipesForImageGeneration = query({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    return recipes
+      .filter((r) => !r.image)
+      .map((r) => ({
+        _id: r._id,
+        title: r.title,
+        description: r.description ?? null,
+        method: (r.method ?? []).map((step) => ({
+          title: step.title,
+          description: step.description ?? null,
+        })),
+      }));
+  },
+});
+
+/**
  * List all system recipes (public, no auth required).
  * Used by Discover page for SEO and unauthenticated visitors.
  */

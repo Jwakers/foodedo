@@ -8,10 +8,12 @@
  * Output: convex/generated-recipes/{protein}_batch_{seq}.json
  */
 
+import dotenv from "dotenv";
+dotenv.config();
+dotenv.config({ path: ".env.local", override: true });
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { PRIMARY_PROTEINS } from "../convex/lib/constants";
 
@@ -182,30 +184,6 @@ No commentary.
 No extra text.
 `;
 
-function loadEnv(): void {
-  const envPaths = [
-    path.resolve(__dirname, "..", ".env.local"),
-    path.resolve(__dirname, "..", ".env"),
-  ];
-  for (const envPath of envPaths) {
-    if (fs.existsSync(envPath)) {
-      const content = fs.readFileSync(envPath, "utf-8");
-      for (const line of content.split("\n")) {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith("#")) {
-          const eq = trimmed.indexOf("=");
-          if (eq > 0) {
-            const key = trimmed.slice(0, eq).trim();
-            const value = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
-            if (!process.env[key]) process.env[key] = value;
-          }
-        }
-      }
-      break;
-    }
-  }
-}
-
 function getExcludedTitles(protein: string): string[] {
   if (!fs.existsSync(OUTPUT_DIR)) return [];
   const files = fs.readdirSync(OUTPUT_DIR);
@@ -253,8 +231,7 @@ function buildPrompt(protein: string, batchSize: number): string {
       ? `EXCLUDED RECIPES (do NOT generate any of these - they already exist):\n${excludedTitles.map((t) => `   - ${t}`).join("\n")}\n`
       : "";
 
-  return RECIPE_GENERATION_PROMPT
-    .replace(/\{\{PRIMARY_PROTEIN\}\}/g, protein)
+  return RECIPE_GENERATION_PROMPT.replace(/\{\{PRIMARY_PROTEIN\}\}/g, protein)
     .replace(/\{\{BATCH_SIZE\}\}/g, String(batchSize))
     .replace("{{PROTEIN_CLARIFICATION}}", getProteinClarification(protein))
     .replace("{{EXCLUDED_TITLES_SECTION}}", excludedSection);
@@ -286,13 +263,17 @@ function parseArgs(): { protein: string; batchSize: number } {
   const protein = args[0].toLowerCase();
   const batchSize = args[1] ? parseInt(args[1], 10) : 10;
 
-  if (!PRIMARY_PROTEINS.includes(protein as (typeof PRIMARY_PROTEINS)[number])) {
+  if (
+    !PRIMARY_PROTEINS.includes(protein as (typeof PRIMARY_PROTEINS)[number])
+  ) {
     console.error(`Invalid protein: ${args[0]}`);
     console.error(`Valid proteins: ${PRIMARY_PROTEINS.join(", ")}`);
     process.exit(1);
   }
   if (isNaN(batchSize) || batchSize < 1 || batchSize > 10) {
-    console.error("batchSize must be 1–10 (larger batches may hit model output limits)");
+    console.error(
+      "batchSize must be 1–10 (larger batches may hit model output limits)",
+    );
     process.exit(1);
   }
 
@@ -300,18 +281,13 @@ function parseArgs(): { protein: string; batchSize: number } {
 }
 
 async function main(): Promise<void> {
-  loadEnv();
-
-  if (!process.env.OPENAI_API_KEY) {
-    console.error("OPENAI_API_KEY is not set. Add it to .env.local or .env, or set it in your shell.");
-    process.exit(1);
-  }
-
   const { protein, batchSize } = parseArgs();
 
   const excludedTitles = getExcludedTitles(protein);
   if (excludedTitles.length > 0) {
-    console.log(`Excluding ${excludedTitles.length} existing recipe titles to avoid duplicates.`);
+    console.log(
+      `Excluding ${excludedTitles.length} existing recipe titles to avoid duplicates.`,
+    );
   }
   console.log(`Generating ${batchSize} ${protein} recipes...`);
 
@@ -319,7 +295,7 @@ async function main(): Promise<void> {
 
   try {
     const result = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: "openai/gpt-4o-mini",
       prompt,
       temperature: 0.7,
     });
@@ -335,10 +311,12 @@ async function main(): Promise<void> {
     try {
       data = JSON.parse(text);
     } catch {
-      console.error("LLM returned invalid JSON. Writing raw response to .raw file for debugging.");
+      console.error(
+        "LLM returned invalid JSON. Writing raw response to .raw file for debugging.",
+      );
       const rawPath = path.join(
         OUTPUT_DIR,
-        `${protein}_batch_${String(getNextBatchSeq(protein)).padStart(3, "0")}_raw.txt`
+        `${protein}_batch_${String(getNextBatchSeq(protein)).padStart(3, "0")}_raw.txt`,
       );
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
       fs.writeFileSync(rawPath, result.text, "utf-8");
@@ -347,7 +325,10 @@ async function main(): Promise<void> {
     }
 
     if (!data.recipes || !Array.isArray(data.recipes)) {
-      console.error("LLM response missing 'recipes' array. Got keys:", Object.keys(data));
+      console.error(
+        "LLM response missing 'recipes' array. Got keys:",
+        Object.keys(data),
+      );
       process.exit(1);
     }
 

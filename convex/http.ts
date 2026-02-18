@@ -3,6 +3,7 @@ import { httpRouter } from "convex/server";
 import { Webhook } from "svix";
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 const http = httpRouter();
 
@@ -87,6 +88,90 @@ http.route({
       // Return 500 to trigger Clerk/Svix automatic retry
       // They will retry with exponential backoff
       return new Response("Internal server error", { status: 500 });
+    }
+  }),
+});
+
+// Recipe image script: single endpoint (same path as before, avoids "No matching routes")
+http.route({
+  path: "/upload-recipe-image",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    let body: {
+      recipeId?: Id<"recipes">;
+      image?: string;
+      mimeType?: string;
+    };
+    try {
+      body = (await request.json()) as typeof body;
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (!body.recipeId || !body.image) {
+      return new Response(
+        JSON.stringify({ error: "Missing recipeId or image" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    try {
+      const uploadUrl = await ctx.runMutation(
+        internal.migrations.getStorageUploadUrl,
+        {},
+      );
+
+      const binaryString = atob(body.image);
+      const imageBytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        imageBytes[i] = binaryString.charCodeAt(i);
+      }
+      const contentType = body.mimeType ?? "image/png";
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: "POST",
+        body: imageBytes,
+        headers: { "Content-Type": contentType },
+      });
+
+      if (!uploadRes.ok) {
+        const text = await uploadRes.text();
+        console.error("Convex storage upload failed", {
+          status: uploadRes.status,
+          text,
+        });
+        return new Response(
+          JSON.stringify({ error: "Storage upload failed" }),
+          { status: 502, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      const { storageId } = (await uploadRes.json()) as { storageId?: string };
+      if (!storageId) {
+        return new Response(
+          JSON.stringify({ error: "No storageId in upload response" }),
+          { status: 502, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      await ctx.runMutation(internal.migrations.setSystemRecipeImage, {
+        recipeId: body.recipeId,
+        storageId: storageId as Id<"_storage">,
+      });
+
+      return new Response(null, { status: 200 });
+    } catch (error) {
+      console.error("upload-recipe-image error:", error);
+      return new Response(
+        JSON.stringify({
+          error:
+            error instanceof Error ? error.message : "Internal server error",
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
     }
   }),
 });
