@@ -329,7 +329,6 @@ export default function ShoppingListClient() {
                 onDone={() => setShowDoneDialog(true)}
                 onBack={handleBack}
                 onEdit={handleEditList}
-                selectedChalkboardItems={selectedChalkboardItems}
                 setSelectedChalkboardItems={setSelectedChalkboardItems}
               />
             </div>
