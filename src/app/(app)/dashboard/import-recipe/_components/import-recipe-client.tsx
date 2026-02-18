@@ -290,7 +290,7 @@ export function ImportRecipeClient() {
             <Card className="p-6 md:p-8 mb-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-primary/10 rounded-lg">
-                  <Globe className="h-6 w-6 text-primary" />
+                  <Globe className="size-6 text-primary" />
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold">Enter Recipe URL</h2>
@@ -441,7 +441,7 @@ export function ImportRecipeClient() {
             <Card className="p-6 md:p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-accent/10 rounded-lg">
-                  <Camera className="h-6 w-6 text-accent-foreground" />
+                  <Camera className="size-6 text-accent-foreground" />
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold">Photograph Recipe</h2>

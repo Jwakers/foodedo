@@ -32,6 +32,11 @@ export const clearSystemRecipeImages = internalMutation({
         const { image, ...rest } = recipe;
         await ctx.db.replace(recipe._id, rest);
         updatedCount++;
+        try {
+          await ctx.storage.delete(image);
+        } catch (e) {
+          console.warn("Old image delete failed", { image, e });
+        }
       }
     }
 
