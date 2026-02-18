@@ -37,12 +37,12 @@ export function RecipeListGrid({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
+  const normalizedSearch = searchQuery.trim().toLowerCase();
   const filteredRecipes =
     recipes?.filter((recipe) => {
-      const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
-        recipe.title.toLowerCase().includes(searchLower) ||
-        (recipe.description ?? "").toLowerCase().includes(searchLower);
+        recipe.title.toLowerCase().includes(normalizedSearch) ||
+        (recipe.description ?? "").toLowerCase().includes(normalizedSearch);
 
       const matchesCategory =
         selectedCategory === "all" || recipe.category === selectedCategory;

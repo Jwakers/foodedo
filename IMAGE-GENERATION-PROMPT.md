@@ -28,7 +28,7 @@ COMPOSITION GUIDELINES:
 - If it’s plated, center the main portion with interesting garnishes
 - Garnish appropriate to cuisine and only if applicable (parsley for italian, lime/coriander for mexican/indian, etc.)
 
-SIZE GUIDELINES
+SIZE GUIDELINES:
 
 - Image must be large enough to serve as a hero image on a recipe landing page
 - Image MUST be 4:3 aspect ratio

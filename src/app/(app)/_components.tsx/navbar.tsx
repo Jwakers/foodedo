@@ -2,14 +2,7 @@
 
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
-import {
-  CalendarCheck,
-  ChefHat,
-  Clipboard,
-  Compass,
-  Home,
-  Plus,
-} from "lucide-react";
+import { CalendarCheck, ChefHat, Clipboard, Home, Plus } from "lucide-react";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { AddRecipeDrawer } from "./add-recipe-drawer";

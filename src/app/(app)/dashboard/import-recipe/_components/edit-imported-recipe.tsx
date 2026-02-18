@@ -390,9 +390,9 @@ export function EditImportedRecipe({
                       variant="ghost"
                       size="icon"
                       onClick={() => removeIngredient(index)}
-                      className="h-8 w-8"
+                      className="size-8"
                     >
-                      <X className="size-4" />
+                      <X className="size-8" />
                     </Button>
                   </div>
                 </Card>
@@ -477,9 +477,9 @@ export function EditImportedRecipe({
                       variant="ghost"
                       size="icon"
                       onClick={() => removeMethodStep(index)}
-                      className="h-8 w-8"
+                      className="size-8"
                     >
-                      <X className="size-4" />
+                      <X className="size-8" />
                     </Button>
                   </div>
                 </Card>

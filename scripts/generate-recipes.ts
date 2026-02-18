@@ -81,6 +81,7 @@ CRITICAL CONSTRAINTS:
 {{EXCLUDED_TITLES_SECTION}}
 
 5. Ingredients:
+   - Do NOT list salt, pepper, black pepper, or generic "oil" as ingredients—treat as pantry staples. Refer to them only in the method (e.g. "season with salt and pepper", "heat a little oil"). Only list named oils (e.g. olive oil, sesame oil).
    - MUST only use preparation values from:
      [
      "chopped","finely chopped","roughly chopped","diced","finely diced","rough chop",
@@ -90,11 +91,13 @@ CRITICAL CONSTRAINTS:
      "room temperature","chilled","warmed","softened","melted","frozen","defrosted",
      "beaten","whipped","folded","kneaded","rolled","pressed","strained","drained",
      "rinsed","peeled","trimmed","seeded","cored","stemmed","zested","de-boned",
-     "filleted","butterflied",
+     "deveined","filleted","butterflied",
      "blanched","toasted","roasted","caramelized","sautéed","fried","poached",
      "grilled","boiled","steamed","smoked",
      "fresh","dried"
      ]
+   - For prawns/shrimp use preparation "deveined" (not "de-boned").
+   - Use preparation only for standard prep (e.g. "butterflied" for chicken, not for pork). For meat that needs flattening or tenderising, describe that in a method step, not in preparation. Use null when no clear prep is needed.
 
    - MUST only use units from:
      Volume: ["cups","tsp","tbsp","fl oz","gal","ml","l","pt","qt"]
@@ -111,7 +114,7 @@ CRITICAL CONSTRAINTS:
 
    - Use "piece" (singular) not "pieces" for countable items (tortillas, pitas, etc.).
 
-   - Use exactly ONE preparation per ingredient. Never combine (e.g. no "grilled and sliced" or "cooked and shredded").
+   - Use exactly ONE preparation per ingredient. Never combine (e.g. no "grilled and sliced" or "gutted and trimmed"—use one allowed term only, e.g. "trimmed").
    - For citrus to be juiced: use "whole" (the method will describe juicing).
    - For Parmesan or hard cheese: use "grated" or "finely grated" (never "shaved").
    - For broccoli: use "chopped" or "halved" (never "florets").
@@ -123,7 +126,12 @@ CRITICAL CONSTRAINTS:
    - Keep ingredient naming consistent and normalised
    - No duplicate ingredient entries
 
-6. Schema Alignment:
+6. Recipe quality (revision-ready—no follow-up edit pass):
+   - Method: Use at least 2–4 clear steps; never a single monolithic step. Split long steps (e.g. "make the sauce" and "add the protein" as separate steps). Include any missing steps so the recipe is complete and cookable. When rice or pasta is served, include explicit cooking steps for it (e.g. "Cook the rice according to packet instructions" or "Boil the pasta until al dente, then drain").
+   - Descriptions: Write appealing, appetising descriptions. Keep tone natural; avoid hype or flowery language.
+   - Technique: Write for home cooks. Include: seasoning protein before frying/searing; resting meat where appropriate; when to add salt; for tofu, squeezing moisture before frying. Add brief practical detail (e.g. deglazing the pan, not crowding when searing, reducing stock) so results are consistent. Weave in short pro tips where helpful (resting proteins, balancing fat with acid, high heat for sear)—easy to follow but not dumbed down.
+
+7. Schema Alignment:
    Output must strictly follow this shape:
 
 {
@@ -162,7 +170,7 @@ cuisine: ["one_value_from_allowed_list"]
 ]
 }
 
-7. Intelligent Planner Awareness:
+8. Intelligent Planner Awareness:
    These recipes are foundational data for a scoring-based meal planning algorithm.
 
    They must:
@@ -171,7 +179,7 @@ cuisine: ["one_value_from_allowed_list"]
    - Provide enough structural variety to avoid repetition fatigue
    - Be appropriate for recurring weekly rotation
 
-8. Nutrition:
+9. Nutrition:
    - Provide realistic approximate values per serving
    - Keep within reasonable dinner ranges (400–900 kcal typical)
    - Avoid extreme macro distortions
@@ -330,6 +338,22 @@ async function main(): Promise<void> {
         Object.keys(data),
       );
       process.exit(1);
+    }
+
+    // Revision-ready: strip pantry staples from ingredients (prompt says not to list them; this is a safety net)
+    const pantryStapleNames = new Set([
+      "salt",
+      "pepper",
+      "black pepper",
+      "oil",
+      "vegetable oil",
+    ]);
+    for (const recipe of data.recipes as { ingredients?: { name?: string }[] }[]) {
+      if (recipe.ingredients?.length) {
+        recipe.ingredients = recipe.ingredients.filter(
+          (ing) => !pantryStapleNames.has((ing.name ?? "").toLowerCase().trim()),
+        );
+      }
     }
 
     const seq = getNextBatchSeq(protein);

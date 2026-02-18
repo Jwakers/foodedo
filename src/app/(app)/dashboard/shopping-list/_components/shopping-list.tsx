@@ -284,7 +284,7 @@ export default function ShoppingList({
                   key={item._id}
                   className="flex items-start gap-3 py-2 border-b"
                 >
-                  <div className="w-5 h-5 border-2 rounded flex-shrink-0 mt-0.5">
+                  <div className="size-5 border-2 rounded flex-shrink-0 mt-0.5">
                     {item.checked && (
                       <div className="w-full h-full flex items-center justify-center">
                         ✓
@@ -505,7 +505,7 @@ export default function ShoppingList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleRemoveItem(item._id)}
                       >
                         <X className="size-4" />

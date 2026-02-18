@@ -55,6 +55,7 @@ CRITICAL CONSTRAINTS:
    - Avoid near-duplicate meals
 
 5. Ingredients:
+   - Do NOT list salt, pepper, black pepper, or generic "oil" as ingredients—treat as pantry staples. Refer to them only in the method. Only list named oils (e.g. olive oil, sesame oil).
    - MUST only use preparation values from:
      [
      "chopped","finely chopped","roughly chopped","diced","finely diced","rough chop",
@@ -64,11 +65,12 @@ CRITICAL CONSTRAINTS:
      "room temperature","chilled","warmed","softened","melted","frozen","defrosted",
      "beaten","whipped","folded","kneaded","rolled","pressed","strained","drained",
      "rinsed","peeled","trimmed","seeded","cored","stemmed","zested","de-boned",
-     "filleted","butterflied",
+     "deveined","filleted","butterflied",
      "blanched","toasted","roasted","caramelized","sautéed","fried","poached",
      "grilled","boiled","steamed","smoked",
      "fresh","dried"
      ]
+   - For prawns/shrimp use preparation "deveined" (not "de-boned"). Use preparation only for standard prep; use null when no clear prep. For flattening/tenderising meat, describe in the method, not in preparation.
 
    - MUST only use units from:
      Volume: ["cups","tsp","tbsp","fl oz","gal","ml","l","pt","qt"]
@@ -86,7 +88,12 @@ CRITICAL CONSTRAINTS:
    - Keep ingredient naming consistent and normalised
    - No duplicate ingredient entries
 
-6. Schema Alignment:
+6. Recipe quality (revision-ready):
+   - Method: At least 2–4 clear steps; never one monolithic step. Split long steps. Include rice/pasta cooking steps when served. Complete and cookable.
+   - Descriptions: Appealing, natural tone; no hype or flowery language.
+   - Technique: Home-cook friendly—season before frying, resting meat, when to add salt; tofu squeeze moisture first. Brief pro tips (deglazing, not crowding, resting proteins, fat/acid balance) where helpful.
+
+7. Schema Alignment:
    Output must strictly follow this shape:
    - prepTime (number) and cookTime (number, optional) - total time = prepTime + cookTime
    - complexityTier must be one of: "simple" | "moderate" | "complex"
@@ -128,7 +135,7 @@ cuisine: ["one_value_from_allowed_list"]
 ]
 }
 
-7. Intelligent Planner Awareness:
+8. Intelligent Planner Awareness:
    These recipes are foundational data for a scoring-based meal planning algorithm.
 
    They must:
@@ -137,7 +144,7 @@ cuisine: ["one_value_from_allowed_list"]
    - Provide enough structural variety to avoid repetition fatigue
    - Be appropriate for recurring weekly rotation
 
-8. Nutrition:
+9. Nutrition:
    - Provide realistic approximate values per serving
    - Keep within reasonable dinner ranges (400–900 kcal typical)
    - Avoid extreme macro distortions

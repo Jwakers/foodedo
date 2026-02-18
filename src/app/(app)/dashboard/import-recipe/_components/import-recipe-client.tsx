@@ -257,7 +257,7 @@ export function ImportRecipeClient() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10"
+            className="size-10"
             onClick={(e) => {
               if (parsedRecipe && !recipeSave.isSaved) {
                 const confirmed = window.confirm(

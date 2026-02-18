@@ -14,9 +14,9 @@ Update app name to Foodedo
 - [ ] Apply redirects in vercel
 
 - [ ] Titles on listing cards need either a gradient or blurred background
-- [ ] Update the filtering on the discover page, remove category.
-- [ ] Change order of discover page to alphabetical
-- [ ] Use next/image for public images on the discover page
+- [ ] Update the filtering on the Discover page, remove category.
+- [ ] Change order of Discover page to alphabetical
+- [ ] Use next/image for public images on the Discover page
 - [ ] Set up the blog for the site (infrastructure).
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).

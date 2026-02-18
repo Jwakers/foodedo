@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { canAccessRecipe } from "./households";
 import {
@@ -13,6 +14,29 @@ import {
   getCurrentUserOrThrow,
   getUserSubscription,
 } from "./users";
+
+type MethodStepWithImage = {
+  title: string;
+  description?: string;
+  image?: Id<"_storage">;
+};
+
+async function resolveMethodImageUrls(
+  ctx: QueryCtx,
+  method: MethodStepWithImage[] = [],
+): Promise<
+  (MethodStepWithImage & { imageUrl?: string | null })[]
+> {
+  return Promise.all(
+    method.map(async (step) => {
+      if (step.image) {
+        const imageUrl = await ctx.storage.getUrl(step.image);
+        return { ...step, imageUrl };
+      }
+      return { ...step, imageUrl: undefined };
+    }),
+  );
+}
 
 export const getRecipe = query({
   args: {
@@ -28,14 +52,9 @@ export const getRecipe = query({
       const image = recipe.image
         ? await ctx.storage.getUrl(recipe.image)
         : null;
-      const methodWithUrls = await Promise.all(
-        (recipe.method ?? []).map(async (step) => {
-          if (step.image) {
-            const stepImageUrl = await ctx.storage.getUrl(step.image);
-            return { ...step, imageUrl: stepImageUrl };
-          }
-          return { ...step, imageUrl: undefined };
-        }),
+      const methodWithUrls = await resolveMethodImageUrls(
+        ctx,
+        recipe.method ?? [],
       );
       return {
         ...recipe,
@@ -61,14 +80,9 @@ export const getRecipe = query({
       ? await ctx.storage.getUrl(recipe.image)
       : null;
 
-    const methodWithUrls = await Promise.all(
-      (recipe.method ?? []).map(async (step) => {
-        if (step.image) {
-          const stepImageUrl = await ctx.storage.getUrl(step.image);
-          return { ...step, imageUrl: stepImageUrl };
-        }
-        return { ...step, imageUrl: undefined };
-      }),
+    const methodWithUrls = await resolveMethodImageUrls(
+      ctx,
+      recipe.method ?? [],
     );
 
     let ownerName: string | null = null;

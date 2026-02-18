@@ -93,12 +93,32 @@ http.route({
 });
 
 // Recipe image script: single endpoint (same path as before, avoids "No matching routes")
+// Protected by RECIPE_IMAGE_UPLOAD_SECRET so it is not publicly callable.
 http.route({
   path: "/upload-recipe-image",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
+    const uploadSecret = process.env.RECIPE_IMAGE_UPLOAD_SECRET;
+    if (!uploadSecret) {
+      console.error("RECIPE_IMAGE_UPLOAD_SECRET is not set");
+      return new Response(JSON.stringify({ error: "Upload not configured" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const authHeader = request.headers.get("Authorization");
+    const bearer = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    if (bearer !== uploadSecret) {
+      return new Response(JSON.stringify({ error: "Unauthorised" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     let body: {
-      recipeId?: Id<"recipes">;
+      recipeId?: string;
       image?: string;
       mimeType?: string;
     };
@@ -158,7 +178,7 @@ http.route({
       }
 
       await ctx.runMutation(internal.migrations.setSystemRecipeImage, {
-        recipeId: body.recipeId,
+        recipeId: body.recipeId as Id<"recipes">,
         storageId: storageId as Id<"_storage">,
       });
 

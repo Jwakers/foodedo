@@ -14,7 +14,6 @@
     "generate-recipe-images": "tsx scripts/generate-recipe-images.ts"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.29",
     "@clerk/backend": "^2.15.0",
     "@clerk/nextjs": "^6.37.3",
     "@clerk/themes": "^2.4.21",

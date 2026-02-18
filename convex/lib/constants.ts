@@ -75,6 +75,7 @@ export const PREPARATION_OPTIONS = [
   "stemmed",
   "zested",
   "de-boned",
+  "deveined",
   "filleted",
   "butterflied",
   // Cooking methods (pre-cooked ingredients)
@@ -211,17 +212,17 @@ type PlanLimits = {
 
 /** Plan limits by subscription tier. Use -1 to represent unlimited. */
 export const PLANS: Record<SubscriptionTier, PlanLimits> = {
-   // Beta: increased free tier limits. Original values: maxRecipes 15, maxHouseholds 1, maxActiveShoppingLists 3
-   free_user: {
-     maxRecipes: 100,
-     maxHouseholds: 5,
-     maxActiveShoppingLists: 10,
-   },
-   pro_user: {
-     maxRecipes: -1, // unlimited
-     maxHouseholds: -1, // unlimited
-     maxActiveShoppingLists: -1, // unlimited
-   },
+  // Beta: increased free tier limits. Original values: maxRecipes 15, maxHouseholds 1, maxActiveShoppingLists 3
+  free_user: {
+    maxRecipes: 100,
+    maxHouseholds: 5,
+    maxActiveShoppingLists: 10,
+  },
+  pro_user: {
+    maxRecipes: -1, // unlimited
+    maxHouseholds: -1, // unlimited
+    maxActiveShoppingLists: -1, // unlimited
+  },
 } as const satisfies Record<SubscriptionTier, PlanLimits>;
 
 export const FREE_TIER_LIMITS = PLANS.free_user;
@@ -284,3 +285,11 @@ export const IMAGE_COMPRESSION = {
   /** JPEG quality for compression (0-1) */
   QUALITY: 0.8,
 } as const;
+
+/**
+ * Clamp editorialBias to schema invariant (0, 2]; neutral = 1.
+ * Use in any mutation that writes recipe generator metadata (editorialBias).
+ */
+export function clampEditorialBias(value: number): number {
+  return Math.min(Math.max(value, 0.001), 2);
+}

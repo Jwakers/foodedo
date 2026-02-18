@@ -38,7 +38,7 @@ export default function PricingPage() {
               variant="secondary"
               className="w-fit bg-primary/10 text-primary border-primary/20 text-sm px-4 py-2 mx-auto"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="size-4 mr-2" />
               Beta
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold">

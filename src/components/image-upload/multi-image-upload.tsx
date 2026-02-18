@@ -226,9 +226,9 @@ export function MultiImageUpload({
         >
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="flex items-center gap-2">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              <ImageIcon className="size-8 text-muted-foreground" />
               {showCamera && (
-                <Camera className="h-8 w-8 text-muted-foreground" />
+                <Camera className="size-8 text-muted-foreground" />
               )}
             </div>
             <div className="text-center">
@@ -306,7 +306,7 @@ export function MultiImageUpload({
                       size="icon"
                       onClick={() => removeImage(image.id)}
                       disabled={disabled}
-                      className="h-8 w-8"
+                      className="size-8"
                     >
                       <X className="size-4" />
                     </Button>

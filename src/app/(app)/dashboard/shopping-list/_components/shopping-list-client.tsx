@@ -475,8 +475,8 @@ export default function ShoppingListClient() {
                 <LoadingState />
               ) : filteredRecipes.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6 mx-auto">
-                    <ChefHat className="h-12 w-12 text-muted-foreground" />
+                  <div className="size-24 bg-muted rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <ChefHat className="size-12 text-muted-foreground" />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {allRecipes.length === 0
@@ -601,7 +601,7 @@ function RecipeSelectionCard({
             )}
             {!recipe.image && (
               <div className="flex items-center justify-center h-full w-full">
-                <ChefHat className="h-10 w-10 text-muted-foreground" />
+                <ChefHat className="size-10 text-muted-foreground" />
               </div>
             )}
             {isSelected && (

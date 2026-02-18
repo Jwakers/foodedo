@@ -205,6 +205,11 @@ const ALL_RECIPE_BATCHES = [
 
 type JsonRecipe = (typeof ALL_RECIPE_BATCHES)[number]["recipes"][number];
 
+/**
+ * Maps a JSON recipe to the DB document shape. All enum/type casts (unit, preparation,
+ * primaryProtein, complexityTier, cuisine, etc.) rely on external validation: callers
+ * must run scripts/validate-recipes.ts (or equivalent runtime checks) before import.
+ */
 function mapJsonRecipeToDb(r: JsonRecipe): WithoutSystemFields<Doc<"recipes">> {
   const now = Date.now();
 
@@ -282,11 +287,7 @@ export const importGeneratedRecipes = internalMutation({
         continue;
       }
       const doc = mapJsonRecipeToDb(r);
-      // Cast: JSON values validated by scripts; unit/preparation are valid schema values
-      await ctx.db.insert(
-        "recipes",
-        doc as Omit<Doc<"recipes">, "_id" | "_creationTime">,
-      );
+      await ctx.db.insert("recipes", doc);
       existingTitles.add(normalizedTitle);
       inserted++;
     }
@@ -360,9 +361,7 @@ export const patchSystemRecipesFromFile = internalMutation({
           }),
           ...(r.cuisine != null &&
             r.cuisine.length > 0 && { cuisine: r.cuisine as Cuisine[] }),
-          ...(r.totalTimeMinutes != null && {
-            totalTimeMinutes: r.totalTimeMinutes,
-          }),
+          totalTimeMinutes: r.prepTime + (r.cookTime ?? 0),
           ...(r.isGeneratorEligible != null && {
             isGeneratorEligible: r.isGeneratorEligible,
           }),

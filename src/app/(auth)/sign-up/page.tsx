@@ -29,10 +29,10 @@ export default function SignUpPage() {
         <div className="absolute inset-0 bg-linear-to-br from-primary/80 to-primary/60"></div>
 
         {/* Decorative Elements */}
-        <div className="absolute top-20 right-20 w-32 h-32 bg-primary-foreground/10 rounded-full"></div>
-        <div className="absolute bottom-32 left-16 w-24 h-24 bg-primary-foreground/10 rounded-full"></div>
-        <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-primary-foreground/5 rounded-full"></div>
-        <div className="absolute bottom-1/4 right-1/3 w-20 h-20 bg-primary-foreground/5 rounded-full"></div>
+        <div className="absolute top-20 right-20 size-32 bg-primary-foreground/10 rounded-full"></div>
+        <div className="absolute bottom-32 left-16 size-24 bg-primary-foreground/10 rounded-full"></div>
+        <div className="absolute top-1/3 right-1/4 size-16 bg-primary-foreground/5 rounded-full"></div>
+        <div className="absolute bottom-1/4 right-1/3 size-20 bg-primary-foreground/5 rounded-full"></div>
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center p-16 text-primary-foreground">
