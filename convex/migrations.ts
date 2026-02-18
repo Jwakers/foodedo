@@ -29,8 +29,8 @@ export const clearSystemRecipeImages = internalMutation({
     let updatedCount = 0;
     for (const recipe of recipes) {
       if (recipe.image != null) {
-        const { image, ...rest } = recipe;
-        await ctx.db.replace(recipe._id, rest);
+        const { _id, _creationTime, image, ...rest } = recipe;
+        await ctx.db.replace(_id, rest as WithoutSystemFields<Doc<"recipes">>);
         updatedCount++;
         try {
           await ctx.storage.delete(image);
@@ -64,10 +64,11 @@ export const removeRecipeStatusField = internalMutation({
       if ("status" in recipe) {
         // Patch the recipe to remove the status field by replacing the document
         // Since Convex doesn't allow direct field deletion, we need to reconstruct
-        const { status, ...recipeWithoutStatus } = recipe;
-
-        // Delete old document and create new one with same _id
-        await ctx.db.replace(recipe._id, recipeWithoutStatus);
+        const { _id, _creationTime, status, ...recipeWithoutStatus } = recipe;
+        await ctx.db.replace(
+          _id,
+          recipeWithoutStatus as WithoutSystemFields<Doc<"recipes">>,
+        );
         updatedCount++;
       }
     }
@@ -159,10 +160,11 @@ export const removeMealPlanCreatedAtField = internalMutation({
       if ("createdAt" in plan) {
         // Remove the createdAt field by replacing the document
         // Since Convex doesn't allow direct field deletion, we need to reconstruct
-        const { createdAt, ...planWithoutCreatedAt } = plan;
-
-        // Replace the document without the createdAt field
-        await ctx.db.replace(plan._id, planWithoutCreatedAt);
+        const { _id, _creationTime, createdAt, ...planWithoutCreatedAt } = plan;
+        await ctx.db.replace(
+          _id,
+          planWithoutCreatedAt as WithoutSystemFields<Doc<"mealPlans">>,
+        );
         updatedCount++;
       }
     }
