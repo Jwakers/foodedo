@@ -35,15 +35,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { startOfDayMs } from "convex/mealPlans";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;
-
-function startOfDayMs(ms: number): number {
-  const d = new Date(ms);
-  d.setUTCHours(0, 0, 0, 0);
-  return d.getTime();
-}
 
 function formatDateShort(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, {
@@ -206,7 +201,7 @@ function HeroSection() {
   const firstName = user?.firstName || "there";
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background rounded-xl border border-primary/20 p-6 mb-6">
+    <div className="relative overflow-hidden bg-linear-to-br from-primary/10 via-primary/5 to-background rounded-xl border border-primary/20 p-6 mb-6">
       <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
       <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
 

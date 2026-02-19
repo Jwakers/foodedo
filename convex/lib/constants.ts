@@ -191,6 +191,19 @@ export const CUISINES = [
 /** Max cuisine selections per recipe (fusion food) */
 export const CUISINE_MAX_SELECTIONS = 2;
 
+// Intelligent Weekly Generator (Spec 4.4, 6.4)
+/** Recipes suggested within this many days are excluded from the next generation (avoid repetition). */
+export const RECENTLY_SUGGESTED_DAYS = 14;
+/** Smoothing for acceptance score: (kept + SMOOTHING) / (suggested + SMOOTHING_FACTOR). Avoids 0/0; new recipes get ~0.5. */
+export const SMOOTHING = 1;
+export const SMOOTHING_FACTOR = 2;
+/** Max times the same primary protein can appear in a generated week (variety constraint). */
+export const MAX_PRIMARY_PROTEIN_PER_WEEK = 2;
+/** Max times the same cuisine can appear in a generated week (diversification). */
+export const MAX_CUISINE_PER_WEEK = 2;
+/** Upper bound for getRecipesForWeeklyPlan limit (pool size for client/weekly plan). */
+export const MAX_WEEKLY_PLAN_POOL_SIZE = 50;
+export const MAX_DAYS_IN_MEAL_PLAN = 7;
 // TypeScript types
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];
 export type PreparationOption = (typeof PREPARATION_OPTIONS)[number];

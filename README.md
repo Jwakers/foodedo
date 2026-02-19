@@ -4,10 +4,10 @@
 
 ### Next Immediate Steps
 
-- [ ] Copy system recipes over to production
-- [ ] Generate a design for the automated weekly meal planner
+- [x] Copy system recipes over to production
+- [x] Generate a design for the automated weekly meal planner
 - [ ] Do front end for weekly meal planner with pseudo logic
-- [ ] Implement meal planner algorithm proper
+- [x] Implement meal planner algorithm (core generation in convex/mealPlanGenerator.ts; behavioural stats, finalise/day-view, and frontend integration complete)
 
 - [ ] Titles on listing cards need either a gradient or blurred background
 - [ ] Update the filtering on the Discover page, remove category.
