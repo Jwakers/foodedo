@@ -17,7 +17,7 @@ function startOfDayMs(ms: number): number {
 export async function canAccessMealPlan(
   ctx: QueryCtx,
   userId: Id<"users">,
-  plan: { userId: Id<"users">; householdId?: Id<"households"> }
+  plan: { userId: Id<"users">; householdId?: Id<"households"> },
 ): Promise<boolean> {
   if (plan.userId === userId) return true;
   if (plan.householdId) {
@@ -29,7 +29,7 @@ export async function canAccessMealPlan(
 export async function isMealPlanOwner(
   _ctx: QueryCtx,
   userId: Id<"users">,
-  plan: { userId: Id<"users"> }
+  plan: { userId: Id<"users"> },
 ): Promise<boolean> {
   return plan.userId === userId;
 }
@@ -65,6 +65,9 @@ export const getMealPlan = query({
         const image = recipe.image
           ? await ctx.storage.getUrl(recipe.image)
           : null;
+        const totalTimeMinutes =
+          recipe.totalTimeMinutes ??
+          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
         return {
           ...entry,
           recipe: {
@@ -72,15 +75,21 @@ export const getMealPlan = query({
             title: recipe.title,
             image,
             ingredients: recipe.ingredients,
+            prepTime: recipe.prepTime ?? 0,
+            cookTime: recipe.cookTime,
+            totalTimeMinutes,
+            nutrition: recipe.nutrition,
+            category: recipe.category,
+            primaryProtein: recipe.primaryProtein,
           },
         };
-      })
+      }),
     );
 
     return {
       ...plan,
       entries: entriesWithRecipes.sort(
-        (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0)
+        (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
       ),
       isOwner: plan.userId === user._id,
     };
@@ -102,7 +111,7 @@ export const getCurrentMealPlan = query({
     const ownedPlans = await ctx.db
       .query("mealPlans")
       .withIndex("by_user_and_endDate", (q) =>
-        q.eq("userId", user._id).gte("endDate", today)
+        q.eq("userId", user._id).gte("endDate", today),
       )
       .order("desc")
       .collect();
@@ -147,6 +156,9 @@ export const getCurrentMealPlan = query({
         const image = recipe.image
           ? await ctx.storage.getUrl(recipe.image)
           : null;
+        const totalTimeMinutes =
+          recipe.totalTimeMinutes ??
+          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
         return {
           ...entry,
           recipe: {
@@ -154,15 +166,21 @@ export const getCurrentMealPlan = query({
             title: recipe.title,
             image,
             ingredients: recipe.ingredients,
+            prepTime: recipe.prepTime ?? 0,
+            cookTime: recipe.cookTime,
+            totalTimeMinutes,
+            nutrition: recipe.nutrition,
+            category: recipe.category,
+            primaryProtein: recipe.primaryProtein,
           },
         };
-      })
+      }),
     );
 
     return {
       ...current,
       entries: entriesWithRecipes.sort(
-        (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0)
+        (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
       ),
       isOwner: current.userId === user._id,
     };
@@ -193,7 +211,7 @@ export const getMealPlansForUser = query({
       const plans = await ctx.db
         .query("mealPlans")
         .withIndex("by_household_and_endDate", (q) =>
-          q.eq("householdId", m.householdId)
+          q.eq("householdId", m.householdId),
         )
         .order("desc")
         .collect();
@@ -222,6 +240,9 @@ export const createMealPlan = mutation({
   args: {
     endDate: v.optional(v.number()),
     startDate: v.optional(v.number()),
+    isGenerated: v.optional(v.boolean()),
+    generatedAt: v.optional(v.number()),
+    generationSeed: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -234,7 +255,9 @@ export const createMealPlan = mutation({
     }
     const startDate = args.startDate;
     if (startDate !== undefined && startDate > endDate) {
-      throw new ConvexError("Start date must be on or before the plan end date");
+      throw new ConvexError(
+        "Start date must be on or before the plan end date",
+      );
     }
 
     const planId = await ctx.db.insert("mealPlans", {
@@ -242,7 +265,9 @@ export const createMealPlan = mutation({
       endDate,
       startDate: args.startDate,
       updatedAt: now,
-      isGenerated: false,
+      isGenerated: args.isGenerated ?? false,
+      generatedAt: args.generatedAt,
+      generationSeed: args.generationSeed,
     });
     return { planId };
   },
@@ -268,13 +293,8 @@ export const updateMealPlanEndDate = mutation({
     if (normalizedEnd < today) {
       throw new ConvexError("End date must be today or in the future");
     }
-    if (
-      plan.startDate !== undefined &&
-      normalizedEnd < plan.startDate
-    ) {
-      throw new ConvexError(
-        "End date must be on or after the plan start date"
-      );
+    if (plan.startDate !== undefined && normalizedEnd < plan.startDate) {
+      throw new ConvexError("End date must be on or after the plan start date");
     }
     await ctx.db.patch(args.mealPlanId, {
       endDate: normalizedEnd,
@@ -350,10 +370,7 @@ export const addEntry = mutation({
       throw new ConvexError("Only the plan owner can add meals");
     }
     const dateStart = startOfDayMs(args.date);
-    if (
-      plan.startDate !== undefined &&
-      dateStart < plan.startDate
-    ) {
+    if (plan.startDate !== undefined && dateStart < plan.startDate) {
       throw new ConvexError("Date must be on or after the plan start date");
     }
     if (dateStart > plan.endDate) {
@@ -388,6 +405,7 @@ export const updateEntry = mutation({
     recipeId: v.optional(v.id("recipes")),
     mealLabel: v.optional(v.string()),
     order: v.optional(v.number()),
+    isLocked: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -403,13 +421,11 @@ export const updateEntry = mutation({
       recipeId?: Id<"recipes">;
       mealLabel?: string;
       order?: number;
+      isLocked?: boolean;
     } = {};
     if (args.date !== undefined) {
       const dateStart = startOfDayMs(args.date);
-      if (
-        plan.startDate !== undefined &&
-        dateStart < plan.startDate
-      ) {
+      if (plan.startDate !== undefined && dateStart < plan.startDate) {
         throw new ConvexError("Date must be on or after the plan start date");
       }
       if (dateStart > plan.endDate) {
@@ -428,6 +444,7 @@ export const updateEntry = mutation({
     }
     if (args.mealLabel !== undefined) updates.mealLabel = args.mealLabel;
     if (args.order !== undefined) updates.order = args.order;
+    if (args.isLocked !== undefined) updates.isLocked = args.isLocked;
     await ctx.db.patch(args.entryId, updates);
     await ctx.db.patch(entry.mealPlanId, { updatedAt: Date.now() });
     return { success: true };

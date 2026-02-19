@@ -208,6 +208,96 @@ export const getSystemRecipes = query({
   },
 });
 
+/**
+ * Get up to N recipes from the user's pool (system + user + household) for weekly plan generation.
+ * No intelligent selection—deterministic order by _id, take first `limit`. Used by "Generate My Week".
+ */
+export const getRecipesForWeeklyPlan = query({
+  args: { limit: v.number() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const limit = Math.min(Math.max(1, args.limit), 50);
+
+    // 1. System recipe ids
+    const systemRecipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+    const systemIds = new Set(systemRecipes.map((r) => r._id));
+
+    // 2. User recipe ids
+    const userRecipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const userIds = new Set(userRecipes.map((r) => r._id));
+
+    // 3. Household recipe ids (user is member of household that has access)
+    const memberships = await ctx.db
+      .query("householdMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const householdRecipeIds = new Set<Id<"recipes">>();
+    for (const m of memberships) {
+      const shared = await ctx.db
+        .query("householdRecipes")
+        .withIndex("by_household", (q) => q.eq("householdId", m.householdId))
+        .collect();
+      for (const s of shared) {
+        householdRecipeIds.add(s.recipeId);
+      }
+    }
+
+    // 4. Dedupe and sort deterministically
+    const allIds = [
+      ...new Set([...systemIds, ...userIds, ...householdRecipeIds]),
+    ].sort();
+
+    // 5. Take first `limit` and fetch full docs (with access check for household recipes)
+    const idsToFetch = allIds.slice(0, limit);
+    const results: Array<{
+      _id: Id<"recipes">;
+      title: string;
+      image: string | null;
+      prepTime: number;
+      cookTime: number | undefined;
+      totalTimeMinutes: number | undefined;
+      nutrition: { calories?: number } | undefined;
+      category: string;
+    }> = [];
+
+    for (const recipeId of idsToFetch) {
+      const recipe = await ctx.db.get(recipeId);
+      if (!recipe) continue;
+      // System recipes: all authed users can use. User recipes: already have. Household: must have access.
+      if (recipe.source !== "system" && recipe.userId !== user._id) {
+        const { canAccess } = await canAccessRecipe(ctx, user._id, recipeId);
+        if (!canAccess) continue;
+      }
+      const image = recipe.image
+        ? await ctx.storage.getUrl(recipe.image)
+        : null;
+      const totalMin =
+        recipe.totalTimeMinutes ??
+        (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+      results.push({
+        _id: recipe._id,
+        title: recipe.title,
+        image,
+        prepTime: recipe.prepTime ?? 0,
+        cookTime: recipe.cookTime,
+        totalTimeMinutes: totalMin > 0 ? totalMin : undefined,
+        nutrition: recipe.nutrition,
+        category: recipe.category,
+      });
+    }
+
+    return results;
+  },
+});
+
 export const getRecentActivity = query({
   args: {},
   handler: async (ctx) => {

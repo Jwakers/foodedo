@@ -4,8 +4,8 @@
 
 ### Next Immediate Steps
 
-- [ ] Copy system recipes over to production
-- [ ] Generate a design for the automated weekly meal planner
+- [x] Copy system recipes over to production
+- [x] Generate a design for the automated weekly meal planner
 - [ ] Do front end for weekly meal planner with pseudo logic
 - [ ] Implement meal planner algorithm proper
 

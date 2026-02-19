@@ -28,7 +28,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -43,34 +42,26 @@ import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
-  Calendar,
-  CalendarCheck,
-  ChefHat,
+  ArrowRight,
   Home,
   MoreVertical,
-  Plus,
   ShoppingCart,
+  Sparkles,
   Trash2,
   Users,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { EmptySlot } from "./empty-slot";
+import { MealPlanCard } from "./meal-plan-card";
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
 >;
-type UserRecipe = FunctionReturnType<
-  typeof api.recipes.getAllUserRecipes
->[number];
-type HouseholdRecipe = FunctionReturnType<
-  typeof api.households.getAllHouseholdRecipes
->[number];
-type Recipe = UserRecipe | HouseholdRecipe;
 
-const MEAL_LABELS = ["Breakfast", "Lunch", "Dinner", "Other"] as const;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 function startOfDayMs(ms: number): number {
   const d = new Date(ms);
@@ -78,53 +69,44 @@ function startOfDayMs(ms: number): number {
   return d.getTime();
 }
 
-function formatDateKey(ms: number): string {
-  const d = new Date(ms);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function formatDateLabel(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+function shuffle<T>(array: T[]): T[] {
+  const out = [...array];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
 }
 
 export default function MealPlanClient() {
   const router = useRouter();
   const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);
-  const userRecipes = useQuery(api.recipes.getAllUserRecipes);
-  const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
+  const poolRecipes = useQuery(api.recipes.getRecipesForWeeklyPlan, {
+    limit: 50,
+  });
   const households = useQuery(api.households.getUserHouseholds);
   const listsForPlan = useQuery(
     api.shoppingLists.getShoppingListsByMealPlan,
-    currentPlan ? { mealPlanId: currentPlan._id } : "skip"
+    currentPlan ? { mealPlanId: currentPlan._id } : "skip",
   );
   const personalChalkboard = useQuery(api.chalkboard.getPersonalChalkboard);
   const householdChalkboards = useQuery(
-    api.chalkboard.getAllHouseholdChalkboards
+    api.chalkboard.getAllHouseholdChalkboards,
   );
 
   const createMealPlan = useMutation(api.mealPlans.createMealPlan);
   const addEntry = useMutation(api.mealPlans.addEntry);
   const removeEntry = useMutation(api.mealPlans.removeEntry);
+  const updateEntry = useMutation(api.mealPlans.updateEntry);
   const deleteMealPlan = useMutation(api.mealPlans.deleteMealPlan);
   const shareMealPlanWithHousehold = useMutation(
-    api.mealPlans.shareMealPlanWithHousehold
+    api.mealPlans.shareMealPlanWithHousehold,
   );
   const unshareMealPlan = useMutation(api.mealPlans.unshareMealPlan);
   const createShoppingListFromMealPlan = useMutation(
-    api.shoppingLists.createShoppingListFromMealPlan
+    api.shoppingLists.createShoppingListFromMealPlan,
   );
 
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [createStartDate, setCreateStartDate] = useState("");
-  const [createEndDate, setCreateEndDate] = useState("");
-  const [addingForDate, setAddingForDate] = useState<number | null>(null);
   const [selectedChalkboardIds, setSelectedChalkboardIds] = useState<
     Set<Id<"chalkboardItems">>
   >(new Set());
@@ -134,100 +116,139 @@ export default function MealPlanClient() {
     Id<"households"> | ""
   >("");
   const [showDeletePlanDialog, setShowDeletePlanDialog] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const allRecipes = useMemo(() => {
-    const user = userRecipes ?? [];
-    const household = householdRecipes ?? [];
-    return [...user, ...household];
-  }, [userRecipes, householdRecipes]);
+  const entriesSorted = useMemo(() => {
+    const entries = currentPlan?.entries ?? [];
+    return [...entries].sort(
+      (a, b) => (a.order ?? 999) - (b.order ?? 999) || a.date - b.date,
+    );
+  }, [currentPlan?.entries]);
 
-  const displayRange = useMemo((): { start: number; end: number } | null => {
-    if (!currentPlan) return null;
-    const today = startOfDayMs(Date.now());
-    const entries = currentPlan.entries ?? [];
-    const minEntryDate =
-      entries.length > 0 ? Math.min(...entries.map((e) => e.date)) : today;
-    const start =
-      currentPlan.startDate ?? Math.min(minEntryDate, currentPlan.endDate);
-    return { start, end: currentPlan.endDate };
-  }, [currentPlan]);
+  const emptySlotsCount = useMemo(
+    () => Math.max(0, 7 - (currentPlan?.entries?.length ?? 0)),
+    [currentPlan?.entries?.length],
+  );
 
-  const daysWithEntries = useMemo(() => {
-    if (!currentPlan || !displayRange) return [];
-    const days: {
-      date: number;
-      dateLabel: string;
-      entries: CurrentPlan["entries"];
-    }[] = [];
-    for (
-      let d = displayRange.start;
-      d <= displayRange.end;
-      d += 24 * 60 * 60 * 1000
-    ) {
-      const dayStart = startOfDayMs(d);
-      const entries =
-        currentPlan.entries?.filter((e) => startOfDayMs(e.date) === dayStart) ??
-        [];
-      days.push({
-        date: dayStart,
-        dateLabel: formatDateLabel(dayStart),
-        entries,
-      });
+  const handleGenerateWeek = useCallback(async () => {
+    const startDate = startOfDayMs(Date.now());
+    const endDate = startOfDayMs(Date.now() + 7 * ONE_DAY_MS);
+    const pool = poolRecipes ?? [];
+    const toAdd = shuffle(pool).slice(0, 7);
+    if (toAdd.length === 0) {
+      toast.error("No recipes available. Add or discover recipes first.");
+      return;
     }
-    return days;
-  }, [currentPlan, displayRange]);
-
-  const defaultStartDate = useMemo(() => {
-    return formatDateKey(startOfDayMs(Date.now()));
-  }, []);
-
-  const defaultEndDate = useMemo(() => {
-    const in7 = new Date();
-    in7.setDate(in7.getDate() + 7);
-    return formatDateKey(startOfDayMs(in7.getTime()));
-  }, []);
-
-  const handleCreatePlan = async () => {
-    const startDateMs = createStartDate
-      ? (() => {
-        const [y, m, d] = createStartDate.split("-").map(Number);
-        return startOfDayMs(new Date(y, m - 1, d).getTime());
-      })()
-      : startOfDayMs(Date.now());
-    const endDateMs = createEndDate
-      ? (() => {
-        const [y, m, d] = createEndDate.split("-").map(Number);
-        return startOfDayMs(new Date(y, m - 1, d).getTime());
-      })()
-      : startOfDayMs(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    setIsGenerating(true);
     try {
-      await createMealPlan({ startDate: startDateMs, endDate: endDateMs });
-      setShowCreateForm(false);
-      setCreateStartDate("");
-      setCreateEndDate("");
-      toast.success("Meal plan created");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create plan");
-    }
-  };
-
-  const handleAddMeal = useCallback(
-    async (dateMs: number, recipeId: Id<"recipes">, mealLabel?: string) => {
-      if (!currentPlan) return;
-      try {
+      const { planId } = await createMealPlan({
+        startDate,
+        endDate,
+        isGenerated: true,
+        generatedAt: Date.now(),
+      });
+      for (let i = 0; i < toAdd.length; i++) {
         await addEntry({
-          mealPlanId: currentPlan._id,
-          date: dateMs,
-          recipeId,
-          mealLabel: mealLabel || undefined,
+          mealPlanId: planId,
+          date: startDate + i * ONE_DAY_MS,
+          recipeId: toAdd[i]._id,
+          order: i,
         });
-        setAddingForDate(null);
-        toast.success("Meal added");
+      }
+      toast.success("Your week is ready!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate plan");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [poolRecipes, createMealPlan, addEntry]);
+
+  const handleRegenerateWeek = useCallback(async () => {
+    const startDate = startOfDayMs(Date.now());
+    const endDate = startOfDayMs(Date.now() + 7 * ONE_DAY_MS);
+    const pool = poolRecipes ?? [];
+    const locked = (currentPlan?.entries ?? [])
+      .filter((e) => e.isLocked)
+      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    const usedRecipeIds = new Set(locked.map((e) => e.recipeId));
+    const available = pool.filter((r) => !usedRecipeIds.has(r._id));
+    const toAdd = shuffle(available).slice(0, 7 - locked.length);
+    if (locked.length === 0 && toAdd.length === 0) {
+      toast.error("No recipes available. Add or discover recipes first.");
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const { planId } = await createMealPlan({
+        startDate,
+        endDate,
+        isGenerated: true,
+        generatedAt: Date.now(),
+      });
+      for (const entry of locked) {
+        await addEntry({
+          mealPlanId: planId,
+          date: startDate + (entry.order ?? 0) * ONE_DAY_MS,
+          recipeId: entry.recipeId,
+          order: entry.order ?? 0,
+        });
+      }
+      for (let i = 0; i < toAdd.length; i++) {
+        await addEntry({
+          mealPlanId: planId,
+          date: startDate + (locked.length + i) * ONE_DAY_MS,
+          recipeId: toAdd[i]._id,
+          order: locked.length + i,
+        });
+      }
+      toast.success("Week regenerated. Locked meals kept.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to regenerate");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [currentPlan?.entries, poolRecipes, createMealPlan, addEntry]);
+
+  const handleLockToggle = useCallback(
+    async (entry: CurrentPlan["entries"][number]) => {
+      try {
+        await updateEntry({
+          entryId: entry._id,
+          isLocked: !entry.isLocked,
+        });
+        toast.success(entry.isLocked ? "Meal unlocked" : "Meal locked");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Failed to add meal");
+        toast.error(e instanceof Error ? e.message : "Failed to update");
       }
     },
-    [currentPlan, addEntry]
+    [updateEntry],
+  );
+
+  const handleSwitchClick = useCallback(
+    async (entry: CurrentPlan["entries"][number]) => {
+      const pool = poolRecipes ?? [];
+      const inPlanIds = new Set(
+        (currentPlan?.entries ?? []).map((e) => e.recipeId),
+      );
+      let candidates = pool.filter(
+        (r) => r._id !== entry.recipeId && !inPlanIds.has(r._id),
+      );
+      if (candidates.length === 0) {
+        candidates = pool.filter((r) => r._id !== entry.recipeId);
+      }
+      if (candidates.length === 0) {
+        toast.error("No other recipes available");
+        return;
+      }
+      const picked = candidates[Math.floor(Math.random() * candidates.length)];
+      try {
+        await updateEntry({ entryId: entry._id, recipeId: picked._id });
+        toast.success("Meal changed");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to change meal");
+      }
+    },
+    [poolRecipes, currentPlan?.entries, updateEntry],
   );
 
   const handleRemoveEntry = useCallback(
@@ -239,7 +260,7 @@ export default function MealPlanClient() {
         toast.error(e instanceof Error ? e.message : "Failed to remove meal");
       }
     },
-    [removeEntry]
+    [removeEntry],
   );
 
   const handleGenerateList = useCallback(async () => {
@@ -255,7 +276,7 @@ export default function MealPlanClient() {
       router.push(ROUTES.shoppingListWithId(listId));
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "Failed to create shopping list"
+        e instanceof Error ? e.message : "Failed to create shopping list",
       );
     }
   }, [
@@ -333,79 +354,47 @@ export default function MealPlanClient() {
     return (
       <div className="bg-background w-full min-w-0 overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Meal planning
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Plan your week with recipes, then generate a shopping list in one
-              place.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+                Your Weekly Plan
+              </h1>
+              <p className="text-muted-foreground text-base sm:text-lg">
+                One click to organize your entire week of healthy eating.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              className="shrink-0"
+              onClick={handleGenerateWeek}
+              disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
+            >
+              <Sparkles className="size-5 mr-2" />
+              Generate My Week
+            </Button>
           </div>
-          <Card className="border-primary/20 bg-primary/5 p-8 text-center">
-            <CardContent className="p-0">
-              <CalendarCheck className="mx-auto size-16 text-primary mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No meal plan yet</h2>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Create a meal plan with an end date (default one week), add
-                meals from your recipes, then generate a shopping list.
+          <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
+            <CardContent className="p-0 flex flex-col items-center">
+              <div className="size-16 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center mb-6">
+                <Sparkles className="size-8 text-primary" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+                Ready to eat better?
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-sm">
+                Our intelligent system creates a balanced, delicious plan for
+                you in seconds.
               </p>
               <Button
                 size="lg"
-                onClick={() => {
-                  setCreateStartDate(defaultStartDate);
-                  setCreateEndDate(defaultEndDate);
-                  setShowCreateForm(true);
-                }}
+                onClick={handleGenerateWeek}
+                disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
               >
-                <Calendar className="size-5 mr-2" />
-                Create this week&apos;s plan
+                Start Planning
+                <ArrowRight className="size-5 ml-2" />
               </Button>
             </CardContent>
           </Card>
-
-          <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-            <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-              <DialogHeader>
-                <DialogTitle autoFocus>Create meal plan</DialogTitle>
-                <DialogDescription>
-                  Set the start and end dates for your plan (default: today to one week from today).
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                  <Label htmlFor="startDate">Start date</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={createStartDate || defaultStartDate}
-                    onChange={(e) => setCreateStartDate(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endDate">End date</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={createEndDate || defaultEndDate}
-                    onChange={(e) => setCreateEndDate(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateForm(false)}
-                  autoFocus
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleCreatePlan}>Create plan</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     );
@@ -415,6 +404,8 @@ export default function MealPlanClient() {
   const sharedHousehold = currentPlan.householdId
     ? households?.find((h) => h._id === currentPlan.householdId)
     : null;
+  const hasList = listsForPlan && listsForPlan.length > 0;
+  const firstListId = listsForPlan?.[0]?._id;
 
   return (
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
@@ -422,51 +413,52 @@ export default function MealPlanClient() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6 min-w-0">
           <div className="min-w-0 overflow-hidden">
             <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 truncate">
-              Meal planning
+              Your Weekly Plan
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base truncate">
-              {displayRange
-                ? `${formatDateLabel(displayRange.start)} – ${formatDateLabel(displayRange.end)} · ${mealCount} meal${mealCount !== 1 ? "s" : ""}`
-                : "Your current plan"}
+              Review your week. Lock what you love, swap what you don&apos;t.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 items-center min-w-0 shrink-0">
-            <Button
-              variant="default"
-              size="sm"
-              className="shrink-0"
-              onClick={() => setShowGenerateDialog(true)}
-              disabled={mealCount === 0}
-            >
-              <ShoppingCart className="size-4 mr-2 shrink-0" />
-              <span className="hidden sm:inline">Create shopping list</span>
-              <span className="sm:hidden">Create list</span>
-            </Button>
+            {hasList && firstListId ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={ROUTES.shoppingListWithId(firstListId)}>
+                  <ShoppingCart className="size-4 " />
+                  Shopping List
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setShowGenerateDialog(true)}
+                disabled={mealCount === 0}
+              >
+                <ShoppingCart className="size-4" />
+                Shopping List
+              </Button>
+            )}
             {currentPlan.isOwner && (
               <>
+                <Button
+                  variant="default"
+                  onClick={handleRegenerateWeek}
+                  disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
+                >
+                  <Sparkles className="size-4" />
+                  Regenerate Week
+                </Button>
                 {sharedHousehold ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={handleUnshare}
-                  >
-                    <Users className="size-4 mr-2 shrink-0" />
+                  <Button variant="outline" onClick={handleUnshare}>
+                    <Users className="size-4" />
                     <span className="hidden sm:inline">Stop sharing</span>
-                    <span className="sm:hidden">Unshare</span>
                   </Button>
                 ) : (
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="shrink-0"
                     onClick={() => setShowShareDialog(true)}
                   >
-                    <Users className="size-4 mr-2 shrink-0" />
-                    <span className="hidden sm:inline">
-                      Share with household
-                    </span>
-                    <span className="sm:hidden">Share</span>
+                    <Users className="size-4" />
+                    <span className="hidden sm:inline">Share</span>
                   </Button>
                 )}
                 <DropdownMenu>
@@ -474,7 +466,6 @@ export default function MealPlanClient() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="ml-auto"
                       aria-label="Plan options"
                     >
                       <MoreVertical className="size-4" />
@@ -530,146 +521,21 @@ export default function MealPlanClient() {
           </Card>
         )}
 
-        <div className="space-y-4 w-full min-w-0 max-w-full overflow-hidden">
-          {daysWithEntries.map(({ date, dateLabel, entries }) => (
-            <Card
-              key={date}
-              className="w-full min-w-0 max-w-full overflow-hidden"
-            >
-              <CardContent className="p-3 sm:p-4 w-full min-w-0 max-w-full overflow-hidden">
-                <div className="flex items-center justify-between gap-2 mb-3 min-w-0 overflow-hidden">
-                  <h3 className="font-semibold truncate min-w-0">
-                    {dateLabel}
-                  </h3>
-                  {currentPlan.isOwner && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={() => setAddingForDate(date)}
-                    >
-                      <Plus className="size-4 mr-1 shrink-0" />
-                      Add meal
-                    </Button>
-                  )}
-                </div>
-                <div className="space-y-2 min-w-0 overflow-hidden">
-                  {entries.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No meals planned
-                    </p>
-                  ) : (
-                    entries.map((entry) => (
-                      <div
-                        key={entry._id}
-                        className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-border bg-muted/30 w-full min-w-0 max-w-full overflow-hidden"
-                      >
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden basis-0">
-                          {entry.recipe?.image ? (
-                            <div className="relative size-9 sm:size-10 rounded overflow-hidden shrink-0">
-                              <Image
-                                src={entry.recipe.image}
-                                alt={entry.recipe.title}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            </div>
-                          ) : (
-                            <div className="size-9 sm:size-10 rounded bg-muted flex items-center justify-center shrink-0">
-                              <ChefHat className="size-4 sm:size-5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium truncate">
-                              {entry.recipe?.title ?? "Unknown recipe"}
-                            </p>
-                            {entry.mealLabel && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {entry.mealLabel}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        {currentPlan.isOwner && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleRemoveEntry(entry._id)}
-                            aria-label={`Remove ${entry.recipe?.title ?? "this meal"} from this day`}
-                          >
-                            <Trash2 className="size-4 sm:mr-1" />
-                            <span className="hidden sm:inline text-xs">
-                              Remove
-                            </span>
-                          </Button>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full min-w-0 max-w-full">
+          {entriesSorted.map((entry) => (
+            <MealPlanCard
+              key={entry._id}
+              entry={entry}
+              isOwner={currentPlan.isOwner ?? false}
+              onLockToggle={() => handleLockToggle(entry)}
+              onSwitch={() => handleSwitchClick(entry)}
+              onRemove={() => handleRemoveEntry(entry._id)}
+            />
+          ))}
+          {Array.from({ length: emptySlotsCount }, (_, i) => (
+            <EmptySlot key={`empty-${i}`} />
           ))}
         </div>
-
-        {/* Add meal dialog */}
-        <Dialog
-          open={addingForDate !== null}
-          onOpenChange={(open) => !open && setAddingForDate(null)}
-        >
-          <DialogContent className="max-h-[85vh] flex flex-col w-[calc(100vw-2rem)] max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add meal to this day</DialogTitle>
-              <DialogDescription>
-                {addingForDate != null ? (
-                  <>
-                    <span className="font-medium text-foreground">
-                      {formatDateLabel(addingForDate)}
-                    </span>
-                    {" — "}
-                    Pick a recipe below to add to this day.
-                  </>
-                ) : (
-                  "Choose a recipe"
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            {allRecipes.length === 0 ? (
-              <Card className="border-primary/20 bg-primary/5 p-6 text-center">
-                <CardContent className="p-0">
-                  <ChefHat className="mx-auto size-12 text-primary mb-3" />
-                  <p className="font-medium mb-1">No recipes yet</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Add recipes first, then come back to add them to your meal
-                    plan.
-                  </p>
-                  <Button asChild>
-                    <Link href={ROUTES.MY_RECIPES}>
-                      <Plus className="size-4 mr-2" />
-                      Add your first recipe
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="flex-1 overflow-y-auto space-y-2 py-2 min-h-0">
-                {allRecipes.map((recipe) => (
-                  <AddMealRecipeRow
-                    key={recipe._id}
-                    recipe={recipe}
-                    onSelect={(recipeId, mealLabel) => {
-                      if (addingForDate != null) {
-                        handleAddMeal(addingForDate, recipeId, mealLabel);
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
 
         {/* Generate shopping list dialog */}
         <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
@@ -725,16 +591,14 @@ export default function MealPlanClient() {
                 </div>
               )}
             </div>
-            <DialogFooter className="flex-shrink-0 border-t px-6 py-4">
+            <DialogFooter className="shrink-0 border-t px-6 py-4">
               <Button
                 variant="outline"
                 onClick={() => setShowGenerateDialog(false)}
               >
                 Cancel
               </Button>
-              <Button onClick={handleGenerateList}>
-                Create shopping list
-              </Button>
+              <Button onClick={handleGenerateList}>Create shopping list</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -773,7 +637,7 @@ export default function MealPlanClient() {
                         toast.success("Meal plan shared with household");
                       } catch (e) {
                         toast.error(
-                          e instanceof Error ? e.message : "Failed to share"
+                          e instanceof Error ? e.message : "Failed to share",
                         );
                       }
                     }}
@@ -819,63 +683,6 @@ export default function MealPlanClient() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
-  );
-}
-
-function AddMealRecipeRow({
-  recipe,
-  onSelect,
-}: {
-  recipe: Recipe;
-  onSelect: (recipeId: Id<"recipes">, mealLabel?: string) => void;
-}) {
-  const [mealLabel, setMealLabel] = useState<string>("");
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-2 rounded-lg border hover:bg-muted/50">
-      {/* Row 1: Image and Title */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="relative size-12 rounded overflow-hidden shrink-0">
-          {recipe.image ? (
-            <Image
-              src={recipe.image}
-              alt={recipe.title}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          ) : (
-            <div className="size-12 bg-muted flex items-center justify-center">
-              <ChefHat className="size-6 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{recipe.title}</p>
-        </div>
-      </div>
-      {/* Row 2: Meal Type Selector and Add Button */}
-      <div className="flex items-center ml-auto gap-2 sm:gap-3 shrink-0">
-        <Select value={mealLabel} onValueChange={setMealLabel}>
-          <SelectTrigger className="w-28 sm:w-28 shrink-0">
-            <SelectValue placeholder="Meal" />
-          </SelectTrigger>
-          <SelectContent>
-            {MEAL_LABELS.map((label) => (
-              <SelectItem key={label} value={label}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          size="sm"
-          onClick={() => onSelect(recipe._id, mealLabel || undefined)}
-          className="shrink-0"
-        >
-          Add
-        </Button>
       </div>
     </div>
   );
