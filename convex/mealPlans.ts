@@ -2,7 +2,23 @@ import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { canAccessRecipe, isHouseholdMember } from "./households";
+import { RECENTLY_SUGGESTED_DAYS } from "./lib/constants";
+import {
+  buildPool,
+  getBehaviourStatsForActor,
+  getRecentlySuggested,
+  selectRecipes,
+} from "./mealPlanGenerator";
+import type { PoolRecipe } from "./mealPlanGenerator";
+import {
+  getActorForPlan,
+  incrementRemoved,
+  incrementSuggested,
+  incrementSwapped,
+} from "./recipeBehaviourStats";
 import { getCurrentUser, getCurrentUserOrThrow } from "./users";
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 // ============================================================================
 // HELPERS
@@ -133,15 +149,21 @@ export const getCurrentMealPlan = query({
       sharedPlans.push(...plans);
     }
 
-    // Combine and sort by endDate desc, take most recent
+    // Combine, dedupe, and exclude superseded plans (Spec 6.2: active plan has replacedByPlanId undefined)
     const seenIds = new Set<Id<"mealPlans">>();
     const allPlans = [...ownedPlans, ...sharedPlans].filter((p) => {
       if (seenIds.has(p._id)) return false;
       seenIds.add(p._id);
       return true;
     });
-    allPlans.sort((a, b) => b.endDate - a.endDate);
-    const current = allPlans[0] ?? null;
+    // Only plans that have not been replaced by a newer regeneration
+    const activePlans = allPlans.filter((p) => p.replacedByPlanId === undefined);
+    activePlans.sort(
+      (a, b) =>
+        b.endDate - a.endDate ||
+        (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+    );
+    const current = activePlans[0] ?? null;
     if (!current) return null;
 
     const entries = await ctx.db
@@ -274,6 +296,202 @@ export const createMealPlan = mutation({
 });
 
 /**
+ * Generate a new weekly meal plan using the intelligent selection algorithm.
+ * Spec 6.1, 6.2, 6.5: creates plan, selects 7 recipes (pool + constraints + behavioural scoring), inserts entries, increments suggestedCount for each.
+ */
+export const generateWeeklyPlan = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const now = Date.now();
+    const startDate = startOfDayMs(now);
+    const endDate = startOfDayMs(now + 7 * ONE_DAY_MS);
+
+    const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
+
+    const planId = await ctx.db.insert("mealPlans", {
+      userId: user._id,
+      endDate,
+      startDate,
+      updatedAt: now,
+      isGenerated: true,
+      generationSeed,
+      generationVersion: 1,
+      generatedAt: now,
+    });
+
+    const actorType = "user";
+    const actorId = user._id;
+
+    const pool = await buildPool(ctx, user._id, null);
+    const recentlySuggested = await getRecentlySuggested(
+      ctx,
+      actorType,
+      actorId,
+      RECENTLY_SUGGESTED_DAYS,
+    );
+    const actorStats = await getBehaviourStatsForActor(ctx, actorType, actorId);
+
+    const selectedIds = selectRecipes(
+      pool,
+      7,
+      actorStats,
+      generationSeed,
+      recentlySuggested,
+      [],
+    );
+
+    for (let i = 0; i < selectedIds.length; i++) {
+      const recipeId = selectedIds[i];
+      const dateStart = startOfDayMs(startDate + i * ONE_DAY_MS);
+      await ctx.db.insert("mealPlanEntries", {
+        mealPlanId: planId,
+        date: dateStart,
+        recipeId,
+        order: i,
+      });
+      await incrementSuggested(ctx, recipeId, actorType, actorId);
+    }
+
+    await ctx.db.patch(planId, { updatedAt: Date.now() });
+    return { planId };
+  },
+});
+
+/**
+ * Regenerate week: create new plan, copy locked entries (no suggestedCount bump), fill rest with algorithm. Spec 6.2 Option B.
+ */
+export const regenerateWeeklyPlan = mutation({
+  args: { previousPlanId: v.id("mealPlans") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const previousPlan = await ctx.db.get(args.previousPlanId);
+    if (!previousPlan) throw new ConvexError("Meal plan not found");
+    if (previousPlan.userId !== user._id) {
+      throw new ConvexError("Only the plan owner can regenerate");
+    }
+    if (previousPlan.isFinalised) {
+      throw new ConvexError("Cannot regenerate a finalised plan");
+    }
+
+    const entries = await ctx.db
+      .query("mealPlanEntries")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.previousPlanId))
+      .collect();
+
+    const locked = entries.filter((e) => e.isLocked === true);
+    const lockedSorted = [...locked].sort(
+      (a, b) => (a.order ?? 999) - (b.order ?? 999),
+    );
+
+    const now = Date.now();
+    const startDate = startOfDayMs(now);
+    const endDate = startOfDayMs(now + 7 * ONE_DAY_MS);
+    const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
+
+    const newPlanId = await ctx.db.insert("mealPlans", {
+      userId: user._id,
+      endDate,
+      startDate,
+      updatedAt: now,
+      isGenerated: true,
+      generationSeed,
+      generationVersion: 1,
+      generatedAt: now,
+      householdId: previousPlan.householdId,
+    });
+
+    const actor = getActorForPlan(previousPlan);
+    const actorType = actor.actorType;
+    const actorId = actor.actorId;
+
+    for (const entry of lockedSorted) {
+      const order = entry.order ?? 0;
+      const dateStart = startOfDayMs(startDate + order * ONE_DAY_MS);
+      await ctx.db.insert("mealPlanEntries", {
+        mealPlanId: newPlanId,
+        date: dateStart,
+        recipeId: entry.recipeId,
+        order,
+        isLocked: true,
+      });
+    }
+
+    const lockedCount = lockedSorted.length;
+    const toSelect = 7 - lockedCount;
+    if (toSelect > 0) {
+      const pool = await buildPool(
+        ctx,
+        previousPlan.userId,
+        previousPlan.householdId ?? null,
+      );
+      const recentlySuggested = await getRecentlySuggested(
+        ctx,
+        actorType,
+        actorId,
+        RECENTLY_SUGGESTED_DAYS,
+      );
+      const actorStats = await getBehaviourStatsForActor(
+        ctx,
+        actorType,
+        actorId,
+      );
+
+      const lockedPoolRecipes: PoolRecipe[] = [];
+      for (const entry of lockedSorted) {
+        const recipe = await ctx.db.get(entry.recipeId);
+        if (recipe)
+          lockedPoolRecipes.push({
+            _id: recipe._id,
+            primaryProtein: recipe.primaryProtein,
+            complexityTier: recipe.complexityTier,
+            cuisine: recipe.cuisine,
+            editorialBias: recipe.editorialBias,
+          });
+      }
+
+      const newIds = selectRecipes(
+        pool,
+        toSelect,
+        actorStats,
+        generationSeed,
+        recentlySuggested,
+        lockedPoolRecipes,
+      );
+
+      for (let i = 0; i < newIds.length; i++) {
+        const recipeId = newIds[i];
+        const order = lockedCount + i;
+        const dateStart = startOfDayMs(startDate + order * ONE_DAY_MS);
+        await ctx.db.insert("mealPlanEntries", {
+          mealPlanId: newPlanId,
+          date: dateStart,
+          recipeId,
+          order,
+        });
+        await incrementSuggested(ctx, recipeId, actorType, actorId);
+      }
+    }
+
+    await ctx.db.patch(args.previousPlanId, {
+      replacedByPlanId: newPlanId,
+      updatedAt: Date.now(),
+    });
+
+    const listsToUpdate = await ctx.db
+      .query("shoppingLists")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.previousPlanId))
+      .collect();
+    for (const list of listsToUpdate) {
+      await ctx.db.patch(list._id, { mealPlanId: newPlanId });
+    }
+
+    await ctx.db.patch(newPlanId, { updatedAt: Date.now() });
+    return { planId: newPlanId };
+  },
+});
+
+/**
  * Update a meal plan's end date. Owner only.
  */
 export const updateMealPlanEndDate = mutation({
@@ -369,6 +587,9 @@ export const addEntry = mutation({
     if (plan.userId !== user._id) {
       throw new ConvexError("Only the plan owner can add meals");
     }
+    if (plan.isFinalised) {
+      throw new ConvexError("Cannot add meals to a finalised plan");
+    }
     const dateStart = startOfDayMs(args.date);
     if (plan.startDate !== undefined && dateStart < plan.startDate) {
       throw new ConvexError("Date must be on or after the plan start date");
@@ -416,6 +637,13 @@ export const updateEntry = mutation({
     if (plan.userId !== user._id) {
       throw new ConvexError("Only the plan owner can update meals");
     }
+    if (plan.isFinalised) {
+      if (args.recipeId !== undefined || args.isLocked !== undefined) {
+        throw new ConvexError(
+          "Cannot change recipe or lock state on a finalised plan; you can only move meals between days",
+        );
+      }
+    }
     const updates: {
       date?: number;
       recipeId?: Id<"recipes">;
@@ -440,6 +668,12 @@ export const updateEntry = mutation({
       if (!canAccess) {
         throw new ConvexError("You do not have access to this recipe");
       }
+      // Spec 4.3: swap — increment swappedCount for old recipe, suggestedCount for new (actor from plan)
+      if (args.recipeId !== entry.recipeId && plan) {
+        const actor = getActorForPlan(plan);
+        await incrementSwapped(ctx, entry.recipeId, actor.actorType, actor.actorId);
+        await incrementSuggested(ctx, args.recipeId, actor.actorType, actor.actorId);
+      }
       updates.recipeId = args.recipeId;
     }
     if (args.mealLabel !== undefined) updates.mealLabel = args.mealLabel;
@@ -452,7 +686,31 @@ export const updateEntry = mutation({
 });
 
 /**
+ * Finalise a meal plan: no more add/remove/swap/regenerate; only moving meals between days is allowed.
+ */
+export const finaliseMealPlan = mutation({
+  args: { mealPlanId: v.id("mealPlans") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const plan = await ctx.db.get(args.mealPlanId);
+    if (!plan) throw new ConvexError("Meal plan not found");
+    if (plan.userId !== user._id) {
+      throw new ConvexError("Only the plan owner can finalise the plan");
+    }
+    if (plan.isFinalised) {
+      throw new ConvexError("Plan is already finalised");
+    }
+    await ctx.db.patch(args.mealPlanId, {
+      isFinalised: true,
+      updatedAt: Date.now(),
+    });
+    return { success: true };
+  },
+});
+
+/**
  * Remove an entry. Owner only.
+ * Spec 4.3: increment removedCount for the recipe (actor from plan).
  */
 export const removeEntry = mutation({
   args: { entryId: v.id("mealPlanEntries") },
@@ -465,6 +723,11 @@ export const removeEntry = mutation({
     if (plan.userId !== user._id) {
       throw new ConvexError("Only the plan owner can remove meals");
     }
+    if (plan.isFinalised) {
+      throw new ConvexError("Cannot remove meals from a finalised plan");
+    }
+    const actor = getActorForPlan(plan);
+    await incrementRemoved(ctx, entry.recipeId, actor.actorType, actor.actorId);
     await ctx.db.delete(args.entryId);
     await ctx.db.patch(entry.mealPlanId, { updatedAt: Date.now() });
     return { success: true };

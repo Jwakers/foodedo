@@ -43,6 +43,7 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
   ArrowRight,
+  CheckCircle2,
   Home,
   MoreVertical,
   ShoppingCart,
@@ -56,6 +57,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
 import { MealPlanCard } from "./meal-plan-card";
+import { MealPlanDayView } from "./meal-plan-day-view";
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
@@ -94,8 +96,8 @@ export default function MealPlanClient() {
     api.chalkboard.getAllHouseholdChalkboards,
   );
 
-  const createMealPlan = useMutation(api.mealPlans.createMealPlan);
-  const addEntry = useMutation(api.mealPlans.addEntry);
+  const generateWeeklyPlan = useMutation(api.mealPlans.generateWeeklyPlan);
+  const regenerateWeeklyPlan = useMutation(api.mealPlans.regenerateWeeklyPlan);
   const removeEntry = useMutation(api.mealPlans.removeEntry);
   const updateEntry = useMutation(api.mealPlans.updateEntry);
   const deleteMealPlan = useMutation(api.mealPlans.deleteMealPlan);
@@ -106,6 +108,7 @@ export default function MealPlanClient() {
   const createShoppingListFromMealPlan = useMutation(
     api.shoppingLists.createShoppingListFromMealPlan,
   );
+  const finaliseMealPlan = useMutation(api.mealPlans.finaliseMealPlan);
 
   const [selectedChalkboardIds, setSelectedChalkboardIds] = useState<
     Set<Id<"chalkboardItems">>
@@ -116,7 +119,9 @@ export default function MealPlanClient() {
     Id<"households"> | ""
   >("");
   const [showDeletePlanDialog, setShowDeletePlanDialog] = useState(false);
+  const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isFinalising, setIsFinalising] = useState(false);
 
   const entriesSorted = useMemo(() => {
     const entries = currentPlan?.entries ?? [];
@@ -131,83 +136,29 @@ export default function MealPlanClient() {
   );
 
   const handleGenerateWeek = useCallback(async () => {
-    const startDate = startOfDayMs(Date.now());
-    const endDate = startOfDayMs(Date.now() + 7 * ONE_DAY_MS);
-    const pool = poolRecipes ?? [];
-    const toAdd = shuffle(pool).slice(0, 7);
-    if (toAdd.length === 0) {
-      toast.error("No recipes available. Add or discover recipes first.");
-      return;
-    }
     setIsGenerating(true);
     try {
-      const { planId } = await createMealPlan({
-        startDate,
-        endDate,
-        isGenerated: true,
-        generatedAt: Date.now(),
-      });
-      for (let i = 0; i < toAdd.length; i++) {
-        await addEntry({
-          mealPlanId: planId,
-          date: startDate + i * ONE_DAY_MS,
-          recipeId: toAdd[i]._id,
-          order: i,
-        });
-      }
+      await generateWeeklyPlan();
       toast.success("Your week is ready!");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate plan");
     } finally {
       setIsGenerating(false);
     }
-  }, [poolRecipes, createMealPlan, addEntry]);
+  }, [generateWeeklyPlan]);
 
   const handleRegenerateWeek = useCallback(async () => {
-    const startDate = startOfDayMs(Date.now());
-    const endDate = startOfDayMs(Date.now() + 7 * ONE_DAY_MS);
-    const pool = poolRecipes ?? [];
-    const locked = (currentPlan?.entries ?? [])
-      .filter((e) => e.isLocked)
-      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-    const usedRecipeIds = new Set(locked.map((e) => e.recipeId));
-    const available = pool.filter((r) => !usedRecipeIds.has(r._id));
-    const toAdd = shuffle(available).slice(0, 7 - locked.length);
-    if (locked.length === 0 && toAdd.length === 0) {
-      toast.error("No recipes available. Add or discover recipes first.");
-      return;
-    }
+    if (!currentPlan) return;
     setIsGenerating(true);
     try {
-      const { planId } = await createMealPlan({
-        startDate,
-        endDate,
-        isGenerated: true,
-        generatedAt: Date.now(),
-      });
-      for (const entry of locked) {
-        await addEntry({
-          mealPlanId: planId,
-          date: startDate + (entry.order ?? 0) * ONE_DAY_MS,
-          recipeId: entry.recipeId,
-          order: entry.order ?? 0,
-        });
-      }
-      for (let i = 0; i < toAdd.length; i++) {
-        await addEntry({
-          mealPlanId: planId,
-          date: startDate + (locked.length + i) * ONE_DAY_MS,
-          recipeId: toAdd[i]._id,
-          order: locked.length + i,
-        });
-      }
+      await regenerateWeeklyPlan({ previousPlanId: currentPlan._id });
       toast.success("Week regenerated. Locked meals kept.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to regenerate");
     } finally {
       setIsGenerating(false);
     }
-  }, [currentPlan?.entries, poolRecipes, createMealPlan, addEntry]);
+  }, [currentPlan, regenerateWeeklyPlan]);
 
   const handleLockToggle = useCallback(
     async (entry: CurrentPlan["entries"][number]) => {
@@ -322,6 +273,32 @@ export default function MealPlanClient() {
     }
   }, [currentPlan, deleteMealPlan]);
 
+  const handleFinalisePlan = useCallback(async () => {
+    if (!currentPlan) return;
+    setIsFinalising(true);
+    try {
+      await finaliseMealPlan({ mealPlanId: currentPlan._id });
+      setShowFinaliseDialog(false);
+      toast.success("Plan saved. You can still move meals between days.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save plan");
+    } finally {
+      setIsFinalising(false);
+    }
+  }, [currentPlan, finaliseMealPlan]);
+
+  const handleMoveEntryToDay = useCallback(
+    async (entryId: Id<"mealPlanEntries">, date: number, order: number) => {
+      try {
+        await updateEntry({ entryId, date, order });
+        toast.success("Meal moved");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to move meal");
+      }
+    },
+    [updateEntry],
+  );
+
   const chalkboardItemsForGenerate = useMemo(() => {
     const personal = personalChalkboard ?? [];
     const byHousehold = householdChalkboards ?? {};
@@ -407,16 +384,34 @@ export default function MealPlanClient() {
   const hasList = listsForPlan && listsForPlan.length > 0;
   const firstListId = listsForPlan?.[0]?._id;
 
+  const isFinalised = currentPlan.isFinalised === true;
+
   return (
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
       <div className="w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border">
+        {/* Top bar: always show Generate meal plan so user can generate next week early */}
+        {currentPlan.isOwner && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateWeek}
+              disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
+            >
+              <Sparkles className="size-4" />
+              Generate next week
+            </Button>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6 min-w-0">
           <div className="min-w-0 overflow-hidden">
             <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 truncate">
               Your Weekly Plan
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base truncate">
-              Review your week. Lock what you love, swap what you don&apos;t.
+              {isFinalised
+                ? "Drag meals to change which day they fall on."
+                : "Review your week. Lock what you love, swap what you don't."}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 items-center min-w-0 shrink-0">
@@ -439,14 +434,28 @@ export default function MealPlanClient() {
             )}
             {currentPlan.isOwner && (
               <>
-                <Button
-                  variant="default"
-                  onClick={handleRegenerateWeek}
-                  disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
-                >
-                  <Sparkles className="size-4" />
-                  Regenerate Week
-                </Button>
+                {!isFinalised && (
+                  <>
+                    <Button
+                      variant="default"
+                      onClick={() => setShowFinaliseDialog(true)}
+                      disabled={mealCount === 0}
+                    >
+                      <CheckCircle2 className="size-4" />
+                      Save plan
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleRegenerateWeek}
+                      disabled={
+                        isGenerating || (poolRecipes?.length ?? 0) === 0
+                      }
+                    >
+                      <Sparkles className="size-4" />
+                      Regenerate
+                    </Button>
+                  </>
+                )}
                 {sharedHousehold ? (
                   <Button variant="outline" onClick={handleUnshare}>
                     <Users className="size-4" />
@@ -501,10 +510,41 @@ export default function MealPlanClient() {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleDeletePlan}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleDeletePlan();
+                }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete plan
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={showFinaliseDialog}
+          onOpenChange={setShowFinaliseDialog}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Save this plan?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Once saved, you can&apos;t add, remove, or swap meals—only move
+                them between days. To make bigger changes, you&apos;d need to
+                delete this plan and create a new one.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleFinalisePlan();
+                }}
+                disabled={isFinalising}
+              >
+                Save plan
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -521,21 +561,28 @@ export default function MealPlanClient() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full min-w-0 max-w-full">
-          {entriesSorted.map((entry) => (
-            <MealPlanCard
-              key={entry._id}
-              entry={entry}
-              isOwner={currentPlan.isOwner ?? false}
-              onLockToggle={() => handleLockToggle(entry)}
-              onSwitch={() => handleSwitchClick(entry)}
-              onRemove={() => handleRemoveEntry(entry._id)}
-            />
-          ))}
-          {Array.from({ length: emptySlotsCount }, (_, i) => (
-            <EmptySlot key={`empty-${i}`} />
-          ))}
-        </div>
+        {isFinalised ? (
+          <MealPlanDayView
+            plan={currentPlan}
+            onMoveEntry={handleMoveEntryToDay}
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full min-w-0 max-w-full">
+            {entriesSorted.map((entry) => (
+              <MealPlanCard
+                key={entry._id}
+                entry={entry}
+                isOwner={currentPlan.isOwner ?? false}
+                onLockToggle={() => handleLockToggle(entry)}
+                onSwitch={() => handleSwitchClick(entry)}
+                onRemove={() => handleRemoveEntry(entry._id)}
+              />
+            ))}
+            {Array.from({ length: emptySlotsCount }, (_, i) => (
+              <EmptySlot key={`empty-${i}`} />
+            ))}
+          </div>
+        )}
 
         {/* Generate shopping list dialog */}
         <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>

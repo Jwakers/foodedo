@@ -7,7 +7,7 @@
 - [x] Copy system recipes over to production
 - [x] Generate a design for the automated weekly meal planner
 - [ ] Do front end for weekly meal planner with pseudo logic
-- [ ] Implement meal planner algorithm proper
+- [ ] Implement meal planner algorithm
 
 - [ ] Titles on listing cards need either a gradient or blurred background
 - [ ] Update the filtering on the Discover page, remove category.

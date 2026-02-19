@@ -229,6 +229,7 @@ export default defineSchema({
     generationVersion: v.optional(v.number()),
     generatedAt: v.optional(v.number()),
     replacedByPlanId: v.optional(v.id("mealPlans")),
+    isFinalised: v.optional(v.boolean()), // when true, no add/remove/swap/regenerate; only move between days
   })
     .index("by_user", ["userId"])
     .index("by_user_and_endDate", ["userId", "endDate"])
