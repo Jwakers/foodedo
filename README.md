@@ -6,7 +6,7 @@
 
 - [ ] Copy system recipes over to production
 - [ ] Generate a design for the automated weekly meal planner
-- [ ] Do front end for weekly meal planner with psuedo logic
+- [ ] Do front end for weekly meal planner with pseudo logic
 - [ ] Implement meal planner algorithm proper
 
 - [ ] Titles on listing cards need either a gradient or blurred background
@@ -68,6 +68,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] Recipe page loading skeleton overflows
 - [ ] Whene deleting a household an error is surfaced on the client. This is likely due to that household no longer being available. Instead we should redirect or 404
 - [ ] The back to dashboard button on the error page does not seem to work
+- [ ] Clicking the account button in the nav just closes the menu and does not do anything
 
 ## Tech debt
 
