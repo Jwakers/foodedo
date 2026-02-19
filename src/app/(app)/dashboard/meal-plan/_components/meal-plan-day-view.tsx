@@ -7,7 +7,12 @@ import {
   useDraggable,
   useDroppable,
 } from "@dnd-kit/react";
+import type { Id } from "convex/_generated/dataModel";
+import { api } from "convex/_generated/api";
+import type { FunctionReturnType } from "convex/server";
+import Image from "next/image";
 import type { ComponentProps } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 type DragDropProviderProps = ComponentProps<typeof DragDropProvider>;
 type DragOverEventArg = Parameters<
@@ -16,11 +21,6 @@ type DragOverEventArg = Parameters<
 type DragEndEventArg = Parameters<
   NonNullable<DragDropProviderProps["onDragEnd"]>
 >[0];
-import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
-import type { Id } from "convex/_generated/dataModel";
-import type { FunctionReturnType } from "convex/server";
-import { api } from "convex/_generated/api";
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
@@ -170,7 +170,7 @@ function DraggableEntry({
 
 function startOfDayMs(ms: number): number {
   const d = new Date(ms);
-  d.setHours(0, 0, 0, 0);
+  d.setUTCHours(0, 0, 0, 0);
   return d.getTime();
 }
 
@@ -236,6 +236,7 @@ export function MealPlanDayView({
     }
   }, []);
 
+  /** Event shape: event.operation.source / event.operation.target, event.canceled (DragEndEventArg from provider props). */
   const handleDragEnd = useCallback(
     (event: DragEndEventArg) => {
       setOverDayIndex(null);

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { RefreshCw } from "lucide-react";
+import { Plus } from "lucide-react";
 
 const ADD_MEAL_MESSAGE = "Add meal coming soon";
 
@@ -18,7 +18,7 @@ export function EmptySlot({ className }: { className?: string }) {
       aria-label="Add meal"
     >
       <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <RefreshCw className="size-5" aria-hidden />
+        <Plus className="size-5" aria-hidden />
       </span>
       <span className="text-sm font-medium text-muted-foreground">
         Add Meal

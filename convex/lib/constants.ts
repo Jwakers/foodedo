@@ -201,6 +201,8 @@ export const SMOOTHING_FACTOR = 2;
 export const MAX_PRIMARY_PROTEIN_PER_WEEK = 2;
 /** Max times the same cuisine can appear in a generated week (diversification). */
 export const MAX_CUISINE_PER_WEEK = 2;
+/** Upper bound for getRecipesForWeeklyPlan limit (pool size for client/weekly plan). */
+export const MAX_WEEKLY_PLAN_POOL_SIZE = 50;
 
 // TypeScript types
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];

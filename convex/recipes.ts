@@ -3,6 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { canAccessRecipe } from "./households";
+import { MAX_WEEKLY_PLAN_POOL_SIZE } from "./lib/constants";
 import {
   categoriesUnion,
   creationSourceUnion,
@@ -218,7 +219,10 @@ export const getRecipesForWeeklyPlan = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    const limit = Math.min(Math.max(1, args.limit), 50);
+    const limit = Math.min(
+      Math.max(1, args.limit),
+      MAX_WEEKLY_PLAN_POOL_SIZE,
+    );
 
     // 1. System recipe ids
     const systemRecipes = await ctx.db
@@ -239,12 +243,17 @@ export const getRecipesForWeeklyPlan = query({
       .query("householdMembers")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
+    const householdIds = [...new Set(memberships.map((m) => m.householdId))];
+    const sharedPerHousehold = await Promise.all(
+      householdIds.map((householdId) =>
+        ctx.db
+          .query("householdRecipes")
+          .withIndex("by_household", (q) => q.eq("householdId", householdId))
+          .collect(),
+      ),
+    );
     const householdRecipeIds = new Set<Id<"recipes">>();
-    for (const m of memberships) {
-      const shared = await ctx.db
-        .query("householdRecipes")
-        .withIndex("by_household", (q) => q.eq("householdId", m.householdId))
-        .collect();
+    for (const shared of sharedPerHousehold) {
       for (const s of shared) {
         householdRecipeIds.add(s.recipeId);
       }
@@ -257,42 +266,45 @@ export const getRecipesForWeeklyPlan = query({
 
     // 5. Take first `limit` and fetch full docs (with access check for household recipes)
     const idsToFetch = allIds.slice(0, limit);
-    const results: Array<{
-      _id: Id<"recipes">;
-      title: string;
-      image: string | null;
-      prepTime: number;
-      cookTime: number | undefined;
-      totalTimeMinutes: number | undefined;
-      nutrition: { calories?: number } | undefined;
-      category: string;
-    }> = [];
-
-    for (const recipeId of idsToFetch) {
-      const recipe = await ctx.db.get(recipeId);
-      if (!recipe) continue;
-      // System recipes: all authed users can use. User recipes: already have. Household: must have access.
-      if (recipe.source !== "system" && recipe.userId !== user._id) {
-        const { canAccess } = await canAccessRecipe(ctx, user._id, recipeId);
-        if (!canAccess) continue;
-      }
-      const image = recipe.image
-        ? await ctx.storage.getUrl(recipe.image)
-        : null;
-      const totalMin =
-        recipe.totalTimeMinutes ??
-        (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-      results.push({
-        _id: recipe._id,
-        title: recipe.title,
-        image,
-        prepTime: recipe.prepTime ?? 0,
-        cookTime: recipe.cookTime,
-        totalTimeMinutes: totalMin > 0 ? totalMin : undefined,
-        nutrition: recipe.nutrition,
-        category: recipe.category,
-      });
-    }
+    const recipeDocs = await Promise.all(
+      idsToFetch.map((id) => ctx.db.get(id)),
+    );
+    const withAccessAndUrl = await Promise.all(
+      recipeDocs.map(async (recipe, i) => {
+        if (!recipe) return null;
+        const recipeId = idsToFetch[i];
+        if (
+          recipe.source !== "system" &&
+          recipe.userId !== user._id
+        ) {
+          const { canAccess } = await canAccessRecipe(
+            ctx,
+            user._id,
+            recipeId,
+          );
+          if (!canAccess) return null;
+        }
+        const image = recipe.image
+          ? await ctx.storage.getUrl(recipe.image)
+          : null;
+        const totalMin =
+          recipe.totalTimeMinutes ??
+          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+        return {
+          _id: recipe._id,
+          title: recipe.title,
+          image,
+          prepTime: recipe.prepTime ?? 0,
+          cookTime: recipe.cookTime,
+          totalTimeMinutes: totalMin > 0 ? totalMin : undefined,
+          nutrition: recipe.nutrition,
+          category: recipe.category,
+        };
+      }),
+    );
+    const results = withAccessAndUrl.filter(
+      (r): r is NonNullable<typeof r> => r != null,
+    );
 
     return results;
   },

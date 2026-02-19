@@ -226,17 +226,20 @@ export function weight(
 
 /**
  * Seeded RNG (mulberry32) for deterministic selection. Spec 6.3: same seed + pool => same selection.
+ * State is derived from the seed string (hash); state is kept non-zero to avoid a stuck stream.
  */
 function seededRandom(seed: string): () => number {
-  let h = 0;
+  let state = 0;
   for (let i = 0; i < seed.length; i++) {
-    h = Math.imul(31, h) + seed.charCodeAt(i);
-    h = (h << 13) | (h >>> 19);
+    state = Math.imul(31, state) + seed.charCodeAt(i);
+    state = (state << 13) | (state >>> 19);
   }
+  state = (state >>> 0) || 1;
   return function next() {
-    h = Math.imul(h ^ (h >>> 15), h | 0);
-    h = Math.imul(h ^ (h >>> 13), h | 0);
-    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+    let t = (state += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 

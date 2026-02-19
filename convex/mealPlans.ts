@@ -669,7 +669,7 @@ export const updateEntry = mutation({
         throw new ConvexError("You do not have access to this recipe");
       }
       // Spec 4.3: swap — increment swappedCount for old recipe, suggestedCount for new (actor from plan)
-      if (args.recipeId !== entry.recipeId && plan) {
+      if (args.recipeId !== entry.recipeId) {
         const actor = getActorForPlan(plan);
         await incrementSwapped(ctx, entry.recipeId, actor.actorType, actor.actorId);
         await incrementSuggested(ctx, args.recipeId, actor.actorType, actor.actorId);

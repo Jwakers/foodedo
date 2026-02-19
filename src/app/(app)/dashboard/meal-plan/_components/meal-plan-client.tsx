@@ -71,15 +71,6 @@ function startOfDayMs(ms: number): number {
   return d.getTime();
 }
 
-function shuffle<T>(array: T[]): T[] {
-  const out = [...array];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
-
 export default function MealPlanClient() {
   const router = useRouter();
   const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);
