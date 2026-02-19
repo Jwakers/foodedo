@@ -104,11 +104,14 @@ export const getRecipeForEdit = query({
     recipeId: v.id("recipes"),
   },
   handler: async (ctx, args) => {
+    const recipe = await ctx.db.get(args.recipeId);
+    if (!recipe) return null;
+
+    // System recipes are not user-editable; return null without requiring auth
+    if (recipe.source === "system") return null;
+
     const user = await getCurrentUser(ctx);
     if (!user) throw new ConvexError("User not found");
-    const recipe = await ctx.db.get(args.recipeId);
-
-    if (!recipe) return null;
 
     // Check if user can access this recipe
     const { canAccess, isOwner } = await canAccessRecipe(
