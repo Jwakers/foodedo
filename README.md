@@ -4,14 +4,10 @@
 
 ### Next Immediate Steps
 
-Update app name to Foodedo
-
-- [x] Apply code changes
-- [x] Vercel env vars
-- [x] Update github repo and local name
-- [ ] Update Canny board domain
-- [ ] Change domain in vercel
-- [ ] Apply redirects in vercel
+- [ ] Copy system recipes over to production
+- [ ] Generate a design for the automated weekly meal planner
+- [ ] Do front end for weekly meal planner with psuedo logic
+- [ ] Implement meal planner algorithm proper
 
 - [ ] Titles on listing cards need either a gradient or blurred background
 - [ ] Update the filtering on the Discover page, remove category.
