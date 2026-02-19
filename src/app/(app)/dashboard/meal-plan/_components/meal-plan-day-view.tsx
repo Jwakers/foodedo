@@ -7,6 +7,15 @@ import {
   useDraggable,
   useDroppable,
 } from "@dnd-kit/react";
+import type { ComponentProps } from "react";
+
+type DragDropProviderProps = ComponentProps<typeof DragDropProvider>;
+type DragOverEventArg = Parameters<
+  NonNullable<DragDropProviderProps["onDragOver"]>
+>[0];
+type DragEndEventArg = Parameters<
+  NonNullable<DragDropProviderProps["onDragEnd"]>
+>[0];
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import type { Id } from "convex/_generated/dataModel";
@@ -213,39 +222,25 @@ export function MealPlanDayView({
     setOverDayIndex(null);
   }, []);
 
-  const handleDragOver = useCallback(
-    (event: { source: { id: string }; target?: { id: string } | null }) => {
-      const target = event.target;
-      if (!target?.id) {
-        setOverDayIndex(null);
-        return;
-      }
-      const id = String(target.id);
-      if (id.startsWith("day-")) {
-        setOverDayIndex(parseInt(id.slice(4), 10));
-      } else {
-        setOverDayIndex(null);
-      }
-    },
-    [],
-  );
+  const handleDragOver = useCallback((event: DragOverEventArg) => {
+    const target = event.operation.target;
+    if (!target?.id) {
+      setOverDayIndex(null);
+      return;
+    }
+    const id = String(target.id);
+    if (id.startsWith("day-")) {
+      setOverDayIndex(parseInt(id.slice(4), 10));
+    } else {
+      setOverDayIndex(null);
+    }
+  }, []);
 
   const handleDragEnd = useCallback(
-    (
-      event: {
-        operation?: {
-          source: { id: string; data?: { entry: EntryLike; fromDayIndex: number } };
-          target?: { id: string } | null;
-        };
-        source?: { id: string; data?: { entry: EntryLike; fromDayIndex: number } };
-        target?: { id: string } | null;
-        canceled?: boolean;
-      },
-    ) => {
+    (event: DragEndEventArg) => {
       setOverDayIndex(null);
       if (event.canceled) return;
-      const source = event.operation?.source ?? event.source;
-      const target = event.operation?.target ?? event.target;
+      const { source, target } = event.operation;
       if (!source || !target?.id || source.id === target.id) return;
       const id = String(target.id);
       if (!id.startsWith("day-")) return;
@@ -253,7 +248,9 @@ export function MealPlanDayView({
       if (toDayIndex < 0 || toDayIndex > 6) return;
       const newDate = dayDates[toDayIndex];
       const entriesInDay = entriesByDay.get(newDate) ?? [];
-      const data = source.data;
+      const data = source.data as
+        | { entry: EntryLike; fromDayIndex: number }
+        | undefined;
       if (!data?.entry) return;
       const entryId = data.entry._id as Id<"mealPlanEntries">;
       const newOrder =
