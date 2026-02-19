@@ -63,14 +63,6 @@ type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
 >;
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-function startOfDayMs(ms: number): number {
-  const d = new Date(ms);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
 export default function MealPlanClient() {
   const router = useRouter();
   const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);

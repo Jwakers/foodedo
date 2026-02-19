@@ -13,6 +13,7 @@ import type { FunctionReturnType } from "convex/server";
 import Image from "next/image";
 import type { ComponentProps } from "react";
 import { useCallback, useMemo, useState } from "react";
+import { startOfDayMs } from "convex/mealPlans";
 
 type DragDropProviderProps = ComponentProps<typeof DragDropProvider>;
 type DragOverEventArg = Parameters<
@@ -168,12 +169,6 @@ function DraggableEntry({
   );
 }
 
-function startOfDayMs(ms: number): number {
-  const d = new Date(ms);
-  d.setUTCHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
 export function MealPlanDayView({
   plan,
   onMoveEntry,
@@ -284,7 +279,8 @@ export function MealPlanDayView({
 
       <DragOverlay dropAnimation={null}>
         {(source) => {
-          const entry = (source.data as { entry: EntryLike } | undefined)?.entry;
+          const entry = (source.data as { entry: EntryLike } | undefined)
+            ?.entry;
           if (!entry) return null;
           return (
             <div className="w-[180px] max-w-[50vw] rotate-1 scale-105">

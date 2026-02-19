@@ -24,7 +24,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 // HELPERS
 // ============================================================================
 
-function startOfDayMs(ms: number): number {
+export function startOfDayMs(ms: number): number {
   const d = new Date(ms);
   d.setUTCHours(0, 0, 0, 0);
   return d.getTime();
@@ -157,11 +157,12 @@ export const getCurrentMealPlan = query({
       return true;
     });
     // Only plans that have not been replaced by a newer regeneration
-    const activePlans = allPlans.filter((p) => p.replacedByPlanId === undefined);
+    const activePlans = allPlans.filter(
+      (p) => p.replacedByPlanId === undefined,
+    );
     activePlans.sort(
       (a, b) =>
-        b.endDate - a.endDate ||
-        (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+        b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
     );
     const current = activePlans[0] ?? null;
     if (!current) return null;
@@ -671,8 +672,18 @@ export const updateEntry = mutation({
       // Spec 4.3: swap — increment swappedCount for old recipe, suggestedCount for new (actor from plan)
       if (args.recipeId !== entry.recipeId) {
         const actor = getActorForPlan(plan);
-        await incrementSwapped(ctx, entry.recipeId, actor.actorType, actor.actorId);
-        await incrementSuggested(ctx, args.recipeId, actor.actorType, actor.actorId);
+        await incrementSwapped(
+          ctx,
+          entry.recipeId,
+          actor.actorType,
+          actor.actorId,
+        );
+        await incrementSuggested(
+          ctx,
+          args.recipeId,
+          actor.actorType,
+          actor.actorId,
+        );
       }
       updates.recipeId = args.recipeId;
     }
