@@ -2,7 +2,10 @@ import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { canAccessRecipe, isHouseholdMember } from "./households";
-import { RECENTLY_SUGGESTED_DAYS } from "./lib/constants";
+import {
+  MAX_DAYS_IN_MEAL_PLAN,
+  RECENTLY_SUGGESTED_DAYS,
+} from "./lib/constants";
 import {
   buildPool,
   getBehaviourStatsForActor,
@@ -257,7 +260,7 @@ export const getMealPlansForUser = query({
 // ============================================================================
 
 /**
- * Create a new meal plan. endDate defaults to 7 days from today if not provided.
+ * Create a new meal plan. endDate defaults to MAX_DAYS_IN_MEAL_PLAN days from today if not provided.
  */
 export const createMealPlan = mutation({
   args: {
@@ -271,7 +274,7 @@ export const createMealPlan = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const now = Date.now();
     const today = startOfDayMs(now);
-    const defaultEnd = startOfDayMs(now + 7 * 24 * 60 * 60 * 1000);
+    const defaultEnd = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
     const endDate = args.endDate ?? defaultEnd;
     if (endDate < today) {
       throw new ConvexError("End date must be today or in the future");
@@ -298,7 +301,7 @@ export const createMealPlan = mutation({
 
 /**
  * Generate a new weekly meal plan using the intelligent selection algorithm.
- * Spec 6.1, 6.2, 6.5: creates plan, selects 7 recipes (pool + constraints + behavioural scoring), inserts entries, increments suggestedCount for each.
+ * Spec 6.1, 6.2, 6.5: creates plan, selects MAX_DAYS_IN_MEAL_PLAN recipes (pool + constraints + behavioural scoring), inserts entries, increments suggestedCount for each.
  */
 export const generateWeeklyPlan = mutation({
   args: {},
@@ -306,7 +309,7 @@ export const generateWeeklyPlan = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const now = Date.now();
     const startDate = startOfDayMs(now);
-    const endDate = startOfDayMs(now + 7 * ONE_DAY_MS);
+    const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
 
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
@@ -335,7 +338,7 @@ export const generateWeeklyPlan = mutation({
 
     const selectedIds = selectRecipes(
       pool,
-      7,
+      MAX_DAYS_IN_MEAL_PLAN,
       actorStats,
       generationSeed,
       recentlySuggested,
@@ -387,7 +390,7 @@ export const regenerateWeeklyPlan = mutation({
 
     const now = Date.now();
     const startDate = startOfDayMs(now);
-    const endDate = startOfDayMs(now + 7 * ONE_DAY_MS);
+    const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
     const newPlanId = await ctx.db.insert("mealPlans", {
@@ -418,8 +421,12 @@ export const regenerateWeeklyPlan = mutation({
       });
     }
 
-    const lockedCount = lockedSorted.length;
-    const toSelect = 7 - lockedCount;
+    const lockedOrders = new Set(lockedSorted.map((e) => e.order ?? 0));
+    const availableOrders = Array.from(
+      { length: MAX_DAYS_IN_MEAL_PLAN },
+      (_, i) => i,
+    ).filter((o) => !lockedOrders.has(o));
+    const toSelect = availableOrders.length;
     if (toSelect > 0) {
       const pool = await buildPool(
         ctx,
@@ -462,7 +469,7 @@ export const regenerateWeeklyPlan = mutation({
 
       for (let i = 0; i < newIds.length; i++) {
         const recipeId = newIds[i];
-        const order = lockedCount + i;
+        const order = availableOrders[i];
         const dateStart = startOfDayMs(startDate + order * ONE_DAY_MS);
         await ctx.db.insert("mealPlanEntries", {
           mealPlanId: newPlanId,

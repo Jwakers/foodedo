@@ -203,7 +203,7 @@ export const MAX_PRIMARY_PROTEIN_PER_WEEK = 2;
 export const MAX_CUISINE_PER_WEEK = 2;
 /** Upper bound for getRecipesForWeeklyPlan limit (pool size for client/weekly plan). */
 export const MAX_WEEKLY_PLAN_POOL_SIZE = 50;
-
+export const MAX_DAYS_IN_MEAL_PLAN = 7;
 // TypeScript types
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];
 export type PreparationOption = (typeof PREPARATION_OPTIONS)[number];
