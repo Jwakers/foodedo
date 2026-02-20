@@ -327,7 +327,7 @@ export default function MealPlanClient() {
               size="lg"
               className="shrink-0"
               onClick={handleGenerateWeek}
-              disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
+              disabled={isGenerating}
             >
               <Sparkles className="size-5 mr-2" />
               Generate My Week
@@ -348,7 +348,7 @@ export default function MealPlanClient() {
               <Button
                 size="lg"
                 onClick={handleGenerateWeek}
-                disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
+                disabled={isGenerating}
               >
                 Start Planning
                 <ArrowRight className="size-5 ml-2" />
@@ -379,7 +379,7 @@ export default function MealPlanClient() {
               variant="outline"
               size="sm"
               onClick={handleGenerateWeek}
-              disabled={isGenerating || (poolRecipes?.length ?? 0) === 0}
+              disabled={isGenerating}
             >
               <Sparkles className="size-4" />
               Generate next week
@@ -430,9 +430,7 @@ export default function MealPlanClient() {
                     <Button
                       variant="outline"
                       onClick={handleRegenerateWeek}
-                      disabled={
-                        isGenerating || (poolRecipes?.length ?? 0) === 0
-                      }
+                      disabled={isGenerating}
                     >
                       <Sparkles className="size-4" />
                       Regenerate
