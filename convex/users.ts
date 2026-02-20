@@ -67,7 +67,7 @@ export const updateSubscriptionTier = internalMutation({
     if (user === null) {
       console.error(`User not found for Clerk user ID: ${args.externalId}`);
       throw new ConvexError(
-        `User not found for Clerk user ID: ${args.externalId}`
+        `User not found for Clerk user ID: ${args.externalId}`,
       );
     }
 
@@ -76,11 +76,11 @@ export const updateSubscriptionTier = internalMutation({
 
     if (
       !SUBSCRIPTION_TIERS.includes(
-        args.subscriptionTier as (typeof SUBSCRIPTION_TIERS)[number]
+        args.subscriptionTier as (typeof SUBSCRIPTION_TIERS)[number],
       )
     ) {
       throw new ConvexError(
-        `Invalid subscription tier: ${args.subscriptionTier}. Valid tiers: ${SUBSCRIPTION_TIERS.join(", ")}`
+        `Invalid subscription tier: ${args.subscriptionTier}. Valid tiers: ${SUBSCRIPTION_TIERS.join(", ")}`,
       );
     }
 
@@ -88,7 +88,7 @@ export const updateSubscriptionTier = internalMutation({
       args.subscriptionTier as (typeof SUBSCRIPTION_TIERS)[number];
 
     console.log(
-      `Updating user ${user._id} to ${subscriptionTier} tier (status: ${args.subscriptionStatus}, subscription: ${args.subscriptionId})`
+      `Updating user ${user._id} to ${subscriptionTier} tier (status: ${args.subscriptionStatus}, subscription: ${args.subscriptionId})`,
     );
 
     // Update user with subscription details for failsafe tracking
@@ -110,7 +110,7 @@ export const deleteFromClerk = internalMutation({
       await ctx.db.delete(user._id);
     } else {
       console.warn(
-        `Can't delete user, there is none for Clerk user ID: ${clerkUserId}`
+        `Can't delete user, there is none for Clerk user ID: ${clerkUserId}`,
       );
     }
   },
@@ -139,7 +139,7 @@ async function userByExternalId(ctx: QueryCtx, externalId: string) {
 
 export async function getUserSubscription(
   user: Doc<"users">,
-  ctx: MutationCtx
+  ctx: MutationCtx,
 ) {
   // Get the subscription tier from the user
   const subscriptionTier = user.subscriptionTier ?? "free_user";
@@ -168,7 +168,7 @@ export const syncUserWithClerk = internalAction({
     try {
       if (!process.env.CLERK_SECRET_KEY)
         throw new ConvexError(
-          "CLERK_SECRET_KEY environment variable is not set"
+          "CLERK_SECRET_KEY environment variable is not set",
         );
 
       // Initialize Clerk client
@@ -179,14 +179,14 @@ export const syncUserWithClerk = internalAction({
       // Fetch user data from Clerk
       const clerkUser = await clerkClient.users.getUser(externalId);
       const subscription = await clerkClient.billing.getUserBillingSubscription(
-        clerkUser.id
+        clerkUser.id,
       );
 
       const [subItem] = subscription.subscriptionItems;
 
       if (!subItem) {
         console.log(
-          `User ${externalId} has no active subscription, defaulting to free tier`
+          `User ${externalId} has no active subscription, defaulting to free tier`,
         );
         await ctx.runMutation(internal.users.updateSubscriptionTier, {
           externalId,

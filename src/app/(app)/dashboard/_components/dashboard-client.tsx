@@ -35,7 +35,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { startOfDayMs } from "convex/mealPlans";
+import { startOfDayMs } from "@/lib/utils";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;

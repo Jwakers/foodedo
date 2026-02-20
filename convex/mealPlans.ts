@@ -27,7 +27,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 // HELPERS
 // ============================================================================
 
-export function startOfDayMs(ms: number): number {
+function startOfDayMs(ms: number): number {
   const d = new Date(ms);
   d.setUTCHours(0, 0, 0, 0);
   return d.getTime();

@@ -13,7 +13,7 @@ import type { FunctionReturnType } from "convex/server";
 import Image from "next/image";
 import type { ComponentProps } from "react";
 import { useCallback, useMemo, useState } from "react";
-import { startOfDayMs } from "convex/mealPlans";
+import { startOfDayMs } from "@/lib/utils";
 
 type DragDropProviderProps = ComponentProps<typeof DragDropProvider>;
 type DragOverEventArg = Parameters<
