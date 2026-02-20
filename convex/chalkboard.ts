@@ -73,12 +73,16 @@ export const getHouseholdChalkboard = query({
 });
 
 /**
- * Get all chalkboard items for all households the user is a member of
+ * Get all chalkboard items for all households the user is a member of.
+ * Returns empty object if user is not yet authenticated (e.g. during initial load).
  */
 export const getAllHouseholdChalkboards = query({
   args: {},
   handler: async (ctx) => {
-    const user = await getCurrentUserOrThrow(ctx);
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return {};
+    }
 
     // Get all household memberships for the user
     const memberships = await ctx.db
