@@ -18,13 +18,15 @@ export const metadata: Metadata = {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="bg-background safe-area-inset relative grid grid-rows-[auto_1fr_auto] min-h-dvh"
+      className="bg-background safe-area-inset relative"
       data-vaul-drawer-wrapper="true"
     >
       <CannyIdentify />
-      <Header />
-      <main className="w-full min-w-0">{children}</main>
-      <Navbar />
+      <div className="grid grid-rows-[auto_1fr_auto] min-h-dvh">
+        <Header />
+        <main className="w-full min-w-0">{children}</main>
+        <Navbar />
+      </div>
       <CannyFeedbackButton />
     </div>
   );
