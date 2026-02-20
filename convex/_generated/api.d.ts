@@ -18,6 +18,7 @@ import type * as lib_systemRecipes from "../lib/systemRecipes.js";
 import type * as mealPlanGenerator from "../mealPlanGenerator.js";
 import type * as mealPlans from "../mealPlans.js";
 import type * as migrations from "../migrations.js";
+import type * as mutations from "../mutations.js";
 import type * as recipeBehaviourStats from "../recipeBehaviourStats.js";
 import type * as recipes from "../recipes.js";
 import type * as shoppingLists from "../shoppingLists.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   mealPlanGenerator: typeof mealPlanGenerator;
   mealPlans: typeof mealPlans;
   migrations: typeof migrations;
+  mutations: typeof mutations;
   recipeBehaviourStats: typeof recipeBehaviourStats;
   recipes: typeof recipes;
   shoppingLists: typeof shoppingLists;

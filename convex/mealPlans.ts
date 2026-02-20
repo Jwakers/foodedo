@@ -313,17 +313,6 @@ export const generateWeeklyPlan = mutation({
 
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
-    const planId = await ctx.db.insert("mealPlans", {
-      userId: user._id,
-      endDate,
-      startDate,
-      updatedAt: now,
-      isGenerated: true,
-      generationSeed,
-      generationVersion: 1,
-      generatedAt: now,
-    });
-
     const actorType = "user";
     const actorId = user._id;
 
@@ -344,6 +333,21 @@ export const generateWeeklyPlan = mutation({
       recentlySuggested,
       [],
     );
+
+    if (selectedIds.length === 0) {
+      throw new ConvexError("No recipes available to generate meal plan");
+    }
+
+    const planId = await ctx.db.insert("mealPlans", {
+      userId: user._id,
+      endDate,
+      startDate,
+      updatedAt: now,
+      isGenerated: true,
+      generationSeed,
+      generationVersion: 1,
+      generatedAt: now,
+    });
 
     for (let i = 0; i < selectedIds.length; i++) {
       const recipeId = selectedIds[i];
