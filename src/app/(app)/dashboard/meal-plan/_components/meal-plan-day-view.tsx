@@ -1,6 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { ROUTES } from "@/app/constants";
+import { cn, startOfDayMs } from "@/lib/utils";
 import {
   DragDropProvider,
   DragOverlay,
@@ -10,10 +11,11 @@ import {
 import type { Id } from "convex/_generated/dataModel";
 import { api } from "convex/_generated/api";
 import type { FunctionReturnType } from "convex/server";
+import { GripVertical } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import type { ComponentProps } from "react";
 import { useCallback, useMemo, useState } from "react";
-import { startOfDayMs } from "convex/mealPlans";
 
 type DragDropProviderProps = ComponentProps<typeof DragDropProvider>;
 type DragOverEventArg = Parameters<
@@ -156,15 +158,36 @@ function DraggableEntry({
     },
   });
 
+  const recipeId = entry.recipe?._id;
+  const recipeHref = recipeId ? `${ROUTES.RECIPE}/${recipeId}` : null;
+
   return (
     <div
       ref={draggable.ref}
-      className={cn(
-        "cursor-grab active:cursor-grabbing",
-        draggable.isDragging && "opacity-50",
-      )}
+      className={cn("relative", draggable.isDragging && "opacity-50")}
     >
-      <DraggableEntryCard entry={entry} isDragging={draggable.isDragging} />
+      {recipeHref ? (
+        <Link
+          href={recipeHref}
+          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+          aria-label={`Open recipe: ${entry.recipe?.title ?? "Recipe"}`}
+        >
+          <DraggableEntryCard entry={entry} isDragging={draggable.isDragging} />
+        </Link>
+      ) : (
+        <DraggableEntryCard entry={entry} isDragging={draggable.isDragging} />
+      )}
+      <button
+        ref={draggable.handleRef}
+        type="button"
+        className={cn(
+          "absolute right-1 top-1 z-10 flex size-8 cursor-grab items-center justify-center rounded-md bg-black/50 text-white active:cursor-grabbing",
+          "touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        )}
+        aria-label="Hold to drag and reorder"
+      >
+        <GripVertical className="size-4" aria-hidden />
+      </button>
     </div>
   );
 }
@@ -264,6 +287,10 @@ export function MealPlanDayView({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
+      <p className="mb-3 text-center text-xs text-muted-foreground">
+        Tap a meal to open the recipe. Hold the grip icon for a moment, then
+        drag to reorder.
+      </p>
       {/* 2 columns on mobile, then 3, 4, 7 at larger breakpoints */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         {dayDates.map((dateMs, i) => (

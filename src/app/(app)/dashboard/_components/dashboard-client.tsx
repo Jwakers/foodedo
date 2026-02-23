@@ -2,7 +2,7 @@
 
 import { getCannyBoardUrl } from "@/app/(app)/_components.tsx/canny-identify";
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { cn } from "@/lib/utils";
+import { cn, startOfDayMs } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,7 +35,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { startOfDayMs } from "convex/mealPlans";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;

@@ -69,6 +69,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] Whene deleting a household an error is surfaced on the client. This is likely due to that household no longer being available. Instead we should redirect or 404
 - [ ] The back to dashboard button on the error page does not seem to work
 - [ ] Clicking the account button in the nav just closes the menu and does not do anything
+- [ ] Occasionally get redirected to a 404 after signing in
 
 ## Tech debt
 
