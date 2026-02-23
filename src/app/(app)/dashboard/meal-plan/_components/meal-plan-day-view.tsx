@@ -164,10 +164,7 @@ function DraggableEntry({
   return (
     <div
       ref={draggable.ref}
-      className={cn(
-        "relative",
-        draggable.isDragging && "opacity-50",
-      )}
+      className={cn("relative", draggable.isDragging && "opacity-50")}
     >
       {recipeHref ? (
         <Link
@@ -180,16 +177,17 @@ function DraggableEntry({
       ) : (
         <DraggableEntryCard entry={entry} isDragging={draggable.isDragging} />
       )}
-      <div
+      <button
         ref={draggable.handleRef}
+        type="button"
         className={cn(
           "absolute right-1 top-1 z-10 flex size-8 cursor-grab items-center justify-center rounded-md bg-black/50 text-white active:cursor-grabbing",
-          "touch-none",
+          "touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         )}
         aria-label="Hold to drag and reorder"
       >
         <GripVertical className="size-4" aria-hidden />
-      </div>
+      </button>
     </div>
   );
 }
