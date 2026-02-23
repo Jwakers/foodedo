@@ -4,6 +4,7 @@ import { Id } from "convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { RecipeBackButton } from "./_components/recipe-back-button";
 import { RecipeClient } from "./_components/recipe-client";
 
 interface RecipePageProps {
@@ -43,5 +44,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
     notFound();
   }
 
-  return <RecipeClient recipeId={recipeId} />;
+  return (
+    <div className="bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-4">
+          <RecipeBackButton />
+        </div>
+        <RecipeClient recipeId={recipeId} />
+      </div>
+    </div>
+  );
 }
