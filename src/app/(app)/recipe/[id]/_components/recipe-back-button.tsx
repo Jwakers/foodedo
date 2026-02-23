@@ -18,9 +18,7 @@ export function RecipeBackButton() {
       const referrer = document.referrer;
       const sameOriginReferrer =
         referrer !== "" && new URL(referrer).origin === window.location.origin;
-      const hasHistory =
-        typeof window !== "undefined" && window.history.length > 1;
-      setShowBack(sameOriginReferrer || hasHistory);
+      setShowBack(sameOriginReferrer);
     } catch {
       setShowBack(false);
     }
@@ -29,7 +27,8 @@ export function RecipeBackButton() {
   if (showBack === false) return null;
 
   return (
-    <Button
+    <div className="mb-4">
+      <Button
       type="button"
       variant="ghost"
       size="sm"
@@ -39,5 +38,6 @@ export function RecipeBackButton() {
       <ArrowLeft className="size-4" />
       Back
     </Button>
+    </div>
   );
 }

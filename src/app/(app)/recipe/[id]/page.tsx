@@ -47,9 +47,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-4">
-          <RecipeBackButton />
-        </div>
+        <RecipeBackButton />
         <RecipeClient recipeId={recipeId} />
       </div>
     </div>

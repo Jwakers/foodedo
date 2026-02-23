@@ -1,7 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/app/constants";
-import { cn } from "@/lib/utils";
+import { cn, startOfDayMs } from "@/lib/utils";
 import {
   DragDropProvider,
   DragOverlay,
@@ -16,7 +16,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps } from "react";
 import { useCallback, useMemo, useState } from "react";
-import { startOfDayMs } from "@/lib/utils";
 
 type DragDropProviderProps = ComponentProps<typeof DragDropProvider>;
 type DragOverEventArg = Parameters<
