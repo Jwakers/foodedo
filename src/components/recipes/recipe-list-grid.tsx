@@ -79,7 +79,7 @@ export function RecipeListGrid({
                 <span className="inline-flex size-4 items-center justify-center rounded-full bg-primary/90 text-primary-foreground">
                   <Check className="size-2.5" strokeWidth={3} aria-hidden />
                 </span>
-                <span>Included in meal planning</span>
+                <span>Included in meal plan generation</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-flex size-4 items-center justify-center rounded-full border border-dashed border-muted-foreground text-muted-foreground">

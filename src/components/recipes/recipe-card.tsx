@@ -65,7 +65,7 @@ export function RecipeCard({
                 <Check className="size-3.5" strokeWidth={3} />
               </span>
             )}
-            {showMealPlanBadge && !recipe.isGeneratorEligible && (
+            {showMealPlanBadge && recipe.isGeneratorEligible === false && (
               <span
                 className="size-6 rounded-full flex items-center justify-center shrink-0 border border-dashed border-muted-foreground text-muted-foreground"
                 title="Not included in meal plan generation"

@@ -131,7 +131,7 @@ const PRIMARY_PROTEIN_KEYWORDS: {
   value: PrimaryProtein;
 }[] = [
   { keywords: ["vegan", "plant-based"], value: "vegan" },
-  { keywords: ["vegetarian", "veg "], value: "vegetarian" },
+  { keywords: ["vegetarian", "veg"], value: "vegetarian" },
   {
     keywords: [
       "seafood",
@@ -206,20 +206,31 @@ const CUISINE_KEYWORDS: { keywords: string[]; value: Cuisine }[] = [
   { keywords: ["spanish", "paella", "tapas"], value: "spanish" },
 ];
 
+/**
+ * @param text - Combined recipe text; must already be lowercased for keyword matching.
+ */
 function derivePrimaryProteinFromText(
   text: string,
 ): PrimaryProtein | undefined {
-  const lower = text.toLowerCase();
   for (const { keywords, value } of PRIMARY_PROTEIN_KEYWORDS) {
-    if (keywords.some((k) => lower.includes(k))) return value;
+    if (
+      keywords.some((k) =>
+        k === "veg"
+          ? /\bveg\b/.test(text)
+          : text.includes(k),
+      )
+    )
+      return value;
   }
   return undefined;
 }
 
+/**
+ * @param text - Combined recipe text; must already be lowercased for keyword matching.
+ */
 function deriveCuisineFromText(text: string): Cuisine | undefined {
-  const lower = text.toLowerCase();
   for (const { keywords, value } of CUISINE_KEYWORDS) {
-    if (keywords.some((k) => lower.includes(k))) return value;
+    if (keywords.some((k) => text.includes(k))) return value;
   }
   return undefined;
 }
@@ -247,10 +258,10 @@ function deriveComplexityTier(
 export const backfillUserRecipeMealPlanFields = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const allRecipes = await ctx.db.query("recipes").collect();
-    const userRecipes = allRecipes.filter(
-      (r) => r.source === "user" || (r.userId != null && r.source !== "system"),
-    );
+    const userRecipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "user"))
+      .collect();
 
     let updatedCount = 0;
     const now = Date.now();
@@ -313,12 +324,10 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
       }
 
       const totalTime =
-        recipe.totalTimeMinutes ??
         (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
       if (
         totalTime > 0 &&
-        (recipe.totalTimeMinutes === undefined ||
-          recipe.totalTimeMinutes !== totalTime)
+        totalTime !== recipe.totalTimeMinutes
       ) {
         updates.totalTimeMinutes = totalTime;
         changed = true;
