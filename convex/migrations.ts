@@ -2,6 +2,9 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  PRIMARY_PROTEINS,
   ComplexityTier,
   Cuisine,
   PreparationOption,
@@ -114,6 +117,231 @@ export const backfillRecipeGeneratorFields = internalMutation({
       message: `Migration complete: Backfilled ${updatedCount} recipes with source and/or totalTimeMinutes`,
       totalRecipes: recipes.length,
       updatedRecipes: updatedCount,
+    };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Helpers for backfillUserRecipeMealPlanFields (keyword derivation from text)
+// ---------------------------------------------------------------------------
+
+/** Keywords that suggest a primary protein (checked in order; first match wins). */
+const PRIMARY_PROTEIN_KEYWORDS: {
+  keywords: string[];
+  value: PrimaryProtein;
+}[] = [
+  { keywords: ["vegan", "plant-based"], value: "vegan" },
+  { keywords: ["vegetarian", "veg"], value: "vegetarian" },
+  {
+    keywords: [
+      "seafood",
+      "shrimp",
+      "prawn",
+      "crab",
+      "lobster",
+      "scallop",
+      "mussel",
+      "calamari",
+    ],
+    value: "seafood",
+  },
+  { keywords: ["chicken", "poultry"], value: "chicken" },
+  { keywords: ["beef", "steak"], value: "beef" },
+  { keywords: ["pork", "bacon", "ham", "sausage"], value: "pork" },
+  { keywords: ["lamb"], value: "lamb" },
+  { keywords: ["turkey"], value: "turkey" },
+  {
+    keywords: [
+      "fish",
+      "salmon",
+      "tuna",
+      "cod",
+      "trout",
+      "mackerel",
+      "white fish",
+    ],
+    value: "fish",
+  },
+];
+
+/** Keywords that suggest a cuisine (first match wins). */
+const CUISINE_KEYWORDS: { keywords: string[]; value: Cuisine }[] = [
+  {
+    keywords: ["italian", "pasta", "risotto", "pizza", "carbonara"],
+    value: "italian",
+  },
+  {
+    keywords: ["indian", "curry", "tikka", "naan", "biryani", "dal"],
+    value: "indian",
+  },
+  {
+    keywords: ["mexican", "taco", "burrito", "quesadilla", "enchilada"],
+    value: "mexican",
+  },
+  { keywords: ["thai", "pad thai"], value: "thai" },
+  { keywords: ["chinese", "stir-fry", "wok", "dim sum"], value: "chinese" },
+  {
+    keywords: ["japanese", "sushi", "ramen", "teriyaki", "miso"],
+    value: "japanese",
+  },
+  { keywords: ["korean", "kimchi", "bibimbap", "gochujang"], value: "korean" },
+  { keywords: ["french"], value: "french" },
+  { keywords: ["mediterranean", "mezze"], value: "mediterranean" },
+  {
+    keywords: [
+      "middle eastern",
+      "middle_eastern",
+      "falafel",
+      "hummus",
+      "shawarma",
+    ],
+    value: "middle_eastern",
+  },
+  { keywords: ["british"], value: "british" },
+  { keywords: ["american"], value: "american" },
+  { keywords: ["caribbean", "jerk"], value: "caribbean" },
+  { keywords: ["african"], value: "african" },
+  { keywords: ["vietnamese", "pho", "banh mi"], value: "vietnamese" },
+  { keywords: ["greek", "gyro", "feta", "tzatziki"], value: "greek" },
+  { keywords: ["spanish", "paella", "tapas"], value: "spanish" },
+];
+
+/**
+ * @param text - Combined recipe text; must already be lowercased for keyword matching.
+ */
+function derivePrimaryProteinFromText(
+  text: string,
+): PrimaryProtein | undefined {
+  for (const { keywords, value } of PRIMARY_PROTEIN_KEYWORDS) {
+    if (
+      keywords.some((k) =>
+        k === "veg" ? /\bveg\b/.test(text) : text.includes(k),
+      )
+    )
+      return value;
+  }
+  return undefined;
+}
+
+/**
+ * @param text - Combined recipe text; must already be lowercased for keyword matching.
+ */
+function deriveCuisineFromText(text: string): Cuisine | undefined {
+  for (const { keywords, value } of CUISINE_KEYWORDS) {
+    if (keywords.some((k) => text.includes(k))) return value;
+  }
+  return undefined;
+}
+
+function deriveComplexityTier(
+  methodSteps: number,
+  totalMinutes: number,
+): ComplexityTier {
+  if (methodSteps <= 4 && totalMinutes < 35) return "simple";
+  if (methodSteps >= 8 || totalMinutes >= 60) return "complex";
+  return "moderate";
+}
+
+/**
+ * Migration to backfill meal-plan fields (primaryProtein, complexityTier, cuisine,
+ * totalTimeMinutes, isGeneratorEligible) for user recipes from existing data.
+ * - primaryProtein: derived from title + description + ingredient names (keyword match).
+ * - complexityTier: derived from number of method steps and total time (prep + cook).
+ * - cuisine: derived from title + description (keyword match); single value.
+ * - totalTimeMinutes: prepTime + (cookTime ?? 0).
+ * - isGeneratorEligible: true when both primaryProtein and complexityTier are set.
+ * Only patches user recipes (source === "user") and only sets fields that are missing.
+ * Run: npx convex run migrations:backfillUserRecipeMealPlanFields
+ */
+export const backfillUserRecipeMealPlanFields = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const userRecipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "user"))
+      .collect();
+    let updatedCount = 0;
+    const now = Date.now();
+    for (const recipe of userRecipes) {
+      const cuisineText = [recipe.title ?? "", recipe.description ?? ""]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const proteinText = [
+        recipe.title ?? "",
+        recipe.description ?? "",
+        ...(recipe.ingredients ?? []).map((i) => i.name ?? ""),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const methodSteps = (recipe.method ?? []).length;
+      const totalMinutes = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+      const updates: {
+        primaryProtein?: PrimaryProtein;
+        complexityTier?: ComplexityTier;
+        cuisine?: Cuisine[];
+        totalTimeMinutes?: number;
+        isGeneratorEligible?: boolean;
+        updatedAt: number;
+      } = { updatedAt: now };
+      let changed = false;
+      if (
+        recipe.primaryProtein == null ||
+        !PRIMARY_PROTEINS.includes(recipe.primaryProtein as PrimaryProtein)
+      ) {
+        const derived = derivePrimaryProteinFromText(proteinText);
+        if (derived) {
+          updates.primaryProtein = derived;
+          changed = true;
+        }
+      }
+      if (
+        recipe.complexityTier == null ||
+        !COMPLEXITY_TIERS.includes(recipe.complexityTier as ComplexityTier)
+      ) {
+        updates.complexityTier = deriveComplexityTier(
+          methodSteps,
+          totalMinutes,
+        );
+        changed = true;
+      }
+      if (
+        !recipe.cuisine?.length ||
+        !recipe.cuisine.every((c) => CUISINES.includes(c as Cuisine))
+      ) {
+        const derived = deriveCuisineFromText(cuisineText);
+        if (derived) {
+          updates.cuisine = [derived];
+          changed = true;
+        }
+      }
+
+      const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+      if (totalTime > 0 && totalTime !== recipe.totalTimeMinutes) {
+        updates.totalTimeMinutes = totalTime;
+        changed = true;
+      }
+
+      const primaryProtein = updates.primaryProtein ?? recipe.primaryProtein;
+      const complexityTier = updates.complexityTier ?? recipe.complexityTier;
+      const hasGeneratorMetadata =
+        primaryProtein != null && complexityTier != null;
+      if (recipe.isGeneratorEligible !== hasGeneratorMetadata) {
+        updates.isGeneratorEligible = hasGeneratorMetadata;
+        changed = true;
+      }
+
+      if (changed) {
+        await ctx.db.patch(recipe._id, updates);
+        updatedCount++;
+      }
+    }
+
+    return {
+      message: `Backfilled meal-plan fields for ${updatedCount} user recipes`,
+      totalUserRecipes: userRecipes.length,
+      updatedCount,
     };
   },
 });

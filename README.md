@@ -12,7 +12,7 @@
 - [x] The recipe parser must be updated to handle new fields. A new migration needs to be made to update data. Forms need updating to handle new fields.
 - [x] Update recipe UI to show notification if the user recipe can be used in meal plan generation.
 
-- [ ] Migrations to update recipe fields for generation
+- [x] Migrations to update recipe fields for generation (run: `npx convex run migrations:backfillUserRecipeMealPlanFields`)
 - [ ] Titles on listing cards need either a gradient or blurred background
 - [ ] Update the filtering on the Discover page, remove category.
 - [ ] Change order of Discover page to alphabetical
