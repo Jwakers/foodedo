@@ -201,7 +201,7 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="__none">None</SelectItem>
+                      <SelectItem value="__none">Not specified</SelectItem>
                       {COMPLEXITY_TIERS.map((t) => (
                         <SelectItem key={t} value={t}>
                           {formatLabel(t)}
@@ -223,13 +223,16 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                   Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)
                 </FormLabel>
                 <div className="flex flex-wrap gap-2">
-                  {[0, 1].map((i) => (
+                  {Array.from(
+                    { length: CUISINE_MAX_SELECTIONS },
+                    (_, i) => i,
+                  ).map((i) => (
                     <Select
                       key={i}
                       value={field.value?.[i] ?? ""}
                       onValueChange={(v) => {
                         const next = [...(field.value ?? [])].filter(Boolean);
-                        if (v) {
+                        if (v && v !== "__none") {
                           if (i >= next.length) next.length = i + 1;
                           next[i] = v as (typeof CUISINES)[number];
                         } else {
@@ -254,6 +257,7 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                         />
                       </SelectTrigger>
                       <SelectContent>
+                        {i > 0 && <SelectItem value="__none">Clear</SelectItem>}
                         {CUISINES.map((c) => (
                           <SelectItem key={c} value={c}>
                             {formatLabel(c)}

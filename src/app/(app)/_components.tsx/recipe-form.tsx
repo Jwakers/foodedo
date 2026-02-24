@@ -600,7 +600,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           <Select
                             value={field.value ?? ""}
                             onValueChange={(v) =>
-                              field.onChange(v || undefined)
+                              field.onChange(
+                                v === "__none" || !v ? undefined : v,
+                              )
                             }
                           >
                             <FormControl>
@@ -609,6 +611,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="__none">
+                                Not specified
+                              </SelectItem>
                               {COMPLEXITY_TIERS.map((t) => (
                                 <SelectItem key={t} value={t}>
                                   {formatLabel(t)}

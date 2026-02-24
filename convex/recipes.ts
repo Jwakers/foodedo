@@ -285,7 +285,7 @@ export const getRecipesForWeeklyPlan = query({
           : null;
         const totalMin =
           recipe.totalTimeMinutes ??
-          ((recipe.prepTime ?? 0) + (recipe.cookTime ?? 0));
+          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
         return {
           _id: recipe._id,
           title: recipe.title,
@@ -657,8 +657,8 @@ export const updateRecipe = mutation({
       ingredients,
       method: args.method ?? recipe.method,
       updatedAt: Date.now(),
-      primaryProtein: args.primaryProtein ?? recipe.primaryProtein,
-      complexityTier: args.complexityTier ?? recipe.complexityTier,
+      primaryProtein,
+      complexityTier,
       cuisine: args.cuisine ?? recipe.cuisine,
       totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
       isGeneratorEligible: hasGeneratorMetadata,

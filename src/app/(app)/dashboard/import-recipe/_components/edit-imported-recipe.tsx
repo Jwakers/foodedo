@@ -306,7 +306,7 @@ export function EditImportedRecipe({
                       <SelectContent>
                         {PRIMARY_PROTEINS.map((p) => (
                           <SelectItem key={p} value={p}>
-                            {titleCase(p)}
+                            {formatLabel(p)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -333,7 +333,7 @@ export function EditImportedRecipe({
                       <SelectContent>
                         {COMPLEXITY_TIERS.map((t) => (
                           <SelectItem key={t} value={t}>
-                            {titleCase(t)}
+                            {formatLabel(t)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -348,9 +348,14 @@ export function EditImportedRecipe({
               name="cuisine"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)</FormLabel>
+                  <FormLabel>
+                    Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)
+                  </FormLabel>
                   <div className="flex flex-wrap gap-2">
-                    {[0, 1].map((i) => (
+                    {Array.from(
+                      { length: CUISINE_MAX_SELECTIONS },
+                      (_, i) => i,
+                    ).map((i) => (
                       <Select
                         key={i}
                         value={field.value?.[i] ?? ""}
@@ -363,12 +368,22 @@ export function EditImportedRecipe({
                             next.splice(i, 1);
                           }
                           field.onChange(
-                            next.filter((x): x is (typeof CUISINES)[number] => Boolean(x)).slice(0, CUISINE_MAX_SELECTIONS),
+                            next
+                              .filter((x): x is (typeof CUISINES)[number] =>
+                                Boolean(x),
+                              )
+                              .slice(0, CUISINE_MAX_SELECTIONS),
                           );
                         }}
                       >
-                        <SelectTrigger className={cn("w-full min-w-[140px] sm:w-[180px]")}>
-                          <SelectValue placeholder={i === 0 ? "First cuisine" : "Second (optional)"} />
+                        <SelectTrigger
+                          className={cn("w-full min-w-[140px] sm:w-[180px]")}
+                        >
+                          <SelectValue
+                            placeholder={
+                              i === 0 ? "First cuisine" : "Second (optional)"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {CUISINES.map((c) => (
