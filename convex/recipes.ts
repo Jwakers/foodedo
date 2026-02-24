@@ -3,10 +3,17 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { canAccessRecipe } from "./households";
-import { MAX_WEEKLY_PLAN_POOL_SIZE } from "./lib/constants";
+import {
+  clampEditorialBias,
+  CUISINE_MAX_SELECTIONS,
+  MAX_WEEKLY_PLAN_POOL_SIZE,
+} from "./lib/constants";
 import {
   categoriesUnion,
+  complexityTierUnion,
   creationSourceUnion,
+  cuisineUnion,
+  primaryProteinUnion,
   preparationUnion,
   unitsUnion,
 } from "./schema";
@@ -25,9 +32,7 @@ type MethodStepWithImage = {
 async function resolveMethodImageUrls(
   ctx: QueryCtx,
   method: MethodStepWithImage[] = [],
-): Promise<
-  (MethodStepWithImage & { imageUrl?: string | null })[]
-> {
+): Promise<(MethodStepWithImage & { imageUrl?: string | null })[]> {
   return Promise.all(
     method.map(async (step) => {
       if (step.image) {
@@ -77,9 +82,7 @@ export const getRecipe = query({
     );
     if (!canAccess) return null;
 
-    const image = recipe.image
-      ? await ctx.storage.getUrl(recipe.image)
-      : null;
+    const image = recipe.image ? await ctx.storage.getUrl(recipe.image) : null;
 
     const methodWithUrls = await resolveMethodImageUrls(
       ctx,
@@ -123,7 +126,7 @@ export const getRecipeForEdit = query({
     if (!canAccess || !isOwner) return null; // Only owner can edit
 
     // Return recipe with storage IDs (not URLs) for form initialization
-    // Include all fields required by RecipeEditFormData schema
+    // User-editable only; totalTimeMinutes is system-only (derived from prep + cook)
     return {
       title: recipe.title || "",
       description: recipe.description || "",
@@ -133,6 +136,9 @@ export const getRecipeForEdit = query({
       category: recipe.category,
       ingredients: recipe.ingredients || [],
       method: recipe.method || [],
+      primaryProtein: recipe.primaryProtein ?? undefined,
+      complexityTier: recipe.complexityTier ?? undefined,
+      cuisine: recipe.cuisine ?? [],
     };
   },
 });
@@ -219,10 +225,7 @@ export const getRecipesForWeeklyPlan = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    const limit = Math.min(
-      Math.max(1, args.limit),
-      MAX_WEEKLY_PLAN_POOL_SIZE,
-    );
+    const limit = Math.min(Math.max(1, args.limit), MAX_WEEKLY_PLAN_POOL_SIZE);
 
     // 1. System recipe ids
     const systemRecipes = await ctx.db
@@ -273,15 +276,8 @@ export const getRecipesForWeeklyPlan = query({
       recipeDocs.map(async (recipe, i) => {
         if (!recipe) return null;
         const recipeId = idsToFetch[i];
-        if (
-          recipe.source !== "system" &&
-          recipe.userId !== user._id
-        ) {
-          const { canAccess } = await canAccessRecipe(
-            ctx,
-            user._id,
-            recipeId,
-          );
+        if (recipe.source !== "system" && recipe.userId !== user._id) {
+          const { canAccess } = await canAccessRecipe(ctx, user._id, recipeId);
           if (!canAccess) return null;
         }
         const image = recipe.image
@@ -379,6 +375,7 @@ export const createEmptyRecipe = mutation({
       serves: 1, // Must be at least 1 to match frontend schema validation
       category: "main",
       creationSource: "manual",
+      source: "user",
       updatedAt: Date.now(),
     });
 
@@ -421,6 +418,9 @@ export const createRecipe = mutation({
     originalUrl: v.optional(v.string()),
     originalAuthor: v.optional(v.string()),
     originalPublishedDate: v.optional(v.string()),
+    primaryProtein: v.optional(primaryProteinUnion),
+    complexityTier: v.optional(complexityTierUnion),
+    cuisine: v.optional(v.array(cuisineUnion)),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -471,6 +471,20 @@ export const createRecipe = mutation({
       originalPublishedDate = parsedDate.getTime();
     }
 
+    if (
+      args.cuisine !== undefined &&
+      args.cuisine.length > CUISINE_MAX_SELECTIONS
+    ) {
+      throw new ConvexError(
+        `cuisine must have at most ${CUISINE_MAX_SELECTIONS} items`,
+      );
+    }
+
+    // System-only: totalTimeMinutes is always derived from prep + cook
+    const totalTimeMinutes = args.prepTime + (args.cookTime ?? 0);
+    const hasGeneratorMetadata =
+      args.primaryProtein != null && args.complexityTier != null;
+
     const recipeId = await ctx.db.insert("recipes", {
       userId: user._id,
       title: args.title,
@@ -482,12 +496,19 @@ export const createRecipe = mutation({
       ingredients,
       method: args.method,
       creationSource: args.creationSource,
+      source: "user",
       nutrition: args.nutrition,
       originalUrl: args.originalUrl,
       originalAuthor: args.originalAuthor,
       importedAt: args.originalUrl ? now : undefined,
       originalPublishedDate,
       updatedAt: now,
+      primaryProtein: args.primaryProtein,
+      complexityTier: args.complexityTier,
+      cuisine: args.cuisine,
+      totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
+      editorialBias: clampEditorialBias(1),
+      isGeneratorEligible: hasGeneratorMetadata ? true : undefined,
     });
 
     const recipe = await ctx.db.get(recipeId);
@@ -531,6 +552,9 @@ export const updateRecipe = mutation({
         }),
       ),
     ),
+    primaryProtein: v.optional(primaryProteinUnion),
+    complexityTier: v.optional(complexityTierUnion),
+    cuisine: v.optional(v.array(cuisineUnion)),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -594,16 +618,39 @@ export const updateRecipe = mutation({
       }
     }
 
+    if (
+      args.cuisine !== undefined &&
+      args.cuisine.length > CUISINE_MAX_SELECTIONS
+    ) {
+      throw new ConvexError(
+        `cuisine must have at most ${CUISINE_MAX_SELECTIONS} items`,
+      );
+    }
+
+    const prepTime = args.prepTime ?? recipe.prepTime;
+    const cookTime = args.cookTime ?? recipe.cookTime;
+    // System-only: totalTimeMinutes is always derived from prep + cook
+    const totalTimeMinutes = prepTime + (cookTime ?? 0);
+    const primaryProtein = args.primaryProtein ?? recipe.primaryProtein;
+    const complexityTier = args.complexityTier ?? recipe.complexityTier;
+    const hasGeneratorMetadata =
+      primaryProtein != null && complexityTier != null;
+
     await ctx.db.patch(args.recipeId, {
       title: args.title ?? recipe.title,
       description: args.description ?? recipe.description,
-      prepTime: args.prepTime ?? recipe.prepTime,
+      prepTime,
       cookTime: args.cookTime ?? recipe.cookTime,
       serves: args.serves ?? recipe.serves,
       category: args.category ?? recipe.category,
       ingredients,
       method: args.method ?? recipe.method,
       updatedAt: Date.now(),
+      primaryProtein: args.primaryProtein ?? recipe.primaryProtein,
+      complexityTier: args.complexityTier ?? recipe.complexityTier,
+      cuisine: args.cuisine ?? recipe.cuisine,
+      totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
+      isGeneratorEligible: hasGeneratorMetadata ? true : undefined,
     });
   },
 });

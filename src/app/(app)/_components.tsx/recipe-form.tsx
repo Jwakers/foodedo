@@ -27,11 +27,17 @@ import {
   recipeCreateSchema,
   type RecipeCreateFormData,
 } from "@/lib/schemas/recipe";
-import { titleCase } from "@/lib/utils";
+import { cn, titleCase } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { RECIPE_CATEGORIES } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  CUISINE_MAX_SELECTIONS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { AnimatePresence, motion } from "framer-motion";
@@ -81,6 +87,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
       image: undefined,
       ingredients: [],
       method: [],
+      primaryProtein: undefined,
+      complexityTier: undefined,
+      cuisine: [],
     },
   });
 
@@ -178,6 +187,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
         recipeId,
         ...valuesToUpdate,
         method: methodData,
+        primaryProtein: valuesToUpdate.primaryProtein,
+        complexityTier: valuesToUpdate.complexityTier,
+        cuisine: valuesToUpdate.cuisine,
       });
     } catch (error) {
       console.error("Failed to save draft on navigation:", error);
@@ -210,6 +222,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
         category: values.category,
         ingredients: values.ingredients,
         method,
+        primaryProtein: values.primaryProtein,
+        complexityTier: values.complexityTier,
+        cuisine: values.cuisine,
       });
 
       // Handle image upload only if there's a new image
@@ -318,6 +333,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
         recipeId,
         ...valuesToUpdate,
         method: methodData,
+        primaryProtein: valuesToUpdate.primaryProtein,
+        complexityTier: valuesToUpdate.complexityTier,
+        cuisine: valuesToUpdate.cuisine,
       }).catch((error) => {
         console.error(error);
       });
@@ -543,6 +561,124 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                     name="image"
                     render={({ field }) => (
                       <RecipeImageField field={field} upload={imageUpload} />
+                    )}
+                  />
+                </motion.div>
+
+                {/* Meal planning (optional, for weekly generator) */}
+                <motion.div
+                  className="space-y-4 border-t pt-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.55 }}
+                >
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Meal planning (optional)
+                  </p>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="primaryProtein"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Primary protein</FormLabel>
+                          <Select
+                            value={field.value ?? ""}
+                            onValueChange={(v) => field.onChange(v || undefined)}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select protein" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {PRIMARY_PROTEINS.map((p) => (
+                                <SelectItem key={p} value={p}>
+                                  {titleCase(p)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="complexityTier"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Complexity</FormLabel>
+                          <Select
+                            value={field.value ?? ""}
+                            onValueChange={(v) => field.onChange(v || undefined)}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select complexity" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {COMPLEXITY_TIERS.map((t) => (
+                                <SelectItem key={t} value={t}>
+                                  {titleCase(t)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="cuisine"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)
+                        </FormLabel>
+                        <div className="flex flex-wrap gap-2">
+                          {[0, 1].map((i) => (
+                            <Select
+                              key={i}
+                              value={field.value?.[i] ?? ""}
+                              onValueChange={(v) => {
+                                const next = [...(field.value ?? [])];
+                                if (v)
+                                  next[i] = v as (typeof CUISINES)[number];
+                                else next.splice(i, 1);
+                                field.onChange(
+                                  next.slice(0, CUISINE_MAX_SELECTIONS),
+                                );
+                              }}
+                            >
+                              <SelectTrigger
+                                className={cn(
+                                  "w-full min-w-[140px] sm:w-[180px]",
+                                )}
+                              >
+                                <SelectValue
+                                  placeholder={
+                                    i === 0
+                                      ? "First cuisine"
+                                      : "Second (optional)"
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CUISINES.map((c) => (
+                                  <SelectItem key={c} value={c}>
+                                    {titleCase(c)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
                     )}
                   />
                 </motion.div>
@@ -869,6 +1005,30 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                     {formValues.serves}
                   </div>
                 </div>
+                {(formValues.primaryProtein ||
+                  formValues.complexityTier ||
+                  (formValues.cuisine?.length ?? 0) > 0) && (
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    {formValues.primaryProtein && (
+                      <span className="rounded-md bg-muted px-2 py-0.5">
+                        {titleCase(formValues.primaryProtein)}
+                      </span>
+                    )}
+                    {formValues.complexityTier && (
+                      <span className="rounded-md bg-muted px-2 py-0.5">
+                        {titleCase(formValues.complexityTier)}
+                      </span>
+                    )}
+                    {formValues.cuisine?.map((c) => (
+                      <span
+                        key={c}
+                        className="rounded-md bg-muted px-2 py-0.5"
+                      >
+                        {titleCase(c)}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {formValues.ingredients.length > 0 && (
                   <div>

@@ -1,5 +1,10 @@
 import { Doc } from "convex/_generated/dataModel";
-import { RECIPE_CATEGORIES } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
 import { z } from "zod";
 
 /**
@@ -43,7 +48,7 @@ export type ParsedRecipeBase = {
 };
 
 /**
- * Complete parsed recipe for database (includes source metadata)
+ * Complete parsed recipe for database (includes source metadata and meal-plan fields)
  */
 export type ParsedRecipeForDB = ParsedRecipeBase & {
   imageUrl?: string;
@@ -56,14 +61,25 @@ export type ParsedRecipeForDB = ParsedRecipeBase & {
     value?: string | number;
     count?: number;
   };
+  // Meal planning (user-editable; not editorialBias or isGeneratorEligible)
+  primaryProtein?: (typeof PRIMARY_PROTEINS)[number];
+  complexityTier?: (typeof COMPLEXITY_TIERS)[number];
+  cuisine?: (typeof CUISINES)[number][];
+  totalTimeMinutes?: number;
 };
 
 /**
- * Parsed recipe from text (requires nutrition, no source metadata)
+ * Parsed recipe from text (requires nutrition, no source metadata).
+ * May include optional meal-plan fields when the parser infers them.
  */
 export type ParsedRecipeFromText = ParsedRecipeBase & {
   description: string; // Required for text parsing
   nutrition: Required<NutritionInfo>; // All nutrition fields required
+  // Meal planning (optional; from AI/parser)
+  primaryProtein?: (typeof PRIMARY_PROTEINS)[number];
+  complexityTier?: (typeof COMPLEXITY_TIERS)[number];
+  cuisine?: (typeof CUISINES)[number][];
+  totalTimeMinutes?: number;
 };
 
 // ============================================================================

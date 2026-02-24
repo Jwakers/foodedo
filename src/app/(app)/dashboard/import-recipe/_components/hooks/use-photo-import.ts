@@ -90,6 +90,10 @@ export function usePhotoImport() {
             importedAt: Date.now(),
             originalPublishedDate: undefined,
             rating: undefined,
+            primaryProtein: result.partialRecipe.primaryProtein,
+            complexityTier: result.partialRecipe.complexityTier,
+            cuisine: result.partialRecipe.cuisine,
+            totalTimeMinutes: result.partialRecipe.totalTimeMinutes,
           };
 
           setParsedRecipe(partialConverted);

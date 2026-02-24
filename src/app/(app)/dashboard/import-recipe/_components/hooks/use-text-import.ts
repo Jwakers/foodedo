@@ -45,6 +45,10 @@ export function useTextImport() {
             importedAt: Date.now(),
             originalPublishedDate: undefined,
             rating: undefined,
+            primaryProtein: result.partialRecipe.primaryProtein,
+            complexityTier: result.partialRecipe.complexityTier,
+            cuisine: result.partialRecipe.cuisine,
+            totalTimeMinutes: result.partialRecipe.totalTimeMinutes,
           };
 
           setParsedRecipe(partialConverted);
@@ -84,6 +88,10 @@ export function useTextImport() {
         importedAt: Date.now(),
         originalPublishedDate: undefined,
         rating: undefined,
+        primaryProtein: result.recipe.primaryProtein,
+        complexityTier: result.recipe.complexityTier,
+        cuisine: result.recipe.cuisine,
+        totalTimeMinutes: result.recipe.totalTimeMinutes,
       };
       setParsedRecipe(convertedRecipe);
       setLoadingStage("complete");

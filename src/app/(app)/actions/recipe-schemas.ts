@@ -3,7 +3,12 @@
  * Used by both text and image-based recipe parsing
  */
 
-import { RECIPE_CATEGORIES } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
 import { z } from "zod";
 
 // Zod schemas for validation (single source of truth)
@@ -39,6 +44,9 @@ export const TextRecipeSchema = z.object({
     fat: z.number(),
     carbohydrates: z.number(),
   }),
+  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable().optional(),
+  complexityTier: z.enum(COMPLEXITY_TIERS),
+  cuisine: z.array(z.enum(CUISINES)).min(1).max(1),
 });
 
 export const HtmlRecipeSchema = z.object({
@@ -52,6 +60,9 @@ export const HtmlRecipeSchema = z.object({
   method: z.array(MethodStepSchemaForAI),
   imageUrl: z.string(),
   author: z.string(),
+  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable().optional(),
+  complexityTier: z.enum(COMPLEXITY_TIERS),
+  cuisine: z.array(z.enum(CUISINES)).min(1).max(1),
 });
 
 // Image recipe schema (same as TextRecipeSchema but kept separate for clarity)

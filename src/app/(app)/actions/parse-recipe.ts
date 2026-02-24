@@ -12,7 +12,13 @@ import {
 import { validateUrlForSSRF } from "@/lib/utils/secure-fetch";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import * as cheerio from "cheerio";
-import { RECIPE_CATEGORIES, TEXT_LIMITS } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+  TEXT_LIMITS,
+} from "convex/lib/constants";
 import {
   cleanIngredients,
   cleanMethodSteps,
@@ -138,6 +144,10 @@ Return a JSON object with this exact structure:
   "author": "string (empty string if not found)"`;
   }
 
+  prompt += `,
+  "primaryProtein": "string (required; one of: ${PRIMARY_PROTEINS.join(", ")}; use null only when recipe has no primary protein)",
+  "complexityTier": "string (required; one of: ${COMPLEXITY_TIERS.join(", ")})",
+  "cuisine": "array of exactly one string (required; single cuisine from: ${CUISINES.slice(0, 10).join(", ")}, ...)"`;
   prompt += `
 }
 
@@ -229,6 +239,22 @@ For author:
 - Look for recipe author/creator name in the page text
 - Use empty string "" if no author found`;
   }
+
+  prompt += `
+
+For primaryProtein (REQUIRED):
+- Always set; infer from main protein in title/ingredients (e.g. chicken, beef, fish, vegetarian, vegan)
+- Use "none" only when the recipe has no primary protein; use "other" only if truly unclear
+
+For complexityTier (REQUIRED):
+- Always set based on conceptual difficulty and technique level (not time):
+- simple: straightforward techniques, few components, easy to follow (beginner-friendly)
+- moderate: more involved techniques, multiple components or stages, some skill required
+- complex: advanced techniques, many components or stages, professional or experienced-cook level
+
+For cuisine (REQUIRED):
+- Always set exactly one value; infer from dish type (e.g. italian, thai, indian)
+- Use a single cuisine only (no fusion array)`;
 
   prompt += `
 
@@ -352,6 +378,38 @@ function extractPartialRecipeData(
           fat,
           carbohydrates,
         };
+      }
+    }
+
+    // Meal-plan optional fields
+    const primaryProtein = safeExtractString(data, "primaryProtein");
+    if (
+      primaryProtein &&
+      PRIMARY_PROTEINS.includes(primaryProtein as (typeof PRIMARY_PROTEINS)[number])
+    ) {
+      (partial as Record<string, unknown>).primaryProtein =
+        primaryProtein as (typeof PRIMARY_PROTEINS)[number];
+    }
+    const complexityTier = safeExtractString(data, "complexityTier");
+    if (
+      complexityTier &&
+      COMPLEXITY_TIERS.includes(
+        complexityTier as (typeof COMPLEXITY_TIERS)[number],
+      )
+    ) {
+      (partial as Record<string, unknown>).complexityTier =
+        complexityTier as (typeof COMPLEXITY_TIERS)[number];
+    }
+    const cuisineArr = data.cuisine;
+    if (Array.isArray(cuisineArr) && cuisineArr.length > 0) {
+      const valid = cuisineArr
+        .filter(
+          (c): c is string =>
+            typeof c === "string" && CUISINES.includes(c as (typeof CUISINES)[number]),
+        )
+        .slice(0, 2) as (typeof CUISINES)[number][];
+      if (valid.length > 0) {
+        (partial as Record<string, unknown>).cuisine = valid;
       }
     }
 
@@ -498,6 +556,8 @@ NOT valid recipes:
     const cleanedIngredients = cleanIngredients(validatedData.ingredients);
     const cleanedMethod = cleanMethodSteps(validatedData.method);
 
+    const totalTimeMinutes =
+      validatedData.prepTime + (validatedData.cookTime ?? 0);
     return {
       success: true,
       recipe: {
@@ -510,6 +570,11 @@ NOT valid recipes:
         ingredients: cleanedIngredients,
         method: cleanedMethod,
         nutrition: validatedData.nutrition,
+        primaryProtein: validatedData.primaryProtein ?? undefined,
+        complexityTier: validatedData.complexityTier,
+        cuisine: validatedData.cuisine,
+        totalTimeMinutes:
+          totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
       },
     };
   } catch (error) {
@@ -669,6 +734,8 @@ async function parseHtmlWithAI(
     const cleanedIngredients = cleanIngredients(validatedData.ingredients);
     const cleanedMethod = cleanMethodSteps(validatedData.method);
 
+    const totalTimeMinutes =
+      validatedData.prepTime + (validatedData.cookTime ?? 0);
     const recipe: ParsedRecipeForDB = {
       title: validatedData.title,
       description: validatedData.description || undefined,
@@ -682,6 +749,10 @@ async function parseHtmlWithAI(
       imageUrl: imageUrl || validatedData.imageUrl || undefined,
       originalAuthor: validatedData.author || undefined,
       importedAt: Date.now(),
+      primaryProtein: validatedData.primaryProtein ?? undefined,
+      complexityTier: validatedData.complexityTier,
+      cuisine: validatedData.cuisine,
+      totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
     };
 
     return recipe;

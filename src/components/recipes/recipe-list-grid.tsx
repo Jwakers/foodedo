@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { titleCase } from "@/lib/utils";
 import { RECIPE_CATEGORIES } from "convex/lib/constants";
-import { Filter, Search } from "lucide-react";
+import { Check, Filter, Search, X } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { LoadingState, RecipeCard, type RecipeListItem } from "./recipe-card";
 
@@ -23,6 +23,7 @@ type RecipeListGridProps = {
   headerActions?: ReactNode;
   footer?: ReactNode;
   stats?: ReactNode;
+  showMealPlanEligibleKey?: boolean;
 };
 
 export function RecipeListGrid({
@@ -33,6 +34,7 @@ export function RecipeListGrid({
   headerActions,
   footer,
   stats,
+  showMealPlanEligibleKey = false,
 }: RecipeListGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -70,6 +72,23 @@ export function RecipeListGrid({
           </div>
 
           {stats}
+
+          {showMealPlanEligibleKey && hasRecipes && (
+            <p className="text-xs text-muted-foreground mb-4 flex items-center gap-4 flex-wrap">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-flex size-4 items-center justify-center rounded-full bg-primary/90 text-primary-foreground">
+                  <Check className="size-2.5" strokeWidth={3} aria-hidden />
+                </span>
+                <span>Included in meal plan</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-flex size-4 items-center justify-center rounded-full border border-dashed border-muted-foreground text-muted-foreground">
+                  <X className="size-2.5" strokeWidth={2.5} aria-hidden />
+                </span>
+                <span>Not included</span>
+              </span>
+            </p>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">

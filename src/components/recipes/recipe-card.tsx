@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, titleCase } from "@/lib/utils";
 import { Id } from "convex/_generated/dataModel";
-import { Clock, Users } from "lucide-react";
+import { Check, Clock, Users, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,6 +21,9 @@ export type RecipeListItem = {
   image?: string | null;
   updatedAt?: number;
   _creationTime?: number;
+  isGeneratorEligible?: boolean | null;
+  primaryProtein?: string | null;
+  complexityTier?: string | null;
 };
 
 export function RecipeCard({ recipe }: { recipe: RecipeListItem }) {
@@ -28,6 +31,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeListItem }) {
   const categoryLabel = titleCase(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";
+  const mealPlanEligible = recipe.isGeneratorEligible === true;
 
   return (
     <Link href={`${ROUTES.RECIPE}/${recipe._id}`}>
@@ -44,7 +48,24 @@ export function RecipeCard({ recipe }: { recipe: RecipeListItem }) {
               unoptimized
             />
           )}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {mealPlanEligible ? (
+              <span
+                className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center shrink-0"
+                title="Included in meal plan generation"
+                aria-label="Included in meal plan generation"
+              >
+                <Check className="size-3.5" strokeWidth={3} />
+              </span>
+            ) : (
+              <span
+                className="size-6 rounded-full flex items-center justify-center shrink-0 border border-dashed border-gray-400 text-gray-400"
+                title="Not included in meal plan generation"
+                aria-label="Not included in meal plan generation"
+              >
+                <X className="size-3.5" strokeWidth={2.5} />
+              </span>
+            )}
             <Badge
               variant="secondary"
               className={cn(categoryColor, "border-0 font-medium")}

@@ -16,8 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { titleCase } from "@/lib/utils";
-import { RECIPE_CATEGORIES } from "convex/lib/constants";
+import { cn, titleCase } from "@/lib/utils";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  CUISINE_MAX_SELECTIONS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
 import { Calendar, Clock } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { Recipe } from "./recipe-client";
@@ -140,6 +146,115 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
             )}
           />
         </div>
+
+        {/* Meal planning */}
+        <div className="mt-6 border-t pt-4">
+          <p className="mb-3 text-sm font-medium text-muted-foreground">
+            Meal planning (optional)
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="primaryProtein"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Primary protein</FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(v) => field.onChange(v || undefined)}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select protein" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PRIMARY_PROTEINS.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          {titleCase(p)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="complexityTier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Complexity</FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(v) => field.onChange(v || undefined)}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select complexity" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {COMPLEXITY_TIERS.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {titleCase(t)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="cuisine"
+            render={({ field }) => (
+              <FormItem className="mt-4">
+                <FormLabel>
+                  Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)
+                </FormLabel>
+                <div className="flex flex-wrap gap-2">
+                  {[0, 1].map((i) => (
+                    <Select
+                      key={i}
+                      value={field.value?.[i] ?? ""}
+                      onValueChange={(v) => {
+                        const next = [...(field.value ?? [])];
+                        if (v) next[i] = v as (typeof CUISINES)[number];
+                        else next.splice(i, 1);
+                        field.onChange(next.slice(0, CUISINE_MAX_SELECTIONS));
+                      }}
+                    >
+                      <SelectTrigger
+                        className={cn("w-full min-w-[140px] sm:w-[180px]")}
+                      >
+                        <SelectValue
+                          placeholder={
+                            i === 0
+                              ? "First cuisine"
+                              : "Second (optional)"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CUISINES.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {titleCase(c)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Clock className="size-4" />

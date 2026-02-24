@@ -47,6 +47,7 @@ export default function RecipeListing() {
     <RecipeListGrid
       recipes={recipes}
       title="My Recipes"
+      showMealPlanEligibleKey
       subtitle={
         <>
           Manage and organise your culinary creations.{" "}

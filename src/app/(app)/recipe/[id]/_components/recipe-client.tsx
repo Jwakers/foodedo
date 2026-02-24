@@ -73,6 +73,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
       category: "main",
       ingredients: [],
       method: [],
+      primaryProtein: undefined,
+      complexityTier: undefined,
+      cuisine: [],
     },
   });
 
@@ -115,6 +118,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
           description: step.description,
           image: step.image ? String(step.image) : undefined, // Convert Id to string
         })),
+        primaryProtein: recipeForEdit.primaryProtein,
+        complexityTier: recipeForEdit.complexityTier,
+        cuisine: recipeForEdit.cuisine ?? [],
       });
       setIsEditMode(true);
     }
@@ -138,6 +144,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
           description: step.description,
           image: step.image ? (step.image as Id<"_storage">) : undefined, // Convert string back to Id
         })),
+        primaryProtein: data.primaryProtein,
+        complexityTier: data.complexityTier,
+        cuisine: data.cuisine,
       });
 
       toast.success("Recipe updated successfully");
