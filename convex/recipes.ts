@@ -508,7 +508,7 @@ export const createRecipe = mutation({
       cuisine: args.cuisine,
       totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
       editorialBias: clampEditorialBias(1),
-      isGeneratorEligible: hasGeneratorMetadata ? true : undefined,
+      isGeneratorEligible: hasGeneratorMetadata,
     });
 
     const recipe = await ctx.db.get(recipeId);
@@ -650,7 +650,7 @@ export const updateRecipe = mutation({
       complexityTier: args.complexityTier ?? recipe.complexityTier,
       cuisine: args.cuisine ?? recipe.cuisine,
       totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
-      isGeneratorEligible: hasGeneratorMetadata ? true : undefined,
+      isGeneratorEligible: hasGeneratorMetadata,
     });
   },
 });

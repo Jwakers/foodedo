@@ -286,6 +286,9 @@ async function parseImagesWithAI(images: string[]): Promise<
         ingredients: cleanedIngredients,
         method: cleanedMethod,
         nutrition: validatedData.nutrition,
+        primaryProtein: validatedData.primaryProtein ?? undefined,
+        complexityTier: validatedData.complexityTier,
+        cuisine: validatedData.cuisine,
       },
     };
   } catch (error) {

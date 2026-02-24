@@ -187,9 +187,6 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
         recipeId,
         ...valuesToUpdate,
         method: methodData,
-        primaryProtein: valuesToUpdate.primaryProtein,
-        complexityTier: valuesToUpdate.complexityTier,
-        cuisine: valuesToUpdate.cuisine,
       });
     } catch (error) {
       console.error("Failed to save draft on navigation:", error);
@@ -210,21 +207,13 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
       if (!recipeId) throw new Error("Recipe ID not found");
 
       const method = await getMethodData(values);
+      const { image: _image, ...payload } = values;
 
       // Update recipe data
       await updateRecipeMutation({
         recipeId,
-        title: values.title || undefined,
-        description: values.description || undefined,
-        prepTime: values.prepTime,
-        cookTime: values.cookTime,
-        serves: values.serves,
-        category: values.category,
-        ingredients: values.ingredients,
+        ...payload,
         method,
-        primaryProtein: values.primaryProtein,
-        complexityTier: values.complexityTier,
-        cuisine: values.cuisine,
       });
 
       // Handle image upload only if there's a new image
@@ -333,9 +322,6 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
         recipeId,
         ...valuesToUpdate,
         method: methodData,
-        primaryProtein: valuesToUpdate.primaryProtein,
-        complexityTier: valuesToUpdate.complexityTier,
-        cuisine: valuesToUpdate.cuisine,
       }).catch((error) => {
         console.error(error);
       });
@@ -640,17 +626,30 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)
                         </FormLabel>
                         <div className="flex flex-wrap gap-2">
-                          {[0, 1].map((i) => (
+                          {Array.from(
+                            { length: CUISINE_MAX_SELECTIONS },
+                            (_, i) => i,
+                          ).map((i) => (
                             <Select
                               key={i}
                               value={field.value?.[i] ?? ""}
                               onValueChange={(v) => {
-                                const next = [...(field.value ?? [])];
-                                if (v)
+                                const next = [...(field.value ?? [])].filter(
+                                  Boolean,
+                                );
+                                if (v) {
+                                  if (i >= next.length) next.length = i + 1;
                                   next[i] = v as (typeof CUISINES)[number];
-                                else next.splice(i, 1);
+                                } else {
+                                  next.splice(i, 1);
+                                }
                                 field.onChange(
-                                  next.slice(0, CUISINE_MAX_SELECTIONS),
+                                  next
+                                    .filter(
+                                      (x): x is (typeof CUISINES)[number] =>
+                                        Boolean(x),
+                                    )
+                                    .slice(0, CUISINE_MAX_SELECTIONS),
                                 );
                               }}
                             >
@@ -668,6 +667,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="">None</SelectItem>
                                 {CUISINES.map((c) => (
                                   <SelectItem key={c} value={c}>
                                     {titleCase(c)}

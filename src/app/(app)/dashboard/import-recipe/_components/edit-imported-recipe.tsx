@@ -355,10 +355,16 @@ export function EditImportedRecipe({
                         key={i}
                         value={field.value?.[i] ?? ""}
                         onValueChange={(v) => {
-                          const next = [...(field.value ?? [])];
-                          if (v) next[i] = v as (typeof CUISINES)[number];
-                          else next.splice(i, 1);
-                          field.onChange(next.slice(0, CUISINE_MAX_SELECTIONS));
+                          const next = [...(field.value ?? [])].filter(Boolean);
+                          if (v) {
+                            if (i >= next.length) next.length = i + 1;
+                            next[i] = v as (typeof CUISINES)[number];
+                          } else {
+                            next.splice(i, 1);
+                          }
+                          field.onChange(
+                            next.filter((x): x is (typeof CUISINES)[number] => Boolean(x)).slice(0, CUISINE_MAX_SELECTIONS),
+                          );
                         }}
                       >
                         <SelectTrigger className={cn("w-full min-w-[140px] sm:w-[180px]")}>

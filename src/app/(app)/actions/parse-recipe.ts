@@ -14,6 +14,7 @@ import { generateText, NoObjectGeneratedError, Output } from "ai";
 import * as cheerio from "cheerio";
 import {
   COMPLEXITY_TIERS,
+  CUISINE_MAX_SELECTIONS,
   CUISINES,
   PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
@@ -145,7 +146,7 @@ Return a JSON object with this exact structure:
   }
 
   prompt += `,
-  "primaryProtein": "string (required; one of: ${PRIMARY_PROTEINS.join(", ")}; use null only when recipe has no primary protein)",
+  "primaryProtein": "string (required; one of: ${PRIMARY_PROTEINS.join(", ")}; use \"none\" only when recipe has no primary protein)",
   "complexityTier": "string (required; one of: ${COMPLEXITY_TIERS.join(", ")})",
   "cuisine": "array of exactly one string (required; single cuisine from: ${CUISINES.slice(0, 10).join(", ")}, ...)"`;
   prompt += `
@@ -387,8 +388,7 @@ function extractPartialRecipeData(
       primaryProtein &&
       PRIMARY_PROTEINS.includes(primaryProtein as (typeof PRIMARY_PROTEINS)[number])
     ) {
-      (partial as Record<string, unknown>).primaryProtein =
-        primaryProtein as (typeof PRIMARY_PROTEINS)[number];
+      partial.primaryProtein = primaryProtein as (typeof PRIMARY_PROTEINS)[number];
     }
     const complexityTier = safeExtractString(data, "complexityTier");
     if (
@@ -397,8 +397,7 @@ function extractPartialRecipeData(
         complexityTier as (typeof COMPLEXITY_TIERS)[number],
       )
     ) {
-      (partial as Record<string, unknown>).complexityTier =
-        complexityTier as (typeof COMPLEXITY_TIERS)[number];
+      partial.complexityTier = complexityTier as (typeof COMPLEXITY_TIERS)[number];
     }
     const cuisineArr = data.cuisine;
     if (Array.isArray(cuisineArr) && cuisineArr.length > 0) {
@@ -407,9 +406,9 @@ function extractPartialRecipeData(
           (c): c is string =>
             typeof c === "string" && CUISINES.includes(c as (typeof CUISINES)[number]),
         )
-        .slice(0, 2) as (typeof CUISINES)[number][];
+        .slice(0, CUISINE_MAX_SELECTIONS) as (typeof CUISINES)[number][];
       if (valid.length > 0) {
-        (partial as Record<string, unknown>).cuisine = valid;
+        partial.cuisine = valid;
       }
     }
 

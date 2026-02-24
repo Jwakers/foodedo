@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, titleCase } from "@/lib/utils";
+import { cn, formatLabel, titleCase } from "@/lib/utils";
 import { Calendar, Clock, ImageIcon, Users } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -176,7 +176,7 @@ export function RecipeHeader({
                   variant="secondary"
                   className="font-normal text-muted-foreground"
                 >
-                  {titleCase(recipe.primaryProtein)}
+                  {formatLabel(recipe.primaryProtein)}
                 </Badge>
               )}
             {recipe.cuisine?.map((c) => (
@@ -185,7 +185,7 @@ export function RecipeHeader({
                 variant="secondary"
                 className="font-normal text-muted-foreground"
               >
-                {titleCase(c)}
+                {formatLabel(c)}
               </Badge>
             ))}
             {recipe.complexityTier && (
@@ -193,7 +193,7 @@ export function RecipeHeader({
                 variant="secondary"
                 className="font-normal text-muted-foreground"
               >
-                {titleCase(recipe.complexityTier)}
+                {formatLabel(recipe.complexityTier)}
               </Badge>
             )}
           </div>

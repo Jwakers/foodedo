@@ -44,8 +44,9 @@ export const TextRecipeSchema = z.object({
     fat: z.number(),
     carbohydrates: z.number(),
   }),
-  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable().optional(),
+  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable(),
   complexityTier: z.enum(COMPLEXITY_TIERS),
+  // AI returns exactly one cuisine; user-facing baseRecipeSchema allows up to CUISINE_MAX_SELECTIONS
   cuisine: z.array(z.enum(CUISINES)).min(1).max(1),
 });
 
@@ -60,8 +61,9 @@ export const HtmlRecipeSchema = z.object({
   method: z.array(MethodStepSchemaForAI),
   imageUrl: z.string(),
   author: z.string(),
-  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable().optional(),
+  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable(),
   complexityTier: z.enum(COMPLEXITY_TIERS),
+  // AI returns exactly one cuisine; user-facing baseRecipeSchema allows up to CUISINE_MAX_SELECTIONS
   cuisine: z.array(z.enum(CUISINES)).min(1).max(1),
 });
 
