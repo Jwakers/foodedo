@@ -215,9 +215,7 @@ function derivePrimaryProteinFromText(
   for (const { keywords, value } of PRIMARY_PROTEIN_KEYWORDS) {
     if (
       keywords.some((k) =>
-        k === "veg"
-          ? /\bveg\b/.test(text)
-          : text.includes(k),
+        k === "veg" ? /\bveg\b/.test(text) : text.includes(k),
       )
     )
       return value;
@@ -262,12 +260,14 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
       .query("recipes")
       .withIndex("by_source", (q) => q.eq("source", "user"))
       .collect();
-
     let updatedCount = 0;
     const now = Date.now();
-
     for (const recipe of userRecipes) {
-      const text = [
+      const cuisineText = [recipe.title ?? "", recipe.description ?? ""]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const proteinText = [
         recipe.title ?? "",
         recipe.description ?? "",
         ...(recipe.ingredients ?? []).map((i) => i.name ?? ""),
@@ -275,10 +275,8 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-
       const methodSteps = (recipe.method ?? []).length;
       const totalMinutes = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-
       const updates: {
         primaryProtein?: PrimaryProtein;
         complexityTier?: ComplexityTier;
@@ -287,20 +285,17 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
         isGeneratorEligible?: boolean;
         updatedAt: number;
       } = { updatedAt: now };
-
       let changed = false;
-
       if (
         recipe.primaryProtein == null ||
         !PRIMARY_PROTEINS.includes(recipe.primaryProtein as PrimaryProtein)
       ) {
-        const derived = derivePrimaryProteinFromText(text);
+        const derived = derivePrimaryProteinFromText(proteinText);
         if (derived) {
           updates.primaryProtein = derived;
           changed = true;
         }
       }
-
       if (
         recipe.complexityTier == null ||
         !COMPLEXITY_TIERS.includes(recipe.complexityTier as ComplexityTier)
@@ -311,24 +306,19 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
         );
         changed = true;
       }
-
       if (
         !recipe.cuisine?.length ||
         !recipe.cuisine.every((c) => CUISINES.includes(c as Cuisine))
       ) {
-        const derived = deriveCuisineFromText(text);
+        const derived = deriveCuisineFromText(cuisineText);
         if (derived) {
           updates.cuisine = [derived];
           changed = true;
         }
       }
 
-      const totalTime =
-        (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-      if (
-        totalTime > 0 &&
-        totalTime !== recipe.totalTimeMinutes
-      ) {
+      const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+      if (totalTime > 0 && totalTime !== recipe.totalTimeMinutes) {
         updates.totalTimeMinutes = totalTime;
         changed = true;
       }
