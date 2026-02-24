@@ -134,8 +134,8 @@ export function useRecipeSave() {
         originalUrl: parsedRecipe?.originalUrl,
         originalAuthor: parsedRecipe?.originalAuthor,
         originalPublishedDate: parsedRecipe?.originalPublishedDate,
-        primaryProtein: validatedRecipe.primaryProtein,
-        complexityTier: validatedRecipe.complexityTier,
+        primaryProtein: validatedRecipe.primaryProtein ?? undefined,
+        complexityTier: validatedRecipe.complexityTier ?? undefined,
         cuisine: validatedRecipe.cuisine,
       });
 

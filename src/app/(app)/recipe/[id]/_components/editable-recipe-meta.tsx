@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn, titleCase } from "@/lib/utils";
+import { cn, formatLabel, titleCase } from "@/lib/utils";
 import {
   COMPLEXITY_TIERS,
   CUISINES,
@@ -160,8 +160,10 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                 <FormItem>
                   <FormLabel>Primary protein</FormLabel>
                   <Select
-                    value={field.value ?? ""}
-                    onValueChange={(v) => field.onChange(v || undefined)}
+                    value={field.value ?? "__none"}
+                    onValueChange={(v) =>
+                      field.onChange(v === "__none" ? null : v)
+                    }
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -169,9 +171,10 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="__none">None</SelectItem>
                       {PRIMARY_PROTEINS.map((p) => (
                         <SelectItem key={p} value={p}>
-                          {titleCase(p)}
+                          {formatLabel(p)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -187,8 +190,10 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                 <FormItem>
                   <FormLabel>Complexity</FormLabel>
                   <Select
-                    value={field.value ?? ""}
-                    onValueChange={(v) => field.onChange(v || undefined)}
+                    value={field.value ?? "__none"}
+                    onValueChange={(v) =>
+                      field.onChange(v === "__none" ? null : v)
+                    }
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -196,9 +201,10 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="__none">None</SelectItem>
                       {COMPLEXITY_TIERS.map((t) => (
                         <SelectItem key={t} value={t}>
-                          {titleCase(t)}
+                          {formatLabel(t)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -248,7 +254,7 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                       <SelectContent>
                         {CUISINES.map((c) => (
                           <SelectItem key={c} value={c}>
-                            {titleCase(c)}
+                            {formatLabel(c)}
                           </SelectItem>
                         ))}
                       </SelectContent>

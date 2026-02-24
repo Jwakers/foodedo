@@ -40,8 +40,8 @@ const baseRecipeSchema = z.object({
   }),
   ingredients: z.array(baseIngredientSchema),
   method: z.array(baseMethodStepSchema),
-  primaryProtein: z.enum(PRIMARY_PROTEINS).optional(),
-  complexityTier: z.enum(COMPLEXITY_TIERS).optional(),
+  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable().optional(),
+  complexityTier: z.enum(COMPLEXITY_TIERS).nullable().optional(),
   cuisine: z.array(z.enum(CUISINES)).max(CUISINE_MAX_SELECTIONS).optional(),
 });
 

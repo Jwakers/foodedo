@@ -26,7 +26,7 @@ import {
   type RecipeImportFormData,
 } from "@/lib/schemas/recipe";
 import { ParsedRecipeForDB } from "@/lib/types/recipe-parser";
-import { cn, titleCase } from "@/lib/utils";
+import { cn, formatLabel, titleCase } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   COMPLEXITY_TIERS,
@@ -373,7 +373,7 @@ export function EditImportedRecipe({
                         <SelectContent>
                           {CUISINES.map((c) => (
                             <SelectItem key={c} value={c}>
-                              {titleCase(c)}
+                              {formatLabel(c)}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -285,7 +285,7 @@ export const getRecipesForWeeklyPlan = query({
           : null;
         const totalMin =
           recipe.totalTimeMinutes ??
-          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+          ((recipe.prepTime ?? 0) + (recipe.cookTime ?? 0));
         return {
           _id: recipe._id,
           title: recipe.title,
@@ -552,8 +552,8 @@ export const updateRecipe = mutation({
         }),
       ),
     ),
-    primaryProtein: v.optional(primaryProteinUnion),
-    complexityTier: v.optional(complexityTierUnion),
+    primaryProtein: v.optional(v.union(primaryProteinUnion, v.null())),
+    complexityTier: v.optional(v.union(complexityTierUnion, v.null())),
     cuisine: v.optional(v.array(cuisineUnion)),
   },
   handler: async (ctx, args) => {
@@ -629,10 +629,21 @@ export const updateRecipe = mutation({
 
     const prepTime = args.prepTime ?? recipe.prepTime;
     const cookTime = args.cookTime ?? recipe.cookTime;
+    // Allow null to clear; undefined means "leave unchanged"
+    const primaryProtein =
+      args.primaryProtein === undefined
+        ? recipe.primaryProtein
+        : args.primaryProtein === null
+          ? undefined
+          : args.primaryProtein;
+    const complexityTier =
+      args.complexityTier === undefined
+        ? recipe.complexityTier
+        : args.complexityTier === null
+          ? undefined
+          : args.complexityTier;
     // System-only: totalTimeMinutes is always derived from prep + cook
     const totalTimeMinutes = prepTime + (cookTime ?? 0);
-    const primaryProtein = args.primaryProtein ?? recipe.primaryProtein;
-    const complexityTier = args.complexityTier ?? recipe.complexityTier;
     const hasGeneratorMetadata =
       primaryProtein != null && complexityTier != null;
 
@@ -640,7 +651,7 @@ export const updateRecipe = mutation({
       title: args.title ?? recipe.title,
       description: args.description ?? recipe.description,
       prepTime,
-      cookTime: args.cookTime ?? recipe.cookTime,
+      cookTime,
       serves: args.serves ?? recipe.serves,
       category: args.category ?? recipe.category,
       ingredients,

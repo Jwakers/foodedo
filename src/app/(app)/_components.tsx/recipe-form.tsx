@@ -27,7 +27,7 @@ import {
   recipeCreateSchema,
   type RecipeCreateFormData,
 } from "@/lib/schemas/recipe";
-import { cn, titleCase } from "@/lib/utils";
+import { cn, formatLabel, titleCase } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -580,7 +580,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                             <SelectContent>
                               {PRIMARY_PROTEINS.map((p) => (
                                 <SelectItem key={p} value={p}>
-                                  {titleCase(p)}
+                                  {formatLabel(p)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -607,7 +607,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                             <SelectContent>
                               {COMPLEXITY_TIERS.map((t) => (
                                 <SelectItem key={t} value={t}>
-                                  {titleCase(t)}
+                                  {formatLabel(t)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -629,53 +629,89 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           {Array.from(
                             { length: CUISINE_MAX_SELECTIONS },
                             (_, i) => i,
-                          ).map((i) => (
-                            <Select
-                              key={i}
-                              value={field.value?.[i] ?? ""}
-                              onValueChange={(v) => {
-                                const next = [...(field.value ?? [])].filter(
-                                  Boolean,
-                                );
-                                if (v) {
-                                  if (i >= next.length) next.length = i + 1;
-                                  next[i] = v as (typeof CUISINES)[number];
-                                } else {
-                                  next.splice(i, 1);
+                          ).map((i) => {
+                            const selected = field.value ?? [];
+                            const optionsForIndex = [
+                              "__none",
+                              ...CUISINES.filter(
+                                (c) =>
+                                  selected[i] === c ||
+                                  !selected.includes(c),
+                              ),
+                            ];
+                            return (
+                              <Select
+                                key={i}
+                                value={
+                                  field.value?.[i]
+                                    ? field.value[i]
+                                    : "__none"
                                 }
-                                field.onChange(
-                                  next
-                                    .filter(
-                                      (x): x is (typeof CUISINES)[number] =>
-                                        Boolean(x),
-                                    )
-                                    .slice(0, CUISINE_MAX_SELECTIONS),
-                                );
-                              }}
-                            >
-                              <SelectTrigger
-                                className={cn(
-                                  "w-full min-w-[140px] sm:w-[180px]",
-                                )}
-                              >
-                                <SelectValue
-                                  placeholder={
-                                    i === 0
-                                      ? "First cuisine"
-                                      : "Second (optional)"
+                                onValueChange={(v) => {
+                                  const raw =
+                                    v === "__none" ? undefined : v;
+                                  const next = [...(field.value ?? [])].filter(
+                                    Boolean,
+                                  );
+                                  if (raw) {
+                                    const cuisineVal =
+                                      raw as (typeof CUISINES)[number];
+                                    const deduped = next.filter(
+                                      (x, idx) =>
+                                        idx === i || x !== cuisineVal,
+                                    );
+                                    if (i >= deduped.length)
+                                      deduped.length = i + 1;
+                                    deduped[i] = cuisineVal;
+                                    field.onChange(
+                                      deduped
+                                        .filter(
+                                          (
+                                            x,
+                                          ): x is (typeof CUISINES)[number] =>
+                                            Boolean(x),
+                                        )
+                                        .slice(0, CUISINE_MAX_SELECTIONS),
+                                    );
+                                  } else {
+                                    next.splice(i, 1);
+                                    field.onChange(
+                                      next
+                                        .filter(
+                                          (
+                                            x,
+                                          ): x is (typeof CUISINES)[number] =>
+                                            Boolean(x),
+                                        )
+                                        .slice(0, CUISINE_MAX_SELECTIONS),
+                                    );
                                   }
-                                />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="">None</SelectItem>
-                                {CUISINES.map((c) => (
-                                  <SelectItem key={c} value={c}>
-                                    {titleCase(c)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ))}
+                                }}
+                              >
+                                <SelectTrigger className="w-full min-w-[140px] sm:w-[180px]">
+                                  <SelectValue
+                                    placeholder={
+                                      i === 0
+                                        ? "First cuisine"
+                                        : "Second (optional)"
+                                    }
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {optionsForIndex.map((opt) => (
+                                    <SelectItem
+                                      key={opt}
+                                      value={opt}
+                                    >
+                                      {opt === "__none"
+                                        ? "None"
+                                        : formatLabel(opt)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          })}
                         </div>
                         <FormMessage />
                       </FormItem>
