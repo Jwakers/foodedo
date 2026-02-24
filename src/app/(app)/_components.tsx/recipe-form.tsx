@@ -600,9 +600,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           <Select
                             value={field.value ?? ""}
                             onValueChange={(v) =>
-                              field.onChange(
-                                v === "__none" || !v ? undefined : v,
-                              )
+                              field.onChange(v === "__none" || !v ? null : v)
                             }
                           >
                             <FormControl>

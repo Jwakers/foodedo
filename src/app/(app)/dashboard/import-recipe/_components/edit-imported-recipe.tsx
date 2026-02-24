@@ -295,8 +295,10 @@ export function EditImportedRecipe({
                   <FormItem>
                     <FormLabel>Primary protein</FormLabel>
                     <Select
-                      value={field.value ?? ""}
-                      onValueChange={(v) => field.onChange(v || undefined)}
+                      value={field.value ?? "__none"}
+                      onValueChange={(v) =>
+                        field.onChange(v === "__none" || !v ? null : v)
+                      }
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -304,6 +306,7 @@ export function EditImportedRecipe({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="__none">None</SelectItem>
                         {PRIMARY_PROTEINS.map((p) => (
                           <SelectItem key={p} value={p}>
                             {formatLabel(p)}
@@ -322,8 +325,10 @@ export function EditImportedRecipe({
                   <FormItem>
                     <FormLabel>Complexity</FormLabel>
                     <Select
-                      value={field.value ?? ""}
-                      onValueChange={(v) => field.onChange(v || undefined)}
+                      value={field.value ?? "__none"}
+                      onValueChange={(v) =>
+                        field.onChange(v === "__none" || !v ? null : v)
+                      }
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -331,6 +336,7 @@ export function EditImportedRecipe({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="__none">Not specified</SelectItem>
                         {COMPLEXITY_TIERS.map((t) => (
                           <SelectItem key={t} value={t}>
                             {formatLabel(t)}
@@ -361,7 +367,7 @@ export function EditImportedRecipe({
                         value={field.value?.[i] ?? ""}
                         onValueChange={(v) => {
                           const next = [...(field.value ?? [])].filter(Boolean);
-                          if (v) {
+                          if (v && v !== "__clear") {
                             if (i >= next.length) next.length = i + 1;
                             next[i] = v as (typeof CUISINES)[number];
                           } else {
@@ -386,6 +392,9 @@ export function EditImportedRecipe({
                           />
                         </SelectTrigger>
                         <SelectContent>
+                          {i > 0 && (
+                            <SelectItem value="__clear">Clear</SelectItem>
+                          )}
                           {CUISINES.map((c) => (
                             <SelectItem key={c} value={c}>
                               {formatLabel(c)}
