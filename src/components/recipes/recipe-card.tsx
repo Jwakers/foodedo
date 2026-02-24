@@ -31,13 +31,14 @@ type RecipeCardProps = {
   showMealPlanBadge?: boolean;
 };
 
-export function RecipeCard({ recipe, showMealPlanBadge = true }: RecipeCardProps) {
+export function RecipeCard({
+  recipe,
+  showMealPlanBadge = true,
+}: RecipeCardProps) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";
-  const showEligibilityBadge =
-    showMealPlanBadge && typeof recipe.isGeneratorEligible === "boolean";
 
   return (
     <Link href={`${ROUTES.RECIPE}/${recipe._id}`}>
@@ -55,7 +56,7 @@ export function RecipeCard({ recipe, showMealPlanBadge = true }: RecipeCardProps
             />
           )}
           <div className="absolute top-4 right-4 flex items-center gap-2">
-            {showEligibilityBadge && recipe.isGeneratorEligible === true && (
+            {showMealPlanBadge && recipe.isGeneratorEligible === true && (
               <span
                 className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center shrink-0"
                 title="Included in meal plan generation"
@@ -64,7 +65,7 @@ export function RecipeCard({ recipe, showMealPlanBadge = true }: RecipeCardProps
                 <Check className="size-3.5" strokeWidth={3} />
               </span>
             )}
-            {showEligibilityBadge && recipe.isGeneratorEligible === false && (
+            {showMealPlanBadge && !recipe.isGeneratorEligible && (
               <span
                 className="size-6 rounded-full flex items-center justify-center shrink-0 border border-dashed border-muted-foreground text-muted-foreground"
                 title="Not included in meal plan generation"
