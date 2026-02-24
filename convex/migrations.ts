@@ -250,16 +250,17 @@ function deriveComplexityTier(
  * - cuisine: derived from title + description (keyword match); single value.
  * - totalTimeMinutes: prepTime + (cookTime ?? 0).
  * - isGeneratorEligible: true when both primaryProtein and complexityTier are set.
- * Only patches user recipes (source === "user") and only sets fields that are missing.
- * Run: npx convex run migrations:backfillUserRecipeMealPlanFields
+ * Includes recipes with source === "user" and treats source === undefined as user
+ * recipes (e.g. created before the field existed). Sets source to "user" when it was
+ * undefined. Run: npx convex run migrations:backfillUserRecipeMealPlanFields
  */
 export const backfillUserRecipeMealPlanFields = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const userRecipes = await ctx.db
-      .query("recipes")
-      .withIndex("by_source", (q) => q.eq("source", "user"))
-      .collect();
+    const allRecipes = await ctx.db.query("recipes").collect();
+    const userRecipes = allRecipes.filter(
+      (r) => r.source === "user" || r.source === undefined,
+    );
     let updatedCount = 0;
     const now = Date.now();
     for (const recipe of userRecipes) {
@@ -278,6 +279,7 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
       const methodSteps = (recipe.method ?? []).length;
       const totalMinutes = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
       const updates: {
+        source?: RecipeSource;
         primaryProtein?: PrimaryProtein;
         complexityTier?: ComplexityTier;
         cuisine?: Cuisine[];
@@ -286,6 +288,11 @@ export const backfillUserRecipeMealPlanFields = internalMutation({
         updatedAt: number;
       } = { updatedAt: now };
       let changed = false;
+
+      if (recipe.source === undefined) {
+        updates.source = "user";
+        changed = true;
+      }
       if (
         recipe.primaryProtein == null ||
         !PRIMARY_PROTEINS.includes(recipe.primaryProtein as PrimaryProtein)
