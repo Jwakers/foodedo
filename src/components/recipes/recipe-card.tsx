@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, titleCase } from "@/lib/utils";
 import { Id } from "convex/_generated/dataModel";
-import { Clock, Users } from "lucide-react";
+import { Check, Clock, Users, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,13 +21,23 @@ export type RecipeListItem = {
   image?: string | null;
   updatedAt?: number;
   _creationTime?: number;
+  isGeneratorEligible?: boolean | null;
+  primaryProtein?: string | null;
+  complexityTier?: string | null;
 };
 
-export function RecipeCard({ recipe }: { recipe: RecipeListItem }) {
+type RecipeCardProps = {
+  recipe: RecipeListItem;
+  showMealPlanBadge?: boolean;
+};
+
+export function RecipeCard({ recipe, showMealPlanBadge = true }: RecipeCardProps) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";
+  const showEligibilityBadge =
+    showMealPlanBadge && typeof recipe.isGeneratorEligible === "boolean";
 
   return (
     <Link href={`${ROUTES.RECIPE}/${recipe._id}`}>
@@ -44,7 +54,25 @@ export function RecipeCard({ recipe }: { recipe: RecipeListItem }) {
               unoptimized
             />
           )}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {showEligibilityBadge && recipe.isGeneratorEligible === true && (
+              <span
+                className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center shrink-0"
+                title="Included in meal plan generation"
+                aria-label="Included in meal plan generation"
+              >
+                <Check className="size-3.5" strokeWidth={3} />
+              </span>
+            )}
+            {showEligibilityBadge && recipe.isGeneratorEligible === false && (
+              <span
+                className="size-6 rounded-full flex items-center justify-center shrink-0 border border-dashed border-muted-foreground text-muted-foreground"
+                title="Not included in meal plan generation"
+                aria-label="Not included in meal plan generation"
+              >
+                <X className="size-3.5" strokeWidth={2.5} />
+              </span>
+            )}
             <Badge
               variant="secondary"
               className={cn(categoryColor, "border-0 font-medium")}

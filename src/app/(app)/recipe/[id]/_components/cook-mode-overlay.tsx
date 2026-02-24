@@ -108,7 +108,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full fixed top-4 right-4 z-10"
+              className="rounded-full fixed top-[calc(env(safe-area-inset-top)+1rem)] right-4 z-10"
               aria-label="Close cooking mode"
             >
               <X className="size-5" />

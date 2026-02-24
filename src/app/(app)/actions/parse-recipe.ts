@@ -12,10 +12,18 @@ import {
 import { validateUrlForSSRF } from "@/lib/utils/secure-fetch";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import * as cheerio from "cheerio";
-import { RECIPE_CATEGORIES, TEXT_LIMITS } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINE_MAX_SELECTIONS,
+  CUISINES,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+  TEXT_LIMITS,
+} from "convex/lib/constants";
 import {
   cleanIngredients,
   cleanMethodSteps,
+  extractPartialRecipeData,
   generatePreparationsString,
   generateUnitsString,
 } from "./recipe-parsing-helpers";
@@ -138,6 +146,10 @@ Return a JSON object with this exact structure:
   "author": "string (empty string if not found)"`;
   }
 
+  prompt += `,
+  "primaryProtein": "string (required; one of: ${PRIMARY_PROTEINS.join(", ")}; use \"none\" only when recipe has no primary protein)",
+  "complexityTier": "string (required; one of: ${COMPLEXITY_TIERS.join(", ")})",
+  "cuisine": "array of exactly one string (required; single cuisine from: ${CUISINES.join(", ")})"`;
   prompt += `
 }
 
@@ -232,6 +244,22 @@ For author:
 
   prompt += `
 
+For primaryProtein (REQUIRED):
+- Always set; infer from main protein in title/ingredients (e.g. chicken, beef, fish, vegetarian, vegan)
+- Use "none" only when the recipe has no primary protein; use "other" only if truly unclear
+
+For complexityTier (REQUIRED):
+- Always set based on conceptual difficulty and technique level (not time):
+- simple: straightforward techniques, few components, easy to follow (beginner-friendly)
+- moderate: more involved techniques, multiple components or stages, some skill required
+- complex: advanced techniques, many components or stages, professional or experienced-cook level
+
+For cuisine (REQUIRED):
+- Always set exactly one value; infer from dish type (e.g. italian, thai, indian)
+- Use a single cuisine only (no fusion array)`;
+
+  prompt += `
+
 You MUST return valid JSON with ALL fields present.`;
 
   return prompt;
@@ -240,132 +268,6 @@ You MUST return valid JSON with ALL fields present.`;
 // ============================================================================
 // Text Recipe Parsing
 // ============================================================================
-
-/**
- * Extracts whatever partial recipe data we can from incomplete AI response
- * This allows users to edit and complete the recipe manually
- */
-function extractPartialRecipeData(
-  jsonData: unknown,
-): Partial<ParsedRecipeFromText> | null {
-  try {
-    if (!jsonData || typeof jsonData !== "object") {
-      return null;
-    }
-
-    const data = jsonData as Record<string, unknown>;
-    const partial: Partial<ParsedRecipeFromText> = {};
-
-    // Extract basic fields
-    const title = safeExtractString(data, "title");
-    if (title) partial.title = title;
-
-    const description = safeExtractString(data, "description");
-    if (description) partial.description = description;
-
-    const prepTime = safeExtractNumber(data, "prepTime");
-    if (prepTime !== undefined) partial.prepTime = prepTime;
-
-    const cookTime = safeExtractNumber(data, "cookTime");
-    if (cookTime !== undefined) partial.cookTime = cookTime;
-
-    const serves = safeExtractNumber(data, "serves");
-    if (serves !== undefined) partial.serves = serves;
-
-    const category = safeExtractString(data, "category");
-    if (category) {
-      partial.category = category as (typeof RECIPE_CATEGORIES)[number];
-    }
-
-    // Extract ingredients
-    const ingredients = safeExtractArray(
-      data,
-      "ingredients",
-      (ing: unknown): ing is { name: string; amount?: number } =>
-        typeof ing === "object" &&
-        ing !== null &&
-        "name" in ing &&
-        typeof ing.name === "string",
-      (ing) => ({
-        name: ing.name,
-        amount:
-          "amount" in ing && typeof ing.amount === "number"
-            ? ing.amount
-            : undefined,
-        unit: validateUnit(
-          "unit" in ing && typeof ing.unit === "string" ? ing.unit : undefined,
-        ),
-        preparation: validatePreparation(
-          "preparation" in ing && typeof ing.preparation === "string"
-            ? ing.preparation
-            : undefined,
-        ),
-      }),
-    );
-
-    if (ingredients) {
-      partial.ingredients = ingredients as StructuredIngredient[];
-    }
-
-    // Extract method steps
-    const method = safeExtractArray(
-      data,
-      "method",
-      (step: unknown): step is { title: string } =>
-        typeof step === "object" &&
-        step !== null &&
-        "title" in step &&
-        typeof step.title === "string",
-      (step) => ({
-        title: step.title,
-        description:
-          "description" in step && typeof step.description === "string"
-            ? step.description
-            : undefined,
-      }),
-    );
-
-    if (method) {
-      partial.method = method as Array<{
-        title: string;
-        description?: string;
-      }>;
-    }
-
-    // Extract nutrition
-    const nutritionObj = safeExtractObject(data, "nutrition");
-    if (nutritionObj) {
-      const calories = safeExtractNumber(nutritionObj, "calories");
-      const protein = safeExtractNumber(nutritionObj, "protein");
-      const fat = safeExtractNumber(nutritionObj, "fat");
-      const carbohydrates = safeExtractNumber(nutritionObj, "carbohydrates");
-
-      if (
-        calories !== undefined &&
-        protein !== undefined &&
-        fat !== undefined &&
-        carbohydrates !== undefined
-      ) {
-        partial.nutrition = {
-          calories,
-          protein,
-          fat,
-          carbohydrates,
-        };
-      }
-    }
-
-    // Only return if we got at least some meaningful data
-    if (Object.keys(partial).length >= 2) {
-      return partial;
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Error extracting partial data:", error);
-    return null;
-  }
-}
 
 /**
  * Parses raw text into a structured recipe using AI (includes validation)
@@ -498,6 +400,8 @@ NOT valid recipes:
     const cleanedIngredients = cleanIngredients(validatedData.ingredients);
     const cleanedMethod = cleanMethodSteps(validatedData.method);
 
+    const totalTimeMinutes =
+      validatedData.prepTime + (validatedData.cookTime ?? 0);
     return {
       success: true,
       recipe: {
@@ -510,6 +414,11 @@ NOT valid recipes:
         ingredients: cleanedIngredients,
         method: cleanedMethod,
         nutrition: validatedData.nutrition,
+        primaryProtein: validatedData.primaryProtein ?? undefined,
+        complexityTier: validatedData.complexityTier,
+        cuisine: validatedData.cuisine,
+        totalTimeMinutes:
+          totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
       },
     };
   } catch (error) {
@@ -669,6 +578,8 @@ async function parseHtmlWithAI(
     const cleanedIngredients = cleanIngredients(validatedData.ingredients);
     const cleanedMethod = cleanMethodSteps(validatedData.method);
 
+    const totalTimeMinutes =
+      validatedData.prepTime + (validatedData.cookTime ?? 0);
     const recipe: ParsedRecipeForDB = {
       title: validatedData.title,
       description: validatedData.description || undefined,
@@ -682,6 +593,10 @@ async function parseHtmlWithAI(
       imageUrl: imageUrl || validatedData.imageUrl || undefined,
       originalAuthor: validatedData.author || undefined,
       importedAt: Date.now(),
+      primaryProtein: validatedData.primaryProtein ?? undefined,
+      complexityTier: validatedData.complexityTier,
+      cuisine: validatedData.cuisine,
+      totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
     };
 
     return recipe;

@@ -1,5 +1,9 @@
 import {
+  COMPLEXITY_TIERS,
+  CUISINE_MAX_SELECTIONS,
+  CUISINES,
   PREPARATION_OPTIONS,
+  PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
   UNITS_FLAT,
 } from "convex/lib/constants";
@@ -36,6 +40,9 @@ const baseRecipeSchema = z.object({
   }),
   ingredients: z.array(baseIngredientSchema),
   method: z.array(baseMethodStepSchema),
+  primaryProtein: z.enum(PRIMARY_PROTEINS).nullable().optional(),
+  complexityTier: z.enum(COMPLEXITY_TIERS).nullable().optional(),
+  cuisine: z.array(z.enum(CUISINES)).max(CUISINE_MAX_SELECTIONS).optional(),
 });
 
 // ============================================================================

@@ -5,7 +5,12 @@ import {
   type ParsedRecipeFromText,
 } from "@/lib/types/recipe-parser";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
-import { RECIPE_LIMITS } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  PRIMARY_PROTEINS,
+  RECIPE_LIMITS,
+} from "convex/lib/constants";
 import {
   cleanIngredients,
   cleanMethodSteps,
@@ -31,6 +36,14 @@ You will receive one or more images of recipe pages. Extract all recipe informat
 ${unitsString}
 
 ${preparationsString}
+
+Allowed values for meal-plan fields (USE THESE EXACT VALUES ONLY):
+
+Primary protein (primaryProtein) - CHOOSE EXACTLY ONE FROM: ${PRIMARY_PROTEINS.join(", ")}
+
+Complexity tier (complexityTier) - CHOOSE EXACTLY ONE FROM: ${COMPLEXITY_TIERS.join(", ")}
+
+Cuisine (cuisine) - CHOOSE EXACTLY ONE FROM for the single-element array: ${CUISINES.join(", ")}
 
 CRITICAL INSTRUCTIONS:
 
@@ -96,7 +109,22 @@ For nutrition (ALWAYS REQUIRED - ALL FOUR FIELDS):
   * Account for cooking methods (frying adds fat, etc.)
   * Use standard USDA values for common ingredients
   * Return integers (whole numbers)
-- NEVER leave any nutrition field undefined if success is true`;
+- NEVER leave any nutrition field undefined if success is true
+
+For primaryProtein (REQUIRED):
+- Always set; infer from main protein in title/ingredients
+- Use ONLY a value from the "Primary protein" list above
+- Use "none" only when the recipe has no primary protein; use "other" only if truly unclear
+
+For complexityTier (REQUIRED):
+- Always set based on conceptual difficulty and technique level (not time); use ONLY a value from the "Complexity tier" list above
+- simple: straightforward techniques, few components, easy to follow (beginner-friendly)
+- moderate: more involved techniques, multiple components or stages, some skill required
+- complex: advanced techniques, many components or stages, professional or experienced-cook level
+
+For cuisine (REQUIRED):
+- Always set exactly one value in the cuisine array; infer from dish type
+- Use ONLY a value from the "Cuisine" list above (single-element array, e.g. ["italian"])`;
 }
 
 // ============================================================================
@@ -258,6 +286,9 @@ async function parseImagesWithAI(images: string[]): Promise<
         ingredients: cleanedIngredients,
         method: cleanedMethod,
         nutrition: validatedData.nutrition,
+        primaryProtein: validatedData.primaryProtein ?? undefined,
+        complexityTier: validatedData.complexityTier,
+        cuisine: validatedData.cuisine,
       },
     };
   } catch (error) {
@@ -358,6 +389,8 @@ export async function parseImagesToRecipe(images: string[]): Promise<{
   }
 
   // Convert to ParsedRecipeForDB format
+  const totalTimeMinutes =
+    result.recipe.prepTime + (result.recipe.cookTime ?? 0);
   const recipeForDB: ParsedRecipeForDB = {
     title: result.recipe.title,
     description: result.recipe.description,
@@ -369,6 +402,11 @@ export async function parseImagesToRecipe(images: string[]): Promise<{
     method: result.recipe.method,
     nutrition: result.recipe.nutrition,
     importedAt: Date.now(),
+    primaryProtein: result.recipe.primaryProtein ?? undefined,
+    complexityTier: result.recipe.complexityTier,
+    cuisine: result.recipe.cuisine,
+    totalTimeMinutes:
+      totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
   };
 
   return {

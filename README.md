@@ -6,13 +6,18 @@
 
 - [x] Copy system recipes over to production
 - [x] Generate a design for the automated weekly meal planner
-- [ ] Do front end for weekly meal planner with pseudo logic
+- [x] Do front end for weekly meal planner with pseudo logic
 - [x] Implement meal planner algorithm (core generation in convex/mealPlanGenerator.ts; behavioural stats, finalise/day-view, and frontend integration complete)
 
+- [x] The recipe parser must be updated to handle new fields. A new migration needs to be made to update data. Forms need updating to handle new fields.
+- [x] Update recipe UI to show notification if the user recipe can be used in meal plan generation.
+
+- [ ] Migrations to update recipe fields for generation
 - [ ] Titles on listing cards need either a gradient or blurred background
 - [ ] Update the filtering on the Discover page, remove category.
 - [ ] Change order of Discover page to alphabetical
 - [ ] Use next/image for public images on the Discover page
+- [ ] My recipes page should have a tab that switches to show discover recipes so users aren't taken away from the app to see public pages
 - [ ] Set up the blog for the site (infrastructure).
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
@@ -21,7 +26,7 @@
 Meal planning notes
 
 - [x] need to fix nav alignment
-- [ ] On opening the meal plan page the nav raises up
+- [x] On opening the meal plan page the nav raises
 - [x] Auto select date field on iOS needs to be disabled
 - [x] If only one household exist, a quick share option should be shown
 - [x] Users should be able to set the start date too. It should default to the immediate following day

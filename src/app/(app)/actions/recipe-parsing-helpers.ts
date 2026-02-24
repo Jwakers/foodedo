@@ -12,7 +12,11 @@ import {
   validateUnit,
 } from "@/lib/utils/recipe-validation";
 import {
+  COMPLEXITY_TIERS,
+  CUISINE_MAX_SELECTIONS,
+  CUISINES,
   PREPARATION_OPTIONS,
+  PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
   UNITS,
 } from "convex/lib/constants";
@@ -189,6 +193,35 @@ export function extractPartialRecipeData(
         carbohydrates !== undefined
       ) {
         partial.nutrition = { calories, protein, fat, carbohydrates };
+      }
+    }
+
+    // Meal-plan optional fields
+    const primaryProtein = typeof data.primaryProtein === "string" ? data.primaryProtein : undefined;
+    if (
+      primaryProtein &&
+      PRIMARY_PROTEINS.includes(primaryProtein as (typeof PRIMARY_PROTEINS)[number])
+    ) {
+      partial.primaryProtein = primaryProtein as (typeof PRIMARY_PROTEINS)[number];
+    }
+    const complexityTier = typeof data.complexityTier === "string" ? data.complexityTier : undefined;
+    if (
+      complexityTier &&
+      COMPLEXITY_TIERS.includes(
+        complexityTier as (typeof COMPLEXITY_TIERS)[number],
+      )
+    ) {
+      partial.complexityTier = complexityTier as (typeof COMPLEXITY_TIERS)[number];
+    }
+    if (Array.isArray(data.cuisine) && data.cuisine.length > 0) {
+      const valid = data.cuisine
+        .filter(
+          (c: unknown): c is string =>
+            typeof c === "string" && CUISINES.includes(c as (typeof CUISINES)[number]),
+        )
+        .slice(0, CUISINE_MAX_SELECTIONS) as (typeof CUISINES)[number][];
+      if (valid.length > 0) {
+        partial.cuisine = valid;
       }
     }
 

@@ -11,12 +11,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, titleCase } from "@/lib/utils";
+import { cn, formatLabel, titleCase } from "@/lib/utils";
 import { Calendar, Clock, ImageIcon, Users } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ChangeImageModal } from "./change-image-modal";
+import { MealPlanEligibilitySection } from "./meal-plan-eligibility-section";
 import { Recipe } from "./recipe-client";
 import { type RecipeEditFormData } from "@/lib/schemas/recipe";
 
@@ -89,9 +90,9 @@ export function RecipeHeader({
           </div>
         )}
       </div>
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
         {isEditMode ? (
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0 flex-1">
             <FormField
               control={form.control}
               name="title"
@@ -123,14 +124,17 @@ export function RecipeHeader({
             />
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
-            <h1 className="md:text-4xl text-2xl font-bold">{recipe.title}</h1>
-            {recipe.description && (
-              <p className="md:text-lg text-sm max-w-2xl">
-                {recipe.description}
-              </p>
-            )}
-          </div>
+          <>
+            <div className="flex flex-col gap-2 min-w-0 flex-1">
+              <h1 className="md:text-4xl text-2xl font-bold">{recipe.title}</h1>
+              {recipe.description && (
+                <p className="md:text-lg text-sm max-w-2xl">
+                  {recipe.description}
+                </p>
+              )}
+            </div>
+            <MealPlanEligibilitySection recipe={recipe} />
+          </>
         )}
       </div>
       {/* Recipe Meta */}
@@ -158,6 +162,42 @@ export function RecipeHeader({
           </span>
         </div>
       </div>
+
+      {/* Meal planning tags (read-only when not editing) */}
+      {!isEditMode &&
+        (recipe.primaryProtein ||
+          (recipe.cuisine && recipe.cuisine.length > 0) ||
+          recipe.complexityTier) && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {recipe.primaryProtein &&
+              recipe.primaryProtein !== "other" &&
+              recipe.primaryProtein !== "none" && (
+                <Badge
+                  variant="secondary"
+                  className="font-normal text-muted-foreground"
+                >
+                  {formatLabel(recipe.primaryProtein)}
+                </Badge>
+              )}
+            {recipe.cuisine?.map((c) => (
+              <Badge
+                key={c}
+                variant="secondary"
+                className="font-normal text-muted-foreground"
+              >
+                {formatLabel(c)}
+              </Badge>
+            ))}
+            {recipe.complexityTier && (
+              <Badge
+                variant="secondary"
+                className="font-normal text-muted-foreground"
+              >
+                {formatLabel(recipe.complexityTier)}
+              </Badge>
+            )}
+          </div>
+        )}
 
       {/* Change Image Modal */}
       <ChangeImageModal

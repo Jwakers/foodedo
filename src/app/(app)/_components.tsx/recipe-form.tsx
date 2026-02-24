@@ -27,11 +27,17 @@ import {
   recipeCreateSchema,
   type RecipeCreateFormData,
 } from "@/lib/schemas/recipe";
-import { titleCase } from "@/lib/utils";
+import { cn, formatLabel, titleCase } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { RECIPE_CATEGORIES } from "convex/lib/constants";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  CUISINE_MAX_SELECTIONS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { AnimatePresence, motion } from "framer-motion";
@@ -81,6 +87,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
       image: undefined,
       ingredients: [],
       method: [],
+      primaryProtein: undefined,
+      complexityTier: undefined,
+      cuisine: [],
     },
   });
 
@@ -198,17 +207,12 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
       if (!recipeId) throw new Error("Recipe ID not found");
 
       const method = await getMethodData(values);
+      const { image: _image, ...payload } = values;
 
       // Update recipe data
       await updateRecipeMutation({
         recipeId,
-        title: values.title || undefined,
-        description: values.description || undefined,
-        prepTime: values.prepTime,
-        cookTime: values.cookTime,
-        serves: values.serves,
-        category: values.category,
-        ingredients: values.ingredients,
+        ...payload,
         method,
       });
 
@@ -546,6 +550,169 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                     )}
                   />
                 </motion.div>
+
+                {/* Meal planning (optional, for weekly generator) */}
+                <motion.div
+                  className="space-y-4 border-t pt-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.55 }}
+                >
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Meal planning (optional)
+                  </p>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="primaryProtein"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Primary protein</FormLabel>
+                          <Select
+                            value={field.value ?? ""}
+                            onValueChange={(v) =>
+                              field.onChange(v || undefined)
+                            }
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select protein" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {PRIMARY_PROTEINS.map((p) => (
+                                <SelectItem key={p} value={p}>
+                                  {formatLabel(p)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="complexityTier"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Complexity</FormLabel>
+                          <Select
+                            value={field.value ?? ""}
+                            onValueChange={(v) =>
+                              field.onChange(v === "__none" || !v ? null : v)
+                            }
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select complexity" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="__none">
+                                Not specified
+                              </SelectItem>
+                              {COMPLEXITY_TIERS.map((t) => (
+                                <SelectItem key={t} value={t}>
+                                  {formatLabel(t)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="cuisine"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Cuisine (max {CUISINE_MAX_SELECTIONS}, e.g. fusion)
+                        </FormLabel>
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from(
+                            { length: CUISINE_MAX_SELECTIONS },
+                            (_, i) => i,
+                          ).map((i) => {
+                            const selected = field.value ?? [];
+                            const optionsForIndex = [
+                              "__none",
+                              ...CUISINES.filter(
+                                (c) =>
+                                  selected[i] === c || !selected.includes(c),
+                              ),
+                            ];
+                            return (
+                              <Select
+                                key={i}
+                                value={
+                                  field.value?.[i] ? field.value[i] : "__none"
+                                }
+                                onValueChange={(v) => {
+                                  const raw = v === "__none" ? undefined : v;
+                                  const next = [...(field.value ?? [])].filter(
+                                    Boolean,
+                                  );
+                                  if (raw) {
+                                    const cuisineVal =
+                                      raw as (typeof CUISINES)[number];
+                                    const deduped = next.filter(
+                                      (x, idx) => idx === i || x !== cuisineVal,
+                                    );
+                                    if (i >= deduped.length)
+                                      deduped.length = i + 1;
+                                    deduped[i] = cuisineVal;
+                                    field.onChange(
+                                      deduped
+                                        .filter(
+                                          (x): x is (typeof CUISINES)[number] =>
+                                            Boolean(x),
+                                        )
+                                        .slice(0, CUISINE_MAX_SELECTIONS),
+                                    );
+                                  } else {
+                                    next.splice(i, 1);
+                                    field.onChange(
+                                      next
+                                        .filter(
+                                          (x): x is (typeof CUISINES)[number] =>
+                                            Boolean(x),
+                                        )
+                                        .slice(0, CUISINE_MAX_SELECTIONS),
+                                    );
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="w-full min-w-[140px] sm:w-[180px]">
+                                  <SelectValue
+                                    placeholder={
+                                      i === 0
+                                        ? "First cuisine"
+                                        : "Second (optional)"
+                                    }
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {optionsForIndex.map((opt) => (
+                                    <SelectItem key={opt} value={opt}>
+                                      {opt === "__none"
+                                        ? "None"
+                                        : formatLabel(opt)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
               </div>
             </CardContent>
           </Card>
@@ -869,6 +1036,27 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                     {formValues.serves}
                   </div>
                 </div>
+                {(formValues.primaryProtein ||
+                  formValues.complexityTier ||
+                  (formValues.cuisine?.length ?? 0) > 0) && (
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    {formValues.primaryProtein && (
+                      <span className="rounded-md bg-muted px-2 py-0.5">
+                        {formatLabel(formValues.primaryProtein)}
+                      </span>
+                    )}
+                    {formValues.complexityTier && (
+                      <span className="rounded-md bg-muted px-2 py-0.5">
+                        {formatLabel(formValues.complexityTier)}
+                      </span>
+                    )}
+                    {formValues.cuisine?.map((c) => (
+                      <span key={c} className="rounded-md bg-muted px-2 py-0.5">
+                        {formatLabel(c)}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {formValues.ingredients.length > 0 && (
                   <div>
