@@ -570,7 +570,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           <FormLabel>Primary protein</FormLabel>
                           <Select
                             value={field.value ?? ""}
-                            onValueChange={(v) => field.onChange(v || undefined)}
+                            onValueChange={(v) =>
+                              field.onChange(v || undefined)
+                            }
                           >
                             <FormControl>
                               <SelectTrigger className="w-full">
@@ -597,7 +599,9 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                           <FormLabel>Complexity</FormLabel>
                           <Select
                             value={field.value ?? ""}
-                            onValueChange={(v) => field.onChange(v || undefined)}
+                            onValueChange={(v) =>
+                              field.onChange(v || undefined)
+                            }
                           >
                             <FormControl>
                               <SelectTrigger className="w-full">
@@ -635,21 +639,17 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                               "__none",
                               ...CUISINES.filter(
                                 (c) =>
-                                  selected[i] === c ||
-                                  !selected.includes(c),
+                                  selected[i] === c || !selected.includes(c),
                               ),
                             ];
                             return (
                               <Select
                                 key={i}
                                 value={
-                                  field.value?.[i]
-                                    ? field.value[i]
-                                    : "__none"
+                                  field.value?.[i] ? field.value[i] : "__none"
                                 }
                                 onValueChange={(v) => {
-                                  const raw =
-                                    v === "__none" ? undefined : v;
+                                  const raw = v === "__none" ? undefined : v;
                                   const next = [...(field.value ?? [])].filter(
                                     Boolean,
                                   );
@@ -657,8 +657,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                                     const cuisineVal =
                                       raw as (typeof CUISINES)[number];
                                     const deduped = next.filter(
-                                      (x, idx) =>
-                                        idx === i || x !== cuisineVal,
+                                      (x, idx) => idx === i || x !== cuisineVal,
                                     );
                                     if (i >= deduped.length)
                                       deduped.length = i + 1;
@@ -666,9 +665,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                                     field.onChange(
                                       deduped
                                         .filter(
-                                          (
-                                            x,
-                                          ): x is (typeof CUISINES)[number] =>
+                                          (x): x is (typeof CUISINES)[number] =>
                                             Boolean(x),
                                         )
                                         .slice(0, CUISINE_MAX_SELECTIONS),
@@ -678,9 +675,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                                     field.onChange(
                                       next
                                         .filter(
-                                          (
-                                            x,
-                                          ): x is (typeof CUISINES)[number] =>
+                                          (x): x is (typeof CUISINES)[number] =>
                                             Boolean(x),
                                         )
                                         .slice(0, CUISINE_MAX_SELECTIONS),
@@ -699,10 +694,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {optionsForIndex.map((opt) => (
-                                    <SelectItem
-                                      key={opt}
-                                      value={opt}
-                                    >
+                                    <SelectItem key={opt} value={opt}>
                                       {opt === "__none"
                                         ? "None"
                                         : formatLabel(opt)}
@@ -1047,20 +1039,17 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
                   <div className="flex flex-wrap gap-2 text-sm">
                     {formValues.primaryProtein && (
                       <span className="rounded-md bg-muted px-2 py-0.5">
-                        {titleCase(formValues.primaryProtein)}
+                        {formatLabel(formValues.primaryProtein)}
                       </span>
                     )}
                     {formValues.complexityTier && (
                       <span className="rounded-md bg-muted px-2 py-0.5">
-                        {titleCase(formValues.complexityTier)}
+                        {formatLabel(formValues.complexityTier)}
                       </span>
                     )}
                     {formValues.cuisine?.map((c) => (
-                      <span
-                        key={c}
-                        className="rounded-md bg-muted px-2 py-0.5"
-                      >
-                        {titleCase(c)}
+                      <span key={c} className="rounded-md bg-muted px-2 py-0.5">
+                        {formatLabel(c)}
                       </span>
                     ))}
                   </div>

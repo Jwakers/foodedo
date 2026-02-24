@@ -171,7 +171,7 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="__none">None</SelectItem>
+                      <SelectItem value="__none">Not specified</SelectItem>
                       {PRIMARY_PROTEINS.map((p) => (
                         <SelectItem key={p} value={p}>
                           {formatLabel(p)}
@@ -236,7 +236,11 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                           next.splice(i, 1);
                         }
                         field.onChange(
-                          next.filter((x): x is (typeof CUISINES)[number] => Boolean(x)).slice(0, CUISINE_MAX_SELECTIONS),
+                          next
+                            .filter((x): x is (typeof CUISINES)[number] =>
+                              Boolean(x),
+                            )
+                            .slice(0, CUISINE_MAX_SELECTIONS),
                         );
                       }}
                     >
@@ -245,9 +249,7 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
                       >
                         <SelectValue
                           placeholder={
-                            i === 0
-                              ? "First cuisine"
-                              : "Second (optional)"
+                            i === 0 ? "First cuisine" : "Second (optional)"
                           }
                         />
                       </SelectTrigger>
