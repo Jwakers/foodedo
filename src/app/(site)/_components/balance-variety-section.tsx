@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import {
   CalendarX2,
   ChefHat,
@@ -59,11 +58,7 @@ export function BalanceVarietySection() {
                 key={item.title}
                 className="flex gap-4 p-4 rounded-lg border border-border bg-card"
               >
-                <div
-                  className={cn(
-                    "shrink-0 size-10 rounded-full bg-primary/10 flex items-center justify-center",
-                  )}
-                >
+                <div className="shrink-0 size-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Icon className="size-5 text-primary" />
                 </div>
                 <div>

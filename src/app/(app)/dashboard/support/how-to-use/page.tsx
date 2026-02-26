@@ -352,7 +352,7 @@ export default function HowToUsePage() {
             {gettingStartedSteps.map((step) => (
               <div key={step.step} className="flex gap-4 p-4 border rounded-lg">
                 <div className="shrink-0">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                  <div className="size-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
                     {step.step}
                   </div>
                 </div>

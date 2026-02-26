@@ -23,6 +23,9 @@ import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section
 
 const HERO_IMAGE = "/hero-2.png";
 
+const CTA_BUTTON_CLASSES =
+  "text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto";
+
 export default function Home() {
   return (
     <div className="flex flex-col">
@@ -68,7 +71,7 @@ export default function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
+                  className={CTA_BUTTON_CLASSES}
                 >
                   <Link href={ROUTES.DASHBOARD}>
                     Try for free
@@ -80,7 +83,7 @@ export default function Home() {
                 <SignUpButton mode="modal">
                   <Button
                     size="lg"
-                    className="text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
+                    className={CTA_BUTTON_CLASSES}
                   >
                     Try for free
                     <ArrowRight className="ml-2 size-5" />

@@ -32,7 +32,7 @@ export function ExampleWeekSection() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {EXAMPLE_DAYS.map((label, i) => (
             <div
-              key={i}
+              key={String(label)}
               className="p-4 rounded-lg border border-border bg-card text-center"
             >
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

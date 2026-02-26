@@ -54,11 +54,11 @@ export function Navbar() {
           {/* Add Recipe - Primary action */}
           <Button
             size="icon"
-            className="h-14 w-14 rounded-full shadow-lg mx-auto"
+            className="size-14 rounded-full shadow-lg mx-auto"
             onClick={() => setDrawerOpen(true)}
             aria-label="Add Recipe"
           >
-            <Plus className="h-6 w-6" />
+            <Plus className="size-6" />
           </Button>
 
           {/* Chalkboard */}

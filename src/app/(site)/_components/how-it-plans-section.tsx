@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { CalendarPlus, Lock, Scale } from "lucide-react";
 
 export function HowItPlansSection() {
@@ -52,11 +51,7 @@ export function HowItPlansSection() {
                 key={block.title}
                 className="relative p-6 rounded-lg border border-border bg-card"
               >
-                <div
-                  className={cn(
-                    "mb-4 size-12 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center",
-                  )}
-                >
+                <div className="mb-4 size-12 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center">
                   <Icon className="size-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{block.title}</h3>
