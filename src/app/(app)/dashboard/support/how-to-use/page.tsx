@@ -58,7 +58,7 @@ export default function HowToUsePage() {
       step: 4,
       title: "Plan your week and create a shopping list",
       description:
-        "Create a meal plan with an end date, add meals from your recipes, then generate a shopping list from the plan. You can also create ad-hoc shopping lists from the Shopping list page.",
+        "Tap 'Generate My Week' on the Meal plan page to fill a week with recipes in one go, or create a plan and add meals manually. Lock, swap, or regenerate as you like, then generate a shopping list from the plan. You can also create ad-hoc shopping lists from the Shopping list page.",
       icon: <CalendarCheck className="size-5" />,
     },
   ];
@@ -148,7 +148,17 @@ export default function HowToUsePage() {
         "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
       sections: [
         {
-          title: "Creating a meal plan",
+          title: "Generating your week in one tap",
+          content: [
+            "1. Go to 'Meal plan' from the bottom nav or dashboard",
+            "2. Tap 'Generate My Week'",
+            "3. The app fills each day with recipes from your collection (and your household's)",
+            "4. Review the week, then lock, swap, or remove meals as you like",
+            "5. Tap 'Regenerate' anytime to get a new mix (locked meals stay)",
+          ],
+        },
+        {
+          title: "Creating a meal plan manually",
           content: [
             "1. Go to 'Meal plan' from the bottom nav or dashboard",
             "2. Tap 'Create this week's plan' if you don't have a plan",
@@ -160,10 +170,27 @@ export default function HowToUsePage() {
           title: "Adding meals to your plan",
           content: [
             "1. On your meal plan page, find the day you want to add a meal to",
-            "2. Tap 'Add meal' for that day",
+            "2. Tap 'Add meal' for that day (or use an empty slot)",
             "3. Choose a recipe from your recipes (or household recipes)",
             "4. Optionally choose a meal label (Breakfast, Lunch, Dinner)",
             "5. Tap 'Add'",
+          ],
+        },
+        {
+          title: "Locking, swapping, and removing meals",
+          content: [
+            "• Lock: tap the lock icon on a meal card to keep it when you 'Regenerate'",
+            "• Swap: open the menu (three dots) on a meal → 'Pick recipe' or 'Swap' → choose another recipe",
+            "• Remove: open the menu on a meal → 'Remove' to clear that slot",
+            "• Regenerate: tap 'Regenerate' to get a new suggested week; locked meals are kept",
+          ],
+        },
+        {
+          title: "Finalising your plan",
+          content: [
+            "1. When you're happy with the week, tap 'Finalise' (in the plan menu)",
+            "2. After finalising, you can't add, remove, or swap meals—only move them between days",
+            "3. Generate your shopping list before or after finalising",
           ],
         },
         {
@@ -182,6 +209,13 @@ export default function HowToUsePage() {
             "2. Select a household",
             "3. Household members can view the plan and generate their own shopping list from it",
             "4. Tap 'Stop sharing' to remove the link",
+          ],
+        },
+        {
+          title: "Planning the next week",
+          content: [
+            "• When you have a current plan, use 'Generate next week' to create the following week's plan in advance",
+            "• Your current plan stays in place until you're ready to focus on the next one",
           ],
         },
       ],
@@ -317,8 +351,8 @@ export default function HowToUsePage() {
           <div className="grid gap-4 md:grid-cols-2">
             {gettingStartedSteps.map((step) => (
               <div key={step.step} className="flex gap-4 p-4 border rounded-lg">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                <div className="shrink-0">
+                  <div className="size-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
                     {step.step}
                   </div>
                 </div>
@@ -415,8 +449,10 @@ export default function HowToUsePage() {
             <div>
               <h4 className="font-semibold mb-2">Efficiency Tips</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Use &apos;Generate My Week&apos; to plan a full week in one tap</li>
+                <li>• Lock meals you love before tapping Regenerate</li>
                 <li>• Import recipes from websites to save time</li>
-                <li>• Create shopping lists directly from recipes</li>
+                <li>• Create shopping lists directly from your meal plan</li>
                 <li>• Use the chalkboard for pantry ingredient reminders</li>
                 <li>
                   • Share recipes and shopping lists with household members

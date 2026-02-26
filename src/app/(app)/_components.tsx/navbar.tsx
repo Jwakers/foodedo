@@ -22,7 +22,7 @@ export function Navbar() {
     <>
       <nav
         ref={navRef}
-        className="sticky bottom-0 safe-area-inset-bottom left-0 right-0 z-50 bg-background border-t border-border"
+        className="sticky bottom-0 safe-area-inset-bottom left-0 right-0 z-50 bg-background border-t border-border w-full"
       >
         <div className="grid auto-cols-fr grid-flow-col px-4 py-2">
           {/* Home */}
@@ -54,11 +54,11 @@ export function Navbar() {
           {/* Add Recipe - Primary action */}
           <Button
             size="icon"
-            className="h-14 w-14 rounded-full shadow-lg mx-auto"
+            className="size-14 rounded-full shadow-lg mx-auto"
             onClick={() => setDrawerOpen(true)}
             aria-label="Add Recipe"
           >
-            <Plus className="h-6 w-6" />
+            <Plus className="size-6" />
           </Button>
 
           {/* Chalkboard */}
