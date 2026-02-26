@@ -25,9 +25,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="grid grid-rows-[auto_1fr_auto] min-h-dvh">
         <Header />
         <main className="w-full min-w-0">{children}</main>
-        <Navbar />
+        <div className="sticky bottom-0 z-10 flex flex-col gap-2 items-start">
+          <CannyFeedbackButton />
+          <Navbar />
+        </div>
       </div>
-      <CannyFeedbackButton />
     </div>
   );
 }

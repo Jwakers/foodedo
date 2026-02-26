@@ -4,36 +4,19 @@
 
 ### Next Immediate Steps
 
-- [x] Copy system recipes over to production
-- [x] Generate a design for the automated weekly meal planner
-- [x] Do front end for weekly meal planner with pseudo logic
-- [x] Implement meal planner algorithm (core generation in convex/mealPlanGenerator.ts; behavioural stats, finalise/day-view, and frontend integration complete)
-
-- [x] The recipe parser must be updated to handle new fields. A new migration needs to be made to update data. Forms need updating to handle new fields.
-- [x] Update recipe UI to show notification if the user recipe can be used in meal plan generation.
-
-- [x] Migrations to update recipe fields for generation (run: `npx convex run migrations:backfillUserRecipeMealPlanFields`)
-- [ ] Titles on listing cards need either a gradient or blurred background
+- [x] Meal reselection modal
+- [ ] Home page and general messaging updates
 - [ ] Update the filtering on the Discover page, remove category.
 - [ ] Change order of Discover page to alphabetical
 - [ ] Use next/image for public images on the Discover page
 - [ ] My recipes page should have a tab that switches to show discover recipes so users aren't taken away from the app to see public pages
+- [ ] Titles on listing cards need either a gradient or blurred background
+
 - [ ] Set up the blog for the site (infrastructure).
+
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.
-
-Meal planning notes
-
-- [x] need to fix nav alignment
-- [x] On opening the meal plan page the nav raises
-- [x] Auto select date field on iOS needs to be disabled
-- [x] If only one household exist, a quick share option should be shown
-- [x] Users should be able to set the start date too. It should default to the immediate following day
-- [x] Mobile meal picker needs work. Move the meal type drop-down to below the recipe name
-- [x] Options ellipsis should be right aligned
-- [x] Generate list should be create shopping list and should be a primary CTA
-- [x] Dashboard section should have dates accompanied with the meals
 
 ### User feedback – Import experience (post-import UX)
 
@@ -66,6 +49,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 
 ## 🐛 Bug Tracking
 
+- [ ] Back button on the recipe pages is not visible
 - [ ] Ingredients can be duplicated if used in multiple sections of a recipe, like this one for example: <https://www.greatbritishchefs.com/recipes/salmon-kilaw-recipe>
       Ingredients should be deduped as part of the parsing process OR ingredients should be sectioned (as in for the sauce, for the garnish) that was they can stay as duplicates
 - [ ] Its is possible for the parser to output technically correct but odd ingredient mappings like 0.5 Whole Lime. This can be seen when extracting this recipe: <https://www.greatbritishchefs.com/recipes/salmon-kilaw-recipe>
@@ -73,7 +57,6 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] Recipe page loading skeleton overflows
 - [ ] Whene deleting a household an error is surfaced on the client. This is likely due to that household no longer being available. Instead we should redirect or 404
 - [ ] The back to dashboard button on the error page does not seem to work
-- [ ] Clicking the account button in the nav just closes the menu and does not do anything
 - [ ] Occasionally get redirected to a 404 after signing in
 
 ## Tech debt

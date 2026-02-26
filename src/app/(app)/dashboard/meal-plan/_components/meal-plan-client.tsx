@@ -58,6 +58,7 @@ import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
 import { MealPlanCard } from "./meal-plan-card";
 import { MealPlanDayView } from "./meal-plan-day-view";
+import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
@@ -83,6 +84,7 @@ export default function MealPlanClient() {
   const regenerateWeeklyPlan = useMutation(api.mealPlans.regenerateWeeklyPlan);
   const removeEntry = useMutation(api.mealPlans.removeEntry);
   const updateEntry = useMutation(api.mealPlans.updateEntry);
+  const addEntry = useMutation(api.mealPlans.addEntry);
   const deleteMealPlan = useMutation(api.mealPlans.deleteMealPlan);
   const shareMealPlanWithHousehold = useMutation(
     api.mealPlans.shareMealPlanWithHousehold,
@@ -105,6 +107,9 @@ export default function MealPlanClient() {
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isFinalising, setIsFinalising] = useState(false);
+  const [pickerState, setPickerState] = useState<
+    { mode: "add" | "replace"; entry?: CurrentPlan["entries"][number] } | null
+  >(null);
 
   const entriesSorted = useMemo(() => {
     const entries = currentPlan?.entries ?? [];
@@ -280,6 +285,36 @@ export default function MealPlanClient() {
       }
     },
     [updateEntry],
+  );
+
+  const handlePickerSelect = useCallback(
+    async (recipeId: Id<"recipes">) => {
+      if (!currentPlan || !pickerState) return;
+      try {
+        if (pickerState.mode === "add") {
+          const date =
+            currentPlan.startDate ?? currentPlan.endDate;
+          await addEntry({
+            mealPlanId: currentPlan._id,
+            date,
+            recipeId,
+            order: currentPlan.entries?.length ?? 0,
+          });
+          toast.success("Meal added");
+        } else if (pickerState.entry) {
+          await updateEntry({
+            entryId: pickerState.entry._id,
+            recipeId,
+          });
+          toast.success("Meal changed");
+        }
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to update meal");
+      } finally {
+        setPickerState(null);
+      }
+    },
+    [currentPlan, pickerState, addEntry, updateEntry],
   );
 
   const chalkboardItemsForGenerate = useMemo(() => {
@@ -557,13 +592,35 @@ export default function MealPlanClient() {
                 onLockToggle={() => handleLockToggle(entry)}
                 onSwitch={() => handleSwitchClick(entry)}
                 onRemove={() => handleRemoveEntry(entry._id)}
+                onChangeRecipe={
+                  currentPlan.isOwner && !isFinalised
+                    ? () => setPickerState({ mode: "replace", entry })
+                    : undefined
+                }
               />
             ))}
             {Array.from({ length: emptySlotsCount }, (_, i) => (
-              <EmptySlot key={`empty-${i}`} />
+              <EmptySlot
+                key={`empty-${i}`}
+                onAdd={
+                  currentPlan.isOwner && !isFinalised
+                    ? () => setPickerState({ mode: "add" })
+                    : undefined
+                }
+              />
             ))}
           </div>
         )}
+
+        <MealPlanRecipePickerModal
+          open={pickerState !== null}
+          onOpenChange={(open) => {
+            if (!open) setPickerState(null);
+          }}
+          mode={pickerState?.mode ?? "add"}
+          replaceEntry={pickerState?.mode === "replace" ? pickerState.entry : undefined}
+          onSelect={handlePickerSelect}
+        />
 
         {/* Generate shopping list dialog */}
         <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
