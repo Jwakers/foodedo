@@ -17,18 +17,20 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { BalanceVarietySection } from "@/app/(site)/_components/balance-variety-section";
+import { ExampleWeekSection } from "@/app/(site)/_components/example-week-section";
+import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
+
+const HERO_IMAGE = "/hero-2.png";
 
 export default function Home() {
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-30" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl opacity-30" />
-
-        <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl">
-          <div className="space-y-8 py-4">
+      {/* Hero Section — split layout: copy on solid background, image as featured visual */}
+      <section className="relative min-h-[85vh] flex flex-col lg:flex-row lg:min-h-[90vh]">
+        {/* Left: copy on readable background */}
+        <div className="flex-1 flex items-center justify-center bg-background px-4 py-16 lg:py-24 lg:pl-[max(1rem,calc((100vw-1200px)/2))] lg:pr-8">
+          <div className="w-full max-w-xl lg:max-w-none space-y-8 text-center lg:text-left">
             <Badge
               variant="secondary"
               className={cn(
@@ -40,30 +42,36 @@ export default function Home() {
             </Badge>
 
             <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                LESS PLANNING.
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]">
+                <span className="text-foreground">No more Sunday night</span>
                 <br />
-                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  MORE COOKING.
-                </span>
+                <span className="text-primary">meal-planning scramble.</span>
               </h1>
 
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Your recipes are scattered. The weekly shop is chaos. {APP_NAME}{" "}
-                brings everything into one place so you can focus on the fun
-                parts of cooking — not the admin.
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                We build your week so you don&apos;t have to. One tap, balanced
+                variety — then tweak as you like.
               </p>
+
+              <div className="flex justify-center lg:justify-start gap-1.5 pt-1" aria-hidden>
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <div
+                    key={i}
+                    className="size-2 rounded-full bg-primary/30"
+                  />
+                ))}
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
               <Authenticated>
                 <Button
                   asChild
                   size="lg"
-                  className="text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
                 >
                   <Link href={ROUTES.DASHBOARD}>
-                    Go to Dashboard
+                    Try for free
                     <ArrowRight className="ml-2 size-5" />
                   </Link>
                 </Button>
@@ -72,39 +80,55 @@ export default function Home() {
                 <SignUpButton mode="modal">
                   <Button
                     size="lg"
-                    className="text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
                   >
-                    Get Started Free
+                    Try for free
                     <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>
               </Unauthenticated>
               <a
-                href="#features"
-                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2"
+                href="#how-it-plans"
+                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 sm:py-2"
               >
                 See how it works
               </a>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground pt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 text-sm text-muted-foreground pt-4">
               <div className="flex items-center gap-2">
-                <CheckCircle className="size-4 text-primary" />
+                <CheckCircle className="size-4 text-primary shrink-0" />
                 <span>No credit card required</span>
               </div>
               <div className="hidden sm:block size-1 bg-muted-foreground/30 rounded-full" />
               <div className="flex items-center gap-2">
-                <CheckCircle className="size-4 text-primary" />
+                <CheckCircle className="size-4 text-primary shrink-0" />
                 <span>Start planning today</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute top-20 left-10 size-16 bg-primary/20 rounded-2xl rotate-12 opacity-60" />
-        <div className="absolute top-40 right-20 size-12 bg-accent/20 rounded-full opacity-60" />
-        <div className="absolute bottom-32 left-20 size-20 bg-primary/15 rounded-3xl -rotate-12 opacity-60" />
-        <div className="absolute bottom-20 right-10 size-14 bg-accent/15 rounded-2xl rotate-45 opacity-60" />
+        {/* Right: Hero 2 image as featured visual — no text overlay */}
+        <div className="flex-1 relative flex items-center justify-center bg-muted/40 min-h-[50vh] lg:min-h-0 lg:pr-[max(1rem,calc((100vw-1200px)/2))] lg:pl-4">
+          <div className="relative w-full max-w-2xl aspect-4/3 lg:aspect-6/5 mx-4 lg:mx-0">
+            <div className="absolute inset-0 rounded-2xl lg:rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5 lg:shadow-2xl lg:-rotate-1">
+              <Image
+                src={HERO_IMAGE}
+                alt="Kitchen counter with fresh herbs, lemons, and a meal-planning app on a tablet"
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+            {/* Decorative corner accent */}
+            <div
+              className="absolute -bottom-3 -right-3 lg:-bottom-4 lg:-right-4 size-24 lg:size-32 rounded-2xl bg-primary/20 -z-10"
+              aria-hidden
+            />
+          </div>
+        </div>
       </section>
 
       <div className="container mt-4">
@@ -130,115 +154,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
+      <HowItPlansSection />
+      <BalanceVarietySection />
+      <ExampleWeekSection />
+
+      {/* What feeds your plan */}
       <section id="features" className="py-20 bg-muted/30 scroll-mt-20">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How we help</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Everything that feeds your plan
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              One place for your recipes, your week, and your household
+              Recipes, household, and shopping — all in service of your week.
             </p>
           </div>
 
-          {/* 1. Import from websites — image right */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold">
-                Sick of scrolling past a novel to get to the recipe?
-              </h3>
-              <p className="text-muted-foreground">
-                Paste a URL and we pull the recipe into {APP_NAME}. Straight to
-                the point every time — no life stories, no endless scroll. Then
-                save it and tweak it to make it yours.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href={ROUTES.IMPORT_RECIPE}>Import a recipe</Link>
-              </Button>
-            </div>
-            <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
-              <Image
-                src="/app-images/import-page.png"
-                alt="Import a recipe from a URL in Foodedo"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* 2. Recipe books + create your own — image left */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="order-2 lg:order-1 relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
-              <Image
-                src="/app-images/my-recipes.png"
-                alt="My recipes and add recipe in Foodedo"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="space-y-4 order-1 lg:order-2">
-              <h3 className="text-2xl font-bold">
-                Favourite recipes in books or in your head?
-              </h3>
-              <p className="text-muted-foreground">
-                Snap a photo from a recipe book or type from scratch. One place
-                for everything you love to cook.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href={ROUTES.IMPORT_RECIPE}>Add a recipe</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* 3. Customise every recipe — image right */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold">
-                One-size-fits-all recipes that don&apos;t fit your kitchen?
-              </h3>
-              <p className="text-muted-foreground">
-                Edit ingredients, steps, and notes so every recipe is yours.
-                Half the sugar, double the garlic — your way.
-              </p>
-            </div>
-            <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
-              <Image
-                src="/app-images/recipe-page.png"
-                alt="Edit a recipe to make it your own in Foodedo"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* 4. Household sharing — image left */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="order-2 lg:order-1 relative aspect-[16/10] w-full rounded-lg overflow-hidden border border-border">
-              <Image
-                src="/app-images/household-recipes.png"
-                alt="Share recipes with your household in Foodedo"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="space-y-4 order-1 lg:order-2">
-              <div className="flex items-center gap-2">
-                <Users className="size-6 text-primary" />
-                <h3 className="text-2xl font-bold">
-                  Nobody&apos;s on the same page about meals?
-                </h3>
-              </div>
-              <p className="text-muted-foreground">
-                Share recipes and meal ideas with your household. Plan and cook
-                together so everyone knows what&apos;s for dinner.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href={ROUTES.HOUSEHOLDS}>Households</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* 5 & 6. Meal planning + Chalkboard — two columns, no images */}
-          <div className="grid lg:grid-cols-2 gap-6 md:gap-12 items-stretch">
+          {/* 1. Meal planning + shopping — lead, two columns */}
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-12 items-stretch mb-20">
             <div className="relative p-6 pt-14 rounded-lg border border-border bg-card overflow-visible">
               <div
                 className={cn(
@@ -249,12 +182,12 @@ export default function Home() {
               </div>
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold pr-10">
-                  Plan your week, then shop in one go
+                  Your week, then your shop
                 </h3>
                 <p className="text-muted-foreground">
-                  Build a meal plan with an end date, add meals from your
-                  recipes, then generate a shopping list from the plan. Or
-                  create an ad-hoc list from any recipes. Check off as you go.
+                  Generate a meal plan in one tap, or build it yourself. Add
+                  meals from your recipes, then generate a shopping list from the
+                  plan. Check off as you go.
                 </p>
                 <Button asChild variant="outline" size="sm">
                   <Link href={ROUTES.MEAL_PLAN}>Meal planning</Link>
@@ -287,6 +220,103 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* 2. Import from websites — image right */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold">
+                Sick of scrolling past a novel to get to the recipe?
+              </h3>
+              <p className="text-muted-foreground">
+                Paste a URL and we pull the recipe into {APP_NAME}. Straight to
+                the point every time — no life stories, no endless scroll. Then
+                save it and tweak it to make it yours.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href={ROUTES.IMPORT_RECIPE}>Import a recipe</Link>
+              </Button>
+            </div>
+            <div className="relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
+              <Image
+                src="/app-images/import-page.png"
+                alt="Import a recipe from a URL in Foodedo"
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
+
+          {/* 3. Recipe books + create your own — image left */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="order-2 lg:order-1 relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
+              <Image
+                src="/app-images/my-recipes.png"
+                alt="My recipes and add recipe in Foodedo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="space-y-4 order-1 lg:order-2">
+              <h3 className="text-2xl font-bold">
+                Favourite recipes in books or in your head?
+              </h3>
+              <p className="text-muted-foreground">
+                Snap a photo from a recipe book or type from scratch. One place
+                for everything you love to cook.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href={ROUTES.IMPORT_RECIPE}>Add a recipe</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* 4. Customise every recipe — image right */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold">
+                One-size-fits-all recipes that don&apos;t fit your kitchen?
+              </h3>
+              <p className="text-muted-foreground">
+                Edit ingredients, steps, and notes so every recipe is yours.
+                Half the sugar, double the garlic — your way.
+              </p>
+            </div>
+            <div className="relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
+              <Image
+                src="/app-images/recipe-page.png"
+                alt="Edit a recipe to make it your own in Foodedo"
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
+
+          {/* 5. Household sharing — image left */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="order-2 lg:order-1 relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
+              <Image
+                src="/app-images/household-recipes.png"
+                alt="Share recipes with your household in Foodedo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="space-y-4 order-1 lg:order-2">
+              <div className="flex items-center gap-2">
+                <Users className="size-6 text-primary" />
+                <h3 className="text-2xl font-bold">
+                  Nobody&apos;s on the same page about meals?
+                </h3>
+              </div>
+              <p className="text-muted-foreground">
+                Share recipes and meal ideas with your household. Plan and cook
+                together so everyone knows what&apos;s for dinner.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href={ROUTES.HOUSEHOLDS}>Households</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -294,11 +324,11 @@ export default function Home() {
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <h2 className="text-2xl font-bold mb-4">
-            Less admin. Less stress. More time for the fun parts of cooking.
+            No more end-of-week decision fatigue.
           </h2>
           <p className="text-muted-foreground">
-            {APP_NAME} helps you get your recipes, your week, and your household
-            in sync — so you can focus on what you actually enjoy.
+            Your week is already decided. Less stress, more time for the parts you
+            enjoy. {APP_NAME} builds your week so you can focus on cooking.
           </p>
         </div>
       </section>
@@ -308,10 +338,10 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Ready to make meal planning simple?
+              Try for free
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Get started free. No credit card required.
+              No credit card required.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Authenticated>
@@ -325,7 +355,7 @@ export default function Home() {
               <Unauthenticated>
                 <SignUpButton mode="modal">
                   <Button size="lg" className="text-lg px-8">
-                    Get Started Free
+                    Try for free
                     <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>

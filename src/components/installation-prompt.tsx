@@ -104,7 +104,7 @@ export default function InstallPrompt() {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+    <div className="bg-card border border-border rounded-lg p-6 shadow-sm max-w-md mx-auto">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-success-muted rounded-full flex items-center justify-center">
           <Smartphone className="w-5 h-5 text-success" />
@@ -121,7 +121,7 @@ export default function InstallPrompt() {
         <div className="space-y-4">
           <div className="border border-primary/20 rounded-md p-4">
             <div className="flex items-start gap-3">
-              <div className="size-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="size-6 bg-primary rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-xs font-bold text-primary-foreground">
                   1
                 </span>
