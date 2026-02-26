@@ -14,7 +14,10 @@ export function getCannyBoardSlug(pathname: string): string | null {
   if (pathname.startsWith(ROUTES.IMPORT_RECIPE)) {
     return CANNY_BOARD_SLUGS.RECIPE_IMPORT_PARSING;
   }
-  if (pathname.startsWith(ROUTES.MY_RECIPES) || pathname.startsWith(ROUTES.RECIPE)) {
+  if (
+    pathname.startsWith(ROUTES.MY_RECIPES) ||
+    pathname.startsWith(ROUTES.RECIPE)
+  ) {
     return CANNY_BOARD_SLUGS.RECIPES_ORGANISATION;
   }
   if (pathname.startsWith(ROUTES.HOUSEHOLDS)) {
@@ -64,7 +67,9 @@ export function CannyIdentify() {
       appID: cannyAppId,
       user: {
         id: user.id,
-        name: user.fullName ?? [user.firstName, user.lastName].filter(Boolean).join(" "),
+        name:
+          user.fullName ??
+          [user.firstName, user.lastName].filter(Boolean).join(" "),
         email:
           user.primaryEmailAddress?.emailAddress ??
           user.emailAddresses[0]?.emailAddress,
@@ -103,13 +108,12 @@ export function CannyFeedbackButton() {
       rel="noreferrer noopener"
       target="_blank"
       aria-label="Leave feedback"
-      className="fixed bottom-[calc(var(--nav-height,72px)_+_0.5rem)] left-4 z-50 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
+      className="ml-4 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
     >
       <MessageSquare className="size-4" />
       <p>
-      <span className="hidden sm:inline">Share </span>Feedback
+        <span className="hidden sm:inline">Share </span>Feedback
       </p>
     </a>
   );
 }
-

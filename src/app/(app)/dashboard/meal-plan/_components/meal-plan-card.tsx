@@ -1,7 +1,13 @@
 "use client";
 
 import { cn, titleCase } from "@/lib/utils";
-import { Lock, LockOpen, RefreshCw, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { List, Lock, LockOpen, MoreVertical, RefreshCw, X } from "lucide-react";
 import Image from "next/image";
 
 type Recipe = {
@@ -29,6 +35,7 @@ export function MealPlanCard({
   onLockToggle,
   onSwitch,
   onRemove,
+  onChangeRecipe,
   className,
 }: {
   entry: Entry;
@@ -36,6 +43,7 @@ export function MealPlanCard({
   onLockToggle: () => void;
   onSwitch: () => void;
   onRemove: () => void;
+  onChangeRecipe?: () => void;
   className?: string;
 }) {
   const recipe = entry.recipe;
@@ -145,28 +153,53 @@ export function MealPlanCard({
           </div>
         )}
 
-        {/* Bottom-right: switch (desktop hover / always on mobile) */}
+        {/* Bottom-right: recipe options (pick or swap) — dropdown to avoid mis-taps on mobile */}
         {isOwner && (
-          <div
-            className={cn(
-              "absolute bottom-2 right-2 flex items-center gap-1.5",
-              "opacity-100 md:opacity-0 md:group-hover:opacity-100",
-              "transition-opacity",
-            )}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onSwitch();
-              }}
-              className="flex size-10 items-center justify-center rounded-full bg-white/90 text-primary shadow-sm hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Switch recipe"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className={cn(
+                  "absolute bottom-2 right-2 flex size-10 items-center justify-center rounded-full bg-white/90 text-primary shadow-sm hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "opacity-100 md:opacity-0 md:group-hover:opacity-100",
+                  "transition-opacity",
+                )}
+                aria-label="Recipe options"
+              >
+                <MoreVertical className="size-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              side="top"
+              className="min-w-[180px]"
             >
-              <RefreshCw className="size-5" />
-            </button>
-          </div>
+              {onChangeRecipe && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChangeRecipe();
+                  }}
+                >
+                  <List className="size-4" />
+                  Pick replacement
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSwitch();
+                }}
+              >
+                <RefreshCw className="size-4" />
+                Regenerate
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
