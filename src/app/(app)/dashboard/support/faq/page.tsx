@@ -74,19 +74,44 @@ export const faqSections = [
       "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
     questions: [
       {
-        question: "What is meal planning?",
+        question: "How do I generate a weekly meal plan?",
         answer:
-          "Meal planning lets you pick recipes for a week (or any date range) and save them as your plan. You set an end date (default one week ahead), add meals from your recipes to specific days, then generate a shopping list from the plan. You can also share the plan with your household so others can view it and generate their own list.",
+          "Go to 'Meal plan' in the bottom navigation or dashboard. Tap 'Generate My Week' to create a full week of meals in one go. The app picks recipes from your collection (and your household's) and fills each day. You can then lock meals you want to keep, swap or remove others, and tap 'Regenerate' to get a new mix while keeping locked meals.",
       },
       {
-        question: "How do I create a meal plan?",
+        question: "What is meal planning?",
         answer:
-          "Go to 'Meal plan' in the bottom navigation or dashboard. If you don't have a plan yet, tap 'Create this week's plan'. Set the end date (default is one week from today) and create. Then add meals by day: tap 'Add meal' for a day and choose a recipe. Optionally add a meal label (Breakfast, Lunch, Dinner).",
+          "Meal planning lets you plan meals for a week (or any date range) and save them as your plan. You can generate a full week in one tap, or create a plan manually and add meals by day. Generate a shopping list from the plan, and optionally share the plan with your household so others can view it and generate their own list.",
+      },
+      {
+        question: "How do I create a meal plan manually?",
+        answer:
+          "Go to 'Meal plan' and tap 'Create this week's plan' if you don't have one. Set the end date (default is one week from today) and create. Then add meals by day: tap 'Add meal' for a day, choose a recipe, and optionally add a meal label (Breakfast, Lunch, Dinner).",
+      },
+      {
+        question: "How do I lock or swap a meal?",
+        answer:
+          "On each meal card, use the lock icon to lock meals you want to keep—they won't change when you tap 'Regenerate'. Use the menu on the card (three dots) to 'Pick recipe' or 'Swap' and choose a different recipe from your collection. You can also remove a meal entirely from the menu.",
+      },
+      {
+        question: "What does 'Regenerate' do?",
+        answer:
+          "'Regenerate' creates a new suggested week while keeping any meals you've locked. Use it when you want a different mix of recipes but don't want to change certain days. Lock the meals you want to keep, then tap 'Regenerate'.",
+      },
+      {
+        question: "What does 'Finalise' mean on a meal plan?",
+        answer:
+          "Finalising saves your plan so you can't add, remove, or swap meals anymore—you can still move meals between days. Use it when you're happy with the week and want to avoid accidental changes. You can generate a shopping list before or after finalising.",
       },
       {
         question: "How do I generate a shopping list from my meal plan?",
         answer:
           "On your meal plan page, tap 'Generate shopping list'. Ingredients from all planned recipes are combined into one list. You can optionally include chalkboard items. You'll be taken to the shopping list to check off items as you shop.",
+      },
+      {
+        question: "Can I plan the next week early?",
+        answer:
+          "Yes. When you have a current plan, a 'Generate next week' button appears so you can create the following week's plan in advance. Your current plan stays in place until you're ready to focus on the next one.",
       },
       {
         question: "Can I share my meal plan with my household?",

@@ -22,7 +22,7 @@ export function Navbar() {
     <>
       <nav
         ref={navRef}
-        className="sticky bottom-0 safe-area-inset-bottom left-0 right-0 z-50 bg-background border-t border-border"
+        className="sticky bottom-0 safe-area-inset-bottom left-0 right-0 z-50 bg-background border-t border-border w-full"
       >
         <div className="grid auto-cols-fr grid-flow-col px-4 py-2">
           {/* Home */}

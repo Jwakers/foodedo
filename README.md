@@ -5,7 +5,7 @@
 ### Next Immediate Steps
 
 - [x] Meal reselection modal
-- [ ] Home page and general messaging updates
+- [x] Home page and general messaging updates
 - [ ] Update the filtering on the Discover page, remove category.
 - [ ] Change order of Discover page to alphabetical
 - [ ] Use next/image for public images on the Discover page
