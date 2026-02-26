@@ -5,7 +5,7 @@
 ### Next Immediate Steps
 
 - [x] Meal reselection modal
-- [ ] Home page and generatl messaging updates
+- [ ] Home page and general messaging updates
 - [ ] Update the filtering on the Discover page, remove category.
 - [ ] Change order of Discover page to alphabetical
 - [ ] Use next/image for public images on the Discover page
@@ -49,7 +49,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 
 ## 🐛 Bug Tracking
 
-- [ ] Back button the the recipe pages is not visible
+- [ ] Back button on the recipe pages is not visible
 - [ ] Ingredients can be duplicated if used in multiple sections of a recipe, like this one for example: <https://www.greatbritishchefs.com/recipes/salmon-kilaw-recipe>
       Ingredients should be deduped as part of the parsing process OR ingredients should be sectioned (as in for the sauce, for the garnish) that was they can stay as duplicates
 - [ ] Its is possible for the parser to output technically correct but odd ingredient mappings like 0.5 Whole Lime. This can be seen when extracting this recipe: <https://www.greatbritishchefs.com/recipes/salmon-kilaw-recipe>
