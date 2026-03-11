@@ -57,8 +57,6 @@ type RecipeListGridProps = {
   footer?: ReactNode;
   stats?: ReactNode;
   showMealPlanEligibleKey?: boolean;
-  /** When "discover", show protein / duration / complexity filters instead of category. Default "category". */
-  filterVariant?: "category" | "discover";
 };
 
 export function RecipeListGrid({
@@ -70,7 +68,6 @@ export function RecipeListGrid({
   footer,
   stats,
   showMealPlanEligibleKey = false,
-  filterVariant = "category",
 }: RecipeListGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -84,26 +81,22 @@ export function RecipeListGrid({
       const matchesSearch =
         recipe.title.toLowerCase().includes(normalizedSearch) ||
         (recipe.description ?? "").toLowerCase().includes(normalizedSearch);
-
-      if (filterVariant === "discover") {
-        const matchesProtein =
-          selectedProtein === "all" ||
-          (recipe.primaryProtein ?? "other") === selectedProtein;
-        const matchesDurationFilter = matchesDuration(recipe, selectedDuration);
-        const matchesComplexity =
-          selectedComplexity === "all" ||
-          (recipe.complexityTier ?? "") === selectedComplexity;
-        return (
-          matchesSearch &&
-          matchesProtein &&
-          matchesDurationFilter &&
-          matchesComplexity
-        );
-      }
-
       const matchesCategory =
         selectedCategory === "all" || recipe.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesProtein =
+        selectedProtein === "all" ||
+        (recipe.primaryProtein ?? "other") === selectedProtein;
+      const matchesDurationFilter = matchesDuration(recipe, selectedDuration);
+      const matchesComplexity =
+        selectedComplexity === "all" ||
+        (recipe.complexityTier ?? "") === selectedComplexity;
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesProtein &&
+        matchesDurationFilter &&
+        matchesComplexity
+      );
     }) ?? [];
 
   const hasRecipes = recipes && recipes.length > 0;
@@ -172,81 +165,74 @@ export function RecipeListGrid({
                 Filter
               </span>
               <p className="text-sm text-muted-foreground">
-                {filterVariant === "discover"
-                  ? "Narrow results by protein, time, or complexity."
-                  : "Narrow results by category."}
+                Narrow results by category, protein, time, or complexity.
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                {filterVariant === "discover" ? (
-                  <>
-                    <Select
-                      value={selectedProtein}
-                      onValueChange={setSelectedProtein}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Protein" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All proteins</SelectItem>
-                        {PRIMARY_PROTEINS.filter(
-                          (p) => p !== "other" && p !== "none"
-                        ).map((protein) => (
-                          <SelectItem key={protein} value={protein}>
-                            {titleCase(protein)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={selectedDuration}
-                      onValueChange={setSelectedDuration}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DURATION_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={selectedComplexity}
-                      onValueChange={setSelectedComplexity}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Complexity" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any complexity</SelectItem>
-                        {COMPLEXITY_TIERS.map((tier) => (
-                          <SelectItem key={tier} value={tier}>
-                            {titleCase(tier)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </>
-                ) : (
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={setSelectedCategory}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {RECIPE_CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {titleCase(category)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {RECIPE_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {titleCase(category)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedProtein}
+                  onValueChange={setSelectedProtein}
+                >
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Protein" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All proteins</SelectItem>
+                    {PRIMARY_PROTEINS.filter(
+                      (p) => p !== "other" && p !== "none"
+                    ).map((protein) => (
+                      <SelectItem key={protein} value={protein}>
+                        {titleCase(protein)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedDuration}
+                  onValueChange={setSelectedDuration}
+                >
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedComplexity}
+                  onValueChange={setSelectedComplexity}
+                >
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Complexity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any complexity</SelectItem>
+                    {COMPLEXITY_TIERS.map((tier) => (
+                      <SelectItem key={tier} value={tier}>
+                        {titleCase(tier)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -258,9 +244,7 @@ export function RecipeListGrid({
           hasRecipes ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground">
-                {filterVariant === "discover"
-                  ? "No recipes match your search or filters."
-                  : "No recipes match your search or selected category."}
+                No recipes match your search or filters.
               </p>
               <Button
                 className="mt-4"
