@@ -45,6 +45,7 @@ function matchesDuration(recipe: RecipeListItem, duration: string): boolean {
   const total = getRecipeTotalMinutes(recipe);
   switch (duration) {
     case "under-30":
+      // Exclude total === 0: treat missing/zero time as unknown, not "under 30"
       return total > 0 && total < 30;
     case "30-60":
       return total >= 30 && total <= 60;

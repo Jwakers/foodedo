@@ -85,7 +85,7 @@ type RecipeGridProps = {
 
 export function RecipeGrid({
   recipes,
-  loading = false,
+  loading,
   emptyState,
   onClearFilters,
   hasSourceRecipes = false,
