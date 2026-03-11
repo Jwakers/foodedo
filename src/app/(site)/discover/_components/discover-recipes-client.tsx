@@ -12,6 +12,7 @@ export default function DiscoverRecipesClient() {
       recipes={recipes}
       title="Discover"
       subtitle="Browse our curated recipes."
+      filterVariant="discover"
       emptyState={
         <div className="text-center py-16">
           <p className="text-muted-foreground">No recipes available yet.</p>
