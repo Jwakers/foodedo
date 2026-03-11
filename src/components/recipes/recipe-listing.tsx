@@ -28,8 +28,8 @@ export function RecipeListing() {
   return (
     <RecipeGrid
       recipes={filteredRecipes}
-      loading={recipes === undefined}
-      hasSourceRecipes={(recipes?.length ?? 0) > 0}
+      loading={false}
+      hasSourceRecipes={hasSourceRecipes}
       onClearFilters={clearFilters}
     />
   );
