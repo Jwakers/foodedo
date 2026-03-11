@@ -540,7 +540,7 @@ function BentoGrid() {
         title="Discover"
         description="Browse our curated recipes"
         icon={Compass}
-        href={ROUTES.DISCOVER}
+        href={ROUTES.MY_RECIPES_DISCOVER_TAB}
         className="md:col-span-1 h-full"
       />
     </div>

@@ -16,6 +16,8 @@ export const ROUTES = {
   SIGN_UP: "/sign-up",
   DASHBOARD: "/dashboard",
   MY_RECIPES: "/dashboard/my-recipes",
+  /** My Recipes page with Discover tab selected (use for in-app Discover links) */
+  MY_RECIPES_DISCOVER_TAB: "/dashboard/my-recipes?tab=discover",
   RECIPE: "/recipe",
   IMPORT_RECIPE: "/dashboard/import-recipe",
   CREATE_RECIPE: "/dashboard/create-recipe",

@@ -9,5 +9,15 @@ export const metadata: Metadata = {
 };
 
 export default function DiscoverPage() {
-  return <DiscoverRecipesClient />;
+  return (
+    <>
+      <div className="container mx-auto px-4 pt-8 pb-2">
+        <h1 className="text-4xl font-bold text-foreground mb-2">Discover</h1>
+        <p className="text-muted-foreground text-lg">
+          Browse our curated recipes.
+        </p>
+      </div>
+      <DiscoverRecipesClient />
+    </>
+  );
 }

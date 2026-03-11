@@ -1,0 +1,225 @@
+"use client";
+
+import type { RecipeListItem } from "./recipe-card";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { useSearchParams } from "next/navigation";
+
+// ---------------------------------------------------------------------------
+// Filter helpers
+// ---------------------------------------------------------------------------
+
+function getRecipeTotalMinutes(recipe: RecipeListItem): number {
+  if (recipe.totalTimeMinutes != null && recipe.totalTimeMinutes > 0) {
+    return recipe.totalTimeMinutes;
+  }
+  return (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+}
+
+function matchesDuration(recipe: RecipeListItem, duration: string): boolean {
+  if (duration === "all") return true;
+  const total = getRecipeTotalMinutes(recipe);
+  switch (duration) {
+    case "under-30":
+      return total > 0 && total < 30;
+    case "30-60":
+      return total >= 30 && total <= 60;
+    case "60-plus":
+      return total > 60;
+    default:
+      return true;
+  }
+}
+
+function filterRecipes(
+  recipes: RecipeListItem[] | undefined,
+  filterState: RecipeListingFilterState
+): RecipeListItem[] {
+  if (!recipes) return [];
+  const normalizedSearch = filterState.searchQuery.trim().toLowerCase();
+  return recipes.filter((recipe) => {
+    const matchesSearch =
+      recipe.title.toLowerCase().includes(normalizedSearch) ||
+      (recipe.description ?? "").toLowerCase().includes(normalizedSearch);
+    const matchesCategory =
+      filterState.selectedCategory === "all" ||
+      recipe.category === filterState.selectedCategory;
+    const matchesProtein =
+      filterState.selectedProtein === "all" ||
+      (recipe.primaryProtein ?? "other") === filterState.selectedProtein;
+    const matchesDurationFilter = matchesDuration(
+      recipe,
+      filterState.selectedDuration
+    );
+    const matchesComplexity =
+      filterState.selectedComplexity === "all" ||
+      (recipe.complexityTier ?? "") === filterState.selectedComplexity;
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesProtein &&
+      matchesDurationFilter &&
+      matchesComplexity
+    );
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type RecipeListingFilterState = {
+  searchQuery: string;
+  selectedCategory: string;
+  selectedProtein: string;
+  selectedDuration: string;
+  selectedComplexity: string;
+};
+
+const initialFilterState: RecipeListingFilterState = {
+  searchQuery: "",
+  selectedCategory: "all",
+  selectedProtein: "all",
+  selectedDuration: "all",
+  selectedComplexity: "all",
+};
+
+export type RecipeListingTab = "my-recipes" | "discover";
+
+export type RecipeListingContextValue = {
+  recipes: RecipeListItem[] | undefined;
+  filteredRecipes: RecipeListItem[];
+  filterState: RecipeListingFilterState;
+  setSearchQuery: (v: string) => void;
+  setSelectedCategory: (v: string) => void;
+  setSelectedProtein: (v: string) => void;
+  setSelectedDuration: (v: string) => void;
+  setSelectedComplexity: (v: string) => void;
+  clearFilters: () => void;
+  hasActiveFilters: boolean;
+  isTabbedMode: boolean;
+  currentTab: RecipeListingTab | null;
+};
+
+const RecipeListingContext =
+  createContext<RecipeListingContextValue | null>(null);
+
+const TAB_PARAM = "tab";
+
+// ---------------------------------------------------------------------------
+// Provider – single view (recipes only) or tabbed (myRecipes + systemRecipes, tab from URL)
+// ---------------------------------------------------------------------------
+
+type RecipeListingProviderPropsSingle = {
+  recipes: RecipeListItem[] | undefined;
+  children: ReactNode;
+};
+
+type RecipeListingProviderPropsTabbed = {
+  myRecipes: RecipeListItem[] | undefined;
+  systemRecipes: RecipeListItem[] | undefined;
+  children: ReactNode;
+};
+
+export type RecipeListingProviderProps =
+  | RecipeListingProviderPropsSingle
+  | RecipeListingProviderPropsTabbed;
+
+function isTabbedProps(
+  p: RecipeListingProviderProps
+): p is RecipeListingProviderPropsTabbed {
+  return "myRecipes" in p && "systemRecipes" in p;
+}
+
+export function RecipeListingProvider(props: RecipeListingProviderProps) {
+  const searchParams = useSearchParams();
+  const [filterState, setFilterState] = useState<RecipeListingFilterState>(
+    initialFilterState
+  );
+
+  const isTabbed = isTabbedProps(props);
+  const currentTab: RecipeListingTab | null = isTabbed
+    ? searchParams.get(TAB_PARAM) === "discover"
+      ? "discover"
+      : "my-recipes"
+    : null;
+
+  const recipes: RecipeListItem[] | undefined = isTabbed
+    ? currentTab === "discover"
+      ? props.systemRecipes
+      : props.myRecipes
+    : props.recipes;
+
+  const filteredRecipes = useMemo(
+    () => filterRecipes(recipes, filterState),
+    [recipes, filterState]
+  );
+
+  const hasActiveFilters =
+    filterState.searchQuery.trim() !== "" ||
+    filterState.selectedCategory !== "all" ||
+    filterState.selectedProtein !== "all" ||
+    filterState.selectedDuration !== "all" ||
+    filterState.selectedComplexity !== "all";
+
+  const clearFilters = useCallback(() => {
+    setFilterState(initialFilterState);
+  }, []);
+
+  const value: RecipeListingContextValue = useMemo(
+    () => ({
+      recipes,
+      filteredRecipes,
+      filterState,
+      setSearchQuery: (v) =>
+        setFilterState((s) => ({ ...s, searchQuery: v })),
+      setSelectedCategory: (v) =>
+        setFilterState((s) => ({ ...s, selectedCategory: v })),
+      setSelectedProtein: (v) =>
+        setFilterState((s) => ({ ...s, selectedProtein: v })),
+      setSelectedDuration: (v) =>
+        setFilterState((s) => ({ ...s, selectedDuration: v })),
+      setSelectedComplexity: (v) =>
+        setFilterState((s) => ({ ...s, selectedComplexity: v })),
+      clearFilters,
+      hasActiveFilters,
+      isTabbedMode: isTabbed,
+      currentTab,
+    }),
+    [
+      recipes,
+      filteredRecipes,
+      filterState,
+      clearFilters,
+      hasActiveFilters,
+      isTabbed,
+      currentTab,
+    ]
+  );
+
+  return (
+    <RecipeListingContext.Provider value={value}>
+      {props.children}
+    </RecipeListingContext.Provider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
+export function useRecipeListing(): RecipeListingContextValue {
+  const value = useContext(RecipeListingContext);
+  if (!value) {
+    throw new Error(
+      "useRecipeListing must be used within RecipeListingProvider"
+    );
+  }
+  return value;
+}

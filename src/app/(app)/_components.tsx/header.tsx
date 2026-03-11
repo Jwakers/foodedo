@@ -158,7 +158,7 @@ export function Header() {
                       asChild
                     >
                       <Link
-                        href={ROUTES.DISCOVER}
+                        href={ROUTES.MY_RECIPES_DISCOVER_TAB}
                         onClick={() => setMenuOpen(false)}
                       >
                         <Compass className="size-4 mr-3" />
