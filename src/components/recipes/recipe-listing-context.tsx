@@ -12,6 +12,24 @@ import {
 import { useSearchParams } from "next/navigation";
 
 // ---------------------------------------------------------------------------
+// Tab constants and derivation (shared with page and tab switcher)
+// ---------------------------------------------------------------------------
+
+export const TAB_PARAM = "tab";
+export const TAB_DISCOVER = "discover";
+export const TAB_MY_RECIPES = "my-recipes";
+
+export type RecipeListingTab = "my-recipes" | "discover";
+
+export function getCurrentTab(
+  searchParams: { get(key: string): string | null }
+): RecipeListingTab {
+  return searchParams.get(TAB_PARAM) === TAB_DISCOVER
+    ? TAB_DISCOVER
+    : TAB_MY_RECIPES;
+}
+
+// ---------------------------------------------------------------------------
 // Filter helpers
 // ---------------------------------------------------------------------------
 
@@ -90,8 +108,6 @@ const initialFilterState: RecipeListingFilterState = {
   selectedComplexity: "all",
 };
 
-export type RecipeListingTab = "my-recipes" | "discover";
-
 export type RecipeListingContextValue = {
   recipes: RecipeListItem[] | undefined;
   filteredRecipes: RecipeListItem[];
@@ -109,8 +125,6 @@ export type RecipeListingContextValue = {
 
 const RecipeListingContext =
   createContext<RecipeListingContextValue | null>(null);
-
-const TAB_PARAM = "tab";
 
 // ---------------------------------------------------------------------------
 // Provider – single view (recipes only) or tabbed (myRecipes + systemRecipes, tab from URL)
@@ -145,9 +159,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
 
   const isTabbed = isTabbedProps(props);
   const currentTab: RecipeListingTab | null = isTabbed
-    ? searchParams.get(TAB_PARAM) === "discover"
-      ? "discover"
-      : "my-recipes"
+    ? getCurrentTab(searchParams)
     : null;
 
   const recipes: RecipeListItem[] | undefined = isTabbed

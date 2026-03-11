@@ -2,11 +2,12 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useRecipeListing } from "./recipe-listing-context";
-
-const TAB_PARAM = "tab";
-const TAB_MY_RECIPES = "my-recipes";
-const TAB_DISCOVER = "discover";
+import {
+  TAB_DISCOVER,
+  TAB_MY_RECIPES,
+  TAB_PARAM,
+  useRecipeListing,
+} from "./recipe-listing-context";
 
 export function RecipeTabSwitcher() {
   const { isTabbedMode, currentTab } = useRecipeListing();

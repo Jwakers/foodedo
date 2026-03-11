@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import type { RecipeListItem } from "./recipe-card";
 import { LoadingState, RecipeCard } from "./recipe-card";
 import { RecipeFilters } from "./recipe-filters";
-import { RecipeListingProvider, useRecipeListing } from "./recipe-listing-context";
+import {
+  RecipeListingProvider,
+  useRecipeListing,
+} from "./recipe-listing-context";
 import { RecipeTabSwitcher } from "./recipe-tab-switcher";
 import type { ReactNode } from "react";
 
@@ -18,36 +21,17 @@ export function RecipeListing() {
   const loading = recipes === undefined;
   const hasSourceRecipes = recipes != null && recipes.length > 0;
 
-  if (loading || recipes === undefined) {
+  if (loading) {
     return <LoadingState />;
   }
 
-  if (filteredRecipes.length === 0) {
-    if (!hasSourceRecipes) {
-      return (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground">No recipes found.</p>
-        </div>
-      );
-    }
-    return (
-      <div className="text-center py-16">
-        <p className="text-muted-foreground">
-          No recipes match your search or filters.
-        </p>
-        <Button className="mt-4" variant="outline" onClick={clearFilters}>
-          Clear filters
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {filteredRecipes.map((recipe) => (
-        <RecipeCard key={recipe._id} recipe={recipe} />
-      ))}
-    </div>
+    <RecipeGrid
+      recipes={filteredRecipes}
+      loading={recipes === undefined}
+      hasSourceRecipes={(recipes?.length ?? 0) > 0}
+      onClearFilters={clearFilters}
+    />
   );
 }
 

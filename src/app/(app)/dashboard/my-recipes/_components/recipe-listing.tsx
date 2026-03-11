@@ -2,8 +2,10 @@
 
 import { ROUTES } from "@/app/constants";
 import {
+  getCurrentTab,
   RecipeListingLayout,
   RecipeListingProvider,
+  TAB_MY_RECIPES,
 } from "@/components/recipes";
 import { LimitIndicator } from "@/components/limit-indicator";
 import { Button } from "@/components/ui/button";
@@ -15,10 +17,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AddRecipeDrawer } from "../../../_components.tsx/add-recipe-drawer";
-
-const TAB_PARAM = "tab";
-const TAB_DISCOVER = "discover";
-const TAB_MY_RECIPES = "my-recipes";
 
 function EmptyState({
   setAddRecipeDrawerOpen,
@@ -48,8 +46,7 @@ function EmptyState({
 export default function RecipeListingPage() {
   const [showAddRecipeDrawer, setShowAddRecipeDrawer] = useState(false);
   const searchParams = useSearchParams();
-  const currentTab =
-    searchParams.get(TAB_PARAM) === TAB_DISCOVER ? TAB_DISCOVER : TAB_MY_RECIPES;
+  const currentTab = getCurrentTab(searchParams);
 
   const recipes = useQuery(api.recipes.getAllUserRecipes);
   const systemRecipes = useQuery(api.recipes.getSystemRecipes);
