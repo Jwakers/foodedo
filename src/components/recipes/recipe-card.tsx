@@ -24,6 +24,7 @@ export type RecipeListItem = {
   isGeneratorEligible?: boolean | null;
   primaryProtein?: string | null;
   complexityTier?: string | null;
+  totalTimeMinutes?: number | null;
 };
 
 type RecipeCardProps = {

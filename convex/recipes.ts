@@ -206,12 +206,17 @@ export const getSystemRecipes = query({
       .withIndex("by_source", (q) => q.eq("source", "system"))
       .collect();
 
-    return Promise.all(
+    const withUrls = await Promise.all(
       recipes.map(async (r) => ({
         ...r,
         image: r.image ? await ctx.storage.getUrl(r.image) : null,
       })),
     );
+
+    withUrls.sort((a, b) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
+    );
+    return withUrls;
   },
 });
 

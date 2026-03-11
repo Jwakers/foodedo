@@ -1,7 +1,12 @@
 "use client";
 
 import { ROUTES } from "@/app/constants";
-import { RecipeListGrid } from "@/components/recipes";
+import {
+  getCurrentTab,
+  RecipeListingLayout,
+  RecipeListingProvider,
+  TAB_MY_RECIPES,
+} from "@/components/recipes";
 import { LimitIndicator } from "@/components/limit-indicator";
 import { Button } from "@/components/ui/button";
 import useSubscription from "@/lib/hooks/use-subscription";
@@ -9,6 +14,7 @@ import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AddRecipeDrawer } from "../../../_components.tsx/add-recipe-drawer";
 
@@ -37,41 +43,56 @@ function EmptyState({
   );
 }
 
-export default function RecipeListing() {
+export default function RecipeListingPage() {
   const [showAddRecipeDrawer, setShowAddRecipeDrawer] = useState(false);
+  const searchParams = useSearchParams();
+  const currentTab = getCurrentTab(searchParams);
 
   const recipes = useQuery(api.recipes.getAllUserRecipes);
+  const systemRecipes = useQuery(api.recipes.getSystemRecipes);
   const subscription = useSubscription();
 
+  const isMyRecipesTab = currentTab === TAB_MY_RECIPES;
+  const showEmptyState =
+    isMyRecipesTab && recipes && recipes.length === 0;
+
   return (
-    <RecipeListGrid
-      recipes={recipes}
-      title="My Recipes"
-      showMealPlanEligibleKey
-      subtitle={
-        <>
-          Manage and organise your culinary creations.{" "}
-          <Link href={ROUTES.DISCOVER} className="text-primary hover:underline">
-            Discover more recipes
-          </Link>
-        </>
-      }
-      emptyState={
-        <EmptyState setAddRecipeDrawerOpen={setShowAddRecipeDrawer} />
-      }
-      headerActions={
-        <Button
-          size="lg"
-          onClick={() => setShowAddRecipeDrawer(true)}
-          className="hidden md:flex"
-        >
-          <Plus className="size-5" />
-          Add Recipe
-        </Button>
-      }
-      stats={
-        recipes &&
-        recipes.length > 0 && (
+    <div className="bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">
+              {isMyRecipesTab ? "My Recipes" : "Discover"}
+            </h1>
+            {isMyRecipesTab ? (
+              <p className="text-muted-foreground text-lg">
+                Manage and organise your culinary creations.{" "}
+                <Link
+                  href={ROUTES.MY_RECIPES_DISCOVER_TAB}
+                  className="text-primary hover:underline"
+                >
+                  Discover more recipes
+                </Link>
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-lg">
+                Browse our curated recipes.
+              </p>
+            )}
+          </div>
+          {isMyRecipesTab && (
+            <Button
+              size="lg"
+              onClick={() => setShowAddRecipeDrawer(true)}
+              className="hidden md:flex"
+            >
+              <Plus className="size-5" />
+              Add Recipe
+            </Button>
+          )}
+        </div>
+
+        {isMyRecipesTab && recipes && recipes.length > 0 && subscription && (
           <div className="flex items-center gap-6 mb-6 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="size-3 bg-primary rounded-full" />
@@ -81,20 +102,30 @@ export default function RecipeListing() {
             </div>
             <div className="ml-auto">
               <LimitIndicator
-                current={recipes?.length ?? 0}
-                max={subscription?.maxRecipes ?? 0}
+                current={recipes.length}
+                max={subscription.maxRecipes ?? 0}
                 label="recipes"
               />
             </div>
           </div>
-        )
-      }
-      footer={
+        )}
+
+        {showEmptyState ? (
+          <EmptyState setAddRecipeDrawerOpen={setShowAddRecipeDrawer} />
+        ) : (
+          <RecipeListingProvider
+            myRecipes={recipes}
+            systemRecipes={systemRecipes}
+          >
+            <RecipeListingLayout />
+          </RecipeListingProvider>
+        )}
+
         <AddRecipeDrawer
           open={showAddRecipeDrawer}
           onOpenChange={setShowAddRecipeDrawer}
         />
-      }
-    />
+      </div>
+    </div>
   );
 }

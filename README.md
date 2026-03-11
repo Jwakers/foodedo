@@ -6,8 +6,8 @@
 
 - [x] Meal reselection modal
 - [x] Home page and general messaging updates
-- [ ] Update the filtering on the Discover page, remove category.
-- [ ] Change order of Discover page to alphabetical
+- [x] Update the filtering on the Discover page, remove category.
+- [x] Change order of Discover page to alphabetical
 - [ ] Use next/image for public images on the Discover page
 - [ ] My recipes page should have a tab that switches to show discover recipes so users aren't taken away from the app to see public pages
 - [ ] Titles on listing cards need either a gradient or blurred background
