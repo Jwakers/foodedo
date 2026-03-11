@@ -52,20 +52,19 @@ export function RecipeListing() {
 }
 
 // -----------------------------------------------------------------------------
-// Layout – filters, tab switcher (when tabbed), and listing
+// Layout – filters, tab switcher (when tabbed), and listing. No container;
+// parent (page or RecipeListGrid) provides container when needed.
 // -----------------------------------------------------------------------------
 
 export function RecipeListingLayout() {
   return (
-    <div className="bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <RecipeFilters />
-          <RecipeTabSwitcher />
-        </div>
-        <RecipeListing />
+    <>
+      <div className="mb-8">
+        <RecipeFilters />
+        <RecipeTabSwitcher />
       </div>
-    </div>
+      <RecipeListing />
+    </>
   );
 }
 
@@ -81,7 +80,9 @@ export function RecipeListGrid({
 }) {
   return (
     <RecipeListingProvider recipes={recipes}>
-      <RecipeListingLayout />
+      <div className="container mx-auto px-4 py-8">
+        <RecipeListingLayout />
+      </div>
     </RecipeListingProvider>
   );
 }
