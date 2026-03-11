@@ -122,6 +122,8 @@ export type RecipeListingContextValue = {
   hasActiveFilters: boolean;
   isTabbedMode: boolean;
   currentTab: RecipeListingTab | null;
+  /** When true, recipe card images use Next.js Image optimization (system recipes only). */
+  optimizeImage: boolean;
 };
 
 const RecipeListingContext = createContext<RecipeListingContextValue | null>(
@@ -220,6 +222,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       hasActiveFilters,
       isTabbedMode: isTabbed,
       currentTab,
+      optimizeImage: isTabbed ? currentTab === "discover" : true,
     }),
     [
       recipes,

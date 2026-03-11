@@ -30,11 +30,14 @@ export type RecipeListItem = {
 type RecipeCardProps = {
   recipe: RecipeListItem;
   showMealPlanBadge?: boolean;
+  /** When true, use Next.js Image optimization (system recipes only). Default false for user recipes. */
+  optimizeImage?: boolean;
 };
 
 export function RecipeCard({
   recipe,
   showMealPlanBadge = true,
+  optimizeImage = false,
 }: RecipeCardProps) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
@@ -53,7 +56,7 @@ export function RecipeCard({
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1440px) 25vw, 450px"
               className="object-cover size-full"
-              unoptimized
+              {...(optimizeImage ? {} : { unoptimized: true })}
             />
           )}
           <div className="absolute top-4 right-4 flex items-center gap-2">

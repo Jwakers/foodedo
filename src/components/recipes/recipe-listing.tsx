@@ -16,7 +16,8 @@ import type { ReactNode } from "react";
 // -----------------------------------------------------------------------------
 
 export function RecipeListing() {
-  const { recipes, filteredRecipes, clearFilters } = useRecipeListing();
+  const { recipes, filteredRecipes, clearFilters, optimizeImage } =
+    useRecipeListing();
 
   const loading = recipes === undefined;
   const hasSourceRecipes = recipes != null && recipes.length > 0;
@@ -31,6 +32,7 @@ export function RecipeListing() {
       loading={false}
       hasSourceRecipes={hasSourceRecipes}
       onClearFilters={clearFilters}
+      optimizeImage={optimizeImage}
     />
   );
 }
@@ -81,6 +83,8 @@ type RecipeGridProps = {
   emptyState?: ReactNode;
   onClearFilters?: () => void;
   hasSourceRecipes?: boolean;
+  /** When true, recipe card images use Next.js Image optimization (e.g. system recipes). */
+  optimizeImage?: boolean;
 };
 
 export function RecipeGrid({
@@ -89,6 +93,7 @@ export function RecipeGrid({
   emptyState,
   onClearFilters,
   hasSourceRecipes = false,
+  optimizeImage = false,
 }: RecipeGridProps) {
   if (loading || recipes === undefined) {
     return <LoadingState />;
@@ -123,7 +128,11 @@ export function RecipeGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {recipes.map((recipe) => (
-        <RecipeCard key={recipe._id} recipe={recipe} />
+        <RecipeCard
+          key={recipe._id}
+          recipe={recipe}
+          optimizeImage={optimizeImage}
+        />
       ))}
     </div>
   );
