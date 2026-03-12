@@ -83,12 +83,14 @@ export default async function DiscoverRecipePage({
 
   const recipeUrl = `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`;
   const recipeJsonLd = buildRecipeJsonLd(recipe, recipeUrl);
+  // Escape '<' so '</script>' in recipe content cannot break out of the script tag
+  const safeJsonLd = JSON.stringify(recipeJsonLd).replace(/</g, "\\u003c");
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd }}
       />
       <DiscoverRecipeView recipe={recipe} />
     </>
