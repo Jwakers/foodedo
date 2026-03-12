@@ -25,9 +25,28 @@ export async function generateMetadata({
   try {
     const recipe = await fetchQuery(api.recipes.getRecipe, { recipeId });
     if (recipe?.title) {
+      const title = `${recipe.title} | ${APP_NAME}`;
+      const description =
+        (recipe.description?.trim() ?? "").length > 0
+          ? recipe.description!.slice(0, 160)
+          : `View the recipe for ${recipe.title} on ${APP_NAME}.`;
       return {
-        title: `${recipe.title} | ${APP_NAME}`,
-        description: recipe.description ?? undefined,
+        title,
+        description,
+        openGraph: {
+          title,
+          description,
+          type: "article",
+          images: recipe.image
+            ? [{ url: recipe.image, width: 1200, height: 630, alt: recipe.title }]
+            : undefined,
+        },
+        twitter: {
+          card: recipe.image ? "summary_large_image" : "summary",
+          title,
+          description,
+          images: recipe.image ? [recipe.image] : undefined,
+        },
       };
     }
   } catch {

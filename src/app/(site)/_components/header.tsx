@@ -27,7 +27,7 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <Utensils className="h-6 w-6 text-primary" />
+          <Utensils className="size-6 text-primary" />
           <span className="font-bold text-xl text-primary">{APP_NAME}</span>
         </Link>
 
@@ -36,12 +36,18 @@ export function Header() {
             <Link href={ROUTES.DISCOVER}>Discover</Link>
           </Button>
           <Button variant="ghost" asChild className="hidden md:block">
+            <Link href={ROUTES.BLOG}>Blog</Link>
+          </Button>
+          <Button variant="ghost" asChild className="hidden md:block">
             <Link href={ROUTES.PRICING}>Pricing</Link>
           </Button>
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-x-4">
-            <ModeToggle />
             <Authenticated>
+              <Button asChild>
+                <Link href={ROUTES.DASHBOARD}>Dashboard</Link>
+              </Button>
+              <ModeToggle />
               <UserButton
                 appearance={{
                   baseTheme: theme === "dark" ? dark : undefined,
@@ -49,6 +55,7 @@ export function Header() {
               />
             </Authenticated>
             <Unauthenticated>
+              <ModeToggle />
               <SignInButton mode="modal">
                 <Button variant="ghost">Sign In</Button>
               </SignInButton>
@@ -95,6 +102,15 @@ export function Header() {
                     }}
                   >
                     Discover
+                  </Link>
+                  <Link
+                    href={ROUTES.BLOG}
+                    className="block text-foreground hover:text-primary transition-colors"
+                    onClick={() => {
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Blog
                   </Link>
                   <Link
                     href={ROUTES.PRICING}
@@ -158,6 +174,18 @@ export function Header() {
                   <span className="text-sm font-medium">Theme</span>
                   <ModeToggle />
                 </div>
+                <Authenticated>
+                  <Button variant="ghost" className="w-full" asChild>
+                    <Link
+                      href={ROUTES.DASHBOARD}
+                      onClick={() => {
+                        setMenuOpen(false);
+                      }}
+                    >
+                      Dashboard
+                    </Link>
+                  </Button>
+                </Authenticated>
                 <Unauthenticated>
                   <div className="flex flex-col space-y-2">
                     <SignInButton mode="modal">

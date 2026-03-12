@@ -8,6 +8,15 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: `Read the terms and conditions for using ${APP_NAME} meal planning application.`,
+  openGraph: {
+    title: `Terms of Service | ${APP_NAME}`,
+    description: `Read the terms and conditions for using ${APP_NAME} meal planning application.`,
+  },
+  twitter: {
+    card: "summary",
+    title: `Terms of Service | ${APP_NAME}`,
+    description: `Read the terms and conditions for using ${APP_NAME} meal planning application.`,
+  },
 };
 
 const TERMS_OF_SERVICE_LAST_UPDATED = "3 December 2025"; // update manually when terms change

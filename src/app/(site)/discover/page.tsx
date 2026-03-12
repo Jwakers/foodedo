@@ -6,6 +6,17 @@ export const metadata: Metadata = {
   title: "Discover Recipes",
   description:
     "Browse our curated recipes. Discover dinner ideas for your family.",
+  openGraph: {
+    title: `Discover Recipes | ${APP_NAME}`,
+    description:
+      "Browse our curated recipes. Discover dinner ideas for your family.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Discover Recipes | ${APP_NAME}`,
+    description:
+      "Browse our curated recipes. Discover dinner ideas for your family.",
+  },
 };
 
 export default function DiscoverPage() {
