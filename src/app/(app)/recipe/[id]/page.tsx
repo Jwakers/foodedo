@@ -38,7 +38,14 @@ export async function generateMetadata({
           description,
           type: "article",
           images: recipe.image
-            ? [{ url: recipe.image, width: 1200, height: 630, alt: recipe.title }]
+            ? [
+                {
+                  url: recipe.image,
+                  width: 1200,
+                  height: 630,
+                  alt: recipe.title,
+                },
+              ]
             : undefined,
         },
         twitter: {
@@ -49,8 +56,8 @@ export async function generateMetadata({
         },
       };
     }
-  } catch {
-    // Recipe may require auth or not exist
+  } catch (error) {
+    console.warn("Failed to fetch recipe metadata:", error);
   }
 
   return { title: "Recipe" };

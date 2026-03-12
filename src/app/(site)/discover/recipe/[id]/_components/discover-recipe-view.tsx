@@ -1,7 +1,8 @@
-import { ROUTES } from "@/app/constants";
 import { IngredientsList } from "@/app/(app)/_components.tsx/ingredients-list";
 import { MethodList } from "@/app/(app)/_components.tsx/method-list";
+import { ROUTES } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatLabel, titleCase } from "@/lib/utils";
@@ -15,7 +16,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export type DiscoverRecipeData = {
   title: string;
@@ -60,7 +60,11 @@ export function DiscoverRecipeView({ recipe }: { recipe: DiscoverRecipeData }) {
       <div className="border-b border-border/60 bg-muted/30">
         <div className="container mx-auto max-w-3xl px-4 py-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href={ROUTES.DISCOVER} className="gap-2" aria-label="Back to Discover">
+            <Link
+              href={ROUTES.DISCOVER}
+              className="gap-2"
+              aria-label="Back to Discover"
+            >
               <ArrowLeft className="size-4" />
               Back to Discover
             </Link>
@@ -73,7 +77,7 @@ export function DiscoverRecipeView({ recipe }: { recipe: DiscoverRecipeData }) {
         <div className="relative w-full aspect-21/9 sm:aspect-3/1 bg-muted">
           <Image
             src={recipe.image}
-            alt=""
+            alt={recipe.title}
             fill
             className="object-cover"
             sizes="100vw"
@@ -150,10 +154,7 @@ export function DiscoverRecipeView({ recipe }: { recipe: DiscoverRecipeData }) {
 
           {/* Nutrition (optional, compact) */}
           {recipe.nutrition &&
-            (recipe.nutrition.calories ??
-              recipe.nutrition.protein ??
-              recipe.nutrition.fat ??
-              recipe.nutrition.carbohydrates) != null && (
+            Object.values(recipe.nutrition).some((v) => v != null) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl">Nutrition</CardTitle>

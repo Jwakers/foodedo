@@ -53,8 +53,8 @@ export async function generateMetadata({
         },
       };
     }
-  } catch {
-    // Recipe may require auth or not exist
+  } catch (error) {
+    console.warn("Failed to fetch recipe metadata:", error);
   }
 
   return { title: "Recipe" };
