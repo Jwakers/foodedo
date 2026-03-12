@@ -4,7 +4,7 @@ import { api } from "convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import type { MetadataRoute } from "next";
 
-const SLUGS_QUERY = `*[_type == "post" && defined(slug.current)]{ "slug": slug.current, publishedAt }`;
+const SLUGS_QUERY = `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{ "slug": slug.current, publishedAt }`;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.VERCEL_URL
@@ -54,21 +54,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
-  } catch {
-    // If Sanity is not configured or fetch fails, omit dynamic post URLs
+  } catch (e) {
+    console.warn("Failed to fetch posts from Sanity", e);
+    // Omit dynamic post URLs on failure
   }
 
   let recipeEntries: MetadataRoute.Sitemap = [];
   try {
     const systemRecipes = await fetchQuery(api.recipes.getSystemRecipes);
     recipeEntries = (systemRecipes ?? []).map((recipe) => ({
-      url: `${baseUrl}/recipe/${recipe._id}`,
+      url: `${baseUrl}${ROUTES.RECIPE}/${recipe._id}`,
       lastModified: recipe.updatedAt ? new Date(recipe.updatedAt) : new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
-  } catch {
-    // If Convex is not configured or fetch fails, omit recipe URLs
+  } catch (e) {
+    console.warn("Failed to fetch dynamic URLs from Convex", e);
+    // Omit recipe URLs on failure
   }
 
   return [...staticEntries, ...recipeEntries, ...postEntries];
