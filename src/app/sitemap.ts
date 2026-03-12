@@ -1,4 +1,6 @@
 import { client } from "@/sanity/client";
+import { api } from "convex/_generated/api";
+import { fetchQuery } from "convex/nextjs";
 import type { MetadataRoute } from "next";
 
 const SLUGS_QUERY = `*[_type == "post" && defined(slug.current)]{ "slug": slug.current, publishedAt }`;
@@ -14,6 +16,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,
+    },
+    {
+      url: `${baseUrl}/discover`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/blog`,
@@ -49,5 +57,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // If Sanity is not configured or fetch fails, omit dynamic post URLs
   }
 
-  return [...staticEntries, ...postEntries];
+  let recipeEntries: MetadataRoute.Sitemap = [];
+  try {
+    const systemRecipes = await fetchQuery(api.recipes.getSystemRecipes);
+    recipeEntries = (systemRecipes ?? []).map((recipe) => ({
+      url: `${baseUrl}/recipe/${recipe._id}`,
+      lastModified: recipe.updatedAt
+        ? new Date(recipe.updatedAt)
+        : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // If Convex is not configured or fetch fails, omit recipe URLs
+  }
+
+  return [...staticEntries, ...recipeEntries, ...postEntries];
 }

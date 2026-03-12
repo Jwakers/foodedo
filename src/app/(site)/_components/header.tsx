@@ -43,8 +43,11 @@ export function Header() {
           </Button>
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-x-4">
-            <ModeToggle />
             <Authenticated>
+              <Button asChild>
+                <Link href={ROUTES.DASHBOARD}>Dashboard</Link>
+              </Button>
+              <ModeToggle />
               <UserButton
                 appearance={{
                   baseTheme: theme === "dark" ? dark : undefined,
@@ -52,6 +55,7 @@ export function Header() {
               />
             </Authenticated>
             <Unauthenticated>
+              <ModeToggle />
               <SignInButton mode="modal">
                 <Button variant="ghost">Sign In</Button>
               </SignInButton>
@@ -170,6 +174,18 @@ export function Header() {
                   <span className="text-sm font-medium">Theme</span>
                   <ModeToggle />
                 </div>
+                <Authenticated>
+                  <Button variant="ghost" className="w-full" asChild>
+                    <Link
+                      href={ROUTES.DASHBOARD}
+                      onClick={() => {
+                        setMenuOpen(false);
+                      }}
+                    >
+                      Dashboard
+                    </Link>
+                  </Button>
+                </Authenticated>
                 <Unauthenticated>
                   <div className="flex flex-col space-y-2">
                     <SignInButton mode="modal">

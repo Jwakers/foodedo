@@ -8,6 +8,15 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
+  openGraph: {
+    title: `Privacy Policy | ${APP_NAME}`,
+    description: `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
+  },
+  twitter: {
+    card: "summary",
+    title: `Privacy Policy | ${APP_NAME}`,
+    description: `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
+  },
 };
 
 const PRIVACY_POLICY_LAST_UPDATED = "3 December 2025"; // update manually when terms change
