@@ -10,6 +10,8 @@ const isPublicRoute = createRouteMatcher([
   "/beta",
   "/blog",
   "/blog/(.*)",
+  "/discover",
+  "/discover/(.*)",
   "/invite(.*)",
   "/sitemap(.*)",
 ]);
