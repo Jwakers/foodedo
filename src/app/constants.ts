@@ -28,6 +28,10 @@ export const ROUTES = {
     `/dashboard/shopping-list?listId=${listId}`,
   HOUSEHOLDS: "/dashboard/households",
   DISCOVER: "/discover",
+  /** Public discover recipe (SEO-friendly). Use for links from Discover page. */
+  DISCOVER_RECIPE: "/discover/recipe",
+  /** URL for a specific discover recipe (use with recipe id). */
+  discoverRecipe: (id: string) => `/discover/recipe/${id}`,
   CHALKBOARD: "/dashboard/chalkboard",
   SUPPORT: "/dashboard/support",
   SUPPORT_FAQ: "/dashboard/support/faq",

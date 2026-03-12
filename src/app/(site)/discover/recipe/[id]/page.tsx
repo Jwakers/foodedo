@@ -4,18 +4,15 @@ import { Id } from "convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RecipeBackButton } from "./_components/recipe-back-button";
-import { RecipeClient } from "./_components/recipe-client";
+import { DiscoverRecipeView } from "./_components/discover-recipe-view";
 
-interface RecipePageProps {
-  params: Promise<{
-    id: string;
-  }>;
+interface DiscoverRecipePageProps {
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({
   params,
-}: RecipePageProps): Promise<Metadata> {
+}: DiscoverRecipePageProps): Promise<Metadata> {
   const recipeId = (await params).id as Id<"recipes"> | undefined;
 
   if (!recipeId) {
@@ -25,7 +22,7 @@ export async function generateMetadata({
   try {
     const recipe = await fetchQuery(api.recipes.getRecipe, { recipeId });
     if (recipe?.title) {
-      const title = `${recipe.title} | ${APP_NAME}`;
+      const title = `${recipe.title} | Discover | ${APP_NAME}`;
       const description =
         (recipe.description?.trim() ?? "").length > 0
           ? recipe.description!.slice(0, 160)
@@ -63,19 +60,24 @@ export async function generateMetadata({
   return { title: "Recipe" };
 }
 
-export default async function RecipePage({ params }: RecipePageProps) {
+export default async function DiscoverRecipePage({
+  params,
+}: DiscoverRecipePageProps) {
   const recipeId = (await params).id as Id<"recipes"> | undefined;
 
   if (!recipeId) {
     notFound();
   }
 
-  return (
-    <div className="bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <RecipeBackButton />
-        <RecipeClient recipeId={recipeId} />
-      </div>
-    </div>
-  );
+  const recipe = await fetchQuery(api.recipes.getRecipe, { recipeId });
+
+  if (!recipe) {
+    notFound();
+  }
+
+  if (recipe.source !== "system") {
+    notFound();
+  }
+
+  return <DiscoverRecipeView recipe={recipe} />;
 }

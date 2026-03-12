@@ -1,6 +1,12 @@
 "use client";
 
-import { RecipeListGrid } from "@/components/recipes";
+import { RecipeFilters } from "@/components/recipes/recipe-filters";
+import {
+  RecipeListingProvider,
+  useRecipeListing,
+} from "@/components/recipes/recipe-listing-context";
+import { Button } from "@/components/ui/button";
+import { DiscoverRecipeGrid } from "./discover-recipe-grid";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 
@@ -16,6 +22,45 @@ function DiscoverLoadingSkeleton() {
   );
 }
 
+function DiscoverRecipeListing() {
+  const {
+    recipes,
+    filteredRecipes,
+    clearFilters,
+    hasActiveFilters,
+  } = useRecipeListing();
+
+  const hasSourceRecipes = recipes != null && recipes.length > 0;
+
+  if (filteredRecipes.length === 0) {
+    if (!hasSourceRecipes) {
+      return (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground">No recipes found.</p>
+        </div>
+      );
+    }
+    return (
+      <div className="text-center py-16">
+        <p className="text-muted-foreground">
+          No recipes match your search or filters.
+        </p>
+        {hasActiveFilters && (
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={clearFilters}
+          >
+            Clear filters
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return <DiscoverRecipeGrid recipes={filteredRecipes} />;
+}
+
 export default function DiscoverRecipesClient() {
   const recipes = useQuery(api.recipes.getSystemRecipes);
 
@@ -23,5 +68,14 @@ export default function DiscoverRecipesClient() {
     return <DiscoverLoadingSkeleton />;
   }
 
-  return <RecipeListGrid recipes={recipes} />;
+  return (
+    <RecipeListingProvider recipes={recipes}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <RecipeFilters />
+        </div>
+        <DiscoverRecipeListing />
+      </div>
+    </RecipeListingProvider>
+  );
 }
