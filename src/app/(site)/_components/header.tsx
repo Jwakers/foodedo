@@ -36,6 +36,9 @@ export function Header() {
             <Link href={ROUTES.DISCOVER}>Discover</Link>
           </Button>
           <Button variant="ghost" asChild className="hidden md:block">
+            <Link href={ROUTES.BLOG}>Blog</Link>
+          </Button>
+          <Button variant="ghost" asChild className="hidden md:block">
             <Link href={ROUTES.PRICING}>Pricing</Link>
           </Button>
           {/* Desktop Auth Buttons */}
@@ -95,6 +98,15 @@ export function Header() {
                     }}
                   >
                     Discover
+                  </Link>
+                  <Link
+                    href={ROUTES.BLOG}
+                    className="block text-foreground hover:text-primary transition-colors"
+                    onClick={() => {
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Blog
                   </Link>
                   <Link
                     href={ROUTES.PRICING}

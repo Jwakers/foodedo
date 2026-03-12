@@ -2,7 +2,7 @@
 
 ---
 
-### Next Immediate Steps
+## Next Immediate Steps
 
 - [x] Meal reselection modal
 - [x] Home page and general messaging updates

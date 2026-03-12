@@ -26,6 +26,14 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
+                  href={ROUTES.BLOG}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={ROUTES.PRICING}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
