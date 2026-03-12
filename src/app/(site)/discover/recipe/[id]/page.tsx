@@ -1,4 +1,6 @@
-import { APP_NAME } from "@/app/constants";
+import { APP_NAME, ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
+import { buildRecipeJsonLd } from "@/lib/recipe-json-ld";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
@@ -79,5 +81,16 @@ export default async function DiscoverRecipePage({
     notFound();
   }
 
-  return <DiscoverRecipeView recipe={recipe} />;
+  const recipeUrl = `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`;
+  const recipeJsonLd = buildRecipeJsonLd(recipe, recipeUrl);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+      />
+      <DiscoverRecipeView recipe={recipe} />
+    </>
+  );
 }
