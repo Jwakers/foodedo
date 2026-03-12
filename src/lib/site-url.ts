@@ -2,16 +2,14 @@
  * Canonical base URL for the site (no trailing slash).
  * Used for sitemap, robots, metadataBase, and absolute URLs.
  *
- * Set SITE_URL in production (e.g. https://www.foodedo.com) so sitemap and
- * metadata use your custom domain instead of the Vercel deployment URL.
+ * SITE_URL must be set (e.g. https://www.foodedo.com).
  */
 export function getSiteBaseUrl(): string {
-  if (process.env.SITE_URL) {
-    return process.env.SITE_URL.replace(/\/$/, "");
+  const url = process.env.SITE_URL;
+  if (!url?.trim()) {
+    throw new Error(
+      "SITE_URL is required. Set it in your environment (e.g. SITE_URL=https://www.foodedo.com).",
+    );
   }
-  if (process.env.VERCEL_URL) {
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    return `${protocol}://${process.env.VERCEL_URL}`;
-  }
-  return "https://www.foodedo.com";
+  return url.trim().replace(/\/$/, "");
 }
