@@ -27,8 +27,9 @@ export async function generateMetadata({
     if (recipe?.title) {
       const title = `${recipe.title} | ${APP_NAME}`;
       const description =
-        recipe.description?.slice(0, 160) ??
-        `View the recipe for ${recipe.title} on ${APP_NAME}.`;
+        (recipe.description?.trim() ?? "").length > 0
+          ? recipe.description!.slice(0, 160)
+          : `View the recipe for ${recipe.title} on ${APP_NAME}.`;
       return {
         title,
         description,

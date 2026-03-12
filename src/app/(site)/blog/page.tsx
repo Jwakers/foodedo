@@ -48,8 +48,11 @@ export default async function BlogPage() {
       {},
       { next: { revalidate: REVALIDATE_SECONDS } },
     );
-  } catch {
-    // Sanity not configured or fetch failed (e.g. at build without env)
+  } catch (e) {
+    if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
+      throw e;
+    }
+    // Sanity not configured (e.g. at build without env)
   }
   posts = posts ?? [];
 
@@ -76,12 +79,13 @@ export default async function BlogPage() {
           ) : (
             <ul className="grid gap-6 sm:grid-cols-2">
               {posts.map((post) => {
-                const imageUrl = post.mainImage
-                  ? urlFor(post.mainImage).width(400).height(220).url()
-                  : null;
+                const imageUrl =
+                  post.mainImage?.asset?._ref != null
+                    ? urlFor(post.mainImage).width(400).height(220).url()
+                    : null;
                 return (
                   <li key={post._id}>
-                    <Link href={`/blog/${post.slug.current}`}>
+                    <Link href={ROUTES.blogPost(post.slug.current)}>
                       <Card className="h-full overflow-hidden transition-colors hover:bg-muted/50">
                         {imageUrl && (
                           <div className="relative aspect-video w-full bg-muted">

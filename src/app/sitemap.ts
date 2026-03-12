@@ -1,3 +1,4 @@
+import { ROUTES } from "@/app/constants";
 import { client } from "@/sanity/client";
 import { api } from "convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
@@ -18,25 +19,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/discover`,
+      url: `${baseUrl}${ROUTES.DISCOVER}`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/blog`,
+      url: `${baseUrl}${ROUTES.BLOG}`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/privacy`,
+      url: `${baseUrl}/${ROUTES.PRIVACY}`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/terms`,
+      url: `${baseUrl}${ROUTES.TERMS}`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.5,
@@ -62,9 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const systemRecipes = await fetchQuery(api.recipes.getSystemRecipes);
     recipeEntries = (systemRecipes ?? []).map((recipe) => ({
       url: `${baseUrl}/recipe/${recipe._id}`,
-      lastModified: recipe.updatedAt
-        ? new Date(recipe.updatedAt)
-        : new Date(),
+      lastModified: recipe.updatedAt ? new Date(recipe.updatedAt) : new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));

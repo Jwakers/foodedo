@@ -36,8 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       { slug },
       { next: { revalidate: REVALIDATE_SECONDS } },
     );
-  } catch {
-    // Sanity not configured or fetch failed
+  } catch (e) {
+    if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
+      throw e;
+    }
+    // Sanity not configured (e.g. build without env)
   }
   if (!post) {
     return { title: "Post not found" };
@@ -45,9 +48,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${post.title} | ${APP_NAME}`;
   const description =
     post.excerpt?.slice(0, 160) ?? `Read ${post.title} on the ${APP_NAME} blog.`;
-  const ogImage = post.mainImage
-    ? urlFor(post.mainImage).width(1200).height(630).url()
-    : undefined;
+  const ogImage =
+    post.mainImage?.asset?._ref != null
+      ? urlFor(post.mainImage).width(1200).height(630).url()
+      : undefined;
   return {
     title,
     description,
@@ -89,17 +93,21 @@ export default async function BlogPostPage({ params }: Props) {
       { slug },
       { next: { revalidate: REVALIDATE_SECONDS } },
     );
-  } catch {
-    // Sanity not configured or fetch failed
+  } catch (e) {
+    if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
+      throw e;
+    }
+    // Sanity not configured (e.g. build without env)
   }
 
   if (!post) {
     notFound();
   }
 
-  const imageUrl = post.mainImage
-    ? urlFor(post.mainImage).width(800).height(450).url()
-    : null;
+  const imageUrl =
+    post.mainImage?.asset?._ref != null
+      ? urlFor(post.mainImage).width(800).height(450).url()
+      : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,9 +160,13 @@ export default async function BlogPostPage({ params }: Props) {
                     pteImage: ({
                       value,
                     }: {
-                      value?: { asset?: { _ref: string }; [key: string]: unknown };
+                      value?: {
+                        asset?: { _ref: string };
+                        alt?: string;
+                        [key: string]: unknown;
+                      };
                     }) => {
-                      if (!value) return null;
+                      if (!value?.asset?._ref) return null;
                       try {
                         const src = urlFor(value).width(800).url();
                         return (
@@ -162,7 +174,7 @@ export default async function BlogPostPage({ params }: Props) {
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={src}
-                              alt=""
+                              alt={value.alt ?? ""}
                               className="rounded-lg w-full"
                             />
                           </figure>
