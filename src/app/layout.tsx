@@ -27,6 +27,9 @@ const APP_URL = new URL(
 export const metadata: Metadata = {
   metadataBase: APP_URL,
   applicationName: APP_NAME,
+  verification: {
+    google: "50j9gUQAhNo9cjbZiSrK5FAFi44SXlHFqnRwvT4Ck98",
+  },
   title: {
     default: APP_DEFAULT_TITLE,
     template: APP_TITLE_TEMPLATE,
