@@ -1,4 +1,5 @@
 import { ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { client } from "@/sanity/client";
 import { api } from "convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
@@ -7,9 +8,7 @@ import type { MetadataRoute } from "next";
 const SLUGS_QUERY = `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{ "slug": slug.current, publishedAt }`;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.VERCEL_URL
-    ? `${process.env.NODE_ENV === "production" ? "https://" : "http://"}${process.env.VERCEL_URL}`
-    : "https://foodedo-app.com";
+  const baseUrl = getSiteBaseUrl();
 
   const staticEntries: MetadataRoute.Sitemap = [
     {

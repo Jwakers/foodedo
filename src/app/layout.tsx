@@ -1,5 +1,6 @@
 import { APP_NAME } from "@/app/constants";
 import { ThemeProvider } from "@/components/theme-provider";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
@@ -17,12 +18,7 @@ const APP_DEFAULT_TITLE = `${APP_NAME} - Family Meal Planning`;
 const APP_TITLE_TEMPLATE = `%s | ${APP_NAME}`;
 const APP_DESCRIPTION = `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`;
 
-const APP_URL = new URL(
-  process.env.VERCEL_URL
-    ? (process.env.NODE_ENV === "production" ? "https://" : "http://") +
-      process.env.VERCEL_URL
-    : "https://foodedo-app.com",
-);
+const APP_URL = new URL(getSiteBaseUrl());
 
 export const metadata: Metadata = {
   metadataBase: APP_URL,
