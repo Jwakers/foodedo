@@ -1,4 +1,5 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { client } from "@/sanity/client";
 import { urlFor } from "@/sanity/image";
 import type { Post } from "@/sanity/types";
@@ -52,9 +53,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     post.mainImage?.asset?._ref != null
       ? urlFor(post.mainImage).width(1200).height(630).url()
       : undefined;
+  const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.blogPost(slug)}`;
   return {
     title,
     description,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,

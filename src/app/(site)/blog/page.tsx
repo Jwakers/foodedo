@@ -1,4 +1,5 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { client } from "@/sanity/client";
 import type { PostListItem } from "@/sanity/types";
 import { urlFor } from "@/sanity/image";
@@ -24,6 +25,7 @@ const POSTS_QUERY = `*[
 const REVALIDATE_SECONDS = 30;
 
 export const metadata: Metadata = {
+  alternates: { canonical: `${getSiteBaseUrl()}${ROUTES.BLOG}` },
   title: `Blog | ${APP_NAME}`,
   description:
     "Articles and tips for family meal planning, recipes, and making the most of your kitchen.",

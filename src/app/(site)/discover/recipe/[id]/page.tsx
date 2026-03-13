@@ -29,9 +29,11 @@ export async function generateMetadata({
         (recipe.description?.trim() ?? "").length > 0
           ? recipe.description!.slice(0, 160)
           : `View the recipe for ${recipe.title} on ${APP_NAME}.`;
+      const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`;
       return {
         title,
         description,
+        alternates: { canonical: canonicalUrl },
         openGraph: {
           title,
           description,

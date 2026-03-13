@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     default: APP_NAME,
   },
   description: `${APP_NAME} - Family Meal Planning`,
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
