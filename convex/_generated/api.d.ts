@@ -13,6 +13,7 @@ import type * as contact from "../contact.js";
 import type * as crons from "../crons.js";
 import type * as households from "../households.js";
 import type * as http from "../http.js";
+import type * as ingredients from "../ingredients.js";
 import type * as lib_constants from "../lib/constants.js";
 import type * as lib_systemRecipes from "../lib/systemRecipes.js";
 import type * as mealPlanGenerator from "../mealPlanGenerator.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   households: typeof households;
   http: typeof http;
+  ingredients: typeof ingredients;
   "lib/constants": typeof lib_constants;
   "lib/systemRecipes": typeof lib_systemRecipes;
   mealPlanGenerator: typeof mealPlanGenerator;

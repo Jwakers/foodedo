@@ -1,6 +1,6 @@
+import { APP_NAME } from "@/app/constants";
 import { api } from "convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
-import { APP_NAME } from "@/app/constants";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -13,20 +13,21 @@ export async function generateMetadata({
     api.households.getInvitationDetails,
     {
       token,
-    }
+    },
   );
 
   if (!invitationDetails) {
     return {
       title: "Invitation Not Found",
       description: "The invitation you are looking for does not exist.",
+      robots: { index: false, follow: true },
     };
   }
 
   const metadata = {
     title: "Join Household",
-    description:
-      `You've been invited to join a household on ${APP_NAME}. Share and discover recipes together!`,
+    description: `You've been invited to join a household on ${APP_NAME}. Share and discover recipes together!`,
+    robots: { index: false, follow: true },
     openGraph: {
       title: "Join Household",
       description:

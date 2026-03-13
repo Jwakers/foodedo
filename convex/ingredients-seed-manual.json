@@ -1,0 +1,112 @@
+{
+  "items": [
+    {
+      "name": "Chicken breast",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Chicken breast",
+      "aliases": [
+        "chicken breast",
+        "chicken breasts",
+        "breast of chicken"
+      ]
+    },
+    {
+      "name": "Chicken thigh",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Chicken thigh",
+      "aliases": [
+        "chicken thigh",
+        "chicken thighs"
+      ]
+    },
+    {
+      "name": "Chicken leg",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Chicken leg",
+      "aliases": [
+        "chicken leg",
+        "chicken legs",
+        "chicken drumstick",
+        "chicken drumsticks"
+      ]
+    },
+    {
+      "name": "Pork loin",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Pork loin",
+      "aliases": [
+        "pork loin",
+        "loin of pork",
+        "pork loin joint"
+      ]
+    },
+    {
+      "name": "Beef steak",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Bovines",
+      "displayName": "Beef steak",
+      "aliases": [
+        "beef steak"
+      ]
+    },
+    {
+      "name": "Sirloin steak",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Bovines",
+      "displayName": "Sirloin steak",
+      "aliases": [
+        "sirloin steak",
+        "beef sirloin",
+        "sirloin"
+      ]
+    },
+    {
+      "name": "Ribeye steak",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Bovines",
+      "displayName": "Ribeye steak",
+      "aliases": [
+        "ribeye steak",
+        "rib eye steak",
+        "beef ribeye",
+        "ribeye"
+      ]
+    },
+    {
+      "name": "Lamb leg",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Sheep",
+      "displayName": "Lamb leg",
+      "aliases": [
+        "lamb leg",
+        "leg of lamb"
+      ]
+    },
+    {
+      "name": "Lamb shoulder",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Sheep",
+      "displayName": "Lamb shoulder",
+      "aliases": [
+        "lamb shoulder",
+        "shoulder of lamb"
+      ]
+    },
+    {
+      "name": "Minced beef",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Bovines",
+      "displayName": "Minced beef",
+      "aliases": [
+        "minced beef",
+        "ground beef",
+        "beef mince"
+      ]
+    }
+  ]
+}
+

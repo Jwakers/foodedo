@@ -15,6 +15,11 @@ import {
 } from "./lib/constants";
 
 import { WithoutSystemFields } from "convex/server";
+import {
+  normaliseIngredientName,
+  resolveIngredientIdFromList,
+} from "./ingredients";
+import ingredientsSeedData from "./ingredients-seed.json";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
 /**
@@ -562,5 +567,128 @@ export const validateRecipesGeneratorEligibility = internalMutation({
     }
 
     return { total: recipes.length, updated };
+  },
+});
+
+type SeedItem = {
+  name: string;
+  externalId?: string;
+  foodGroup?: string;
+  foodSubGroup?: string;
+  displayName?: string;
+  aliases: string[];
+};
+
+/**
+ * Seed ingredients table from convex/ingredients-seed.json. Upserts by externalId.
+ * Regenerate the seed file with: pnpm run ingredients-seed-preview
+ * Then run: npx convex run migrations:seedIngredients
+ * Uses whatever deployment is active (dev by default); run with npx convex dev first for local/dev.
+ */
+export const seedIngredients = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const items: SeedItem[] = (ingredientsSeedData as { items: SeedItem[] }).items ?? [];
+    let inserted = 0;
+    let updated = 0;
+    for (const item of items) {
+      const trimmed = item.externalId?.trim();
+      const extId = trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
+      let existing: Doc<"ingredients"> | null = null;
+      if (extId) {
+        existing = await ctx.db
+          .query("ingredients")
+          .withIndex("by_externalId", (q) => q.eq("externalId", extId))
+          .first();
+      } else {
+        existing = await ctx.db
+          .query("ingredients")
+          .filter((q) => q.eq(q.field("name"), item.name))
+          .first();
+      }
+      const doc = {
+        name: item.name,
+        foodGroup: item.foodGroup,
+        displayName: item.displayName,
+        foodSubGroup: item.foodSubGroup ?? undefined,
+        isCustom: false,
+        externalId: extId,
+        aliases: item.aliases,
+      };
+      if (existing) {
+        await ctx.db.patch(existing._id, doc);
+        updated++;
+      } else {
+        await ctx.db.insert("ingredients", doc);
+        inserted++;
+      }
+    }
+    return { inserted, updated, total: items.length };
+  },
+});
+
+const BACKFILL_BATCH_SIZE = 100;
+
+/**
+ * Backfill ingredientId on existing recipe ingredients using the current
+ * ingredients table (names + aliases). Processes recipes in batches to avoid
+ * exceeding read limits.
+ *
+ * Run: npx convex run migrations:backfillRecipeIngredientIds
+ */
+export const backfillRecipeIngredientIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const allIngredients = await ctx.db.query("ingredients").collect();
+    const ingredientIdCache = new Map<string, Id<"ingredients">>();
+    let cursor: string | null = null;
+    let updated = 0;
+    let totalRecipes = 0;
+
+    while (true) {
+      const result = await ctx.db
+        .query("recipes")
+        .order("asc")
+        .paginate({
+          numItems: BACKFILL_BATCH_SIZE,
+          cursor,
+        });
+      const batch = result.page;
+      totalRecipes += batch.length;
+      if (batch.length === 0) break;
+
+      for (const recipe of batch) {
+        if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+        let changed = false;
+        const nextIngredients = recipe.ingredients.map((ing) => {
+          if (ing.ingredientId || !ing.name) return ing;
+          const key = normaliseIngredientName(ing.name);
+          let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+          if (resolved === undefined) {
+            const found = resolveIngredientIdFromList(allIngredients, ing.name);
+            if (found) {
+              ingredientIdCache.set(key, found);
+              resolved = found;
+            }
+          }
+          if (resolved !== undefined) {
+            changed = true;
+            return { ...ing, ingredientId: resolved };
+          }
+          return ing;
+        });
+
+        if (changed) {
+          await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+          updated++;
+        }
+      }
+
+      if (result.isDone) break;
+      cursor = result.continueCursor ?? null;
+    }
+
+    return { updated, totalRecipes };
   },
 });

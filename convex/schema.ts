@@ -120,7 +120,9 @@ export default defineSchema({
     foodGroup: v.optional(v.string()),
     foodSubGroup: v.optional(v.string()),
     isCustom: v.boolean(),
-  }),
+    externalId: v.optional(v.string()), // e.g. FOOD00001 for sync/upsert from seed
+    aliases: v.optional(v.array(v.string())), // optional; for manual synonym lookup
+  }).index("by_externalId", ["externalId"]),
 
   households: defineTable({
     name: v.string(),

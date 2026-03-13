@@ -1,7 +1,9 @@
-import { APP_NAME } from "@/app/constants";
+import { APP_NAME, ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: `${getSiteBaseUrl()}${ROUTES.PRICING}` },
   title: "Pricing",
   description: `Plans and pricing for ${APP_NAME}. Start free, upgrade when you need more recipes and household features.`,
   openGraph: {

@@ -1,7 +1,9 @@
 import { APP_NAME } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: `${getSiteBaseUrl()}/beta` },
   title: "Beta",
   description: `Join the ${APP_NAME} beta. Help shape family meal planning with your feedback. Build a repeatable meal planning rhythm for your household.`,
   openGraph: {

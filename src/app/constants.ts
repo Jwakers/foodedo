@@ -43,6 +43,7 @@ export const ROUTES = {
   BLOG: "/blog",
   /** URL for a specific blog post (use with slug from Sanity) */
   blogPost: (slug: string) => `/blog/${slug}`,
+  BETA: "/beta",
 } as const;
 
 export const CATEGORY_COLORS: Record<

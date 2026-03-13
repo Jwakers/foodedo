@@ -1,4 +1,5 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -6,6 +7,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
+  alternates: { canonical: `${getSiteBaseUrl()}${ROUTES.TERMS}` },
   title: "Terms of Service",
   description: `Read the terms and conditions for using ${APP_NAME} meal planning application.`,
   openGraph: {

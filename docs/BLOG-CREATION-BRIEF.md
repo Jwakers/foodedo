@@ -34,7 +34,7 @@ All blog content should support this product and audience. Mention Foodedo by na
 - **One H1 per post:** The post title. No other H1.
 - **Logical heading hierarchy:** H2 → H3 (no skipping levels). Headings should be descriptive and keyword-aware so they work as scannable outline and SERP/snippet fodder.
 - **First paragraph:** Directly address the topic and, where possible, include the main keyword in the first 100 words.
-- **Internal links:** Where relevant, link to other blog posts or key site pages (e.g. pricing, sign-up, dashboard). Use descriptive anchor text (avoid “click here” or “read more” as sole anchor).
+- **Internal links:** Where relevant, link to other blog posts or key site pages using the public URLs below. Use descriptive anchor text (avoid “click here” or “read more” as sole anchor). See **§2.5 Inline links & public URLs** for format and full list.
 
 ### 2.4 Technical / CMS Fields
 
@@ -48,6 +48,44 @@ Content is stored in Sanity. Each post has:
 - **publishedAt** (datetime)
 
 Ensure every post has a unique slug, a compelling excerpt, and a main image so metadata and social sharing render correctly.
+
+### 2.5 Inline links & public URLs
+
+**Format:** Use **relative paths** only (no domain). Links should start with `/` and match the paths below. Examples: `[Try Foodedo](/sign-up)`, `[our pricing](/pricing)`, `[Discover recipes](/discover)`, `[How to start meal planning](/blog/how-to-start-meal-planning)`.
+
+**When to link:** Add inline links where they help the reader take a clear next step (e.g. sign up, see pricing, read another post, browse discover). Prefer 1–3 relevant internal links per post; anchor text should describe the destination (e.g. “weekly meal plan” → `/blog/how-to-use-foodedo-weekly-meal-plan` or “Discover” → `/discover`).
+
+**Exhaustive list of public URLs** (safe to use in blog content; do not require sign-in; most are indexable — except `/sign-in`, which has `robots: { index: false }`):
+
+| Path | Use when |
+|------|----------|
+| `/` | Homepage; “Foodedo”, “our site”, “get started”. |
+| `/sign-in` | Sign in, log in, returning users. (Not indexable.) |
+| `/sign-up` | Sign up, create account, try Foodedo, get started. |
+| `/pricing` | Plans, pricing, upgrade, cost. |
+| `/privacy` | Privacy policy, data, how we use information. |
+| `/terms` | Terms of service, terms and conditions. |
+| `/beta` | Beta programme, early access, “we’re in beta”. |
+| `/blog` | Blog index; “our blog”, “more articles”, “tips”. |
+| `/blog/{slug}` | Link to another post; use the post’s slug (e.g. `/blog/how-to-start-meal-planning`). |
+| `/discover` | Discover recipes, browse recipes, public recipe gallery. |
+| `/discover/recipe/{ID}` | A specific public (system) recipe; use the recipe’s Convex document ID for `{ID}` (e.g. `/discover/recipe/abc123xyz`). Only use when linking to a known system recipe. |
+
+**App / dashboard URLs** (signed-in users go straight there; others are redirected to sign-up — use these in blog copy when the CTA is product-led):
+
+| Path | Use when |
+|------|----------|
+| `/dashboard` | Dashboard, “your Foodedo”, home after sign-in. |
+| `/dashboard/meal-plan` | Weekly meal plan, plan your week. |
+| `/dashboard/my-recipes` | My recipes, recipe library, saved recipes. |
+| `/dashboard/shopping-list` | Shopping list, build your list. |
+| `/dashboard/chalkboard` | Chalkboard, pantry list, “need by end of week”. |
+| `/dashboard/import-recipe` | Import a recipe, add from URL. |
+| `/dashboard/create-recipe` | Create recipe, add recipe from scratch. |
+| `/dashboard/households` | Households, sharing, invite family. |
+| `/recipe/{id}` | A specific recipe (user or app context); use the recipe’s Convex document ID for `{id}`. |
+
+**Dashboard and app URLs in blog copy:** You may and are encouraged to link to dashboard and app-only paths (e.g. `/dashboard/meal-plan`, `/dashboard/my-recipes`, `/recipe/{id}`) in blog copy. If the reader is not signed in, these links will redirect them to the sign-up page, which supports conversion. Use them when the CTA is clearly product-led (e.g. “Build your [weekly meal plan](/dashboard/meal-plan)” or “Add it to [My recipes](/dashboard/my-recipes)”).
 
 ---
 
@@ -113,7 +151,7 @@ When an AI or agent is drafting or structuring a blog post using this brief:
    - **Excerpt** (150–160 characters, meta-friendly)
    - **Outline** (H2/H3 with short bullet points or one-line descriptions)
    - **Body** (full draft or key sections), with the main answer or definition in the first 1–2 paragraphs
-   - **Suggested internal links** (e.g. “Link ‘weekly plan’ to /dashboard/meal-plan or related post”)
+   - **Suggested internal links** (use relative paths from §2.5, e.g. “Link ‘weekly plan’ to /blog/how-to-use-foodedo-weekly-meal-plan or /discover”)
 3. **Keyword usage:** Use the target keyword in: title, excerpt, first paragraph, at least one H2, and naturally 1–2 times in the body. Avoid stuffing; readability and clarity come first.
 4. **Snippet and AEO check:** Before finalising, ask: “Could a search engine or AI quote one sentence or one list from this post as the answer to the target question?” If not, add or tighten a direct answer near the top and/or in a clear list or FAQ.
 5. **Factual accuracy:** Don’t invent statistics, studies, or product features. If specific data or features are needed, note “[verify with product/team]” or “[add source]” for the human editor.
@@ -132,7 +170,7 @@ When an AI or agent is drafting or structuring a blog post using this brief:
 - [ ] **Headings:** Logical H2 → H3 hierarchy; question-style where it fits.
 - [ ] **Direct answer:** Main takeaway or definition in the first 1–2 paragraphs.
 - [ ] **Lists/steps:** Used where they improve clarity and snippet potential.
-- [ ] **Internal links:** At least one relevant link to another page or post with descriptive anchor text.
+- [ ] **Internal links:** At least one relevant link to another page or post with descriptive anchor text; use relative paths only and only public URLs from §2.5.
 - [ ] **Tone:** Helpful, practical, family-oriented, and aligned with Foodedo.
 
 ---

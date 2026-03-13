@@ -1,5 +1,5 @@
 export { LoadingState, RecipeCard, RecipeCardSkeleton } from "./recipe-card";
-export type { RecipeListItem } from "./recipe-card";
+export type { RecipeListItem } from "./types";
 export {
   RecipeGrid,
   RecipeListGrid,

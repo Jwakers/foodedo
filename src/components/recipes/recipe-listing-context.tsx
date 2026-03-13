@@ -1,6 +1,6 @@
 "use client";
 
-import type { RecipeListItem } from "./recipe-card";
+import type { RecipeListItem } from "./types";
 import {
   createContext,
   useCallback,
