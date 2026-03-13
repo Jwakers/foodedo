@@ -622,9 +622,12 @@ export const seedIngredients = internalMutation({
   },
 });
 
+const BACKFILL_BATCH_SIZE = 100;
+
 /**
  * Backfill ingredientId on existing recipe ingredients using the current
- * ingredients table (names + aliases).
+ * ingredients table (names + aliases). Processes recipes in batches to avoid
+ * exceeding read limits.
  *
  * Run: npx convex run migrations:backfillRecipeIngredientIds
  */
@@ -632,31 +635,47 @@ export const backfillRecipeIngredientIds = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allIngredients = await ctx.db.query("ingredients").collect();
-    const recipes = await ctx.db.query("recipes").collect();
-
+    let cursor: string | null = null;
     let updated = 0;
+    let totalRecipes = 0;
 
-    for (const recipe of recipes) {
-      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+    while (true) {
+      const result = await ctx.db
+        .query("recipes")
+        .order("asc")
+        .paginate({
+          numItems: BACKFILL_BATCH_SIZE,
+          cursor,
+        });
+      const batch = result.page;
+      totalRecipes += batch.length;
+      if (batch.length === 0) break;
 
-      let changed = false;
-      const nextIngredients = recipe.ingredients.map((ing) => {
-        if (ing.ingredientId || !ing.name) return ing;
-        const ingredientId =
-          resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
-        if (ingredientId) {
-          changed = true;
-          return { ...ing, ingredientId };
+      for (const recipe of batch) {
+        if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+        let changed = false;
+        const nextIngredients = recipe.ingredients.map((ing) => {
+          if (ing.ingredientId || !ing.name) return ing;
+          const ingredientId =
+            resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
+          if (ingredientId) {
+            changed = true;
+            return { ...ing, ingredientId };
+          }
+          return ing;
+        });
+
+        if (changed) {
+          await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+          updated++;
         }
-        return ing;
-      });
-
-      if (changed) {
-        await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
-        updated++;
       }
+
+      if (result.isDone) break;
+      cursor = result.continueCursor ?? null;
     }
 
-    return { updated, totalRecipes: recipes.length };
+    return { updated, totalRecipes };
   },
 });

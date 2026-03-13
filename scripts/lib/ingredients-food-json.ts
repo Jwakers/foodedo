@@ -18,7 +18,7 @@ export type FoodJsonLine = {
 /** Shape we insert into Convex ingredients table (and output in preview JSON) */
 export type IngredientSeedItem = {
   name: string;
-  externalId: string;
+  externalId?: string;
   foodGroup?: string;
   foodSubGroup?: string;
   displayName?: string;

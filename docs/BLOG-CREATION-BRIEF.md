@@ -55,12 +55,12 @@ Ensure every post has a unique slug, a compelling excerpt, and a main image so m
 
 **When to link:** Add inline links where they help the reader take a clear next step (e.g. sign up, see pricing, read another post, browse discover). Prefer 1–3 relevant internal links per post; anchor text should describe the destination (e.g. “weekly meal plan” → `/blog/how-to-use-foodedo-weekly-meal-plan` or “Discover” → `/discover`).
 
-**Exhaustive list of public URLs** (safe to use in blog content; all are indexable and do not require sign-in):
+**Exhaustive list of public URLs** (safe to use in blog content; do not require sign-in; most are indexable — except `/sign-in`, which has `robots: { index: false }`):
 
 | Path | Use when |
 |------|----------|
 | `/` | Homepage; “Foodedo”, “our site”, “get started”. |
-| `/sign-in` | Sign in, log in, returning users. |
+| `/sign-in` | Sign in, log in, returning users. (Not indexable.) |
 | `/sign-up` | Sign up, create account, try Foodedo, get started. |
 | `/pricing` | Plans, pricing, upgrade, cost. |
 | `/privacy` | Privacy policy, data, how we use information. |
@@ -83,8 +83,9 @@ Ensure every post has a unique slug, a compelling excerpt, and a main image so m
 | `/dashboard/import-recipe` | Import a recipe, add from URL. |
 | `/dashboard/create-recipe` | Create recipe, add recipe from scratch. |
 | `/dashboard/households` | Households, sharing, invite family. |
+| `/recipe/{id}` | A specific recipe (user or app context); use the recipe’s Convex document ID for `{id}`. |
 
-**Dashboard and app URLs in blog copy:** You may and are encouraged to link to dashboard and app-only paths (e.g. `/dashboard/meal-plan`, `/dashboard/my-recipes`, `/recipe/...`) in blog copy. If the reader is not signed in, these links will redirect them to the sign-up page, which supports conversion. Use them when the CTA is clearly product-led (e.g. “Build your [weekly meal plan](/dashboard/meal-plan)” or “Add it to [My recipes](/dashboard/my-recipes)”).
+**Dashboard and app URLs in blog copy:** You may and are encouraged to link to dashboard and app-only paths (e.g. `/dashboard/meal-plan`, `/dashboard/my-recipes`, `/recipe/{id}`) in blog copy. If the reader is not signed in, these links will redirect them to the sign-up page, which supports conversion. Use them when the CTA is clearly product-led (e.g. “Build your [weekly meal plan](/dashboard/meal-plan)” or “Add it to [My recipes](/dashboard/my-recipes)”).
 
 ---
 

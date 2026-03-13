@@ -7,7 +7,7 @@
 Ingredients convenience infra:
 
 - [ ] Add internal use ingredients table from public data
-- [ ] Add a mapping system that maps ingredients to their ingredient table counter part
+- [ ] Add a mapping system that maps ingredients to their ingredient table counterpart
 - [ ] Add a shopping list combination logic, synonyms and measurement normalisation
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
 
@@ -51,7 +51,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] Its is possible for the parser to output technically correct but odd ingredient mappings like 0.5 Whole Lime. This can be seen when extracting this recipe: <https://www.greatbritishchefs.com/recipes/salmon-kilaw-recipe>
 - [ ] Overflow issue on shopping page (IOS)
 - [ ] Recipe page loading skeleton overflows
-- [ ] When deleting a household an error is surfaced on the client. This is likely due to that household no longer being available. Instead we should redirect or 404
+- [ ] When deleting a household, an error is surfaced on the client. This is likely because the household no longer exists. Instead, we should redirect the user or return a 404.
 - [ ] The back to dashboard button on the error page does not seem to work
 - [ ] Occasionally get redirected to a 404 after signing in
 

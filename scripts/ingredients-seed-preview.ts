@@ -47,10 +47,16 @@ function main() {
         return item.externalId != null && item.externalId !== ""
           ? { ...base, externalId: item.externalId }
           : base;
-      }) as IngredientSeedItem[];
+      });
       console.log("Loaded", manualItems.length, "manual ingredients from convex/ingredients-seed-manual.json");
     } catch (e) {
-      console.error("Failed to load manual seed from", MANUAL_SEED_PATH, e);
+      const err = e as NodeJS.ErrnoException;
+      if (err?.code === "ENOENT") {
+        console.log("Manual seed file not found at", MANUAL_SEED_PATH, "- continuing with Food.json only.");
+      } else {
+        console.error("Manual seed file is missing or malformed:", MANUAL_SEED_PATH, err);
+        throw e;
+      }
     }
   }
 
