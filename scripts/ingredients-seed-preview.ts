@@ -36,14 +36,18 @@ function main() {
         items?: Partial<IngredientSeedItem>[];
       };
       const baseItems = raw.items ?? [];
-      manualItems = baseItems.map((item) => ({
-        name: item.name ?? "",
-        externalId: item.externalId ?? "",
-        foodGroup: item.foodGroup,
-        foodSubGroup: item.foodSubGroup,
-        displayName: item.displayName ?? item.name ?? "",
-        aliases: item.aliases ?? [],
-      }));
+      manualItems = baseItems.map((item) => {
+        const base = {
+          name: item.name ?? "",
+          foodGroup: item.foodGroup,
+          foodSubGroup: item.foodSubGroup,
+          displayName: item.displayName ?? item.name ?? "",
+          aliases: item.aliases ?? [],
+        };
+        return item.externalId != null && item.externalId !== ""
+          ? { ...base, externalId: item.externalId }
+          : base;
+      }) as IngredientSeedItem[];
       console.log("Loaded", manualItems.length, "manual ingredients from convex/ingredients-seed-manual.json");
     } catch (e) {
       console.error("Failed to load manual seed from", MANUAL_SEED_PATH, e);

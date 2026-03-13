@@ -148,7 +148,7 @@ export default function HomeContent() {
             Every feature is free while we build. Your feedback shapes what we
             do next.{" "}
             <Link
-              href="/beta"
+              href={ROUTES.BETA}
               className="text-primary hover:text-primary/80 underline underline-offset-2"
             >
               Learn more about the beta

@@ -26,9 +26,7 @@ export function resolveIngredientIdFromList(
   if (byName) return byName._id;
 
   const byAlias = ingredients.find((ing) =>
-    ing.aliases?.some(
-      (a) => (a ?? "").trim().toLowerCase().replace(/\s+/g, " ") === normalised
-    )
+    ing.aliases?.some((a) => normaliseIngredientName(a ?? "") === normalised)
   );
   return byAlias?._id ?? null;
 }

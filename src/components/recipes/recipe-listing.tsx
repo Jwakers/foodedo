@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import type { RecipeListItem } from "./recipe-card";
+import type { RecipeListItem } from "./types";
 import { LoadingState, RecipeCard } from "./recipe-card";
 import { RecipeFilters } from "./recipe-filters";
 import {

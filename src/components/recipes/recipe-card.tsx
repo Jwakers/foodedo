@@ -5,27 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, titleCase } from "@/lib/utils";
-import { Id } from "convex/_generated/dataModel";
+import type { RecipeListItem } from "./types";
 import { Check, Clock, Users, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-export type RecipeListItem = {
-  _id: Id<"recipes">;
-  title: string;
-  description?: string | null;
-  prepTime: number;
-  cookTime?: number | null;
-  serves: number;
-  category: string;
-  image?: string | null;
-  updatedAt?: number;
-  _creationTime?: number;
-  isGeneratorEligible?: boolean | null;
-  primaryProtein?: string | null;
-  complexityTier?: string | null;
-  totalTimeMinutes?: number | null;
-};
 
 type RecipeCardProps = {
   recipe: RecipeListItem;

@@ -20,6 +20,7 @@ export async function generateMetadata({
     return {
       title: "Invitation Not Found",
       description: "The invitation you are looking for does not exist.",
+      robots: { index: false, follow: true },
     };
   }
 

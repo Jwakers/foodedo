@@ -44,13 +44,17 @@ export function loadAndTransform(seedPath: string): IngredientSeedItem[] {
   const text = fs.readFileSync(seedPath, "utf-8");
   const lines = text.split("\n").filter((line) => line.trim());
   const items: IngredientSeedItem[] = [];
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
     try {
       const row = JSON.parse(line) as FoodJsonLine;
       if (!row.name?.trim()) continue;
       items.push(toSeedItem(row));
-    } catch {
-      // skip invalid lines
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(
+        `Food.json parse error at line ${index + 1}: ${message}. Line content: ${line.slice(0, 80)}...`
+      );
     }
   }
   return items;

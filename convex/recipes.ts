@@ -571,11 +571,7 @@ export const updateRecipe = mutation({
       ingredients = args.ingredients.map((ing) => {
         const ingredientId =
           resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
-        return {
-          ...ing,
-          ingredientId,
-          amount: ing.amount ?? 0,
-        };
+        return { ...ing, ingredientId };
       });
     }
 

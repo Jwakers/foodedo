@@ -1,7 +1,7 @@
 "use client";
 
 import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
-import type { RecipeListItem } from "@/components/recipes/recipe-card";
+import type { RecipeListItem } from "@/components/recipes/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, titleCase } from "@/lib/utils";

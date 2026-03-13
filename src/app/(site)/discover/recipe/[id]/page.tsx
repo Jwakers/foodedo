@@ -16,9 +16,16 @@ export async function generateMetadata({
   params,
 }: DiscoverRecipePageProps): Promise<Metadata> {
   const recipeId = (await params).id as Id<"recipes"> | undefined;
+  const canonicalUrl =
+    recipeId != null
+      ? `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`
+      : undefined;
 
   if (!recipeId) {
-    return { title: "Recipe" };
+    return {
+      title: "Recipe",
+      ...(canonicalUrl && { alternates: { canonical: canonicalUrl } }),
+    };
   }
 
   try {
@@ -29,7 +36,6 @@ export async function generateMetadata({
         (recipe.description?.trim() ?? "").length > 0
           ? recipe.description!.slice(0, 160)
           : `View the recipe for ${recipe.title} on ${APP_NAME}.`;
-      const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`;
       return {
         title,
         description,
@@ -61,7 +67,10 @@ export async function generateMetadata({
     console.warn("Failed to fetch recipe metadata:", error);
   }
 
-  return { title: "Recipe" };
+  return {
+    title: "Recipe",
+    ...(canonicalUrl && { alternates: { canonical: canonicalUrl } }),
+  };
 }
 
 export default async function DiscoverRecipePage({

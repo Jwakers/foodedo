@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generatedAt": "2026-03-13T17:13:41.439Z",
+    "generatedAt": "2026-03-13T20:29:06.005Z",
     "sourceFile": "docs/Food.json",
     "totalItems": 1002,
     "description": "Structure of what will be seeded into the ingredients table. Run seed-ingredients to apply."
@@ -7934,7 +7934,6 @@
     },
     {
       "name": "Chicken breast",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken breast",
@@ -7946,7 +7945,6 @@
     },
     {
       "name": "Chicken thigh",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken thigh",
@@ -7957,7 +7955,6 @@
     },
     {
       "name": "Chicken leg",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken leg",
@@ -7970,7 +7967,6 @@
     },
     {
       "name": "Pork loin",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Pork loin",
@@ -7982,18 +7978,15 @@
     },
     {
       "name": "Beef steak",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Beef steak",
       "aliases": [
-        "beef steak",
-        "steak"
+        "beef steak"
       ]
     },
     {
       "name": "Sirloin steak",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Sirloin steak",
@@ -8005,7 +7998,6 @@
     },
     {
       "name": "Ribeye steak",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Ribeye steak",
@@ -8018,7 +8010,6 @@
     },
     {
       "name": "Lamb leg",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Sheep",
       "displayName": "Lamb leg",
@@ -8029,7 +8020,6 @@
     },
     {
       "name": "Lamb shoulder",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Sheep",
       "displayName": "Lamb shoulder",
@@ -8040,7 +8030,6 @@
     },
     {
       "name": "Minced beef",
-      "externalId": "",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Minced beef",
