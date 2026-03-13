@@ -627,12 +627,10 @@ export const seedIngredients = internalMutation({
   },
 });
 
-const BACKFILL_BATCH_SIZE = 100;
-
 /**
  * Backfill ingredientId on existing recipe ingredients using the current
- * ingredients table (names + aliases). Processes recipes in batches to avoid
- * exceeding read limits.
+ * ingredients table (names + aliases). Uses a single query (Convex allows only
+ * one paginated query per function, so we use collect()).
  *
  * Run: npx convex run migrations:backfillRecipeIngredientIds
  */
@@ -640,55 +638,38 @@ export const backfillRecipeIngredientIds = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allIngredients = await ctx.db.query("ingredients").collect();
+    const recipes = await ctx.db.query("recipes").collect();
     const ingredientIdCache = new Map<string, Id<"ingredients">>();
-    let cursor: string | null = null;
     let updated = 0;
-    let totalRecipes = 0;
 
-    while (true) {
-      const result = await ctx.db
-        .query("recipes")
-        .order("asc")
-        .paginate({
-          numItems: BACKFILL_BATCH_SIZE,
-          cursor,
-        });
-      const batch = result.page;
-      totalRecipes += batch.length;
-      if (batch.length === 0) break;
+    for (const recipe of recipes) {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
 
-      for (const recipe of batch) {
-        if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
-
-        let changed = false;
-        const nextIngredients = recipe.ingredients.map((ing) => {
-          if (ing.ingredientId || !ing.name) return ing;
-          const key = normaliseIngredientName(ing.name);
-          let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
-          if (resolved === undefined) {
-            const found = resolveIngredientIdFromList(allIngredients, ing.name);
-            if (found) {
-              ingredientIdCache.set(key, found);
-              resolved = found;
-            }
+      let changed = false;
+      const nextIngredients = recipe.ingredients.map((ing) => {
+        if (ing.ingredientId || !ing.name) return ing;
+        const key = normaliseIngredientName(ing.name);
+        let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+        if (resolved === undefined) {
+          const found = resolveIngredientIdFromList(allIngredients, ing.name);
+          if (found) {
+            ingredientIdCache.set(key, found);
+            resolved = found;
           }
-          if (resolved !== undefined) {
-            changed = true;
-            return { ...ing, ingredientId: resolved };
-          }
-          return ing;
-        });
-
-        if (changed) {
-          await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
-          updated++;
         }
-      }
+        if (resolved !== undefined) {
+          changed = true;
+          return { ...ing, ingredientId: resolved };
+        }
+        return ing;
+      });
 
-      if (result.isDone) break;
-      cursor = result.continueCursor ?? null;
+      if (changed) {
+        await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+        updated++;
+      }
     }
 
-    return { updated, totalRecipes };
+    return { updated, totalRecipes: recipes.length };
   },
 });
