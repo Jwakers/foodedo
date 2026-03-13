@@ -10,13 +10,14 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadAndTransform } from "./lib/ingredients-food-json";
+import { loadAndTransform, type IngredientSeedItem } from "./lib/ingredients-food-json";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SEED_PATH = path.resolve(__dirname, "../docs/Food.json");
 const PREVIEW_PATH = path.resolve(__dirname, "../docs/ingredients-seed-preview.json");
 const CONVEX_SEED_PATH = path.resolve(__dirname, "../convex/ingredients-seed.json");
+const MANUAL_SEED_PATH = path.resolve(__dirname, "../convex/ingredients-seed-manual.json");
 
 function main() {
   if (!fs.existsSync(SEED_PATH)) {
@@ -25,8 +26,32 @@ function main() {
   }
 
   console.log("Loading Food.json (JSONL) from", SEED_PATH);
-  const items = loadAndTransform(SEED_PATH);
-  console.log("Parsed", items.length, "ingredients");
+  const foodItems = loadAndTransform(SEED_PATH);
+  console.log("Parsed", foodItems.length, "ingredients from Food.json");
+
+  let manualItems: IngredientSeedItem[] = [];
+  if (fs.existsSync(MANUAL_SEED_PATH)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(MANUAL_SEED_PATH, "utf-8")) as {
+        items?: Partial<IngredientSeedItem>[];
+      };
+      const baseItems = raw.items ?? [];
+      manualItems = baseItems.map((item) => ({
+        name: item.name ?? "",
+        externalId: item.externalId ?? "",
+        foodGroup: item.foodGroup,
+        foodSubGroup: item.foodSubGroup,
+        displayName: item.displayName ?? item.name ?? "",
+        aliases: item.aliases ?? [],
+      }));
+      console.log("Loaded", manualItems.length, "manual ingredients from convex/ingredients-seed-manual.json");
+    } catch (e) {
+      console.error("Failed to load manual seed from", MANUAL_SEED_PATH, e);
+    }
+  }
+
+  const items: IngredientSeedItem[] = [...foodItems, ...manualItems];
+  console.log("Total items for preview/seed:", items.length);
 
   const output = {
     _meta: {

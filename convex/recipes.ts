@@ -17,6 +17,7 @@ import {
   preparationUnion,
   unitsUnion,
 } from "./schema";
+import { resolveIngredientIdFromList } from "./ingredients";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -449,20 +450,12 @@ export const createRecipe = mutation({
     }
 
     let ingredients = args.ingredients;
-    // Map ingredients to database ingredients if possible
     if (ingredients?.length) {
       const allIngredients = await ctx.db.query("ingredients").collect();
-      const ingredientMap = new Map(
-        allIngredients.map((ing) => [ing.name.trim().toLowerCase(), ing._id]),
-      );
-
       ingredients = ingredients.map((ing) => {
-        const ingredientId = ingredientMap.get(ing.name.trim().toLowerCase());
-
-        return {
-          ...ing,
-          ingredientId,
-        };
+        const ingredientId =
+          resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
+        return { ...ing, ingredientId };
       });
     }
 
@@ -573,24 +566,17 @@ export const updateRecipe = mutation({
     }
 
     let ingredients = recipe.ingredients;
-    // Map ingredients to database ingredients if possible
     if (args.ingredients?.length) {
       const allIngredients = await ctx.db.query("ingredients").collect();
-      const ingredientMap = new Map(
-        allIngredients.map((ing) => [ing.name.trim().toLowerCase(), ing._id]),
-      );
-
-      ingredients = await Promise.all(
-        args.ingredients.map((ing) => {
-          const ingredientId = ingredientMap.get(ing.name.trim().toLowerCase());
-
-          return {
-            ...ing,
-            ingredientId,
-            amount: ing.amount ?? 0,
-          };
-        }),
-      );
+      ingredients = args.ingredients.map((ing) => {
+        const ingredientId =
+          resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
+        return {
+          ...ing,
+          ingredientId,
+          amount: ing.amount ?? 0,
+        };
+      });
     }
 
     // Clean up orphaned method step images when method is updated

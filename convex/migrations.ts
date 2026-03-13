@@ -16,6 +16,7 @@ import {
 
 import { WithoutSystemFields } from "convex/server";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
+import { resolveIngredientIdFromList } from "./ingredients";
 
 /**
  * Migration to clear image on all system recipes (e.g. before regenerating images).
@@ -570,7 +571,7 @@ import ingredientsSeedData from "./ingredients-seed.json";
 
 type SeedItem = {
   name: string;
-  externalId: string;
+  externalId?: string;
   foodGroup?: string;
   foodSubGroup?: string;
   displayName?: string;
@@ -590,17 +591,25 @@ export const seedIngredients = internalMutation({
     let inserted = 0;
     let updated = 0;
     for (const item of items) {
-      const existing = await ctx.db
-        .query("ingredients")
-        .withIndex("by_externalId", (q) => q.eq("externalId", item.externalId))
-        .first();
+      let existing: Doc<"ingredients"> | null = null;
+      if (item.externalId && item.externalId.trim() !== "") {
+        existing = await ctx.db
+          .query("ingredients")
+          .withIndex("by_externalId", (q) => q.eq("externalId", item.externalId as string))
+          .first();
+      } else {
+        existing = await ctx.db
+          .query("ingredients")
+          .filter((q) => q.eq(q.field("name"), item.name))
+          .first();
+      }
       const doc = {
         name: item.name,
         foodGroup: item.foodGroup,
         displayName: item.displayName,
         foodSubGroup: item.foodSubGroup ?? undefined,
         isCustom: false,
-        externalId: item.externalId,
+        externalId: item.externalId?.trim() ? item.externalId : undefined,
         aliases: item.aliases,
       };
       if (existing) {
@@ -612,5 +621,44 @@ export const seedIngredients = internalMutation({
       }
     }
     return { inserted, updated, total: items.length };
+  },
+});
+
+/**
+ * Backfill ingredientId on existing recipe ingredients using the current
+ * ingredients table (names + aliases).
+ *
+ * Run: npx convex run migrations:backfillRecipeIngredientIds
+ */
+export const backfillRecipeIngredientIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const allIngredients = await ctx.db.query("ingredients").collect();
+    const recipes = await ctx.db.query("recipes").collect();
+
+    let updated = 0;
+
+    for (const recipe of recipes) {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+      let changed = false;
+      const nextIngredients = recipe.ingredients.map((ing) => {
+        if (ing.ingredientId || !ing.name) return ing;
+        const ingredientId =
+          resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
+        if (ingredientId) {
+          changed = true;
+          return { ...ing, ingredientId };
+        }
+        return ing;
+      });
+
+      if (changed) {
+        await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+        updated++;
+      }
+    }
+
+    return { updated, totalRecipes: recipes.length };
   },
 });
