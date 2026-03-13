@@ -37,16 +37,25 @@ function main() {
       };
       const baseItems = raw.items ?? [];
       manualItems = baseItems.map((item) => {
+        const name = (item.name ?? "").trim();
+        if (name === "") {
+          throw new Error(
+            `Manual seed entry has blank name. Check convex/ingredients-seed-manual.json (item: ${JSON.stringify(item).slice(0, 80)}...)`
+          );
+        }
+        const displayName = (item.displayName ?? item.name ?? "").trim() || name;
+        const aliases = (item.aliases ?? [])
+          .map((a) => (a ?? "").trim())
+          .filter((a) => a !== "");
         const base = {
-          name: item.name ?? "",
+          name,
           foodGroup: item.foodGroup,
           foodSubGroup: item.foodSubGroup,
-          displayName: item.displayName ?? item.name ?? "",
-          aliases: item.aliases ?? [],
+          displayName: displayName || undefined,
+          aliases,
         };
-        return item.externalId != null && item.externalId !== ""
-          ? { ...base, externalId: item.externalId }
-          : base;
+        const rawExtId = (item.externalId ?? "").trim();
+        return rawExtId !== "" ? { ...base, externalId: rawExtId } : base;
       });
       console.log("Loaded", manualItems.length, "manual ingredients from convex/ingredients-seed-manual.json");
     } catch (e) {

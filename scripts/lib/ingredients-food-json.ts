@@ -28,7 +28,9 @@ export type IngredientSeedItem = {
 /** Convert one Food.json line to our seed shape. Aliases left empty for manual curation. */
 export function toSeedItem(row: FoodJsonLine): IngredientSeedItem {
   const name = (row.name ?? "").trim();
-  const externalId = row.public_id ?? String(row.id);
+  const rawPublicId = row.public_id?.trim();
+  const externalId =
+    rawPublicId !== undefined && rawPublicId !== "" ? rawPublicId : String(row.id);
   return {
     name,
     externalId,

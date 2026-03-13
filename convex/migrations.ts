@@ -15,7 +15,10 @@ import {
 } from "./lib/constants";
 
 import { WithoutSystemFields } from "convex/server";
-import { resolveIngredientIdFromList } from "./ingredients";
+import {
+  normaliseIngredientName,
+  resolveIngredientIdFromList,
+} from "./ingredients";
 import ingredientsSeedData from "./ingredients-seed.json";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
@@ -589,11 +592,13 @@ export const seedIngredients = internalMutation({
     let inserted = 0;
     let updated = 0;
     for (const item of items) {
+      const trimmed = item.externalId?.trim();
+      const extId = trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
       let existing: Doc<"ingredients"> | null = null;
-      if (item.externalId && item.externalId.trim() !== "") {
+      if (extId) {
         existing = await ctx.db
           .query("ingredients")
-          .withIndex("by_externalId", (q) => q.eq("externalId", item.externalId as string))
+          .withIndex("by_externalId", (q) => q.eq("externalId", extId))
           .first();
       } else {
         existing = await ctx.db
@@ -607,7 +612,7 @@ export const seedIngredients = internalMutation({
         displayName: item.displayName,
         foodSubGroup: item.foodSubGroup ?? undefined,
         isCustom: false,
-        externalId: item.externalId?.trim() ? item.externalId : undefined,
+        externalId: extId,
         aliases: item.aliases,
       };
       if (existing) {
@@ -635,6 +640,7 @@ export const backfillRecipeIngredientIds = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allIngredients = await ctx.db.query("ingredients").collect();
+    const ingredientIdCache = new Map<string, Id<"ingredients">>();
     let cursor: string | null = null;
     let updated = 0;
     let totalRecipes = 0;
@@ -657,11 +663,18 @@ export const backfillRecipeIngredientIds = internalMutation({
         let changed = false;
         const nextIngredients = recipe.ingredients.map((ing) => {
           if (ing.ingredientId || !ing.name) return ing;
-          const ingredientId =
-            resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
-          if (ingredientId) {
+          const key = normaliseIngredientName(ing.name);
+          let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+          if (resolved === undefined) {
+            const found = resolveIngredientIdFromList(allIngredients, ing.name);
+            if (found) {
+              ingredientIdCache.set(key, found);
+              resolved = found;
+            }
+          }
+          if (resolved !== undefined) {
             changed = true;
-            return { ...ing, ingredientId };
+            return { ...ing, ingredientId: resolved };
           }
           return ing;
         });
