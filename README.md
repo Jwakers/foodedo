@@ -4,16 +4,12 @@
 
 ## Next Immediate Steps
 
-- [x] Meal reselection modal
-- [x] Home page and general messaging updates
-- [x] Update the filtering on the Discover page, remove category.
-- [x] Change order of Discover page to alphabetical
-- [ ] Use next/image for public images on the Discover page
-- [ ] Add recipe schema to public recipe pages
-- [ ] My recipes page should have a tab that switches to show discover recipes so users aren't taken away from the app to see public pages
-- [ ] Titles on listing cards need either a gradient or blurred background
+Ingredients convenience infra:
 
-- [ ] Set up the blog for the site (infrastructure).
+- [ ] Add internal use ingredients table from public data
+- [ ] Add a mapping system that maps ingredients to their ingredient table counter part
+- [ ] Add a shopping list combination logic, synonyms and measurement normalisation
+- [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
 
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
@@ -45,7 +41,6 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 ### Social, SEO and AEO
 
 - Confirm branding identity, logo and name etc
-- Set up a blogging system for the site (sanity or similar CMS)
 - Set up social channels: TikTok and X
 
 ## 🐛 Bug Tracking
@@ -56,13 +51,13 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] Its is possible for the parser to output technically correct but odd ingredient mappings like 0.5 Whole Lime. This can be seen when extracting this recipe: <https://www.greatbritishchefs.com/recipes/salmon-kilaw-recipe>
 - [ ] Overflow issue on shopping page (IOS)
 - [ ] Recipe page loading skeleton overflows
-- [ ] Whene deleting a household an error is surfaced on the client. This is likely due to that household no longer being available. Instead we should redirect or 404
+- [ ] When deleting a household an error is surfaced on the client. This is likely due to that household no longer being available. Instead we should redirect or 404
 - [ ] The back to dashboard button on the error page does not seem to work
 - [ ] Occasionally get redirected to a 404 after signing in
 
 ## Tech debt
 
-- [ ] **Discover and recipe browsing**: Refactor to server rendering for performance. Currently, uses Convex client-side queries (`useQuery`). Server-rendering will improve initial load times and SEO for public recipe pages.
+- [x] **Discover and recipe browsing**: Refactor to server rendering for performance. Currently, uses Convex client-side queries (`useQuery`). Server-rendering will improve initial load times and SEO for public recipe pages.
 - [ ] Image upload needs some work. Need to decouple logic from the FE with hooks and create reusable components for upload.
 - [ ] Shopping list is very complex. A refactor is needed keeping all state at the root and reducing complexity where possible. Components should be abstracted where possible and optimistic updates should also be added. This needs to be done manually and not with AI.
 

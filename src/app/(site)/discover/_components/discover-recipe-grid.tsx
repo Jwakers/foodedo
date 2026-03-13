@@ -1,10 +1,10 @@
 "use client";
 
 import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
+import type { RecipeListItem } from "@/components/recipes/recipe-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, titleCase } from "@/lib/utils";
-import type { RecipeListItem } from "@/components/recipes/recipe-card";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -18,7 +18,6 @@ function DiscoverRecipeCard({ recipe }: { recipe: RecipeListItem }) {
     <Link href={ROUTES.discoverRecipe(recipe._id)}>
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 pt-0">
         <div className="aspect-4/3 bg-linear-to-br from-primary/20 to-primary/5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
           {recipe.image && (
             <Image
               src={recipe.image}
@@ -28,6 +27,11 @@ function DiscoverRecipeCard({ recipe }: { recipe: RecipeListItem }) {
               className="object-cover size-full"
             />
           )}
+          {/* Strong bottom gradient so title stays legible over any image */}
+          <div
+            className="absolute inset-0 bg-linear-to-t from-black/70 to-64% to-transparent"
+            aria-hidden
+          />
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <Badge
               variant="secondary"
@@ -60,11 +64,7 @@ function DiscoverRecipeCard({ recipe }: { recipe: RecipeListItem }) {
   );
 }
 
-export function DiscoverRecipeGrid({
-  recipes,
-}: {
-  recipes: RecipeListItem[];
-}) {
+export function DiscoverRecipeGrid({ recipes }: { recipes: RecipeListItem[] }) {
   if (recipes.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">

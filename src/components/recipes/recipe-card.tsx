@@ -48,7 +48,6 @@ export function RecipeCard({
     <Link href={`${ROUTES.RECIPE}/${recipe._id}`}>
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 pt-0">
         <div className="aspect-4/3 bg-linear-to-br from-primary/20 to-primary/5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
           {recipe.image && (
             <Image
               src={recipe.image}
@@ -59,6 +58,11 @@ export function RecipeCard({
               unoptimized={!optimizeImage}
             />
           )}
+          {/* Strong bottom gradient so title stays legible over any image */}
+          <div
+            className="absolute inset-0 bg-linear-to-t from-black/70 to-64% to-transparent"
+            aria-hidden
+          />
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {showMealPlanBadge && recipe.isGeneratorEligible === true && (
               <span
