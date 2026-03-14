@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -31,6 +32,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
+import { normaliseNameForGrouping } from "@/lib/ingredient-grouping";
+import { isPantryStaple } from "@/lib/pantry-staples";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -46,6 +49,7 @@ import {
   Clock,
   Home,
   ListChecks,
+  Package,
   Plus,
   Search,
   ShoppingCart,
@@ -121,6 +125,21 @@ export default function ShoppingListClient() {
     () => buildShoppingListItems(selectedRecipes ?? []),
     [selectedRecipes],
   );
+  const { mainItems, pantryItems } = useMemo(() => {
+    const main: typeof flatIngredients = [];
+    const pantry: typeof flatIngredients = [];
+    for (const item of flatIngredients) {
+      if (isPantryStaple(item.name)) {
+        pantry.push(item);
+      } else {
+        main.push(item);
+      }
+    }
+    return { mainItems: main, pantryItems: pantry };
+  }, [flatIngredients]);
+  const [selectedPantryKeys, setSelectedPantryKeys] = useState<Set<string>>(
+    new Set(),
+  );
   const [showDoneDialog, setShowDoneDialog] = useState(false);
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
@@ -163,6 +182,15 @@ export default function ShoppingListClient() {
     });
   };
 
+  const itemsToCreate = useMemo(() => {
+    const items = [...mainItems];
+    for (const item of pantryItems) {
+      const key = getItemKey(item);
+      if (selectedPantryKeys.has(key)) items.push(item);
+    }
+    return items;
+  }, [mainItems, pantryItems, selectedPantryKeys]);
+
   const handleGenerateList = async () => {
     if (accessibleLists === undefined) {
       toast.info("Loading your shopping lists…");
@@ -171,11 +199,13 @@ export default function ShoppingListClient() {
 
     try {
       const { listId } = await createShoppingList({
-        items: flatIngredients.map((item) => ({
+        items: itemsToCreate.map((item) => ({
           name: item.name,
-          amount: item.amount ?? null,
-          unit: item.unit,
+          amount: item.amountEntries?.[0]?.amount ?? item.amount ?? null,
+          unit: item.amountEntries?.[0]?.unit ?? item.unit,
           preparation: item.preparation,
+          ingredientId: item.ingredientId,
+          amountEntries: item.amountEntries,
         })),
         chalkboardItemIds: Array.from(selectedChalkboardItems),
       });
@@ -511,9 +541,74 @@ export default function ShoppingListClient() {
                 </div>
               )}
 
+              {/* Pantry staples section */}
+              {selectedRecipeIds.size > 0 && pantryItems.length > 0 && (
+                <Card className="mt-8 border-dashed">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <Package className="size-5 text-muted-foreground shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold mb-1">
+                          Do you want to include these pantry staples?
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          These are commonly kept on hand. Leave unchecked if
+                          you already have them.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {pantryItems.map((item) => {
+                        const key = getItemKey(item);
+                        const checked = selectedPantryKeys.has(key);
+                        return (
+                          <label
+                            key={key}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
+                              checked
+                                ? "bg-primary/10 border-primary/30"
+                                : "hover:bg-muted/50 border-border",
+                            )}
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(c) => {
+                                setSelectedPantryKeys((prev) => {
+                                  const next = new Set(prev);
+                                  if (c) next.add(key);
+                                  else next.delete(key);
+                                  return next;
+                                });
+                              }}
+                            />
+                            <span className="text-sm font-medium">
+                              {item.name}
+                              {item.amountEntries &&
+                                item.amountEntries.length > 0 && (
+                                  <span className="text-muted-foreground font-normal ml-1">
+                                    (
+                                    {item.amountEntries
+                                      .map((e) =>
+                                        `${e.amount ?? ""} ${e.unit ?? ""}`.trim(),
+                                      )
+                                      .filter(Boolean)
+                                      .join(", ")}
+                                    )
+                                  </span>
+                                )}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Generate Button */}
               {selectedRecipeIds.size > 0 && (
-                <div className="sticky bottom-nav mt-8">
+                <div className="sticky bottom-nav z-10 mt-8 bg-background pt-2 pb-1">
                   <Button
                     size="lg"
                     className="w-full shadow-lg"
@@ -521,7 +616,8 @@ export default function ShoppingListClient() {
                   >
                     <ShoppingCart className="size-5 mr-2" />
                     Create Shopping List ({selectedRecipeIds.size}{" "}
-                    {selectedRecipeIds.size === 1 ? "recipe" : "recipes"})
+                    {selectedRecipeIds.size === 1 ? "recipe" : "recipes"}) ·{" "}
+                    {itemsToCreate.length} items
                   </Button>
                 </div>
               )}
@@ -748,14 +844,36 @@ function SelectedRecipesList({ recipes }: { recipes: Recipe[] }) {
   );
 }
 
-const normaliseKey = (ingredient: NonNullable<Recipe["ingredients"]>[number]) =>
-  [
-    ingredient?.name?.trim().toLowerCase() ?? "",
-    ingredient?.unit?.trim().toLowerCase() ?? "",
-    ingredient?.preparation?.trim().toLowerCase() ?? "",
-  ].join("|");
+type RecipeIngredient = NonNullable<Recipe["ingredients"]>[number];
 
-const buildShoppingListItems = (recipes: Recipe[]) => {
+function getAggregationKey(ingredient: RecipeIngredient): string {
+  if (ingredient?.ingredientId) {
+    return ingredient.ingredientId;
+  }
+  return normaliseNameForGrouping(ingredient?.name ?? "") || "unnamed";
+}
+
+function getItemKey(item: {
+  name: string;
+  ingredientId?: Id<"ingredients">;
+}): string {
+  return (
+    item.ingredientId ?? (normaliseNameForGrouping(item.name) || "unnamed")
+  );
+}
+
+type AmountEntry = { amount: number | string | null; unit?: string };
+
+const buildShoppingListItems = (
+  recipes: Recipe[],
+): Array<{
+  name: string;
+  unit?: string;
+  preparation?: string;
+  amount: number | string | null;
+  ingredientId?: Id<"ingredients">;
+  amountEntries: AmountEntry[];
+}> => {
   const combined = new Map<
     string,
     {
@@ -763,6 +881,8 @@ const buildShoppingListItems = (recipes: Recipe[]) => {
       unit?: string;
       preparation?: string;
       amount: number | string | null;
+      ingredientId?: Id<"ingredients">;
+      amountEntries: AmountEntry[];
     }
   >();
 
@@ -770,45 +890,44 @@ const buildShoppingListItems = (recipes: Recipe[]) => {
     recipe.ingredients?.forEach((ingredient) => {
       if (!ingredient?.name) return;
 
-      const key = normaliseKey(ingredient);
-      const existing = combined.get(key);
-
-      // Handle optional amounts - if amount is undefined, treat it as null
+      const key = getAggregationKey(ingredient);
       const amountValue =
         ingredient.amount === undefined
           ? null
           : typeof ingredient.amount === "number"
             ? ingredient.amount
             : Number(ingredient.amount);
+      const storedAmount: number | string | null = Number.isFinite(amountValue)
+        ? amountValue
+        : typeof ingredient.amount === "string"
+          ? ingredient.amount
+          : (ingredient.amount ?? null);
 
+      const entry: AmountEntry = {
+        amount: storedAmount,
+        unit: ingredient.unit,
+      };
+      const existing = combined.get(key);
       if (!existing) {
         combined.set(key, {
           name: ingredient.name,
           unit: ingredient.unit,
           preparation: ingredient.preparation,
-          amount: Number.isFinite(amountValue) ? amountValue : null,
+          amount: storedAmount,
+          ingredientId: ingredient.ingredientId,
+          amountEntries: [entry],
         });
         return;
       }
-
-      // Only combine amounts if both are numeric
-      if (
-        typeof existing.amount === "number" &&
-        typeof amountValue === "number" &&
-        Number.isFinite(amountValue)
-      ) {
-        existing.amount += amountValue;
-      } else if (ingredient.amount !== undefined) {
-        // If we have a non-null amount to add
-        const parts = [existing.amount, ingredient.amount]
-          .filter((v) => v !== null)
-          .map(String);
-        existing.amount = parts.length > 0 ? parts.join(" + ") : null;
-      }
+      existing.amountEntries.push(entry);
     });
   });
 
-  return Array.from(combined.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+  return Array.from(combined.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((item) => ({
+      ...item,
+      amount: item.amountEntries[0]?.amount ?? null,
+      unit: item.amountEntries[0]?.unit,
+    }));
 };

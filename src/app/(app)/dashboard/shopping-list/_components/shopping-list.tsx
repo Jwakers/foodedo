@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import useShare from "@/lib/hooks/use-share";
+import { AISLE_ORDER, getAisleForFoodGroup } from "@/lib/shopping-list-aisles";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -30,7 +31,7 @@ import {
   ShoppingCart,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type ShoppingList = NonNullable<
@@ -74,7 +75,74 @@ export default function ShoppingList({
   const addChalkboardItems = useMutation(api.shoppingLists.addChalkboardItems);
 
   const isFinalised = shoppingList.status === "active";
-  const allIngredients = shoppingList.items;
+  const ingredientIds = useMemo(
+    () =>
+      shoppingList.items
+        .map((i) => i.ingredientId)
+        .filter((id): id is Id<"ingredients"> => id != null),
+    [shoppingList.items]
+  );
+  const ingredientsMap = useQuery(
+    api.ingredients.getByIds,
+    ingredientIds.length > 0 ? { ids: ingredientIds } : "skip"
+  );
+  const getDisplayName = (item: (typeof shoppingList.items)[number]) => {
+    if (item.ingredientId && ingredientsMap?.[item.ingredientId]) {
+      const ing = ingredientsMap[item.ingredientId];
+      return ing.displayName ?? ing.name ?? item.name;
+    }
+    return item.name;
+  };
+  const getAliasesHint = (item: (typeof shoppingList.items)[number]) => {
+    if (!item.ingredientId || !ingredientsMap?.[item.ingredientId]?.aliases?.length)
+      return null;
+    const aliases = ingredientsMap[item.ingredientId].aliases?.slice(0, 3) ?? [];
+    return aliases.length > 0 ? aliases.join(", ") : null;
+  };
+  const getCategory = (item: (typeof shoppingList.items)[number]) => {
+    const foodGroup =
+      item.ingredientId && ingredientsMap?.[item.ingredientId]?.foodGroup
+        ? ingredientsMap[item.ingredientId].foodGroup!
+        : undefined;
+    return getAisleForFoodGroup(foodGroup);
+  };
+  const getAmountLines = (item: (typeof shoppingList.items)[number]) => {
+    const entries =
+      item.amountEntries && item.amountEntries.length > 0
+        ? item.amountEntries
+        : [
+            {
+              amount: item.amount,
+              unit: item.unit,
+            },
+          ];
+    return entries
+      .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
+      .filter(Boolean);
+  };
+  const allIngredients = useMemo(
+    () =>
+      [...shoppingList.items].sort((a, b) =>
+        getDisplayName(a).localeCompare(getDisplayName(b), undefined, { sensitivity: "base" })
+      ),
+    [shoppingList.items, ingredientsMap]
+  );
+  const ingredientsByCategory = useMemo(() => {
+    const groups = new Map<string, (typeof shoppingList.items)[number][]>();
+    for (const item of allIngredients) {
+      const cat = getCategory(item);
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat)!.push(item);
+    }
+    const orderIdx = (cat: string) => {
+      const i = AISLE_ORDER.indexOf(cat as (typeof AISLE_ORDER)[number]);
+      return i >= 0 ? i : AISLE_ORDER.length;
+    };
+    const sortedCategories = [...groups.keys()].sort(
+      (a, b) => orderIdx(a) - orderIdx(b),
+    );
+    return sortedCategories.map((cat) => ({ category: cat, items: groups.get(cat)! }));
+  }, [allIngredients, ingredientsMap]);
 
   // Get chalkboard data
   const households = useQuery(api.households.getUserHouseholds);
@@ -250,16 +318,18 @@ export default function ShoppingList({
   };
 
   const handleShare = async () => {
-    // Create a formatted text version of the shopping list
-    const listText = `Shopping List - ${new Date().toLocaleDateString()}\n\n${allIngredients
-      .map((item) => {
+    const lines = ingredientsByCategory.flatMap(({ category, items }) => [
+      category,
+      ...items.map((item) => {
         const checked = item.checked ? "✓ " : "";
-        const amt = item.amount != null ? String(item.amount) : "";
-        const unit = item.unit ? ` ${item.unit}` : "";
-        const space = amt || unit ? " " : "";
-        return `${checked}• ${amt}${unit}${space}${item.name}`;
-      })
-      .join("\n")}`;
+        const amtLines = getAmountLines(item);
+        const amtStr =
+          amtLines.length > 0 ? amtLines.join(", ") + " " : "";
+        return `${checked}• ${amtStr}${getDisplayName(item)}`;
+      }),
+      "",
+    ]);
+    const listText = `Shopping List - ${new Date().toLocaleDateString()}\n\n${lines.join("\n")}`;
 
     // Check if Web Share API is available (primarily mobile)
     if (canShare) {
@@ -277,31 +347,40 @@ export default function ShoppingList({
       <div className="hidden print:block">
         <div className="p-8">
           <h1 className="text-3xl font-bold mb-2">Shopping List</h1>
-          <div className="space-y-1">
-            {allIngredients.map((item) => {
-              return (
-                <div
-                  key={item._id}
-                  className="flex items-start gap-3 py-2 border-b"
-                >
-                  <div className="size-5 border-2 rounded flex-shrink-0 mt-0.5">
-                    {item.checked && (
-                      <div className="w-full h-full flex items-center justify-center">
-                        ✓
+          <div className="space-y-4">
+            {ingredientsByCategory.map(({ category, items }) => (
+              <div key={category}>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  {category}
+                </h2>
+                <div className="space-y-1">
+                  {items.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-start gap-3 py-2 border-b"
+                    >
+                      <div className="size-5 border-2 rounded shrink-0 mt-0.5">
+                        {item.checked && (
+                          <div className="w-full h-full flex items-center justify-center">
+                            ✓
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <span className={cn(item.checked && "line-through")}>
-                      {item.name}
-                    </span>
-                    <span className="ml-2">
-                      {item.amount ?? ""} {item.unit ?? ""}
-                    </span>
-                  </div>
+                      <div className="flex-1">
+                        <span className={cn(item.checked && "line-through")}>
+                          {getDisplayName(item)}
+                        </span>
+                        {getAmountLines(item).length > 0 && (
+                          <span className="ml-2">
+                            {getAmountLines(item).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
           <p className="text-sm mt-8">Total items: {allIngredients.length}</p>
@@ -409,9 +488,14 @@ export default function ShoppingList({
               </div>
             )}
 
-            <div className="space-y-2">
-              {allIngredients.map((item) => {
-                return (
+            <div className="space-y-6">
+              {ingredientsByCategory.map(({ category, items }) => (
+                <div key={category}>
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {category}
+                  </h4>
+                  <div className="space-y-2">
+                    {items.map((item) => (
                   <div
                     key={item._id}
                     className={cn(
@@ -439,29 +523,68 @@ export default function ShoppingList({
                             isFinalised && item.checked && "line-through",
                           )}
                         >
-                          {item.name}
+                          {getDisplayName(item)}
                         </p>
+                        {getAliasesHint(item) && (
+                          <p className="text-xs text-muted-foreground">
+                            e.g. {getAliasesHint(item)}
+                          </p>
+                        )}
                       </div>
 
                       {/* Amount Display/Controls */}
-                      {(item.amount !== undefined && item.amount !== null) ||
-                      item.unit !== undefined ? (
-                        isFinalised ? (
-                          // Static display when finalized
-                          <p className="text-sm text-muted-foreground capitalize">
-                            {item.amount ?? ""} {item.unit ?? ""}
-                          </p>
-                        ) : (
-                          // Editable controls before finalized
+                      {(() => {
+                        const entries =
+                          item.amountEntries && item.amountEntries.length > 0
+                            ? item.amountEntries
+                            : [
+                                {
+                                  amount: item.amount,
+                                  unit: item.unit,
+                                },
+                              ].filter(
+                                (e) =>
+                                  e.amount != null ||
+                                  (e.unit != null && e.unit !== ""),
+                              );
+                        if (entries.length === 0) return null;
+                        // Multiple uses: list each on its own line
+                        if (entries.length > 1) {
+                          return (
+                            <div className="space-y-0.5">
+                              {entries.map((entry, i) => (
+                                <p
+                                  key={i}
+                                  className="text-sm text-muted-foreground capitalize"
+                                >
+                                  {entry.amount ?? ""}{" "}
+                                  {entry.unit ?? ""}
+                                </p>
+                              ))}
+                            </div>
+                          );
+                        }
+                        // Single use: editable when draft + numeric
+                        const single = entries[0]!;
+                        if (isFinalised) {
+                          return (
+                            <p className="text-sm text-muted-foreground capitalize">
+                              {single.amount ?? ""} {single.unit ?? ""}
+                            </p>
+                          );
+                        }
+                        const isNumeric =
+                          typeof single.amount === "number" &&
+                          !isNaN(single.amount);
+                        return (
                           <div className="flex items-center gap-1.5">
-                            {typeof item.amount === "number" &&
-                            !isNaN(item.amount) ? (
+                            {isNumeric ? (
                               <>
                                 <button
                                   onClick={() =>
                                     handleAmountChange(
                                       item._id,
-                                      (item.amount as number) - 1,
+                                      (single.amount as number) - 1,
                                     )
                                   }
                                   className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
@@ -470,13 +593,13 @@ export default function ShoppingList({
                                   <Minus className="size-3.5 text-muted-foreground" />
                                 </button>
                                 <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
-                                  {item.amount}
+                                  {single.amount}
                                 </span>
                                 <button
                                   onClick={() =>
                                     handleAmountChange(
                                       item._id,
-                                      (item.amount as number) + 1,
+                                      (single.amount as number) + 1,
                                     )
                                   }
                                   className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
@@ -487,17 +610,17 @@ export default function ShoppingList({
                               </>
                             ) : (
                               <span className="text-sm text-muted-foreground">
-                                {item.amount}
+                                {single.amount}
                               </span>
                             )}
-                            {item.unit && (
+                            {single.unit && (
                               <span className="text-sm text-muted-foreground ml-0.5">
-                                {item.unit}
+                                {single.unit}
                               </span>
                             )}
                           </div>
-                        )
-                      ) : null}
+                        );
+                      })()}
                     </div>
 
                     {/* Remove Button (only in editing state) */}
@@ -509,12 +632,14 @@ export default function ShoppingList({
                         onClick={() => handleRemoveItem(item._id)}
                       >
                         <X className="size-4" />
-                        <span className="sr-only">Remove {item.name}</span>
+                        <span className="sr-only">Remove {getDisplayName(item)}</span>
                       </Button>
                     )}
                   </div>
-                );
-              })}
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {allIngredients.length === 0 && (

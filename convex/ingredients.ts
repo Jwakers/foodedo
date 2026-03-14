@@ -56,3 +56,54 @@ export const resolveByName = query({
     return await ctx.db.get(id);
   },
 });
+
+/**
+ * Fetch ingredients by IDs (e.g. for shopping list display names).
+ * Returns a map keyed by id for easy lookup; missing ids are omitted.
+ */
+export const getByIds = query({
+  args: { ids: v.array(v.id("ingredients")) },
+  handler: async (ctx, args) => {
+    const uniq = [...new Set(args.ids)];
+    const docs = await Promise.all(uniq.map((id) => ctx.db.get(id)));
+    const result: Record<string, Doc<"ingredients">> = {};
+    docs.forEach((doc) => {
+      if (doc) result[doc._id] = doc;
+    });
+    return result;
+  },
+});
+
+/**
+ * Get the distinct foodGroup values currently present on ingredients.
+ * Useful for maintaining a schema union and UI category mapping.
+ */
+export const getDistinctFoodGroups = query({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("ingredients").collect();
+    const set = new Set<string>();
+    for (const ing of all) {
+      const v = ing.foodGroup?.trim();
+      if (v) set.add(v);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  },
+});
+
+/**
+ * Get the distinct foodSubGroup values currently present on ingredients.
+ * Useful for maintaining a schema union and UI subcategory mapping.
+ */
+export const getDistinctFoodSubGroups = query({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("ingredients").collect();
+    const set = new Set<string>();
+    for (const ing of all) {
+      const v = ing.foodSubGroup?.trim();
+      if (v) set.add(v);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  },
+});

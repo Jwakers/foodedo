@@ -108,7 +108,7 @@ export function CannyFeedbackButton() {
       rel="noreferrer noopener"
       target="_blank"
       aria-label="Leave feedback"
-      className="ml-4 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
+      className="ml-4 pointer-events-auto inline-flex items-center gap-1 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
     >
       <MessageSquare className="size-4" />
       <p>

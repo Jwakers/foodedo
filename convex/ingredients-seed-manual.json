@@ -106,6 +106,148 @@
         "ground beef",
         "beef mince"
       ]
+    },
+    {
+      "name": "Ground pork",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Ground pork",
+      "aliases": [
+        "ground pork",
+        "minced pork",
+        "pork mince"
+      ]
+    },
+    {
+      "name": "Duck breast",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Duck breast",
+      "aliases": [
+        "duck breast",
+        "duck breasts",
+        "breast of duck"
+      ]
+    },
+    {
+      "name": "Duck leg",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Duck leg",
+      "aliases": [
+        "duck leg",
+        "duck legs",
+        "duck drumstick",
+        "duck drumsticks"
+      ]
+    },
+    {
+      "name": "Turkey breast",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Turkey breast",
+      "aliases": [
+        "turkey breast",
+        "turkey breasts",
+        "breast of turkey"
+      ]
+    },
+    {
+      "name": "Turkey thigh",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Turkey thigh",
+      "aliases": [
+        "turkey thigh",
+        "turkey thighs"
+      ]
+    },
+    {
+      "name": "Chicken wing",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Chicken wing",
+      "aliases": [
+        "chicken wing",
+        "chicken wings"
+      ]
+    },
+    {
+      "name": "Salmon fillet",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Fishes",
+      "displayName": "Salmon fillet",
+      "aliases": [
+        "salmon fillet",
+        "salmon fillets",
+        "salmon"
+      ]
+    },
+    {
+      "name": "Cod fillet",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Fishes",
+      "displayName": "Cod fillet",
+      "aliases": [
+        "cod fillet",
+        "cod fillets",
+        "cod"
+      ]
+    },
+    {
+      "name": "Bacon",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Bacon",
+      "aliases": [
+        "bacon",
+        "streaky bacon",
+        "back bacon",
+        "bacon rashers"
+      ]
+    },
+    {
+      "name": "Pork belly",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Pork belly",
+      "aliases": [
+        "pork belly",
+        "belly of pork"
+      ]
+    },
+    {
+      "name": "Pork chop",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Pork chop",
+      "aliases": [
+        "pork chop",
+        "pork chops"
+      ]
+    },
+    {
+      "name": "Lamb chop",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Sheep",
+      "displayName": "Lamb chop",
+      "aliases": [
+        "lamb chop",
+        "lamb chops",
+        "lamb cutlet",
+        "lamb cutlets"
+      ]
+    },
+    {
+      "name": "Minced lamb",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Sheep",
+      "displayName": "Minced lamb",
+      "aliases": [
+        "minced lamb",
+        "ground lamb",
+        "lamb mince"
+      ]
     }
   ]
 }

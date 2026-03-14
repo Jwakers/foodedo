@@ -27,10 +27,20 @@ function main() {
     process.exit(preview.status ?? 1);
   }
 
-  console.log("Running migrations:seedIngredients...");
+  console.log("Populating aliases in seed file...");
+  const aliasScript = spawnSync("pnpm", ["run", "populate-ingredient-aliases"], {
+    cwd: projectRoot,
+    stdio: "inherit",
+    shell: true,
+  });
+  if (aliasScript.status !== 0) {
+    process.exit(aliasScript.status ?? 1);
+  }
+
+  console.log("Running migrations:seedIngredients (pushing latest code so seed file with aliases is used)...");
   const result = spawnSync(
     "npx",
-    ["convex", "run", "migrations:seedIngredients"],
+    ["convex", "run", "migrations:seedIngredients", "--push"],
     {
       cwd: projectRoot,
       stdio: "inherit",

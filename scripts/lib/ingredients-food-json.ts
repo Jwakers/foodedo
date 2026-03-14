@@ -13,6 +13,8 @@ export type FoodJsonLine = {
   food_group?: string;
   food_subgroup?: string;
   public_id?: string;
+  /** "specific" = real ingredient, "generic" = category label (e.g. "Herbs and Spices") – we exclude generic from the seed */
+  category?: string;
 };
 
 /** Shape we insert into Convex ingredients table (and output in preview JSON) */
@@ -51,6 +53,8 @@ export function loadAndTransform(seedPath: string): IngredientSeedItem[] {
     try {
       const row = JSON.parse(line) as FoodJsonLine;
       if (!row.name?.trim()) continue;
+      // Skip category rows (e.g. "Herbs and Spices", "Fruits") – they are labels, not ingredients
+      if (row.category === "generic") continue;
       items.push(toSeedItem(row));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

@@ -1,13 +1,13 @@
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
+import { internalMutation } from "./_generated/server";
 import {
   COMPLEXITY_TIERS,
-  CUISINES,
-  PRIMARY_PROTEINS,
   ComplexityTier,
   Cuisine,
+  CUISINES,
   PreparationOption,
+  PRIMARY_PROTEINS,
   PrimaryProtein,
   RecipeCategory,
   RecipeSource,
@@ -573,8 +573,8 @@ export const validateRecipesGeneratorEligibility = internalMutation({
 type SeedItem = {
   name: string;
   externalId?: string;
-  foodGroup?: string;
-  foodSubGroup?: string;
+  foodGroup?: Doc<"ingredients">["foodGroup"];
+  foodSubGroup?: Doc<"ingredients">["foodSubGroup"];
   displayName?: string;
   aliases: string[];
 };
@@ -588,12 +588,14 @@ type SeedItem = {
 export const seedIngredients = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const items: SeedItem[] = (ingredientsSeedData as { items: SeedItem[] }).items ?? [];
+    const items: SeedItem[] =
+      (ingredientsSeedData as { items: SeedItem[] }).items ?? [];
     let inserted = 0;
     let updated = 0;
     for (const item of items) {
       const trimmed = item.externalId?.trim();
-      const extId = trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
+      const extId =
+        trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
       let existing: Doc<"ingredients"> | null = null;
       if (extId) {
         existing = await ctx.db
@@ -610,10 +612,12 @@ export const seedIngredients = internalMutation({
         name: item.name,
         foodGroup: item.foodGroup,
         displayName: item.displayName,
-        foodSubGroup: item.foodSubGroup ?? undefined,
+        foodSubGroup: (item.foodSubGroup ?? undefined) as
+          | Doc<"ingredients">["foodSubGroup"]
+          | undefined,
         isCustom: false,
         externalId: extId,
-        aliases: item.aliases,
+        aliases: item.aliases ?? [],
       };
       if (existing) {
         await ctx.db.patch(existing._id, doc);
@@ -649,7 +653,8 @@ export const backfillRecipeIngredientIds = internalMutation({
       const nextIngredients = recipe.ingredients.map((ing) => {
         if (ing.ingredientId || !ing.name) return ing;
         const key = normaliseIngredientName(ing.name);
-        let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+        let resolved: Id<"ingredients"> | undefined =
+          ingredientIdCache.get(key);
         if (resolved === undefined) {
           const found = resolveIngredientIdFromList(allIngredients, ing.name);
           if (found) {
@@ -671,5 +676,49 @@ export const backfillRecipeIngredientIds = internalMutation({
     }
 
     return { updated, totalRecipes: recipes.length };
+  },
+});
+
+/**
+ * One-off: delete ingredient rows that are category labels from Food.json (category=generic).
+ * Run once after filtering generic rows in the seed loader: npx convex run migrations:deleteCategoryIngredients
+ */
+const INGREDIENT_CATEGORY_NAMES = new Set([
+  "Alcoholic beverages",
+  "Beverages",
+  "Brassicas",
+  "Cereals and cereal products",
+  "Citrus",
+  "Cocoa and cocoa products",
+  "Coffee",
+  "Coffee and coffee products",
+  "Crustaceans",
+  "Eggs",
+  "Fats and oils",
+  "Fishes",
+  "Fruits",
+  "Green vegetables",
+  "Herbs and Spices",
+  "Lentils",
+  "Milk and milk products",
+  "Mollusks",
+  "Mushrooms",
+  "Nuts",
+  "Onion-family vegetables",
+  "Pomes",
+  "Pulses",
+  "Roe",
+  "Root vegetables",
+]);
+
+export const deleteCategoryIngredients = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("ingredients").collect();
+    const toDelete = all.filter((ing) => INGREDIENT_CATEGORY_NAMES.has(ing.name));
+    for (const doc of toDelete) {
+      await ctx.db.delete(doc._id);
+    }
+    return { deleted: toDelete.length, names: toDelete.map((d) => d.name) };
   },
 });

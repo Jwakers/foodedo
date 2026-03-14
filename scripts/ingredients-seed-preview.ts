@@ -69,7 +69,33 @@ function main() {
     }
   }
 
-  const items: IngredientSeedItem[] = [...foodItems, ...manualItems];
+  let items: IngredientSeedItem[] = [...foodItems, ...manualItems];
+
+  // Preserve aliases from existing seed so regeneration doesn't wipe populate-ingredient-aliases output
+  if (fs.existsSync(CONVEX_SEED_PATH)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(CONVEX_SEED_PATH, "utf-8")) as {
+        items?: IngredientSeedItem[];
+      };
+      const aliasByKey = new Map<string, string[]>();
+      for (const item of existing.items ?? []) {
+        const key = (item.externalId ?? item.name ?? "").trim();
+        if (key && item.aliases?.length) aliasByKey.set(key, item.aliases);
+      }
+      if (aliasByKey.size > 0) {
+        items = items.map((item) => {
+          const key = (item.externalId ?? item.name ?? "").trim();
+          const preserved = key ? aliasByKey.get(key) : undefined;
+          if (preserved !== undefined) return { ...item, aliases: preserved };
+          return item;
+        });
+        console.log("Preserved aliases for", aliasByKey.size, "ingredients from existing seed");
+      }
+    } catch (e) {
+      console.warn("Could not load existing seed to preserve aliases:", (e as Error).message);
+    }
+  }
+
   console.log("Total items for preview/seed:", items.length);
 
   const output = {

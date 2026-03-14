@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "generatedAt": "2026-03-13T20:29:06.005Z",
+    "generatedAt": "2026-03-14T15:31:16.586Z",
     "sourceFile": "docs/Food.json",
-    "totalItems": 1002,
+    "totalItems": 990,
     "description": "Structure of what will be seeded into the ingredients table. Run seed-ingredients to apply."
   },
   "items": [
@@ -20,7 +20,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Savoy cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages",
+        "savoy",
+        "Savoy cabbages"
+      ]
     },
     {
       "name": "Silver linden",
@@ -36,7 +41,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Kiwi",
-      "aliases": []
+      "aliases": [
+        "kiwis",
+        "kiwi fruit"
+      ]
     },
     {
       "name": "Allium",
@@ -52,7 +60,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Garden onion",
-      "aliases": []
+      "aliases": [
+        "onion",
+        "onions",
+        "Garden onions"
+      ]
     },
     {
       "name": "Leek",
@@ -60,7 +72,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Leek",
-      "aliases": []
+      "aliases": [
+        "leeks"
+      ]
     },
     {
       "name": "Garlic",
@@ -68,7 +82,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Garlic",
-      "aliases": []
+      "aliases": [
+        "garlic clove",
+        "garlic cloves",
+        "Garlics"
+      ]
     },
     {
       "name": "Chives",
@@ -76,7 +94,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Chives",
-      "aliases": []
+      "aliases": [
+        "chive",
+        "fresh chives",
+        "Chiveses"
+      ]
     },
     {
       "name": "Lemon verbena",
@@ -84,7 +106,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon verbena",
-      "aliases": []
+      "aliases": [
+        "verbena",
+        "fresh lemon verbena",
+        "Lemon verbenas"
+      ]
     },
     {
       "name": "Cashew nut",
@@ -92,7 +118,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Cashew nut",
-      "aliases": []
+      "aliases": [
+        "cashew",
+        "cashews",
+        "cashew nuts"
+      ]
     },
     {
       "name": "Pineapple",
@@ -100,7 +130,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Pineapple",
-      "aliases": []
+      "aliases": [
+        "pineapples"
+      ]
     },
     {
       "name": "Dill",
@@ -108,7 +140,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Dill",
-      "aliases": []
+      "aliases": [
+        "dill weed",
+        "fresh dill",
+        "dill leaves",
+        "Dills"
+      ]
     },
     {
       "name": "Custard apple",
@@ -116,7 +153,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Custard apple",
-      "aliases": []
+      "aliases": [
+        "custard apples",
+        "sugar apple"
+      ]
     },
     {
       "name": "Wild celery",
@@ -132,7 +172,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Peanut",
-      "aliases": []
+      "aliases": [
+        "peanuts",
+        "groundnut",
+        "groundnuts"
+      ]
     },
     {
       "name": "Burdock",
@@ -140,7 +184,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Burdock",
-      "aliases": []
+      "aliases": [
+        "burdock root",
+        "gobo",
+        "Burdocks"
+      ]
     },
     {
       "name": "Horseradish",
@@ -148,7 +196,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Horseradish",
-      "aliases": []
+      "aliases": [
+        "horseradish root",
+        "fresh horseradish",
+        "Horseradishes"
+      ]
     },
     {
       "name": "Tarragon",
@@ -156,7 +208,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Tarragon",
-      "aliases": []
+      "aliases": [
+        "fresh tarragon",
+        "tarragon leaves",
+        "Tarragons"
+      ]
     },
     {
       "name": "Mugwort",
@@ -172,7 +228,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Shoot vegetables",
       "displayName": "Asparagus",
-      "aliases": []
+      "aliases": [
+        "asparagus spears",
+        "asparagus stalks",
+        "Asparaguses"
+      ]
     },
     {
       "name": "Oat",
@@ -180,7 +240,9 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Oat",
-      "aliases": []
+      "aliases": [
+        "oats"
+      ]
     },
     {
       "name": "Star fruit",
@@ -188,7 +250,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Star fruit",
-      "aliases": []
+      "aliases": [
+        "starfruit",
+        "carambola",
+        "carambolas",
+        "Star fruits"
+      ]
     },
     {
       "name": "Brazil nut",
@@ -196,7 +263,9 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Brazil nut",
-      "aliases": []
+      "aliases": [
+        "brazil nuts"
+      ]
     },
     {
       "name": "Common beet",
@@ -204,7 +273,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Common beet",
-      "aliases": []
+      "aliases": [
+        "beet",
+        "beets",
+        "beetroot",
+        "beetroots",
+        "Common beets"
+      ]
     },
     {
       "name": "Borage",
@@ -220,7 +295,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Chinese mustard",
-      "aliases": []
+      "aliases": [
+        "chinese mustard greens",
+        "mustard greens",
+        "Chinese mustards"
+      ]
     },
     {
       "name": "Swede",
@@ -228,7 +307,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Swede",
-      "aliases": []
+      "aliases": [
+        "swedes",
+        "rutabaga",
+        "rutabagas",
+        "neep",
+        "neeps"
+      ]
     },
     {
       "name": "Rape",
@@ -236,7 +321,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Rape",
-      "aliases": []
+      "aliases": [
+        "rapeseed",
+        "Rapes"
+      ]
     },
     {
       "name": "Common cabbage",
@@ -244,7 +332,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Common cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages",
+        "white cabbage",
+        "green cabbage",
+        "Common cabbages"
+      ]
     },
     {
       "name": "Cauliflower",
@@ -252,7 +346,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Cauliflower",
-      "aliases": []
+      "aliases": [
+        "cauliflowers",
+        "cauli"
+      ]
     },
     {
       "name": "Brussel sprouts",
@@ -260,7 +357,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Brussel sprouts",
-      "aliases": []
+      "aliases": [
+        "brussels sprouts",
+        "brussel sprout",
+        "brussels",
+        "Brussel sproutses"
+      ]
     },
     {
       "name": "Kohlrabi",
@@ -268,7 +370,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Kohlrabi",
-      "aliases": []
+      "aliases": [
+        "kohlrabis"
+      ]
     },
     {
       "name": "Broccoli",
@@ -276,7 +380,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Broccoli",
-      "aliases": []
+      "aliases": [
+        "broccolis",
+        "broccoli florets"
+      ]
     },
     {
       "name": "Chinese cabbage",
@@ -284,7 +391,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Chinese cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "napa cabbage",
+        "bok choy",
+        "chinese cabbages"
+      ]
     },
     {
       "name": "Turnip",
@@ -292,7 +404,9 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Turnip",
-      "aliases": []
+      "aliases": [
+        "turnips"
+      ]
     },
     {
       "name": "Pigeon pea",
@@ -300,7 +414,11 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Pigeon pea",
-      "aliases": []
+      "aliases": [
+        "pigeon peas",
+        "toor dal",
+        "arhar dal"
+      ]
     },
     {
       "name": "Tea",
@@ -308,7 +426,12 @@
       "foodGroup": "Teas",
       "foodSubGroup": "Teas",
       "displayName": "Tea",
-      "aliases": []
+      "aliases": [
+        "black tea",
+        "green tea",
+        "tea leaves",
+        "Teas"
+      ]
     },
     {
       "name": "Capers",
@@ -316,7 +439,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Capers",
-      "aliases": []
+      "aliases": [
+        "caper",
+        "caper berries",
+        "Caperses"
+      ]
     },
     {
       "name": "Pepper",
@@ -324,7 +451,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Pepper",
-      "aliases": []
+      "aliases": [
+        "peppers",
+        "bell pepper",
+        "bell peppers",
+        "sweet pepper"
+      ]
     },
     {
       "name": "Papaya",
@@ -332,7 +464,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Papaya",
-      "aliases": []
+      "aliases": [
+        "papayas",
+        "pawpaw",
+        "pawpaws"
+      ]
     },
     {
       "name": "Safflower",
@@ -340,7 +476,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Safflower",
-      "aliases": []
+      "aliases": [
+        "safflower oil",
+        "Safflowers"
+      ]
     },
     {
       "name": "Caraway",
@@ -348,7 +487,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Caraway",
-      "aliases": []
+      "aliases": [
+        "caraway seed",
+        "caraway seeds",
+        "Caraways"
+      ]
     },
     {
       "name": "Pecan nut",
@@ -356,7 +499,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Pecan nut",
-      "aliases": []
+      "aliases": [
+        "pecan",
+        "pecans",
+        "pecan nuts"
+      ]
     },
     {
       "name": "Chestnut",
@@ -364,7 +511,9 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Chestnut",
-      "aliases": []
+      "aliases": [
+        "chestnuts"
+      ]
     },
     {
       "name": "Roman camomile",
@@ -372,7 +521,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Roman camomile",
-      "aliases": []
+      "aliases": [
+        "roman chamomile",
+        "chamomile",
+        "Roman camomiles"
+      ]
     },
     {
       "name": "Chickpea",
@@ -380,7 +533,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Chickpea",
-      "aliases": []
+      "aliases": [
+        "chickpeas",
+        "garbanzo",
+        "garbanzo beans",
+        "ceci"
+      ]
     },
     {
       "name": "Endive",
@@ -388,7 +546,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Endive",
-      "aliases": []
+      "aliases": [
+        "endives",
+        "chicory"
+      ]
     },
     {
       "name": "Chicory",
@@ -396,7 +557,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Chicory",
-      "aliases": []
+      "aliases": [
+        "chicory root",
+        "chicories"
+      ]
     },
     {
       "name": "Chinese cinnamon",
@@ -404,7 +568,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Chinese cinnamon",
-      "aliases": []
+      "aliases": [
+        "cassia",
+        "cinnamon",
+        "cassia cinnamon",
+        "Chinese cinnamons"
+      ]
     },
     {
       "name": "Ceylon cinnamon",
@@ -412,7 +581,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ceylon cinnamon",
-      "aliases": []
+      "aliases": [
+        "cinnamon",
+        "cinnamon stick",
+        "cinnamon sticks",
+        "true cinnamon",
+        "Ceylon cinnamons"
+      ]
     },
     {
       "name": "Watermelon",
@@ -420,7 +595,9 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Watermelon",
-      "aliases": []
+      "aliases": [
+        "watermelons"
+      ]
     },
     {
       "name": "Lime",
@@ -428,7 +605,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Lime",
-      "aliases": []
+      "aliases": [
+        "limes",
+        "lime juice",
+        "key lime",
+        "key limes"
+      ]
     },
     {
       "name": "Lemon",
@@ -436,7 +618,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Lemon",
-      "aliases": []
+      "aliases": [
+        "lemons",
+        "lemon juice",
+        "lemon zest"
+      ]
     },
     {
       "name": "Pummelo",
@@ -444,7 +630,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Pummelo",
-      "aliases": []
+      "aliases": [
+        "pomelo",
+        "pomelos",
+        "pummelos"
+      ]
     },
     {
       "name": "Mandarin orange (Clementine, Tangerine)",
@@ -452,7 +642,16 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Mandarin orange (Clementine, Tangerine)",
-      "aliases": []
+      "aliases": [
+        "mandarin",
+        "mandarins",
+        "clementine",
+        "clementines",
+        "tangerine",
+        "tangerines",
+        "mandarin orange",
+        "Mandarin orange (Clementine, Tangerine)s"
+      ]
     },
     {
       "name": "Sweet orange",
@@ -460,15 +659,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Sweet orange",
-      "aliases": []
-    },
-    {
-      "name": "Coffee",
-      "externalId": "FOOD00058",
-      "foodGroup": "Coffee and coffee products",
-      "foodSubGroup": "Coffee",
-      "displayName": "Coffee",
-      "aliases": []
+      "aliases": [
+        "orange",
+        "oranges",
+        "sweet oranges"
+      ]
     },
     {
       "name": "Arabica coffee",
@@ -476,7 +671,11 @@
       "foodGroup": "Coffee and coffee products",
       "foodSubGroup": "Coffee",
       "displayName": "Arabica coffee",
-      "aliases": []
+      "aliases": [
+        "arabica",
+        "coffee",
+        "Arabica coffees"
+      ]
     },
     {
       "name": "Robusta coffee",
@@ -484,7 +683,11 @@
       "foodGroup": "Coffee and coffee products",
       "foodSubGroup": "Coffee",
       "displayName": "Robusta coffee",
-      "aliases": []
+      "aliases": [
+        "robusta",
+        "coffee",
+        "Robusta coffees"
+      ]
     },
     {
       "name": "Coriander",
@@ -492,7 +695,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Coriander",
-      "aliases": []
+      "aliases": [
+        "cilantro",
+        "fresh coriander",
+        "coriander leaves",
+        "coriander leaf",
+        "Corianders"
+      ]
     },
     {
       "name": "Common hazelnut",
@@ -500,7 +709,13 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Common hazelnut",
-      "aliases": []
+      "aliases": [
+        "hazelnut",
+        "hazelnuts",
+        "filbert",
+        "filberts",
+        "Common hazelnuts"
+      ]
     },
     {
       "name": "Saffron",
@@ -508,7 +723,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Saffron",
-      "aliases": []
+      "aliases": [
+        "saffron threads",
+        "saffron strands",
+        "Saffrons"
+      ]
     },
     {
       "name": "Muskmelon",
@@ -516,7 +735,11 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Muskmelon",
-      "aliases": []
+      "aliases": [
+        "cantaloupe",
+        "cantaloupes",
+        "muskmelons"
+      ]
     },
     {
       "name": "Cucumber",
@@ -524,7 +747,11 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Cucumber",
-      "aliases": []
+      "aliases": [
+        "cucumbers",
+        "cuke",
+        "cukes"
+      ]
     },
     {
       "name": "Cucurbita",
@@ -532,7 +759,11 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Cucurbita",
-      "aliases": []
+      "aliases": [
+        "squash",
+        "pumpkin",
+        "Cucurbitas"
+      ]
     },
     {
       "name": "Cumin",
@@ -540,7 +771,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Cumin",
-      "aliases": []
+      "aliases": [
+        "cumin seed",
+        "cumin seeds",
+        "ground cumin",
+        "Cumins"
+      ]
     },
     {
       "name": "Turmeric",
@@ -548,7 +784,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Turmeric",
-      "aliases": []
+      "aliases": [
+        "turmeric root",
+        "ground turmeric",
+        "fresh turmeric",
+        "Turmerics"
+      ]
     },
     {
       "name": "Quince",
@@ -556,7 +797,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Quince",
-      "aliases": []
+      "aliases": [
+        "quinces"
+      ]
     },
     {
       "name": "Lemon grass",
@@ -564,7 +807,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon grass",
-      "aliases": []
+      "aliases": [
+        "lemongrass",
+        "citronella",
+        "Lemon grasses"
+      ]
     },
     {
       "name": "Globe artichoke",
@@ -572,7 +819,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Shoot vegetables",
       "displayName": "Globe artichoke",
-      "aliases": []
+      "aliases": [
+        "artichoke",
+        "artichokes",
+        "globe artichokes"
+      ]
     },
     {
       "name": "Wild carrot",
@@ -580,7 +831,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Wild carrot",
-      "aliases": []
+      "aliases": [
+        "carrot",
+        "carrots",
+        "wild carrots"
+      ]
     },
     {
       "name": "Japanese persimmon",
@@ -588,7 +843,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Japanese persimmon",
-      "aliases": []
+      "aliases": [
+        "persimmon",
+        "persimmons",
+        "kaki",
+        "sharon fruit",
+        "Japanese persimmons"
+      ]
     },
     {
       "name": "Cardamom",
@@ -596,7 +857,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Cardamom",
-      "aliases": []
+      "aliases": [
+        "cardamom pod",
+        "cardamom pods",
+        "cardamon",
+        "green cardamom",
+        "Cardamoms"
+      ]
     },
     {
       "name": "Black crowberry",
@@ -604,7 +871,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black crowberry",
-      "aliases": []
+      "aliases": [
+        "crowberry",
+        "crowberries",
+        "Black crowberries"
+      ]
     },
     {
       "name": "Loquat",
@@ -612,7 +883,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Loquat",
-      "aliases": []
+      "aliases": [
+        "loquats",
+        "japanese plum"
+      ]
     },
     {
       "name": "Rocket salad (ssp.)",
@@ -620,7 +894,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Rocket salad (ssp.)",
-      "aliases": []
+      "aliases": [
+        "rocket",
+        "arugula",
+        "rucola",
+        "rocket salad",
+        "Rocket salad (ssp.)s"
+      ]
     },
     {
       "name": "Wax apple",
@@ -628,7 +908,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Wax apple",
-      "aliases": []
+      "aliases": [
+        "wax apples",
+        "java apple",
+        "water apple"
+      ]
     },
     {
       "name": "Common buckwheat",
@@ -636,7 +920,11 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Common buckwheat",
-      "aliases": []
+      "aliases": [
+        "buckwheat",
+        "buckwheat groats",
+        "Common buckwheats"
+      ]
     },
     {
       "name": "Tartary buckwheat",
@@ -644,7 +932,10 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Tartary buckwheat",
-      "aliases": []
+      "aliases": [
+        "buckwheat",
+        "Tartary buckwheats"
+      ]
     },
     {
       "name": "Fig",
@@ -652,7 +943,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Other fruits",
       "displayName": "Fig",
-      "aliases": []
+      "aliases": [
+        "figs"
+      ]
     },
     {
       "name": "Fennel",
@@ -660,7 +953,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Fennel",
-      "aliases": []
+      "aliases": [
+        "fennel bulb",
+        "fennel bulbs",
+        "fennel seed",
+        "fresh fennel",
+        "Fennels"
+      ]
     },
     {
       "name": "Strawberry",
@@ -668,7 +967,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Strawberry",
-      "aliases": []
+      "aliases": [
+        "strawberries"
+      ]
     },
     {
       "name": "Black huckleberry",
@@ -676,7 +977,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black huckleberry",
-      "aliases": []
+      "aliases": [
+        "huckleberry",
+        "huckleberries",
+        "Black huckleberries"
+      ]
     },
     {
       "name": "Soy bean",
@@ -684,7 +989,13 @@
       "foodGroup": "Soy",
       "foodSubGroup": "Soy",
       "displayName": "Soy bean",
-      "aliases": []
+      "aliases": [
+        "soybean",
+        "soybeans",
+        "soya bean",
+        "soya beans",
+        "Soy beans"
+      ]
     },
     {
       "name": "Sunflower",
@@ -692,7 +1003,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sunflower",
-      "aliases": []
+      "aliases": [
+        "sunflower seeds",
+        "sunflower seed",
+        "Sunflowers"
+      ]
     },
     {
       "name": "Sea-buckthornberry",
@@ -700,7 +1015,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Sea-buckthornberry",
-      "aliases": []
+      "aliases": [
+        "sea buckthorn",
+        "sea buckthorn berry",
+        "seabuckthorn",
+        "Sea-buckthornberries"
+      ]
     },
     {
       "name": "Barley",
@@ -708,7 +1028,12 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Barley",
-      "aliases": []
+      "aliases": [
+        "pearl barley",
+        "barley grain",
+        "barley grains",
+        "Barleys"
+      ]
     },
     {
       "name": "Hyssop",
@@ -716,7 +1041,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Hyssop",
-      "aliases": []
+      "aliases": [
+        "hyssop herb",
+        "Hyssops"
+      ]
     },
     {
       "name": "Star anise",
@@ -724,7 +1052,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Star anise",
-      "aliases": []
+      "aliases": [
+        "star anise seed",
+        "star aniseeds",
+        "badian",
+        "Star anises"
+      ]
     },
     {
       "name": "Swamp cabbage",
@@ -732,7 +1065,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Swamp cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "water spinach",
+        "kangkong",
+        "ong choy",
+        "Swamp cabbages"
+      ]
     },
     {
       "name": "Sweet potato",
@@ -740,7 +1079,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Tubers",
       "displayName": "Sweet potato",
-      "aliases": []
+      "aliases": [
+        "sweet potatoes",
+        "kumara",
+        "yam",
+        "yams",
+        "Sweet potatos"
+      ]
     },
     {
       "name": "Black walnut",
@@ -748,7 +1093,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Black walnut",
-      "aliases": []
+      "aliases": [
+        "black walnuts",
+        "walnut",
+        "walnuts"
+      ]
     },
     {
       "name": "Common walnut",
@@ -756,7 +1105,13 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Common walnut",
-      "aliases": []
+      "aliases": [
+        "walnut",
+        "walnuts",
+        "english walnut",
+        "english walnuts",
+        "Common walnuts"
+      ]
     },
     {
       "name": "Lettuce",
@@ -764,7 +1119,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Lettuce",
-      "aliases": []
+      "aliases": [
+        "lettuces",
+        "leaf lettuce",
+        "lettuce leaves"
+      ]
     },
     {
       "name": "Grass pea",
@@ -772,7 +1131,10 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Grass pea",
-      "aliases": []
+      "aliases": [
+        "grass peas",
+        "lathyrus"
+      ]
     },
     {
       "name": "Sweet bay",
@@ -780,15 +1142,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sweet bay",
-      "aliases": []
-    },
-    {
-      "name": "Lentils",
-      "externalId": "FOOD00098",
-      "foodGroup": "Pulses",
-      "foodSubGroup": "Lentils",
-      "displayName": "Lentils",
-      "aliases": []
+      "aliases": [
+        "bay leaf",
+        "bay leaves",
+        "laurel",
+        "bay",
+        "Sweet bays"
+      ]
     },
     {
       "name": "Garden cress",
@@ -796,7 +1156,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Garden cress",
-      "aliases": []
+      "aliases": [
+        "cress",
+        "cresses",
+        "Garden cresses"
+      ]
     },
     {
       "name": "Lovage",
@@ -804,7 +1168,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lovage",
-      "aliases": []
+      "aliases": [
+        "lovage leaves",
+        "fresh lovage",
+        "Lovages"
+      ]
     },
     {
       "name": "Flaxseed",
@@ -812,7 +1180,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Flaxseed",
-      "aliases": []
+      "aliases": [
+        "flax seed",
+        "flax seeds",
+        "linseed",
+        "linseeds",
+        "Flaxseeds"
+      ]
     },
     {
       "name": "Mexican oregano",
@@ -820,7 +1194,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mexican oregano",
-      "aliases": []
+      "aliases": [
+        "oregano",
+        "Mexican oreganos"
+      ]
     },
     {
       "name": "Lichee",
@@ -828,7 +1205,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Lichee",
-      "aliases": []
+      "aliases": [
+        "lychee",
+        "lychees",
+        "litchi",
+        "litchis",
+        "Lichees"
+      ]
     },
     {
       "name": "Lupine",
@@ -836,7 +1219,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Other pulses",
       "displayName": "Lupine",
-      "aliases": []
+      "aliases": [
+        "lupin",
+        "lupins",
+        "lupini",
+        "Lupines"
+      ]
     },
     {
       "name": "Apple",
@@ -844,7 +1232,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Apple",
-      "aliases": []
+      "aliases": [
+        "apples"
+      ]
     },
     {
       "name": "Mango",
@@ -852,7 +1242,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Mango",
-      "aliases": []
+      "aliases": [
+        "mangoes",
+        "mangos"
+      ]
     },
     {
       "name": "German camomile",
@@ -860,7 +1253,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "German camomile",
-      "aliases": []
+      "aliases": [
+        "chamomile",
+        "german chamomile",
+        "camomile",
+        "German camomiles"
+      ]
     },
     {
       "name": "Lemon balm",
@@ -868,7 +1266,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon balm",
-      "aliases": []
+      "aliases": [
+        "melissa",
+        "lemon balm leaves",
+        "fresh lemon balm",
+        "Lemon balms"
+      ]
     },
     {
       "name": "Mentha",
@@ -876,7 +1279,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mentha",
-      "aliases": []
+      "aliases": [
+        "mint",
+        "mints",
+        "Menthas"
+      ]
     },
     {
       "name": "Orange mint",
@@ -884,7 +1291,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Orange mint",
-      "aliases": []
+      "aliases": [
+        "mint",
+        "fresh mint",
+        "Orange mints"
+      ]
     },
     {
       "name": "Cornmint",
@@ -892,7 +1303,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Cornmint",
-      "aliases": []
+      "aliases": [
+        "corn mint",
+        "field mint",
+        "mint",
+        "Cornmints"
+      ]
     },
     {
       "name": "Spearmint",
@@ -900,7 +1316,14 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Spearmint",
-      "aliases": []
+      "aliases": [
+        "spear mint",
+        "mint",
+        "fresh spearmint",
+        "fresh mint",
+        "mint leaves",
+        "Spearmints"
+      ]
     },
     {
       "name": "Peppermint",
@@ -908,7 +1331,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Peppermint",
-      "aliases": []
+      "aliases": [
+        "peppermint leaves",
+        "Peppermints"
+      ]
     },
     {
       "name": "Medlar",
@@ -916,7 +1342,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Medlar",
-      "aliases": []
+      "aliases": [
+        "medlars"
+      ]
     },
     {
       "name": "Bitter gourd",
@@ -924,7 +1352,12 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Bitter gourd",
-      "aliases": []
+      "aliases": [
+        "bitter melon",
+        "bitter melons",
+        "bitter gourds",
+        "karela"
+      ]
     },
     {
       "name": "Mulberry",
@@ -932,7 +1365,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Mulberry",
-      "aliases": []
+      "aliases": [
+        "mulberries"
+      ]
     },
     {
       "name": "Black mulberry",
@@ -940,7 +1375,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black mulberry",
-      "aliases": []
+      "aliases": [
+        "mulberries",
+        "black mulberries"
+      ]
     },
     {
       "name": "Nutmeg",
@@ -948,7 +1386,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Nutmeg",
-      "aliases": []
+      "aliases": [
+        "nutmeg seed",
+        "ground nutmeg",
+        "whole nutmeg",
+        "Nutmegs"
+      ]
     },
     {
       "name": "Sweet basil",
@@ -956,7 +1399,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sweet basil",
-      "aliases": []
+      "aliases": [
+        "basil",
+        "fresh basil",
+        "basil leaves",
+        "thai basil",
+        "Sweet basils"
+      ]
     },
     {
       "name": "Evening primrose",
@@ -964,7 +1413,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Evening primrose",
-      "aliases": []
+      "aliases": [
+        "evening primrose oil",
+        "Evening primroses"
+      ]
     },
     {
       "name": "Olive",
@@ -972,7 +1424,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Olive",
-      "aliases": []
+      "aliases": [
+        "olives",
+        "green olive",
+        "black olive",
+        "olive fruit"
+      ]
     },
     {
       "name": "Sweet marjoram",
@@ -980,7 +1437,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sweet marjoram",
-      "aliases": []
+      "aliases": [
+        "marjoram",
+        "fresh marjoram",
+        "Sweet marjorams"
+      ]
     },
     {
       "name": "Pot marjoram",
@@ -988,7 +1449,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Pot marjoram",
-      "aliases": []
+      "aliases": [
+        "marjoram",
+        "Pot marjorams"
+      ]
     },
     {
       "name": "Common oregano",
@@ -996,7 +1460,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Common oregano",
-      "aliases": []
+      "aliases": [
+        "oregano",
+        "oregano leaves",
+        "fresh oregano",
+        "dried oregano",
+        "Common oreganos"
+      ]
     },
     {
       "name": "Rice",
@@ -1004,7 +1474,13 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Rice",
-      "aliases": []
+      "aliases": [
+        "rice grain",
+        "rice grains",
+        "white rice",
+        "brown rice",
+        "Rices"
+      ]
     },
     {
       "name": "Millet",
@@ -1012,7 +1488,10 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Millet",
-      "aliases": []
+      "aliases": [
+        "millets",
+        "millet grain"
+      ]
     },
     {
       "name": "Poppy",
@@ -1020,7 +1499,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Poppy",
-      "aliases": []
+      "aliases": [
+        "poppy seed",
+        "poppy seeds",
+        "Poppies"
+      ]
     },
     {
       "name": "Passion fruit",
@@ -1028,7 +1511,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Passion fruit",
-      "aliases": []
+      "aliases": [
+        "passion fruits",
+        "passionfruit",
+        "granadilla"
+      ]
     },
     {
       "name": "Parsnip",
@@ -1036,7 +1523,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Parsnip",
-      "aliases": []
+      "aliases": [
+        "parsnips"
+      ]
     },
     {
       "name": "Avocado",
@@ -1044,7 +1533,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Avocado",
-      "aliases": []
+      "aliases": [
+        "avocados",
+        "avocado pear",
+        "alligator pear"
+      ]
     },
     {
       "name": "Parsley",
@@ -1052,7 +1545,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Parsley",
-      "aliases": []
+      "aliases": [
+        "fresh parsley",
+        "parsley leaves",
+        "flat-leaf parsley",
+        "curly parsley",
+        "Parsleys"
+      ]
     },
     {
       "name": "Scarlet bean",
@@ -1060,7 +1559,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Scarlet bean",
-      "aliases": []
+      "aliases": [
+        "scarlet runner bean",
+        "runner bean",
+        "runner beans",
+        "Scarlet beans"
+      ]
     },
     {
       "name": "Lima bean",
@@ -1068,7 +1572,11 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Lima bean",
-      "aliases": []
+      "aliases": [
+        "lima beans",
+        "butter bean",
+        "butter beans"
+      ]
     },
     {
       "name": "Common bean",
@@ -1076,7 +1584,14 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Common bean",
-      "aliases": []
+      "aliases": [
+        "beans",
+        "green bean",
+        "green beans",
+        "string bean",
+        "snap bean",
+        "Common beans"
+      ]
     },
     {
       "name": "Date",
@@ -1084,7 +1599,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Other fruits",
       "displayName": "Date",
-      "aliases": []
+      "aliases": [
+        "dates",
+        "date palm",
+        "medjool date",
+        "medjool dates"
+      ]
     },
     {
       "name": "Black chokeberry",
@@ -1092,7 +1612,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black chokeberry",
-      "aliases": []
+      "aliases": [
+        "chokeberry",
+        "chokeberries",
+        "aronia",
+        "aronias",
+        "Black chokeberries"
+      ]
     },
     {
       "name": "Anise",
@@ -1100,7 +1626,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Anise",
-      "aliases": []
+      "aliases": [
+        "aniseed",
+        "anise seed",
+        "anise seeds",
+        "Anises"
+      ]
     },
     {
       "name": "Pine nut",
@@ -1108,7 +1639,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Pine nut",
-      "aliases": []
+      "aliases": [
+        "pine nuts",
+        "pignoli",
+        "pinoli"
+      ]
     },
     {
       "name": "Pepper (Spice)",
@@ -1116,7 +1651,15 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Pepper (Spice)",
-      "aliases": []
+      "aliases": [
+        "black pepper",
+        "peppercorn",
+        "peppercorns",
+        "ground pepper",
+        "freshly ground black pepper",
+        "pepper",
+        "Pepper (Spice)s"
+      ]
     },
     {
       "name": "Pistachio",
@@ -1124,7 +1667,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Pistachio",
-      "aliases": []
+      "aliases": [
+        "pistachios",
+        "pistachio nut",
+        "pistachio nuts"
+      ]
     },
     {
       "name": "Common pea",
@@ -1132,7 +1679,15 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Common pea",
-      "aliases": []
+      "aliases": [
+        "pea",
+        "peas",
+        "garden pea",
+        "garden peas",
+        "green pea",
+        "green peas",
+        "Common peas"
+      ]
     },
     {
       "name": "Purslane",
@@ -1140,7 +1695,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Purslane",
-      "aliases": []
+      "aliases": [
+        "purslane leaves",
+        "common purslane",
+        "Purslanes"
+      ]
     },
     {
       "name": "Prunus (Cherry, Plum)",
@@ -1148,7 +1707,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Prunus (Cherry, Plum)",
-      "aliases": []
+      "aliases": [
+        "stone fruit",
+        "cherry",
+        "plum",
+        "prunus",
+        "Prunus (Cherry, Plum)s"
+      ]
     },
     {
       "name": "Apricot",
@@ -1156,7 +1721,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Apricot",
-      "aliases": []
+      "aliases": [
+        "apricots"
+      ]
     },
     {
       "name": "Sweet cherry",
@@ -1164,7 +1731,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Sweet cherry",
-      "aliases": []
+      "aliases": [
+        "cherry",
+        "cherries",
+        "sweet cherries",
+        "bing cherry"
+      ]
     },
     {
       "name": "Sour cherry",
@@ -1172,7 +1744,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Sour cherry",
-      "aliases": []
+      "aliases": [
+        "cherry",
+        "sour cherries",
+        "tart cherry",
+        "morello cherry"
+      ]
     },
     {
       "name": "European plum",
@@ -1180,7 +1757,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "European plum",
-      "aliases": []
+      "aliases": [
+        "plum",
+        "plums",
+        "european plums"
+      ]
     },
     {
       "name": "Almond",
@@ -1188,7 +1769,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Almond",
-      "aliases": []
+      "aliases": [
+        "almonds",
+        "almond nut",
+        "almond nuts"
+      ]
     },
     {
       "name": "Peach",
@@ -1196,7 +1781,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Peach",
-      "aliases": []
+      "aliases": [
+        "peaches"
+      ]
     },
     {
       "name": "Guava",
@@ -1204,7 +1791,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Guava",
-      "aliases": []
+      "aliases": [
+        "guavas",
+        "guava fruit"
+      ]
     },
     {
       "name": "Pomegranate",
@@ -1212,7 +1802,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Pomegranate",
-      "aliases": []
+      "aliases": [
+        "pomegranates",
+        "pomegranate seeds",
+        "pomegranate juice"
+      ]
     },
     {
       "name": "Pear",
@@ -1220,7 +1814,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Pear",
-      "aliases": []
+      "aliases": [
+        "pears"
+      ]
     },
     {
       "name": "Radish",
@@ -1228,7 +1824,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Radish",
-      "aliases": []
+      "aliases": [
+        "radishes",
+        "red radish",
+        "red radishes"
+      ]
     },
     {
       "name": "Garden rhubarb",
@@ -1236,7 +1836,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Stalk vegetables",
       "displayName": "Garden rhubarb",
-      "aliases": []
+      "aliases": [
+        "rhubarb",
+        "rhubarb stalk",
+        "rhubarb stalks",
+        "rhubarbs",
+        "Garden rhubarbs"
+      ]
     },
     {
       "name": "Blackcurrant",
@@ -1244,7 +1850,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Blackcurrant",
-      "aliases": []
+      "aliases": [
+        "black currant",
+        "black currants",
+        "blackcurrants"
+      ]
     },
     {
       "name": "Redcurrant",
@@ -1252,7 +1862,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Redcurrant",
-      "aliases": []
+      "aliases": [
+        "red currant",
+        "red currants",
+        "redcurrants"
+      ]
     },
     {
       "name": "Gooseberry",
@@ -1260,7 +1874,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Gooseberry",
-      "aliases": []
+      "aliases": [
+        "gooseberries"
+      ]
     },
     {
       "name": "Watercress",
@@ -1268,7 +1884,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Watercress",
-      "aliases": []
+      "aliases": [
+        "water cress",
+        "water cresses",
+        "Watercresses"
+      ]
     },
     {
       "name": "Rosemary",
@@ -1276,7 +1896,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Rosemary",
-      "aliases": []
+      "aliases": [
+        "rosemary leaves",
+        "fresh rosemary",
+        "rosemary sprig",
+        "rosemary sprigs",
+        "Rosemaries"
+      ]
     },
     {
       "name": "Rubus (Blackberry, Raspberry)",
@@ -1284,7 +1910,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Rubus (Blackberry, Raspberry)",
-      "aliases": []
+      "aliases": [
+        "blackberry",
+        "raspberry",
+        "bramble",
+        "rubus",
+        "Rubus (Blackberry, Raspberry)s"
+      ]
     },
     {
       "name": "Cloudberry",
@@ -1292,7 +1924,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Cloudberry",
-      "aliases": []
+      "aliases": [
+        "cloudberries",
+        "bakeapple"
+      ]
     },
     {
       "name": "Red raspberry",
@@ -1300,7 +1935,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Red raspberry",
-      "aliases": []
+      "aliases": [
+        "raspberry",
+        "raspberries",
+        "red raspberries"
+      ]
     },
     {
       "name": "Black raspberry",
@@ -1308,7 +1947,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black raspberry",
-      "aliases": []
+      "aliases": [
+        "black raspberries",
+        "raspberry"
+      ]
     },
     {
       "name": "Sorrel",
@@ -1316,7 +1958,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sorrel",
-      "aliases": []
+      "aliases": [
+        "sorrel leaves",
+        "garden sorrel",
+        "Sorrels"
+      ]
     },
     {
       "name": "Common sage",
@@ -1324,7 +1970,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Common sage",
-      "aliases": []
+      "aliases": [
+        "sage",
+        "sage leaves",
+        "fresh sage",
+        "dried sage",
+        "Common sages"
+      ]
     },
     {
       "name": "Black elderberry",
@@ -1332,7 +1984,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black elderberry",
-      "aliases": []
+      "aliases": [
+        "elderberry",
+        "elderberries",
+        "black elderberries"
+      ]
     },
     {
       "name": "Summer savory",
@@ -1340,7 +1996,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Summer savory",
-      "aliases": []
+      "aliases": [
+        "savory",
+        "fresh savory",
+        "Summer savories"
+      ]
     },
     {
       "name": "Winter savory",
@@ -1348,7 +2008,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Winter savory",
-      "aliases": []
+      "aliases": [
+        "savory",
+        "Winter savories"
+      ]
     },
     {
       "name": "Rye",
@@ -1356,7 +2019,11 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Rye",
-      "aliases": []
+      "aliases": [
+        "rye grain",
+        "rye bread",
+        "Ryes"
+      ]
     },
     {
       "name": "Sesame",
@@ -1364,7 +2031,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sesame",
-      "aliases": []
+      "aliases": [
+        "sesame seeds",
+        "sesame seed",
+        "sesame oil",
+        "Sesames"
+      ]
     },
     {
       "name": "Garden tomato",
@@ -1372,7 +2044,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Garden tomato",
-      "aliases": []
+      "aliases": [
+        "tomato",
+        "tomatoes",
+        "tomatoe",
+        "fresh tomato",
+        "Garden tomatos"
+      ]
     },
     {
       "name": "Cherry tomato",
@@ -1380,7 +2058,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Cherry tomato",
-      "aliases": []
+      "aliases": [
+        "cherry tomatoes",
+        "tomato",
+        "grape tomato",
+        "grape tomatoes",
+        "Cherry tomatos"
+      ]
     },
     {
       "name": "Garden tomato (var.)",
@@ -1388,7 +2072,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Garden tomato (var.)",
-      "aliases": []
+      "aliases": [
+        "tomato",
+        "tomatoes",
+        "garden tomato",
+        "Garden tomato (var.)s"
+      ]
     },
     {
       "name": "Eggplant",
@@ -1396,7 +2085,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Eggplant",
-      "aliases": []
+      "aliases": [
+        "eggplants",
+        "aubergine",
+        "aubergines",
+        "brinjal",
+        "brinjals"
+      ]
     },
     {
       "name": "Potato",
@@ -1404,7 +2099,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Tubers",
       "displayName": "Potato",
-      "aliases": []
+      "aliases": [
+        "potatoes",
+        "spud",
+        "spuds",
+        "Potatos"
+      ]
     },
     {
       "name": "Rowanberry",
@@ -1412,7 +2112,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Rowanberry",
-      "aliases": []
+      "aliases": [
+        "rowan berry",
+        "rowan berries",
+        "mountain ash",
+        "Rowanberries"
+      ]
     },
     {
       "name": "Sorghum",
@@ -1420,7 +2125,11 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Sorghum",
-      "aliases": []
+      "aliases": [
+        "sorghum grain",
+        "sorghum flour",
+        "Sorghums"
+      ]
     },
     {
       "name": "Spinach",
@@ -1428,7 +2137,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Spinach",
-      "aliases": []
+      "aliases": [
+        "spinach leaves",
+        "fresh spinach",
+        "baby spinach",
+        "spinaches"
+      ]
     },
     {
       "name": "Cloves",
@@ -1436,7 +2150,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Cloves",
-      "aliases": []
+      "aliases": [
+        "clove",
+        "whole cloves",
+        "clove spice",
+        "Cloveses"
+      ]
     },
     {
       "name": "Tamarind",
@@ -1444,7 +2163,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Tamarind",
-      "aliases": []
+      "aliases": [
+        "tamarind pulp",
+        "tamarind paste",
+        "tamarinds"
+      ]
     },
     {
       "name": "Dandelion",
@@ -1452,7 +2175,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Dandelion",
-      "aliases": []
+      "aliases": [
+        "dandelion greens",
+        "dandelion leaves",
+        "dandelions"
+      ]
     },
     {
       "name": "Cocoa bean",
@@ -1460,7 +2187,13 @@
       "foodGroup": "Cocoa and cocoa products",
       "foodSubGroup": "Cocoa",
       "displayName": "Cocoa bean",
-      "aliases": []
+      "aliases": [
+        "cocoa",
+        "cacao",
+        "cacao bean",
+        "cacao beans",
+        "Cocoa beans"
+      ]
     },
     {
       "name": "Common thyme",
@@ -1468,7 +2201,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Common thyme",
-      "aliases": []
+      "aliases": [
+        "thyme",
+        "thyme leaves",
+        "fresh thyme",
+        "dried thyme",
+        "Common thymes"
+      ]
     },
     {
       "name": "Linden",
@@ -1476,7 +2215,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Linden",
-      "aliases": []
+      "aliases": [
+        "lime blossom",
+        "linden flower",
+        "lime flower",
+        "Lindens"
+      ]
     },
     {
       "name": "Small-leaf linden",
@@ -1484,7 +2228,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Small-leaf linden",
-      "aliases": []
+      "aliases": [
+        "linden",
+        "lime blossom",
+        "Small-leaf lindens"
+      ]
     },
     {
       "name": "Fenugreek",
@@ -1492,7 +2240,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Fenugreek",
-      "aliases": []
+      "aliases": [
+        "fenugreek seed",
+        "fenugreek seeds",
+        "methi",
+        "kasuri methi",
+        "Fenugreeks"
+      ]
     },
     {
       "name": "Common wheat",
@@ -1500,7 +2254,13 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Common wheat",
-      "aliases": []
+      "aliases": [
+        "wheat",
+        "wheat grain",
+        "wheat flour",
+        "wheat berries",
+        "Common wheats"
+      ]
     },
     {
       "name": "Vaccinium (Blueberry, Cranberry, Huckleberry)",
@@ -1508,7 +2268,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Vaccinium (Blueberry, Cranberry, Huckleberry)",
-      "aliases": []
+      "aliases": [
+        "blueberry",
+        "cranberry",
+        "huckleberry",
+        "vaccinium",
+        "Vaccinium (Blueberry, Cranberry, Huckleberry)s"
+      ]
     },
     {
       "name": "Lowbush blueberry",
@@ -1516,7 +2282,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Lowbush blueberry",
-      "aliases": []
+      "aliases": [
+        "blueberry",
+        "blueberries",
+        "wild blueberry",
+        "wild blueberries",
+        "Lowbush blueberries"
+      ]
     },
     {
       "name": "Sparkleberry",
@@ -1524,7 +2296,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Sparkleberry",
-      "aliases": []
+      "aliases": [
+        "blueberry",
+        "farkleberry",
+        "Sparkleberries"
+      ]
     },
     {
       "name": "Highbush blueberry",
@@ -1532,7 +2308,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Highbush blueberry",
-      "aliases": []
+      "aliases": [
+        "blueberry",
+        "blueberries",
+        "Highbush blueberries"
+      ]
     },
     {
       "name": "American cranberry",
@@ -1540,7 +2320,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "American cranberry",
-      "aliases": []
+      "aliases": [
+        "cranberry",
+        "cranberries",
+        "american cranberries"
+      ]
     },
     {
       "name": "Bilberry",
@@ -1548,7 +2332,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Bilberry",
-      "aliases": []
+      "aliases": [
+        "bilberries",
+        "european blueberry",
+        "whortleberry"
+      ]
     },
     {
       "name": "Lingonberry",
@@ -1556,7 +2344,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Lingonberry",
-      "aliases": []
+      "aliases": [
+        "lingonberries",
+        "cowberry",
+        "cowberries"
+      ]
     },
     {
       "name": "Vanilla",
@@ -1564,7 +2356,14 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Vanilla",
-      "aliases": []
+      "aliases": [
+        "vanilla bean",
+        "vanilla beans",
+        "vanilla extract",
+        "vanilla pod",
+        "vanilla pods",
+        "Vanillas"
+      ]
     },
     {
       "name": "Common verbena",
@@ -1572,7 +2371,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Common verbena",
-      "aliases": []
+      "aliases": [
+        "verbena",
+        "lemon verbena",
+        "Common verbenas"
+      ]
     },
     {
       "name": "Broad bean",
@@ -1580,7 +2383,13 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Broad bean",
-      "aliases": []
+      "aliases": [
+        "broad beans",
+        "fava bean",
+        "fava beans",
+        "faba bean",
+        "faba beans"
+      ]
     },
     {
       "name": "Adzuki bean",
@@ -1588,7 +2397,14 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Adzuki bean",
-      "aliases": []
+      "aliases": [
+        "adzuki",
+        "aduki bean",
+        "aduki beans",
+        "red bean",
+        "red beans",
+        "Adzuki beans"
+      ]
     },
     {
       "name": "Gram bean",
@@ -1596,7 +2412,15 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Gram bean",
-      "aliases": []
+      "aliases": [
+        "chickpea",
+        "chickpeas",
+        "gram",
+        "grams",
+        "chana",
+        "bengal gram",
+        "Gram beans"
+      ]
     },
     {
       "name": "Mung bean",
@@ -1604,7 +2428,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Mung bean",
-      "aliases": []
+      "aliases": [
+        "mung beans",
+        "moong bean",
+        "moong beans",
+        "green gram"
+      ]
     },
     {
       "name": "Climbing bean",
@@ -1612,7 +2441,11 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Climbing bean",
-      "aliases": []
+      "aliases": [
+        "climbing beans",
+        "pole bean",
+        "pole beans"
+      ]
     },
     {
       "name": "Cowpea",
@@ -1620,7 +2453,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Cowpea",
-      "aliases": []
+      "aliases": [
+        "cowpeas",
+        "black-eyed pea",
+        "black-eyed peas",
+        "blackeye pea"
+      ]
     },
     {
       "name": "Muscadine grape",
@@ -1628,7 +2466,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Muscadine grape",
-      "aliases": []
+      "aliases": [
+        "muscadine",
+        "muscadines",
+        "grape",
+        "grapes",
+        "Muscadine grapes"
+      ]
     },
     {
       "name": "Common grape",
@@ -1636,7 +2480,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Common grape",
-      "aliases": []
+      "aliases": [
+        "grape",
+        "grapes",
+        "table grape",
+        "table grapes",
+        "Common grapes"
+      ]
     },
     {
       "name": "Corn",
@@ -1644,7 +2494,14 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Corn",
-      "aliases": []
+      "aliases": [
+        "sweetcorn",
+        "sweet corn",
+        "maize",
+        "corn on the cob",
+        "corn kernels",
+        "Corns"
+      ]
     },
     {
       "name": "Ginger",
@@ -1652,7 +2509,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ginger",
-      "aliases": []
+      "aliases": [
+        "ginger root",
+        "fresh ginger",
+        "root ginger",
+        "Gingers"
+      ]
     },
     {
       "name": "Arctic blackberry",
@@ -1660,7 +2522,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Arctic blackberry",
-      "aliases": []
+      "aliases": [
+        "blackberry",
+        "blackberries",
+        "Arctic blackberries"
+      ]
     },
     {
       "name": "Banana",
@@ -1668,7 +2534,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Banana",
-      "aliases": []
+      "aliases": [
+        "bananas",
+        "plantain"
+      ]
     },
     {
       "name": "Bayberry",
@@ -1676,7 +2545,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Bayberry",
-      "aliases": []
+      "aliases": [
+        "bayberries",
+        "wax myrtle"
+      ]
     },
     {
       "name": "Elliott's blueberry",
@@ -1716,7 +2588,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Celeriac",
-      "aliases": []
+      "aliases": [
+        "celery root",
+        "celeriacs"
+      ]
     },
     {
       "name": "Celery stalks",
@@ -1724,7 +2599,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Stalk vegetables",
       "displayName": "Celery stalks",
-      "aliases": []
+      "aliases": [
+        "celery",
+        "celery stalk",
+        "celery sticks",
+        "celery ribs",
+        "Celery stalkses"
+      ]
     },
     {
       "name": "Chinese chives",
@@ -1732,7 +2613,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Chinese chives",
-      "aliases": []
+      "aliases": [
+        "garlic chives",
+        "chinese chive",
+        "gau choy",
+        "Chinese chiveses"
+      ]
     },
     {
       "name": "European cranberry",
@@ -1756,7 +2642,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ginseng",
-      "aliases": []
+      "aliases": [
+        "ginseng root",
+        "panax ginseng",
+        "Ginsengs"
+      ]
     },
     {
       "name": "Cascade huckleberry",
@@ -1796,7 +2686,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Longan",
-      "aliases": []
+      "aliases": [
+        "longans",
+        "dragon eye",
+        "dragon eyes"
+      ]
     },
     {
       "name": "Macadamia nut (M. tetraphylla)",
@@ -1804,7 +2698,12 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Macadamia nut (M. tetraphylla)",
-      "aliases": []
+      "aliases": [
+        "macadamia",
+        "macadamia nuts",
+        "macadamia nut",
+        "Macadamia nut (M. tetraphylla)s"
+      ]
     },
     {
       "name": "Garden onion (var.)",
@@ -1812,7 +2711,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Garden onion (var.)",
-      "aliases": []
+      "aliases": [
+        "onion",
+        "onions",
+        "garden onion",
+        "Garden onion (var.)s"
+      ]
     },
     {
       "name": "Summer grape",
@@ -1836,7 +2740,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Nectarine",
-      "aliases": []
+      "aliases": [
+        "nectarines"
+      ]
     },
     {
       "name": "Peach (var.)",
@@ -1844,7 +2750,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Drupes",
       "displayName": "Peach (var.)",
-      "aliases": []
+      "aliases": [
+        "peach"
+      ]
     },
     {
       "name": "Pepper (C. baccatum)",
@@ -1852,7 +2760,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Pepper (C. baccatum)",
-      "aliases": []
+      "aliases": [
+        "pepper",
+        "peppers",
+        "ají",
+        "south american pepper",
+        "Pepper (C. baccatum)s"
+      ]
     },
     {
       "name": "Pepper (C. chinense)",
@@ -1860,7 +2774,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Pepper (C. chinense)",
-      "aliases": []
+      "aliases": [
+        "pepper",
+        "peppers",
+        "habanero",
+        "scotch bonnet",
+        "Pepper (C. chinense)s"
+      ]
     },
     {
       "name": "Pepper (Capsicum)",
@@ -1868,7 +2788,15 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Pepper (Capsicum)",
-      "aliases": []
+      "aliases": [
+        "pepper",
+        "peppers",
+        "capsicum",
+        "capsicums",
+        "bell pepper",
+        "chili pepper",
+        "Pepper (Capsicum)s"
+      ]
     },
     {
       "name": "Rambutan",
@@ -1876,7 +2804,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Rambutan",
-      "aliases": []
+      "aliases": [
+        "rambutans",
+        "rambutan fruit"
+      ]
     },
     {
       "name": "Red rice",
@@ -1884,7 +2815,11 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Red rice",
-      "aliases": []
+      "aliases": [
+        "red rice grain",
+        "red rice grains",
+        "Red rices"
+      ]
     },
     {
       "name": "Annual wild rice",
@@ -1892,7 +2827,11 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Annual wild rice",
-      "aliases": []
+      "aliases": [
+        "wild rice",
+        "black rice",
+        "Annual wild rices"
+      ]
     },
     {
       "name": "Swiss chard",
@@ -1900,7 +2839,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Swiss chard",
-      "aliases": []
+      "aliases": [
+        "chard",
+        "silverbeet",
+        "chard leaves",
+        "rainbow chard",
+        "Swiss chards"
+      ]
     },
     {
       "name": "Lemon thyme",
@@ -1908,7 +2853,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon thyme",
-      "aliases": []
+      "aliases": [
+        "thyme",
+        "fresh lemon thyme",
+        "Lemon thymes"
+      ]
     },
     {
       "name": "Tronchuda cabbage",
@@ -1916,7 +2865,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Tronchuda cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "portuguese cabbage",
+        "tronchuda",
+        "Tronchuda cabbages"
+      ]
     },
     {
       "name": "Japanese walnut",
@@ -1924,7 +2878,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Japanese walnut",
-      "aliases": []
+      "aliases": [
+        "walnut",
+        "walnuts",
+        "japanese walnuts"
+      ]
     },
     {
       "name": "Welsh onion",
@@ -1932,7 +2890,14 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Welsh onion",
-      "aliases": []
+      "aliases": [
+        "welsh onions",
+        "bunching onion",
+        "bunching onions",
+        "green onion",
+        "scallion",
+        "scallions"
+      ]
     },
     {
       "name": "Hard wheat",
@@ -1940,7 +2905,12 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Hard wheat",
-      "aliases": []
+      "aliases": [
+        "wheat",
+        "bread wheat",
+        "durum wheat",
+        "Hard wheats"
+      ]
     },
     {
       "name": "Shallot",
@@ -1948,7 +2918,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Shallot",
-      "aliases": []
+      "aliases": [
+        "shallots",
+        "eschalot",
+        "eschalots"
+      ]
     },
     {
       "name": "Rocket salad",
@@ -1956,7 +2930,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Rocket salad",
-      "aliases": []
+      "aliases": [
+        "rocket",
+        "arugula",
+        "rucola",
+        "rocket leaves",
+        "Rocket salads"
+      ]
     },
     {
       "name": "Carrot",
@@ -1964,7 +2944,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Carrot",
-      "aliases": []
+      "aliases": [
+        "carrots",
+        "carrot stick",
+        "carrot sticks"
+      ]
     },
     {
       "name": "Triticale",
@@ -1972,7 +2956,10 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Triticale",
-      "aliases": []
+      "aliases": [
+        "triticale grain",
+        "Triticales"
+      ]
     },
     {
       "name": "Black cabbage",
@@ -1980,7 +2967,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Black cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "black cabbages",
+        "cavolo nero",
+        "tuscan kale"
+      ]
     },
     {
       "name": "Half-highbush blueberry",
@@ -1996,7 +2988,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Celery leaves",
-      "aliases": []
+      "aliases": [
+        "celery leaf",
+        "celery tops",
+        "Celery leaveses"
+      ]
     },
     {
       "name": "Chicory leaves",
@@ -2004,7 +3000,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Chicory leaves",
-      "aliases": []
+      "aliases": [
+        "chicory",
+        "radicchio",
+        "Chicory leaveses"
+      ]
     },
     {
       "name": "Komatsuna",
@@ -2012,7 +3012,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Komatsuna",
-      "aliases": []
+      "aliases": [
+        "japanese mustard spinach",
+        "tendergreen",
+        "Komatsunas"
+      ]
     },
     {
       "name": "Pak choy",
@@ -2020,7 +3024,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Pak choy",
-      "aliases": []
+      "aliases": [
+        "bok choy",
+        "pak choi",
+        "chinese cabbage",
+        "Pak choys"
+      ]
     },
     {
       "name": "Napa cabbage",
@@ -2028,7 +3037,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Napa cabbage",
-      "aliases": []
+      "aliases": [
+        "chinese cabbage",
+        "wombok",
+        "napa cabbages"
+      ]
     },
     {
       "name": "Chicory roots",
@@ -2036,7 +3049,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Chicory roots",
-      "aliases": []
+      "aliases": [
+        "chicory root",
+        "Chicory rootses"
+      ]
     },
     {
       "name": "Grapefruit/Pummelo hybrid",
@@ -2044,7 +3060,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Grapefruit/Pummelo hybrid",
-      "aliases": []
+      "aliases": [
+        "grapefruit",
+        "grapefruits",
+        "Grapefruit/Pummelo hybrids"
+      ]
     },
     {
       "name": "Grapefruit",
@@ -2052,7 +3072,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Grapefruit",
-      "aliases": []
+      "aliases": [
+        "grapefruits",
+        "grape fruit"
+      ]
     },
     {
       "name": "Jostaberry",
@@ -2060,7 +3083,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Jostaberry",
-      "aliases": []
+      "aliases": [
+        "jostaberries",
+        "josta berry"
+      ]
     },
     {
       "name": "Kai-lan",
@@ -2068,7 +3094,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Kai-lan",
-      "aliases": []
+      "aliases": [
+        "chinese broccoli",
+        "gai lan",
+        "kai lan",
+        "chinese kale",
+        "Kai-lans"
+      ]
     },
     {
       "name": "Italian oregano",
@@ -2076,7 +3108,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Italian oregano",
-      "aliases": []
+      "aliases": [
+        "oregano",
+        "Italian oreganos"
+      ]
     },
     {
       "name": "Oxheart cabbage",
@@ -2084,7 +3119,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Oxheart cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages",
+        "Oxheart cabbages"
+      ]
     },
     {
       "name": "Daikon radish",
@@ -2092,7 +3131,14 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Daikon radish",
-      "aliases": []
+      "aliases": [
+        "daikon",
+        "daikons",
+        "japanese radish",
+        "mooli",
+        "white radish",
+        "Daikon radishes"
+      ]
     },
     {
       "name": "Black radish",
@@ -2100,7 +3146,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Black radish",
-      "aliases": []
+      "aliases": [
+        "radish",
+        "radishes",
+        "black radishes"
+      ]
     },
     {
       "name": "Radish (var.)",
@@ -2108,7 +3158,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Radish (var.)",
-      "aliases": []
+      "aliases": [
+        "radish",
+        "radishes",
+        "Radish (var.)s"
+      ]
     },
     {
       "name": "Red beetroot",
@@ -2116,7 +3170,15 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Red beetroot",
-      "aliases": []
+      "aliases": [
+        "beetroot",
+        "beetroots",
+        "beet",
+        "beets",
+        "red beet",
+        "red beets",
+        "Red beetroots"
+      ]
     },
     {
       "name": "Sweet rowanberry",
@@ -2124,7 +3186,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Sweet rowanberry",
-      "aliases": []
+      "aliases": [
+        "rowanberry",
+        "rowan berries",
+        "Sweet rowanberries"
+      ]
     },
     {
       "name": "Pineappple sage",
@@ -2132,7 +3198,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Pineappple sage",
-      "aliases": []
+      "aliases": [
+        "pineapple sage",
+        "sage",
+        "fresh pineapple sage",
+        "Pineappple sages"
+      ]
     },
     {
       "name": "Skunk currant",
@@ -2148,7 +3219,11 @@
       "foodGroup": "Beverages",
       "foodSubGroup": "Fermented beverages",
       "displayName": "Beer",
-      "aliases": []
+      "aliases": [
+        "beers",
+        "lager",
+        "ale"
+      ]
     },
     {
       "name": "Other bread",
@@ -2188,7 +3263,14 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereal products",
       "displayName": "Pasta",
-      "aliases": []
+      "aliases": [
+        "pasta noodles",
+        "noodles",
+        "spaghetti",
+        "penne",
+        "macaroni",
+        "Pastas"
+      ]
     },
     {
       "name": "Biscuit",
@@ -2236,7 +3318,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Abalone",
-      "aliases": []
+      "aliases": [
+        "abalones"
+      ]
     },
     {
       "name": "Abiyuch",
@@ -2252,7 +3336,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Acerola",
-      "aliases": []
+      "aliases": [
+        "acerola cherry",
+        "barbados cherry",
+        "Acerolas"
+      ]
     },
     {
       "name": "Acorn",
@@ -2268,7 +3356,12 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Winter squash",
-      "aliases": []
+      "aliases": [
+        "squash",
+        "squashes",
+        "winter squashes",
+        "pumpkin"
+      ]
     },
     {
       "name": "Agar",
@@ -2276,7 +3369,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Seaweed",
       "displayName": "Agar",
-      "aliases": []
+      "aliases": [
+        "agar agar",
+        "kanten",
+        "Agars"
+      ]
     },
     {
       "name": "Red king crab",
@@ -2284,7 +3381,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Crustaceans",
       "displayName": "Red king crab",
-      "aliases": []
+      "aliases": [
+        "king crab",
+        "crab",
+        "Red king crabs"
+      ]
     },
     {
       "name": "Alfalfa",
@@ -2292,7 +3393,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Alfalfa",
-      "aliases": []
+      "aliases": [
+        "fresh Alfalfa",
+        "Alfalfa leaves"
+      ]
     },
     {
       "name": "Allspice",
@@ -2300,7 +3404,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Allspice",
-      "aliases": []
+      "aliases": [
+        "allspice berries",
+        "ground allspice",
+        "jamaican pepper",
+        "Allspices"
+      ]
     },
     {
       "name": "Amaranth",
@@ -2308,7 +3417,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Amaranth",
-      "aliases": []
+      "aliases": [
+        "fresh Amaranth",
+        "Amaranth leaves"
+      ]
     },
     {
       "name": "Arrowhead",
@@ -2324,7 +3436,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Tubers",
       "displayName": "Arrowroot",
-      "aliases": []
+      "aliases": [
+        "arrowroot starch",
+        "arrowroot powder",
+        "Arrowroots"
+      ]
     },
     {
       "name": "Asian pear",
@@ -2332,7 +3448,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Asian pear",
-      "aliases": []
+      "aliases": [
+        "asian pears",
+        "apple pear",
+        "apple pears",
+        "nashi",
+        "nashi pear"
+      ]
     },
     {
       "name": "Atlantic herring",
@@ -2340,7 +3462,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Atlantic herring",
-      "aliases": []
+      "aliases": [
+        "herring",
+        "herrings",
+        "herring fillet",
+        "Atlantic herrings"
+      ]
     },
     {
       "name": "Atlantic mackerel",
@@ -2348,7 +3475,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Atlantic mackerel",
-      "aliases": []
+      "aliases": [
+        "mackerel",
+        "mackerel fillet",
+        "mackerels",
+        "Atlantic mackerels"
+      ]
     },
     {
       "name": "Painted comber",
@@ -2364,7 +3496,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Atlantic pollock",
-      "aliases": []
+      "aliases": [
+        "pollock",
+        "pollock fillet",
+        "Atlantic pollocks"
+      ]
     },
     {
       "name": "Atlantic wolffish",
@@ -2380,7 +3516,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Shoot vegetables",
       "displayName": "Bamboo shoots",
-      "aliases": []
+      "aliases": [
+        "bamboo shoot",
+        "canned bamboo shoots",
+        "Bamboo shootses"
+      ]
     },
     {
       "name": "Striped bass",
@@ -2388,7 +3528,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Striped bass",
-      "aliases": []
+      "aliases": [
+        "bass",
+        "striped bass fillet",
+        "Striped basses"
+      ]
     },
     {
       "name": "Beech nut",
@@ -2396,7 +3540,10 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Beech nut",
-      "aliases": []
+      "aliases": [
+        "Beech",
+        "Beeches"
+      ]
     },
     {
       "name": "Beluga whale",
@@ -2412,7 +3559,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Bison",
-      "aliases": []
+      "aliases": [
+        "bison meat",
+        "buffalo",
+        "Bisons"
+      ]
     },
     {
       "name": "Alaska blackfish",
@@ -2428,7 +3579,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Crustaceans",
       "displayName": "Blue crab",
-      "aliases": []
+      "aliases": [
+        "crab",
+        "crabs",
+        "crab meat",
+        "blue crabs"
+      ]
     },
     {
       "name": "Blue mussel",
@@ -2436,7 +3592,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Blue mussel",
-      "aliases": []
+      "aliases": [
+        "mussel",
+        "mussels",
+        "Blue mussels"
+      ]
     },
     {
       "name": "Northern bluefin tuna",
@@ -2444,7 +3604,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Northern bluefin tuna",
-      "aliases": []
+      "aliases": [
+        "tuna",
+        "bluefin tuna",
+        "tuna steak",
+        "Northern bluefin tunas"
+      ]
     },
     {
       "name": "Bluefish",
@@ -2460,7 +3625,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Wild boar",
-      "aliases": []
+      "aliases": [
+        "boar",
+        "wild pig",
+        "Wild boars"
+      ]
     },
     {
       "name": "Bowhead whale",
@@ -2476,7 +3645,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Breadfruit",
-      "aliases": []
+      "aliases": [
+        "breadfruits"
+      ]
     },
     {
       "name": "Breadnut tree seed",
@@ -2484,7 +3655,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Breadnut tree seed",
-      "aliases": []
+      "aliases": [
+        "breadnut",
+        "breadnuts",
+        "Breadnut tree seeds"
+      ]
     },
     {
       "name": "Rapini",
@@ -2492,7 +3667,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Rapini",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages"
+      ]
     },
     {
       "name": "Buffalo",
@@ -2500,7 +3678,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Buffalo",
-      "aliases": []
+      "aliases": [
+        "buffalo meat",
+        "bison",
+        "Buffalos"
+      ]
     },
     {
       "name": "Burbot",
@@ -2540,7 +3722,10 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Butternut squash",
-      "aliases": []
+      "aliases": [
+        "butternut",
+        "butternut squashes"
+      ]
     },
     {
       "name": "Calabash",
@@ -2548,7 +3733,11 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Calabash",
-      "aliases": []
+      "aliases": [
+        "calabash gourd",
+        "bottle gourd",
+        "Calabashes"
+      ]
     },
     {
       "name": "Cardoon",
@@ -2556,7 +3745,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Shoot vegetables",
       "displayName": "Cardoon",
-      "aliases": []
+      "aliases": [
+        "cardoons",
+        "artichoke thistle"
+      ]
     },
     {
       "name": "Natal plum",
@@ -2564,7 +3756,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Natal plum",
-      "aliases": []
+      "aliases": [
+        "natal plums",
+        "num-num"
+      ]
     },
     {
       "name": "Carob",
@@ -2572,7 +3767,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Other vegetables",
       "displayName": "Carob",
-      "aliases": []
+      "aliases": [
+        "carob powder",
+        "carob pods",
+        "Carobs"
+      ]
     },
     {
       "name": "Common carp",
@@ -2588,7 +3787,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Tubers",
       "displayName": "Cassava",
-      "aliases": []
+      "aliases": [
+        "cassava root",
+        "yuca",
+        "manioc",
+        "tapioca root",
+        "Cassavas"
+      ]
     },
     {
       "name": "Channel catfish",
@@ -2596,7 +3801,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Channel catfish",
-      "aliases": []
+      "aliases": [
+        "catfish",
+        "catfish fillet",
+        "Channel catfishes"
+      ]
     },
     {
       "name": "Chayote",
@@ -2604,7 +3813,13 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Chayote",
-      "aliases": []
+      "aliases": [
+        "chayotes",
+        "choko",
+        "chokos",
+        "mirliton",
+        "christophene"
+      ]
     },
     {
       "name": "Cherimoya",
@@ -2612,7 +3827,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Cherimoya",
-      "aliases": []
+      "aliases": [
+        "cherimoyas",
+        "custard apple"
+      ]
     },
     {
       "name": "Chervil",
@@ -2620,7 +3838,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Chervil",
-      "aliases": []
+      "aliases": [
+        "fresh chervil",
+        "chervil leaves",
+        "french parsley",
+        "Chervils"
+      ]
     },
     {
       "name": "Chia",
@@ -2628,7 +3851,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Chia",
-      "aliases": []
+      "aliases": [
+        "chia seeds",
+        "chia seed",
+        "Chias"
+      ]
     },
     {
       "name": "Chicken",
@@ -2636,7 +3863,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken",
-      "aliases": []
+      "aliases": [
+        "chicken meat",
+        "whole chicken",
+        "chickens"
+      ]
     },
     {
       "name": "Chinese broccoli",
@@ -2644,7 +3875,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Chinese broccoli",
-      "aliases": []
+      "aliases": [
+        "gai lan",
+        "kai-lan",
+        "Chinese broccolis"
+      ]
     },
     {
       "name": "Chinese chestnut",
@@ -2652,7 +3887,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Chinese chestnut",
-      "aliases": []
+      "aliases": [
+        "chestnut",
+        "chestnuts",
+        "Chinese chestnuts"
+      ]
     },
     {
       "name": "Chinese water chestnut",
@@ -2660,7 +3899,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Other vegetables",
       "displayName": "Chinese water chestnut",
-      "aliases": []
+      "aliases": [
+        "water chestnut",
+        "water chestnuts",
+        "chinese water chestnuts"
+      ]
     },
     {
       "name": "Garland chrysanthemum",
@@ -2668,7 +3911,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Garland chrysanthemum",
-      "aliases": []
+      "aliases": [
+        "chrysanthemum greens",
+        "shungiku",
+        "tong ho",
+        "Garland chrysanthemums"
+      ]
     },
     {
       "name": "Cisco",
@@ -2692,7 +3940,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Coconut",
-      "aliases": []
+      "aliases": [
+        "coconuts",
+        "coconut meat",
+        "fresh coconut",
+        "desiccated coconut"
+      ]
     },
     {
       "name": "Pacific cod",
@@ -2700,7 +3953,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Pacific cod",
-      "aliases": []
+      "aliases": [
+        "cod",
+        "cod fillet",
+        "cod fillets",
+        "alaska cod",
+        "Pacific cods"
+      ]
     },
     {
       "name": "Atlantic cod",
@@ -2708,7 +3967,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Atlantic cod",
-      "aliases": []
+      "aliases": [
+        "cod",
+        "cod fillet",
+        "cod fillets",
+        "fresh cod",
+        "Atlantic cods"
+      ]
     },
     {
       "name": "Common octopus",
@@ -2716,7 +3981,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Common octopus",
-      "aliases": []
+      "aliases": [
+        "octopus",
+        "octopi",
+        "Common octopuses"
+      ]
     },
     {
       "name": "Corn salad",
@@ -2724,7 +3993,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Corn salad",
-      "aliases": []
+      "aliases": [
+        "lamb's lettuce",
+        "mâche",
+        "field salad",
+        "Corn salads"
+      ]
     },
     {
       "name": "Cottonseed",
@@ -2740,7 +4014,10 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Catjang pea",
-      "aliases": []
+      "aliases": [
+        "pea",
+        "peas"
+      ]
     },
     {
       "name": "Malus (Crab apple)",
@@ -2748,7 +4025,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Malus (Crab apple)",
-      "aliases": []
+      "aliases": [
+        "malus"
+      ]
     },
     {
       "name": "Squashberry",
@@ -2780,7 +4059,10 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Cuttlefish",
-      "aliases": []
+      "aliases": [
+        "cuttlefish squid",
+        "Cuttlefishes"
+      ]
     },
     {
       "name": "Mule deer",
@@ -2788,7 +4070,12 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Venison",
       "displayName": "Mule deer",
-      "aliases": []
+      "aliases": [
+        "deer",
+        "venison",
+        "deer meat",
+        "Mule deers"
+      ]
     },
     {
       "name": "Devilfish",
@@ -2804,7 +4091,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Dock",
-      "aliases": []
+      "aliases": [
+        "fresh Dock",
+        "Dock leaves"
+      ]
     },
     {
       "name": "Dolphin fish",
@@ -2828,7 +4118,12 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Mallard duck",
-      "aliases": []
+      "aliases": [
+        "duck",
+        "mallard",
+        "duck meat",
+        "Mallard ducks"
+      ]
     },
     {
       "name": "Dungeness crab",
@@ -2836,7 +4131,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Crustaceans",
       "displayName": "Dungeness crab",
-      "aliases": []
+      "aliases": [
+        "crab",
+        "dungeness",
+        "Dungeness crabs"
+      ]
     },
     {
       "name": "Durian",
@@ -2844,7 +4143,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Durian",
-      "aliases": []
+      "aliases": [
+        "durians",
+        "durian fruit"
+      ]
     },
     {
       "name": "Eastern oyster",
@@ -2852,7 +4154,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Eastern oyster",
-      "aliases": []
+      "aliases": [
+        "oyster",
+        "oysters",
+        "eastern oysters"
+      ]
     },
     {
       "name": "Freshwater eel",
@@ -2868,7 +4174,10 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Elderberry",
-      "aliases": []
+      "aliases": [
+        "elderberries",
+        "elder"
+      ]
     },
     {
       "name": "Elk",
@@ -2876,7 +4185,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Venison",
       "displayName": "Elk",
-      "aliases": []
+      "aliases": [
+        "elk meat",
+        "wapiti",
+        "Elks"
+      ]
     },
     {
       "name": "Emu",
@@ -2884,7 +4197,10 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Emu",
-      "aliases": []
+      "aliases": [
+        "emu meat",
+        "Emus"
+      ]
     },
     {
       "name": "Oregon yampah",
@@ -2900,7 +4216,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "European anchovy",
-      "aliases": []
+      "aliases": [
+        "anchovy",
+        "anchovies",
+        "European anchovies"
+      ]
     },
     {
       "name": "European chestnut",
@@ -2908,7 +4228,12 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "European chestnut",
-      "aliases": []
+      "aliases": [
+        "chestnut",
+        "chestnuts",
+        "sweet chestnut",
+        "European chestnuts"
+      ]
     },
     {
       "name": "Turbot",
@@ -2924,7 +4249,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Fireweed",
-      "aliases": []
+      "aliases": [
+        "fresh Fireweed",
+        "Fireweed leaves"
+      ]
     },
     {
       "name": "Florida pompano",
@@ -2940,7 +4268,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Ginkgo nuts",
-      "aliases": []
+      "aliases": [
+        "ginkgo",
+        "ginkgo nut",
+        "Ginkgo nutses"
+      ]
     },
     {
       "name": "Greylag goose",
@@ -2948,7 +4280,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Greylag goose",
-      "aliases": []
+      "aliases": [
+        "goose",
+        "goose meat",
+        "Greylag gooses"
+      ]
     },
     {
       "name": "Grape",
@@ -2964,7 +4300,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Greenland halibut/turbot",
-      "aliases": []
+      "aliases": [
+        "halibut",
+        "turbot",
+        "Greenland halibut/turbots"
+      ]
     },
     {
       "name": "Groundcherry",
@@ -2972,7 +4312,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Groundcherry",
-      "aliases": []
+      "aliases": [
+        "ground cherries",
+        "husk cherry",
+        "Groundcherries"
+      ]
     },
     {
       "name": "Grouper",
@@ -2988,7 +4332,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Guinea hen",
-      "aliases": []
+      "aliases": [
+        "guinea fowl",
+        "guinea",
+        "Guinea hens"
+      ]
     },
     {
       "name": "Haddock",
@@ -2996,7 +4344,10 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Haddock",
-      "aliases": []
+      "aliases": [
+        "haddock fillet",
+        "haddocks"
+      ]
     },
     {
       "name": "Hippoglossus (Common halibut)",
@@ -3004,7 +4355,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Hippoglossus (Common halibut)",
-      "aliases": []
+      "aliases": [
+        "hippoglossus"
+      ]
     },
     {
       "name": "Hazelnut",
@@ -3012,7 +4365,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Hazelnut",
-      "aliases": []
+      "aliases": [
+        "hazelnuts",
+        "filbert",
+        "filberts"
+      ]
     },
     {
       "name": "Hickory nut",
@@ -3020,7 +4377,10 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Hickory nut",
-      "aliases": []
+      "aliases": [
+        "Hickory",
+        "Hickories"
+      ]
     },
     {
       "name": "Horse",
@@ -3052,7 +4412,11 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Hyacinth bean",
-      "aliases": []
+      "aliases": [
+        "lablab",
+        "indian bean",
+        "Hyacinth beans"
+      ]
     },
     {
       "name": "Irish moss",
@@ -3060,7 +4424,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Seaweed",
       "displayName": "Irish moss",
-      "aliases": []
+      "aliases": [
+        "carrageenan moss",
+        "sea moss",
+        "Irish mosses"
+      ]
     },
     {
       "name": "Pacific jack mackerel",
@@ -3076,7 +4444,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Jackfruit",
-      "aliases": []
+      "aliases": [
+        "jackfruits",
+        "jack fruit",
+        "young jackfruit",
+        "green jackfruit"
+      ]
     },
     {
       "name": "Japanese chestnut",
@@ -3084,7 +4457,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Japanese chestnut",
-      "aliases": []
+      "aliases": [
+        "chestnut",
+        "chestnuts",
+        "Japanese chestnuts"
+      ]
     },
     {
       "name": "Java plum",
@@ -3092,7 +4469,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Java plum",
-      "aliases": []
+      "aliases": [
+        "java plums",
+        "jambul",
+        "black plum"
+      ]
     },
     {
       "name": "Jerusalem artichoke",
@@ -3100,7 +4481,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Tubers",
       "displayName": "Jerusalem artichoke",
-      "aliases": []
+      "aliases": [
+        "sunchoke",
+        "sunchokes",
+        "jerusalem artichokes"
+      ]
     },
     {
       "name": "Jujube",
@@ -3108,7 +4493,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Other fruits",
       "displayName": "Jujube",
-      "aliases": []
+      "aliases": [
+        "jujubes",
+        "chinese date",
+        "chinese dates",
+        "jujube fruit"
+      ]
     },
     {
       "name": "Jute",
@@ -3124,7 +4514,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Kale",
-      "aliases": []
+      "aliases": [
+        "kales",
+        "curly kale",
+        "kale leaves",
+        "tuscan kale"
+      ]
     },
     {
       "name": "Kelp",
@@ -3132,7 +4527,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Seaweed",
       "displayName": "Kelp",
-      "aliases": []
+      "aliases": [
+        "kelp seaweed",
+        "seaweed",
+        "kombu",
+        "Kelps"
+      ]
     },
     {
       "name": "King mackerel",
@@ -3148,7 +4548,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Kumquat",
-      "aliases": []
+      "aliases": [
+        "kumquats",
+        "cumquat",
+        "cumquats"
+      ]
     },
     {
       "name": "Lambsquarters",
@@ -3156,7 +4560,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Lambsquarters",
-      "aliases": []
+      "aliases": [
+        "lamb's quarters",
+        "goosefoot",
+        "wild spinach",
+        "Lambsquarterses"
+      ]
     },
     {
       "name": "Leather chiton",
@@ -3196,7 +4605,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Crustaceans",
       "displayName": "American lobster",
-      "aliases": []
+      "aliases": [
+        "lobster",
+        "lobsters",
+        "maine lobster",
+        "lobster tail",
+        "American lobsters"
+      ]
     },
     {
       "name": "Loganberry",
@@ -3204,7 +4619,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Loganberry",
-      "aliases": []
+      "aliases": [
+        "loganberries"
+      ]
     },
     {
       "name": "Lotus",
@@ -3236,7 +4653,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Malabar spinach",
-      "aliases": []
+      "aliases": [
+        "Malabar spinaches",
+        "Malabar spinach leaves"
+      ]
     },
     {
       "name": "Mammee apple",
@@ -3252,7 +4672,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Purple mangosteen",
-      "aliases": []
+      "aliases": [
+        "Purple mangosteens"
+      ]
     },
     {
       "name": "Alpine sweetvetch",
@@ -3284,7 +4706,10 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Moth bean",
-      "aliases": []
+      "aliases": [
+        "moth beans",
+        "matki"
+      ]
     },
     {
       "name": "Mountain yam",
@@ -3316,7 +4741,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Mustard spinach",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages"
+      ]
     },
     {
       "name": "New Zealand spinach",
@@ -3324,7 +4752,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "New Zealand spinach",
-      "aliases": []
+      "aliases": [
+        "New Zealand spinaches",
+        "New Zealand spinach leaves"
+      ]
     },
     {
       "name": "Nopal",
@@ -3332,7 +4763,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Other vegetables",
       "displayName": "Nopal",
-      "aliases": []
+      "aliases": [
+        "nopales",
+        "prickly pear cactus",
+        "cactus paddle",
+        "Nopals"
+      ]
     },
     {
       "name": "Ocean pout",
@@ -3364,7 +4800,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Other vegetables",
       "displayName": "Okra",
-      "aliases": []
+      "aliases": [
+        "okras",
+        "ladies fingers",
+        "bamya",
+        "bamia"
+      ]
     },
     {
       "name": "Tunicate",
@@ -3380,7 +4821,10 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Ostrich",
-      "aliases": []
+      "aliases": [
+        "ostrich meat",
+        "Ostriches"
+      ]
     },
     {
       "name": "Spotted seal",
@@ -3404,7 +4848,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Pacific oyster",
-      "aliases": []
+      "aliases": [
+        "oyster",
+        "oysters",
+        "pacific oysters",
+        "fresh oysters"
+      ]
     },
     {
       "name": "Pacific rockfish",
@@ -3420,7 +4869,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Velvet duck",
-      "aliases": []
+      "aliases": [
+        "duck",
+        "duck meat",
+        "Velvet ducks"
+      ]
     },
     {
       "name": "Pepper (C. frutescens)",
@@ -3428,7 +4881,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Pepper (C. frutescens)",
-      "aliases": []
+      "aliases": [
+        "pepper"
+      ]
     },
     {
       "name": "Common persimmon",
@@ -3444,7 +4899,10 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Pheasant",
-      "aliases": []
+      "aliases": [
+        "pheasant meat",
+        "pheasants"
+      ]
     },
     {
       "name": "Northern pike",
@@ -3460,7 +4918,10 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Pili nut",
-      "aliases": []
+      "aliases": [
+        "Pili",
+        "Pilis"
+      ]
     },
     {
       "name": "Colorado pinyon",
@@ -3476,7 +4937,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Pitanga",
-      "aliases": []
+      "aliases": [
+        "surinam cherry",
+        "brazilian cherry",
+        "Pitangas"
+      ]
     },
     {
       "name": "Plains prickly pear",
@@ -3484,7 +4949,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Plains prickly pear",
-      "aliases": []
+      "aliases": [
+        "prickly pear",
+        "cactus fruit",
+        "Plains prickly pears"
+      ]
     },
     {
       "name": "French plantain",
@@ -3516,7 +4985,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Prairie turnip",
-      "aliases": []
+      "aliases": [
+        "Prairie turnips"
+      ]
     },
     {
       "name": "Prickly pear",
@@ -3524,7 +4995,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Prickly pear",
-      "aliases": []
+      "aliases": [
+        "prickly pears",
+        "cactus fruit",
+        "tuna fruit"
+      ]
     },
     {
       "name": "Quinoa",
@@ -3532,7 +5007,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Quinoa",
-      "aliases": []
+      "aliases": [
+        "quinoa grain",
+        "quinoa seeds",
+        "quinua",
+        "Quinoas"
+      ]
     },
     {
       "name": "European rabbit",
@@ -3540,7 +5020,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Lagomorphs",
       "displayName": "European rabbit",
-      "aliases": []
+      "aliases": [
+        "rabbit",
+        "rabbit meat",
+        "European rabbits"
+      ]
     },
     {
       "name": "Rainbow smelt",
@@ -3556,7 +5040,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Rainbow trout",
-      "aliases": []
+      "aliases": [
+        "trout",
+        "rainbow trout fillet",
+        "trout fillet",
+        "Rainbow trouts"
+      ]
     },
     {
       "name": "Malabar plum",
@@ -3572,7 +5061,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Rose hip",
-      "aliases": []
+      "aliases": [
+        "fresh Rose hip",
+        "Rose hip leaves"
+      ]
     },
     {
       "name": "Roselle",
@@ -3580,7 +5072,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Roselle",
-      "aliases": []
+      "aliases": [
+        "fresh Roselle",
+        "Roselle leaves"
+      ]
     },
     {
       "name": "Orange roughy",
@@ -3604,7 +5099,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Pink salmon",
-      "aliases": []
+      "aliases": [
+        "salmon",
+        "pink salmon fillet",
+        "canned salmon",
+        "Pink salmons"
+      ]
     },
     {
       "name": "Chum salmon",
@@ -3612,7 +5112,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Chum salmon",
-      "aliases": []
+      "aliases": [
+        "salmon",
+        "keta salmon",
+        "chum salmon fillet",
+        "Chum salmons"
+      ]
     },
     {
       "name": "Coho salmon",
@@ -3620,7 +5125,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Coho salmon",
-      "aliases": []
+      "aliases": [
+        "salmon",
+        "silver salmon",
+        "coho salmon fillet",
+        "Coho salmons"
+      ]
     },
     {
       "name": "Sockeye salmon",
@@ -3628,7 +5138,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Sockeye salmon",
-      "aliases": []
+      "aliases": [
+        "salmon",
+        "red salmon",
+        "sockeye salmon fillet",
+        "Sockeye salmons"
+      ]
     },
     {
       "name": "Chinook salmon",
@@ -3636,7 +5151,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Chinook salmon",
-      "aliases": []
+      "aliases": [
+        "salmon",
+        "king salmon",
+        "chinook salmon fillet",
+        "Chinook salmons"
+      ]
     },
     {
       "name": "Atlantic salmon",
@@ -3644,7 +5164,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Atlantic salmon",
-      "aliases": []
+      "aliases": [
+        "salmon",
+        "salmon fillet",
+        "salmon fillets",
+        "scottish salmon",
+        "Atlantic salmons"
+      ]
     },
     {
       "name": "Salmonberry",
@@ -3652,7 +5178,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Salmonberry",
-      "aliases": []
+      "aliases": [
+        "salmonberries"
+      ]
     },
     {
       "name": "Common salsify",
@@ -3660,7 +5188,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Common salsify",
-      "aliases": []
+      "aliases": [
+        "salsify",
+        "oyster plant",
+        "vegetable oyster",
+        "Common salsifies"
+      ]
     },
     {
       "name": "Sapodilla",
@@ -3692,7 +5225,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Pacific sardine",
-      "aliases": []
+      "aliases": [
+        "sardine",
+        "sardines",
+        "sardine fillets",
+        "Pacific sardines"
+      ]
     },
     {
       "name": "Scallop",
@@ -3700,7 +5238,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Scallop",
-      "aliases": []
+      "aliases": [
+        "scallops",
+        "sea scallop",
+        "sea scallops",
+        "scallop meat"
+      ]
     },
     {
       "name": "Scup",
@@ -3788,7 +5331,14 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Ovis",
       "displayName": "Sheep (Mutton, Lamb)",
-      "aliases": []
+      "aliases": [
+        "lamb",
+        "mutton",
+        "sheep",
+        "lamb meat",
+        "mutton meat",
+        "Sheep (Mutton, Lamb)s"
+      ]
     },
     {
       "name": "Sheepshead",
@@ -3812,7 +5362,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Skipjack tuna",
-      "aliases": []
+      "aliases": [
+        "tuna",
+        "skipjack",
+        "light tuna",
+        "canned tuna",
+        "Skipjack tunas"
+      ]
     },
     {
       "name": "Snapper",
@@ -3836,7 +5392,11 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Spelt",
-      "aliases": []
+      "aliases": [
+        "spelt grain",
+        "spelt flour",
+        "Spelts"
+      ]
     },
     {
       "name": "Spirulina",
@@ -3844,7 +5404,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Seaweed",
       "displayName": "Spirulina",
-      "aliases": []
+      "aliases": [
+        "spirulina powder",
+        "blue-green algae",
+        "Spirulinas"
+      ]
     },
     {
       "name": "Squab",
@@ -3852,7 +5416,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Squab",
-      "aliases": []
+      "aliases": [
+        "pigeon",
+        "young pigeon",
+        "Squabs"
+      ]
     },
     {
       "name": "Strawberry guava",
@@ -3884,7 +5452,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Sugar apple",
-      "aliases": []
+      "aliases": [
+        "sweet sop",
+        "custard apple",
+        "Sugar apples"
+      ]
     },
     {
       "name": "Pumpkinseed sunfish",
@@ -3908,7 +5480,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Taro",
-      "aliases": []
+      "aliases": [
+        "taro root",
+        "taro roots",
+        "cocoyam",
+        "Taros"
+      ]
     },
     {
       "name": "Teff",
@@ -3916,7 +5493,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Teff",
-      "aliases": []
+      "aliases": [
+        "fresh Teff",
+        "Teff leaves"
+      ]
     },
     {
       "name": "Tilefish",
@@ -3932,7 +5512,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Mexican groundcherry",
-      "aliases": []
+      "aliases": [
+        "tomatillo",
+        "tomatillos",
+        "ground cherry",
+        "Mexican groundcherries"
+      ]
     },
     {
       "name": "Towel gourd",
@@ -3940,7 +5525,12 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Towel gourd",
-      "aliases": []
+      "aliases": [
+        "loofah",
+        "luffa",
+        "sponge gourd",
+        "Towel gourds"
+      ]
     },
     {
       "name": "Salmonidae (Salmon, Trout)",
@@ -3948,7 +5538,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Salmonidae (Salmon, Trout)",
-      "aliases": []
+      "aliases": [
+        "salmonidae"
+      ]
     },
     {
       "name": "Turkey",
@@ -3956,7 +5548,13 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Turkey",
-      "aliases": []
+      "aliases": [
+        "turkey meat",
+        "whole turkey",
+        "turkey breast",
+        "turkey thigh",
+        "Turkeys"
+      ]
     },
     {
       "name": "Cattle (Beef, Veal)",
@@ -3964,7 +5562,12 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Cattle (Beef, Veal)",
-      "aliases": []
+      "aliases": [
+        "beef",
+        "veal",
+        "cattle",
+        "Cattle (Beef, Veal)s"
+      ]
     },
     {
       "name": "Walleye",
@@ -3980,7 +5583,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Alaska pollock",
-      "aliases": []
+      "aliases": [
+        "pollock",
+        "pollock fillet",
+        "Alaska pollocks"
+      ]
     },
     {
       "name": "Wasabi",
@@ -3988,7 +5595,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Wasabi",
-      "aliases": []
+      "aliases": [
+        "wasabi root",
+        "japanese horseradish",
+        "Wasabis"
+      ]
     },
     {
       "name": "Wax gourd",
@@ -3996,7 +5607,12 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Wax gourd",
-      "aliases": []
+      "aliases": [
+        "winter melon",
+        "white gourd",
+        "chinese winter melon",
+        "Wax gourds"
+      ]
     },
     {
       "name": "Whelk",
@@ -4052,7 +5668,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Tea leaf willow",
-      "aliases": []
+      "aliases": [
+        "fresh Tea leaf willow",
+        "Tea leaf willow leaves"
+      ]
     },
     {
       "name": "Winged bean",
@@ -4060,7 +5679,10 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Winged bean",
-      "aliases": []
+      "aliases": [
+        "winged beans",
+        "goa bean"
+      ]
     },
     {
       "name": "Yam",
@@ -4068,7 +5690,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Tubers",
       "displayName": "Yam",
-      "aliases": []
+      "aliases": [
+        "yams",
+        "sweet potato",
+        "sweet potatoes"
+      ]
     },
     {
       "name": "Jicama",
@@ -4076,7 +5702,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Jicama",
-      "aliases": []
+      "aliases": [
+        "jicamas",
+        "mexican turnip",
+        "mexican yam bean"
+      ]
     },
     {
       "name": "Yautia",
@@ -4092,7 +5722,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Yellowfin tuna",
-      "aliases": []
+      "aliases": [
+        "tuna",
+        "tuna steak",
+        "ahi tuna",
+        "tuna steaks",
+        "Yellowfin tunas"
+      ]
     },
     {
       "name": "Yellowtail amberjack",
@@ -4116,7 +5752,13 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Albacore tuna",
-      "aliases": []
+      "aliases": [
+        "tuna",
+        "white tuna",
+        "canned tuna",
+        "tuna in water",
+        "Albacore tunas"
+      ]
     },
     {
       "name": "Gadus (Common cod)",
@@ -4124,7 +5766,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Gadus (Common cod)",
-      "aliases": []
+      "aliases": [
+        "gadus"
+      ]
     },
     {
       "name": "Atlantic halibut",
@@ -4132,7 +5776,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Atlantic halibut",
-      "aliases": []
+      "aliases": [
+        "halibut",
+        "halibut fillet",
+        "Atlantic halibuts"
+      ]
     },
     {
       "name": "Pacific halibut",
@@ -4140,7 +5788,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Pacific halibut",
-      "aliases": []
+      "aliases": [
+        "halibut",
+        "halibut fillet",
+        "Pacific halibuts"
+      ]
     },
     {
       "name": "Pacific salmon",
@@ -4164,7 +5816,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Clupeinae (Herring, Sardine, Sprat)",
-      "aliases": []
+      "aliases": [
+        "clupeinae"
+      ]
     },
     {
       "name": "Spiny lobster",
@@ -4188,7 +5842,13 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Black-eyed pea",
-      "aliases": []
+      "aliases": [
+        "black eyed pea",
+        "black eyed peas",
+        "cowpea",
+        "cowpeas",
+        "Black-eyed peas"
+      ]
     },
     {
       "name": "Deer",
@@ -4196,7 +5856,11 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Venison",
       "displayName": "Deer",
-      "aliases": []
+      "aliases": [
+        "venison",
+        "deer meat",
+        "Deers"
+      ]
     },
     {
       "name": "Macadamia nut",
@@ -4204,7 +5868,11 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Macadamia nut",
-      "aliases": []
+      "aliases": [
+        "macadamia",
+        "macadamia nuts",
+        "mac nuts"
+      ]
     },
     {
       "name": "Percoidei (Bass and others)",
@@ -4212,7 +5880,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Percoidei (Bass and others)",
-      "aliases": []
+      "aliases": [
+        "percoidei"
+      ]
     },
     {
       "name": "Perciformes",
@@ -4228,7 +5898,10 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Lagomorphs",
       "displayName": "Rabbit",
-      "aliases": []
+      "aliases": [
+        "rabbit meat",
+        "Rabbits"
+      ]
     },
     {
       "name": "Domestic goat",
@@ -4252,7 +5925,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Bivalvia (Clam, Mussel, Oyster)",
-      "aliases": []
+      "aliases": [
+        "bivalvia"
+      ]
     },
     {
       "name": "Squid",
@@ -4260,7 +5935,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Mollusks",
       "displayName": "Squid",
-      "aliases": []
+      "aliases": [
+        "squids",
+        "calamari",
+        "squid rings"
+      ]
     },
     {
       "name": "Shrimp",
@@ -4268,7 +5947,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Crustaceans",
       "displayName": "Shrimp",
-      "aliases": []
+      "aliases": [
+        "shrimps",
+        "prawn",
+        "prawns",
+        "jumbo shrimp"
+      ]
     },
     {
       "name": "Crayfish",
@@ -4292,7 +5976,12 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Domestic pig",
-      "aliases": []
+      "aliases": [
+        "pork",
+        "pig",
+        "pork meat",
+        "Domestic pigs"
+      ]
     },
     {
       "name": "Walrus",
@@ -4324,7 +6013,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Yardlong bean",
-      "aliases": []
+      "aliases": [
+        "long bean",
+        "long beans",
+        "asparagus bean",
+        "Yardlong beans"
+      ]
     },
     {
       "name": "Quail",
@@ -4332,7 +6026,10 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Quail",
-      "aliases": []
+      "aliases": [
+        "quail bird",
+        "quails"
+      ]
     },
     {
       "name": "Boysenberry",
@@ -4348,7 +6045,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Persian lime",
-      "aliases": []
+      "aliases": [
+        "Persian limes"
+      ]
     },
     {
       "name": "Feijoa",
@@ -4380,7 +6079,14 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Mushrooms",
       "displayName": "Common mushroom",
-      "aliases": []
+      "aliases": [
+        "mushroom",
+        "mushrooms",
+        "button mushroom",
+        "button mushrooms",
+        "white mushroom",
+        "Common mushrooms"
+      ]
     },
     {
       "name": "Shiitake",
@@ -4388,7 +6094,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Mushrooms",
       "displayName": "Shiitake",
-      "aliases": []
+      "aliases": [
+        "shiitake mushroom",
+        "shiitake mushrooms",
+        "shiitakes",
+        "dried shiitake"
+      ]
     },
     {
       "name": "Purple laver",
@@ -4420,7 +6131,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Epazote",
-      "aliases": []
+      "aliases": [
+        "fresh Epazote",
+        "Epazote leaves"
+      ]
     },
     {
       "name": "Oyster mushroom",
@@ -4428,7 +6142,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Mushrooms",
       "displayName": "Oyster mushroom",
-      "aliases": []
+      "aliases": [
+        "oyster mushrooms",
+        "pleurotus"
+      ]
     },
     {
       "name": "Cloud ear fungus",
@@ -4468,7 +6185,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sourdock",
-      "aliases": []
+      "aliases": [
+        "fresh Sourdock",
+        "Sourdock leaves"
+      ]
     },
     {
       "name": "Tinda",
@@ -4492,7 +6212,13 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Wheat",
-      "aliases": []
+      "aliases": [
+        "wheat grain",
+        "wheat berries",
+        "wheat flour",
+        "whole wheat",
+        "Wheats"
+      ]
     },
     {
       "name": "Common chokecherry",
@@ -4532,7 +6258,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Anchovy",
-      "aliases": []
+      "aliases": [
+        "anchovies",
+        "anchovy fillet",
+        "anchovy fillets"
+      ]
     },
     {
       "name": "Blue whiting",
@@ -4580,7 +6310,13 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Cinnamon",
-      "aliases": []
+      "aliases": [
+        "cinnamon stick",
+        "cinnamon sticks",
+        "ground cinnamon",
+        "ceylon cinnamon",
+        "Cinnamons"
+      ]
     },
     {
       "name": "Crab",
@@ -4588,7 +6324,11 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Crustaceans",
       "displayName": "Crab",
-      "aliases": []
+      "aliases": [
+        "crabs",
+        "crab meat",
+        "crabmeat"
+      ]
     },
     {
       "name": "Common dab",
@@ -4692,7 +6432,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Scombridae (Bonito, Mackerel, Tuna)",
-      "aliases": []
+      "aliases": [
+        "scombridae"
+      ]
     },
     {
       "name": "Marine mussel",
@@ -4756,7 +6498,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Persimmon",
-      "aliases": []
+      "aliases": [
+        "persimmons",
+        "persimmon fruit",
+        "sharon fruit"
+      ]
     },
     {
       "name": "Pikeperch",
@@ -4772,7 +6518,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Pleuronectidae (Dab, Halibut, Plaice)",
-      "aliases": []
+      "aliases": [
+        "pleuronectidae"
+      ]
     },
     {
       "name": "Rock ptarmigan",
@@ -4796,7 +6544,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Black salsify",
-      "aliases": []
+      "aliases": [
+        "salsify",
+        "scorzonera",
+        "Black salsifies"
+      ]
     },
     {
       "name": "True seal",
@@ -4876,7 +6628,9 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Cetaceans",
       "displayName": "Cetacea (Dolphin, Porpoise, Whale)",
-      "aliases": []
+      "aliases": [
+        "cetacea"
+      ]
     },
     {
       "name": "Columbidae (Dove, Pigeon)",
@@ -4884,7 +6638,9 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Columbidae (Dove, Pigeon)",
-      "aliases": []
+      "aliases": [
+        "columbidae"
+      ]
     },
     {
       "name": "Conch",
@@ -4940,7 +6696,11 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Cheese",
-      "aliases": []
+      "aliases": [
+        "cheeses",
+        "cheese slice",
+        "cheese slices"
+      ]
     },
     {
       "name": "Milk (Cow)",
@@ -4948,15 +6708,14 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
       "displayName": "Milk (Cow)",
-      "aliases": []
-    },
-    {
-      "name": "Eggs",
-      "externalId": "FOOD00619",
-      "foodGroup": "Eggs",
-      "foodSubGroup": "Eggs",
-      "displayName": "Eggs",
-      "aliases": []
+      "aliases": [
+        "milk",
+        "cow milk",
+        "dairy milk",
+        "whole milk",
+        "skim milk",
+        "Milk (Cow)s"
+      ]
     },
     {
       "name": "Yogurt",
@@ -4964,7 +6723,13 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Yogurt",
-      "aliases": []
+      "aliases": [
+        "yoghurt",
+        "yoghurts",
+        "plain yogurt",
+        "greek yogurt",
+        "Yogurts"
+      ]
     },
     {
       "name": "Bean",
@@ -5012,7 +6777,9 @@
       "foodGroup": "Confectioneries",
       "foodSubGroup": "Other confectioneries",
       "displayName": "Honey",
-      "aliases": []
+      "aliases": [
+        "Honeys"
+      ]
     },
     {
       "name": "Liquorice",
@@ -5028,7 +6795,12 @@
       "foodGroup": "Baking goods",
       "foodSubGroup": "Seasonings",
       "displayName": "Vinegar",
-      "aliases": []
+      "aliases": [
+        "vinegars",
+        "white vinegar",
+        "apple cider vinegar",
+        "red wine vinegar"
+      ]
     },
     {
       "name": "Rum",
@@ -5180,7 +6952,12 @@
       "foodGroup": "Baking goods",
       "foodSubGroup": "Seasonings",
       "displayName": "Salt",
-      "aliases": []
+      "aliases": [
+        "table salt",
+        "sea salt",
+        "kosher salt",
+        "Salts"
+      ]
     },
     {
       "name": "Butter",
@@ -5188,7 +6965,11 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Other milk products",
       "displayName": "Butter",
-      "aliases": []
+      "aliases": [
+        "butters",
+        "unsalted butter",
+        "salted butter"
+      ]
     },
     {
       "name": "Butter substitute",
@@ -5204,7 +6985,13 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Other milk products",
       "displayName": "Cream",
-      "aliases": []
+      "aliases": [
+        "creams",
+        "heavy cream",
+        "double cream",
+        "whipping cream",
+        "single cream"
+      ]
     },
     {
       "name": "Sugar",
@@ -5212,7 +6999,13 @@
       "foodGroup": "Baking goods",
       "foodSubGroup": "Sugars",
       "displayName": "Sugar",
-      "aliases": []
+      "aliases": [
+        "sugars",
+        "white sugar",
+        "granulated sugar",
+        "caster sugar",
+        "brown sugar"
+      ]
     },
     {
       "name": "Sausage",
@@ -5236,7 +7029,13 @@
       "foodGroup": "Baking goods",
       "foodSubGroup": "Condiments",
       "displayName": "Mustard",
-      "aliases": []
+      "aliases": [
+        "mustard seed",
+        "mustard seeds",
+        "dijon mustard",
+        "wholegrain mustard",
+        "Mustards"
+      ]
     },
     {
       "name": "Pate",
@@ -5316,7 +7115,12 @@
       "foodGroup": "Beverages",
       "foodSubGroup": "Waters",
       "displayName": "Water",
-      "aliases": []
+      "aliases": [
+        "drinking water",
+        "filtered water",
+        "tap water",
+        "Waters"
+      ]
     },
     {
       "name": "Other fish product",
@@ -5500,7 +7304,13 @@
       "foodGroup": "Cocoa and cocoa products",
       "foodSubGroup": "Cocoa products",
       "displayName": "Chocolate",
-      "aliases": []
+      "aliases": [
+        "chocolate bar",
+        "chocolate bars",
+        "dark chocolate",
+        "milk chocolate",
+        "Chocolates"
+      ]
     },
     {
       "name": "Hot chocolate",
@@ -5524,7 +7334,9 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
       "displayName": "Milk (Other mammals)",
-      "aliases": []
+      "aliases": [
+        "milk"
+      ]
     },
     {
       "name": "Kefir",
@@ -5556,7 +7368,12 @@
       "foodGroup": "Soy",
       "foodSubGroup": "Soy products",
       "displayName": "Soy sauce",
-      "aliases": []
+      "aliases": [
+        "soy sauces",
+        "light soy sauce",
+        "dark soy sauce",
+        "tamari"
+      ]
     },
     {
       "name": "Miso",
@@ -5572,7 +7389,14 @@
       "foodGroup": "Soy",
       "foodSubGroup": "Soy products",
       "displayName": "Tofu",
-      "aliases": []
+      "aliases": [
+        "tofu block",
+        "tofu blocks",
+        "bean curd",
+        "silken tofu",
+        "firm tofu",
+        "Tofus"
+      ]
     },
     {
       "name": "Zwieback",
@@ -5583,20 +7407,14 @@
       "aliases": []
     },
     {
-      "name": "Roe",
-      "externalId": "FOOD00698",
-      "foodGroup": "Aquatic foods",
-      "foodSubGroup": "Roe",
-      "displayName": "Roe",
-      "aliases": []
-    },
-    {
       "name": "Cichlidae (Tilapia)",
       "externalId": "FOOD00699",
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Fishes",
       "displayName": "Cichlidae (Tilapia)",
-      "aliases": []
+      "aliases": [
+        "cichlidae"
+      ]
     },
     {
       "name": "Icing",
@@ -5852,7 +7670,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Mushrooms",
       "displayName": "Morchella (Morel)",
-      "aliases": []
+      "aliases": [
+        "morchella"
+      ]
     },
     {
       "name": "Pancake",
@@ -6092,7 +7912,11 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Horned melon",
-      "aliases": []
+      "aliases": [
+        "kiwano",
+        "african cucumber",
+        "Horned melons"
+      ]
     },
     {
       "name": "Hushpuppy",
@@ -6396,7 +8220,13 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereal products",
       "displayName": "Flour",
-      "aliases": []
+      "aliases": [
+        "flours",
+        "plain flour",
+        "all-purpose flour",
+        "all purpose flour",
+        "self-raising flour"
+      ]
     },
     {
       "name": "Akutaq",
@@ -6676,7 +8506,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Yellow pond-lily",
-      "aliases": []
+      "aliases": [
+        "fresh Yellow pond-lily",
+        "Yellow pond-lily leaves"
+      ]
     },
     {
       "name": "Fish burger",
@@ -6796,7 +8629,9 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Pepper (C. pubescens)",
-      "aliases": []
+      "aliases": [
+        "pepper"
+      ]
     },
     {
       "name": "Soft-necked garlic",
@@ -6804,7 +8639,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Soft-necked garlic",
-      "aliases": []
+      "aliases": [
+        "fresh Soft-necked garlic",
+        "Soft-necked garlic leaves"
+      ]
     },
     {
       "name": "Cabbage",
@@ -6812,7 +8650,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbages",
+        "green cabbage",
+        "white cabbage",
+        "head of cabbage"
+      ]
     },
     {
       "name": "Chinese bayberry",
@@ -6823,180 +8666,14 @@
       "aliases": []
     },
     {
-      "name": "Mushrooms",
-      "externalId": "FOOD00853",
-      "foodGroup": "Vegetables",
-      "foodSubGroup": "Mushrooms",
-      "displayName": "Mushrooms",
-      "aliases": []
-    },
-    {
-      "name": "Alcoholic beverages",
-      "externalId": "FOOD00854",
-      "foodGroup": "Beverages",
-      "foodSubGroup": "Alcoholic beverages",
-      "displayName": "Alcoholic beverages",
-      "aliases": []
-    },
-    {
-      "name": "Onion-family vegetables",
-      "externalId": "FOOD00855",
-      "foodGroup": "Vegetables",
-      "foodSubGroup": "Onion-family vegetables",
-      "displayName": "Onion-family vegetables",
-      "aliases": []
-    },
-    {
-      "name": "Pomes",
-      "externalId": "FOOD00856",
-      "foodGroup": "Fruits",
-      "foodSubGroup": "Pomes",
-      "displayName": "Pomes",
-      "aliases": []
-    },
-    {
-      "name": "Brassicas",
-      "externalId": "FOOD00857",
-      "foodGroup": "Vegetables",
-      "foodSubGroup": "Brassicas",
-      "displayName": "Brassicas",
-      "aliases": []
-    },
-    {
-      "name": "Cereals and cereal products",
-      "externalId": "FOOD00858",
-      "foodGroup": "Cereals and cereal products",
-      "foodSubGroup": "Cereals and cereal products",
-      "displayName": "Cereals and cereal products",
-      "aliases": []
-    },
-    {
-      "name": "Citrus",
-      "externalId": "FOOD00859",
-      "foodGroup": "Fruits",
-      "foodSubGroup": "Citrus",
-      "displayName": "Citrus",
-      "aliases": []
-    },
-    {
-      "name": "Cocoa and cocoa products",
-      "externalId": "FOOD00860",
-      "foodGroup": "Cocoa and cocoa products",
-      "foodSubGroup": "Cocoa and cocoa products",
-      "displayName": "Cocoa and cocoa products",
-      "aliases": []
-    },
-    {
-      "name": "Coffee and coffee products",
-      "externalId": "FOOD00861",
-      "foodGroup": "Coffee and coffee products",
-      "foodSubGroup": "Coffee and coffee products",
-      "displayName": "Coffee and coffee products",
-      "aliases": []
-    },
-    {
-      "name": "Crustaceans",
-      "externalId": "FOOD00862",
-      "foodGroup": "Aquatic foods",
-      "foodSubGroup": "Crustaceans",
-      "displayName": "Crustaceans",
-      "aliases": []
-    },
-    {
-      "name": "Milk and milk products",
-      "externalId": "FOOD00863",
-      "foodGroup": "Milk and milk products",
-      "foodSubGroup": "Milk and milk products",
-      "displayName": "Milk and milk products",
-      "aliases": []
-    },
-    {
-      "name": "Fats and oils",
-      "externalId": "FOOD00864",
-      "foodGroup": "Fats and oils",
-      "foodSubGroup": "Fats and oils",
-      "displayName": "Fats and oils",
-      "aliases": []
-    },
-    {
-      "name": "Fishes",
-      "externalId": "FOOD00865",
-      "foodGroup": "Aquatic foods",
-      "foodSubGroup": "Fishes",
-      "displayName": "Fishes",
-      "aliases": []
-    },
-    {
-      "name": "Herbs and Spices",
-      "externalId": "FOOD00866",
-      "foodGroup": "Herbs and Spices",
-      "foodSubGroup": "Herbs and Spices",
-      "displayName": "Herbs and Spices",
-      "aliases": []
-    },
-    {
-      "name": "Pulses",
-      "externalId": "FOOD00867",
-      "foodGroup": "Pulses",
-      "foodSubGroup": "Pulses",
-      "displayName": "Pulses",
-      "aliases": []
-    },
-    {
-      "name": "Mollusks",
-      "externalId": "FOOD00868",
-      "foodGroup": "Aquatic foods",
-      "foodSubGroup": "Mollusks",
-      "displayName": "Mollusks",
-      "aliases": []
-    },
-    {
-      "name": "Nuts",
-      "externalId": "FOOD00869",
-      "foodGroup": "Nuts",
-      "foodSubGroup": "Nuts",
-      "displayName": "Nuts",
-      "aliases": []
-    },
-    {
-      "name": "Beverages",
-      "externalId": "FOOD00870",
-      "foodGroup": "Beverages",
-      "foodSubGroup": "Beverages",
-      "displayName": "Beverages",
-      "aliases": []
-    },
-    {
-      "name": "Fruits",
-      "externalId": "FOOD00871",
-      "foodGroup": "Fruits",
-      "foodSubGroup": "Fruits",
-      "displayName": "Fruits",
-      "aliases": []
-    },
-    {
-      "name": "Green vegetables",
-      "externalId": "FOOD00872",
-      "foodGroup": "Vegetables",
-      "foodSubGroup": "Green vegetables",
-      "displayName": "Green vegetables",
-      "aliases": []
-    },
-    {
-      "name": "Root vegetables",
-      "externalId": "FOOD00873",
-      "foodGroup": "Vegetables",
-      "foodSubGroup": "Root vegetables",
-      "displayName": "Root vegetables",
-      "aliases": []
-    },
-    {
       "name": "Sunburst squash (pattypan squash)",
       "externalId": "FOOD00874",
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Sunburst squash (pattypan squash)",
-      "aliases": []
+      "aliases": [
+        "sunburst squash"
+      ]
     },
     {
       "name": "Green zucchini",
@@ -7020,7 +8697,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Green bell pepper",
-      "aliases": []
+      "aliases": [
+        "green pepper",
+        "green peppers",
+        "bell pepper",
+        "bell peppers",
+        "Green bell peppers"
+      ]
     },
     {
       "name": "Yellow bell pepper",
@@ -7028,7 +8711,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Yellow bell pepper",
-      "aliases": []
+      "aliases": [
+        "yellow pepper",
+        "yellow peppers",
+        "bell pepper",
+        "bell peppers",
+        "Yellow bell peppers"
+      ]
     },
     {
       "name": "Orange bell pepper",
@@ -7036,7 +8725,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Orange bell pepper",
-      "aliases": []
+      "aliases": [
+        "orange pepper",
+        "orange peppers",
+        "bell pepper",
+        "bell peppers",
+        "Orange bell peppers"
+      ]
     },
     {
       "name": "Red bell pepper",
@@ -7044,7 +8739,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Red bell pepper",
-      "aliases": []
+      "aliases": [
+        "red pepper",
+        "red peppers",
+        "bell pepper",
+        "bell peppers",
+        "Red bell peppers"
+      ]
     },
     {
       "name": "Italian sweet red pepper",
@@ -7068,7 +8769,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Green bean",
-      "aliases": []
+      "aliases": [
+        "green beans",
+        "string beans",
+        "snap beans",
+        "french beans"
+      ]
     },
     {
       "name": "Saskatoon berry",
@@ -7100,7 +8806,10 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "White cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages"
+      ]
     },
     {
       "name": "Romaine lettuce",
@@ -7108,7 +8817,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Romaine lettuce",
-      "aliases": []
+      "aliases": [
+        "romaine",
+        "romaine lettuces",
+        "cos lettuce",
+        "cos lettuces"
+      ]
     },
     {
       "name": "Cow milk, pasteurized, vitamin A + D added, 0% fat",
@@ -7116,7 +8830,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
       "displayName": "Cow milk, pasteurized, vitamin A + D added, 0% fat",
-      "aliases": []
+      "aliases": [
+        "skim milk",
+        "fat-free milk",
+        "zero fat milk",
+        "Cow milk, pasteurized, vitamin A + D added, 0% fats"
+      ]
     },
     {
       "name": "Cow milk, pasteurized, vitamin A + D added, 1% fat",
@@ -7124,7 +8843,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
       "displayName": "Cow milk, pasteurized, vitamin A + D added, 1% fat",
-      "aliases": []
+      "aliases": [
+        "1% milk",
+        "low fat milk",
+        "semi-skimmed milk",
+        "Cow milk, pasteurized, vitamin A + D added, 1% fats"
+      ]
     },
     {
       "name": "Cow milk, pasteurized, vitamin A + D added, 2% fat",
@@ -7132,7 +8856,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
       "displayName": "Cow milk, pasteurized, vitamin A + D added, 2% fat",
-      "aliases": []
+      "aliases": [
+        "2% milk",
+        "reduced fat milk",
+        "semi-skimmed milk",
+        "Cow milk, pasteurized, vitamin A + D added, 2% fats"
+      ]
     },
     {
       "name": "Cow milk, pasteurized, vitamin D added, 3.25% fat",
@@ -7140,7 +8869,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
       "displayName": "Cow milk, pasteurized, vitamin D added, 3.25% fat",
-      "aliases": []
+      "aliases": [
+        "whole milk",
+        "full fat milk",
+        "full-cream milk",
+        "Cow milk, pasteurized, vitamin D added, 3.25% fats"
+      ]
     },
     {
       "name": "Castanospermum australe",
@@ -7216,7 +8950,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Asparagus fern",
-      "aliases": []
+      "aliases": [
+        "fresh Asparagus fern",
+        "Asparagus fern leaves"
+      ]
     },
     {
       "name": "Thornless blackberry",
@@ -7248,7 +8985,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Blackberry",
-      "aliases": []
+      "aliases": [
+        "blackberries",
+        "bramble",
+        "brambleberry"
+      ]
     },
     {
       "name": "Black tea",
@@ -7256,7 +8997,13 @@
       "foodGroup": "Teas",
       "foodSubGroup": "Teas",
       "displayName": "Black tea",
-      "aliases": []
+      "aliases": [
+        "black teas",
+        "english breakfast",
+        "earl grey",
+        "tea",
+        "tea leaves"
+      ]
     },
     {
       "name": "Green tea",
@@ -7264,7 +9011,13 @@
       "foodGroup": "Teas",
       "foodSubGroup": "Teas",
       "displayName": "Green tea",
-      "aliases": []
+      "aliases": [
+        "green teas",
+        "green tea leaves",
+        "matcha",
+        "sencha",
+        "jasmine tea"
+      ]
     },
     {
       "name": "Olive oil",
@@ -7272,7 +9025,12 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Olive oil",
-      "aliases": []
+      "aliases": [
+        "extra virgin olive oil",
+        "extra-virgin olive oil",
+        "virgin olive oil",
+        "Olive oils"
+      ]
     },
     {
       "name": "Macroalgae",
@@ -7288,7 +9046,13 @@
       "foodGroup": "Beverages",
       "foodSubGroup": "Fermented beverages",
       "displayName": "Red wine",
-      "aliases": []
+      "aliases": [
+        "red wines",
+        "red wine vinegar",
+        "cabernet",
+        "merlot",
+        "pinot noir"
+      ]
     },
     {
       "name": "linseed oil",
@@ -7296,7 +9060,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "linseed oil",
-      "aliases": []
+      "aliases": [
+        "flaxseed oil",
+        "flax oil",
+        "linseed oils"
+      ]
     },
     {
       "name": "Rapeseed oil",
@@ -7304,7 +9072,11 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Rapeseed oil",
-      "aliases": []
+      "aliases": [
+        "rapeseed oils",
+        "canola oil",
+        "canola oils"
+      ]
     },
     {
       "name": "Soybean oil",
@@ -7312,7 +9084,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Soybean oil",
-      "aliases": []
+      "aliases": [
+        "soy oil",
+        "soybean oils"
+      ]
     },
     {
       "name": "Guarana",
@@ -7320,7 +9095,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Guarana",
-      "aliases": []
+      "aliases": [
+        "fresh Guarana",
+        "Guarana leaves"
+      ]
     },
     {
       "name": "Mate",
@@ -7328,7 +9106,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mate",
-      "aliases": []
+      "aliases": [
+        "fresh Mate",
+        "Mate leaves"
+      ]
     },
     {
       "name": "White wine",
@@ -7336,7 +9117,12 @@
       "foodGroup": "Beverages",
       "foodSubGroup": "Fermented beverages",
       "displayName": "White wine",
-      "aliases": []
+      "aliases": [
+        "white wines",
+        "white wine vinegar",
+        "chardonnay",
+        "sauvignon blanc"
+      ]
     },
     {
       "name": "Sour orange",
@@ -7344,7 +9130,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Sour orange",
-      "aliases": []
+      "aliases": [
+        "Sour oranges"
+      ]
     },
     {
       "name": "Egg yolk",
@@ -7352,7 +9140,11 @@
       "foodGroup": "Eggs",
       "foodSubGroup": "Eggs",
       "displayName": "Egg yolk",
-      "aliases": []
+      "aliases": [
+        "egg yolks",
+        "yolk",
+        "yolks"
+      ]
     },
     {
       "name": "Rosé wine",
@@ -7368,7 +9160,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "White mulberry",
-      "aliases": []
+      "aliases": [
+        "fresh White mulberry",
+        "White mulberry leaves"
+      ]
     },
     {
       "name": "Canola oil",
@@ -7376,7 +9171,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Canola oil",
-      "aliases": []
+      "aliases": [
+        "canola oils",
+        "rapeseed oil"
+      ]
     },
     {
       "name": "Dessert wine",
@@ -7440,7 +9238,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Herbs",
       "displayName": "Red clover",
-      "aliases": []
+      "aliases": [
+        "fresh Red clover",
+        "Red clover leaves"
+      ]
     },
     {
       "name": "Partridge berry",
@@ -7456,7 +9257,9 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Mikan",
-      "aliases": []
+      "aliases": [
+        "Mikans"
+      ]
     },
     {
       "name": "Mozzarella cheese",
@@ -7464,7 +9267,13 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Mozzarella cheese",
-      "aliases": []
+      "aliases": [
+        "mozzarella",
+        "mozzarella ball",
+        "mozzarella balls",
+        "buffalo mozzarella",
+        "Mozzarella cheeses"
+      ]
     },
     {
       "name": "Plain cream cheese",
@@ -7472,7 +9281,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Plain cream cheese",
-      "aliases": []
+      "aliases": [
+        "cream cheese",
+        "cream cheeses",
+        "philadelphia",
+        "Plain cream cheeses"
+      ]
     },
     {
       "name": "Cheddar Cheese",
@@ -7480,7 +9294,11 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Cheddar Cheese",
-      "aliases": []
+      "aliases": [
+        "cheddar",
+        "cheddars",
+        "Cheddar Cheeses"
+      ]
     },
     {
       "name": "Parmesan cheese",
@@ -7488,7 +9306,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Parmesan cheese",
-      "aliases": []
+      "aliases": [
+        "parmesan",
+        "parmigiano reggiano",
+        "grated parmesan",
+        "Parmesan cheeses"
+      ]
     },
     {
       "name": "Almond milk",
@@ -7496,7 +9319,10 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Other milk products",
       "displayName": "Almond milk",
-      "aliases": []
+      "aliases": [
+        "almond milks",
+        "almond beverage"
+      ]
     },
     {
       "name": "Coconut milk",
@@ -7504,7 +9330,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Other milk products",
       "displayName": "Coconut milk",
-      "aliases": []
+      "aliases": [
+        "coconut creams",
+        "canned coconut milk",
+        "tinned coconut milk",
+        "Coconut milks"
+      ]
     },
     {
       "name": "Salted butter",
@@ -7512,7 +9343,10 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Other milk products",
       "displayName": "Salted butter",
-      "aliases": []
+      "aliases": [
+        "butter",
+        "salted butters"
+      ]
     },
     {
       "name": "Sunflower oil",
@@ -7520,7 +9354,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sunflower oil",
-      "aliases": []
+      "aliases": [
+        "sunflower oils",
+        "sunflower cooking oil"
+      ]
     },
     {
       "name": "Coconut oil",
@@ -7528,7 +9365,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Coconut oil",
-      "aliases": []
+      "aliases": [
+        "coconut oils",
+        "virgin coconut oil"
+      ]
     },
     {
       "name": "Peanut oil",
@@ -7536,7 +9376,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Peanut oil",
-      "aliases": []
+      "aliases": [
+        "groundnut oil",
+        "peanut oils"
+      ]
     },
     {
       "name": "Cottonseed oil",
@@ -7552,7 +9395,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Corn oil",
-      "aliases": []
+      "aliases": [
+        "maize oil",
+        "corn oils"
+      ]
     },
     {
       "name": "Avocado oil",
@@ -7560,7 +9406,9 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Avocado oil",
-      "aliases": []
+      "aliases": [
+        "avocado oils"
+      ]
     },
     {
       "name": "Grapeseed oil",
@@ -7568,7 +9416,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Grapeseed oil",
-      "aliases": []
+      "aliases": [
+        "grape seed oil",
+        "grapeseed oils"
+      ]
     },
     {
       "name": "Sesame oil",
@@ -7576,7 +9427,10 @@
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sesame oil",
-      "aliases": []
+      "aliases": [
+        "sesame oils",
+        "toasted sesame oil"
+      ]
     },
     {
       "name": "Monterey Jack cheese",
@@ -7584,7 +9438,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Monterey Jack cheese",
-      "aliases": []
+      "aliases": [
+        "monterey jack",
+        "jack cheese",
+        "pepper jack",
+        "Monterey Jack cheeses"
+      ]
     },
     {
       "name": "Swiss cheese",
@@ -7592,7 +9451,11 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Swiss cheese",
-      "aliases": []
+      "aliases": [
+        "swiss cheeses",
+        "emmental",
+        "emmentaler"
+      ]
     },
     {
       "name": "Cottage cheese",
@@ -7600,7 +9463,11 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Cottage cheese",
-      "aliases": []
+      "aliases": [
+        "cottage cheeses",
+        "curd cheese",
+        "farmer cheese"
+      ]
     },
     {
       "name": "Blue cheese",
@@ -7608,7 +9475,13 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Blue cheese",
-      "aliases": []
+      "aliases": [
+        "blue cheeses",
+        "bleu cheese",
+        "roquefort",
+        "gorgonzola",
+        "stilton"
+      ]
     },
     {
       "name": "Clam",
@@ -7616,7 +9489,12 @@
       "foodGroup": "Aquatic foods",
       "foodSubGroup": "Bivalvia",
       "displayName": "Clam",
-      "aliases": []
+      "aliases": [
+        "clams",
+        "clam meat",
+        "clamshell",
+        "fresh clams"
+      ]
     },
     {
       "name": "Sour cream",
@@ -7624,7 +9502,11 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Other milk products",
       "displayName": "Sour cream",
-      "aliases": []
+      "aliases": [
+        "sour creams",
+        "soured cream",
+        "crème fraîche"
+      ]
     },
     {
       "name": "Whole wheat bread",
@@ -7632,7 +9514,12 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Whole wheat bread",
-      "aliases": []
+      "aliases": [
+        "wholemeal bread",
+        "whole wheat bread loaf",
+        "brown bread",
+        "Whole wheat breads"
+      ]
     },
     {
       "name": "Jalapeno pepper",
@@ -7640,7 +9527,15 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Jalapeno pepper",
-      "aliases": []
+      "aliases": [
+        "jalapeño",
+        "jalapeños",
+        "jalapeno",
+        "jalapenos",
+        "green chilli",
+        "green chillies",
+        "Jalapeno peppers"
+      ]
     },
     {
       "name": "Greek feta cheese",
@@ -7648,7 +9543,12 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Greek feta cheese",
-      "aliases": []
+      "aliases": [
+        "feta",
+        "feta cheese",
+        "feta cheeses",
+        "Greek feta cheeses"
+      ]
     },
     {
       "name": "Eddoe",
@@ -7656,7 +9556,14 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Root vegetables",
       "displayName": "Eddoe",
-      "aliases": []
+      "aliases": [
+        "eddo",
+        "eddos",
+        "taro root",
+        "cocoyam",
+        "cocoyams",
+        "Eddoes"
+      ]
     },
     {
       "name": "Plantain",
@@ -7664,7 +9571,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Plantain",
-      "aliases": []
+      "aliases": [
+        "plantains",
+        "cooking banana",
+        "cooking bananas"
+      ]
     },
     {
       "name": "Clementine",
@@ -7672,7 +9583,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Clementine",
-      "aliases": []
+      "aliases": [
+        "clementines",
+        "mandarin",
+        "mandarins"
+      ]
     },
     {
       "name": "Green apple",
@@ -7680,7 +9595,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Pomes",
       "displayName": "Green apple",
-      "aliases": []
+      "aliases": [
+        "green apples",
+        "apple",
+        "apples",
+        "granny smith",
+        "granny smith apple"
+      ]
     },
     {
       "name": "White onion",
@@ -7688,7 +9609,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "White onion",
-      "aliases": []
+      "aliases": [
+        "onion",
+        "onions",
+        "white onions"
+      ]
     },
     {
       "name": "Red onion",
@@ -7696,7 +9621,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Red onion",
-      "aliases": []
+      "aliases": [
+        "onion",
+        "onions",
+        "red onions"
+      ]
     },
     {
       "name": "Green onion",
@@ -7704,7 +9633,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Green onion",
-      "aliases": []
+      "aliases": [
+        "scallion",
+        "scallions",
+        "spring onion",
+        "spring onions",
+        "green onions"
+      ]
     },
     {
       "name": "Green grape",
@@ -7712,7 +9647,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Green grape",
-      "aliases": []
+      "aliases": [
+        "green grapes",
+        "grape",
+        "grapes",
+        "white grape",
+        "white grapes"
+      ]
     },
     {
       "name": "Red grape",
@@ -7720,7 +9661,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Red grape",
-      "aliases": []
+      "aliases": [
+        "red grapes",
+        "grape",
+        "grapes"
+      ]
     },
     {
       "name": "Black plum",
@@ -7728,7 +9673,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black plum",
-      "aliases": []
+      "aliases": [
+        "plum",
+        "plums",
+        "black plums",
+        "dark plum"
+      ]
     },
     {
       "name": "Green cabbage",
@@ -7736,7 +9686,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Green cabbage",
-      "aliases": []
+      "aliases": [
+        "cabbage",
+        "cabbages",
+        "green cabbages"
+      ]
     },
     {
       "name": "Black raisin",
@@ -7744,7 +9698,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Black raisin",
-      "aliases": []
+      "aliases": [
+        "raisin",
+        "raisins",
+        "black raisins",
+        "dried grape",
+        "dried grapes"
+      ]
     },
     {
       "name": "Cannellini bean",
@@ -7752,7 +9712,12 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Cannellini bean",
-      "aliases": []
+      "aliases": [
+        "cannellini beans",
+        "white kidney bean",
+        "white kidney beans",
+        "fazolia"
+      ]
     },
     {
       "name": "Green lentil",
@@ -7760,7 +9725,13 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Pulses",
       "displayName": "Green lentil",
-      "aliases": []
+      "aliases": [
+        "lentil",
+        "lentils",
+        "green lentils",
+        "french lentil",
+        "french lentils"
+      ]
     },
     {
       "name": "Cubanelle pepper",
@@ -7768,7 +9739,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Cubanelle pepper",
-      "aliases": []
+      "aliases": [
+        "cubanelle",
+        "cubanelle peppers",
+        "italian frying pepper"
+      ]
     },
     {
       "name": "Acorn squash",
@@ -7776,7 +9751,11 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Acorn squash",
-      "aliases": []
+      "aliases": [
+        "acorn squashes",
+        "squash",
+        "squashes"
+      ]
     },
     {
       "name": "Iceberg lettuce",
@@ -7784,7 +9763,11 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Iceberg lettuce",
-      "aliases": []
+      "aliases": [
+        "iceberg",
+        "iceberg lettuces",
+        "crisphead lettuce"
+      ]
     },
     {
       "name": "Japanese sea bass",
@@ -7800,7 +9783,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Pea shoots",
-      "aliases": []
+      "aliases": [
+        "pea shoot",
+        "pea tendrils",
+        "pea greens",
+        "Pea shootses"
+      ]
     },
     {
       "name": "Yau choy",
@@ -7816,7 +9804,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Leaf vegetables",
       "displayName": "Water spinach",
-      "aliases": []
+      "aliases": [
+        "kangkong",
+        "ong choy",
+        "morning glory",
+        "Water spinaches"
+      ]
     },
     {
       "name": "Chineese plum",
@@ -7848,7 +9841,11 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Tropical fruits",
       "displayName": "Pitaya",
-      "aliases": []
+      "aliases": [
+        "dragon fruit",
+        "dragon fruits",
+        "pitayas"
+      ]
     },
     {
       "name": "Goji",
@@ -7856,7 +9853,13 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Goji",
-      "aliases": []
+      "aliases": [
+        "goji berry",
+        "goji berries",
+        "wolfberry",
+        "wolfberries",
+        "Gojis"
+      ]
     },
     {
       "name": "Monk fruit",
@@ -7864,7 +9867,12 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Monk fruit",
-      "aliases": []
+      "aliases": [
+        "monkfruit",
+        "luo han guo",
+        "siraitia",
+        "Monk fruits"
+      ]
     },
     {
       "name": "Cantaloupe melon",
@@ -7872,7 +9880,14 @@
       "foodGroup": "Gourds",
       "foodSubGroup": "Gourds",
       "displayName": "Cantaloupe melon",
-      "aliases": []
+      "aliases": [
+        "cantaloupe",
+        "cantaloupes",
+        "cantalope",
+        "rock melon",
+        "rock melons",
+        "Cantaloupe melons"
+      ]
     },
     {
       "name": "Hawthorn",
@@ -7896,7 +9911,12 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "White bread",
-      "aliases": []
+      "aliases": [
+        "white bread loaf",
+        "white bread loaves",
+        "sliced white bread",
+        "White breads"
+      ]
     },
     {
       "name": "Cape gooseberry",
@@ -7904,7 +9924,14 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Berries",
       "displayName": "Cape gooseberry",
-      "aliases": []
+      "aliases": [
+        "gooseberry",
+        "gooseberries",
+        "physalis",
+        "golden berry",
+        "golden berries",
+        "Cape gooseberries"
+      ]
     },
     {
       "name": "Herbal tea",
@@ -7912,7 +9939,14 @@
       "foodGroup": "Teas",
       "foodSubGroup": "Teas",
       "displayName": "Herbal tea",
-      "aliases": []
+      "aliases": [
+        "herb tea",
+        "herb teas",
+        "tisane",
+        "tisanes",
+        "infusion",
+        "Herbal teas"
+      ]
     },
     {
       "name": "Fish oil",
@@ -7938,7 +9972,6 @@
       "foodSubGroup": "Poultry",
       "displayName": "Chicken breast",
       "aliases": [
-        "chicken breast",
         "chicken breasts",
         "breast of chicken"
       ]
@@ -7949,7 +9982,6 @@
       "foodSubGroup": "Poultry",
       "displayName": "Chicken thigh",
       "aliases": [
-        "chicken thigh",
         "chicken thighs"
       ]
     },
@@ -7959,7 +9991,6 @@
       "foodSubGroup": "Poultry",
       "displayName": "Chicken leg",
       "aliases": [
-        "chicken leg",
         "chicken legs",
         "chicken drumstick",
         "chicken drumsticks"
@@ -7971,9 +10002,9 @@
       "foodSubGroup": "Swine",
       "displayName": "Pork loin",
       "aliases": [
-        "pork loin",
         "loin of pork",
-        "pork loin joint"
+        "pork loin joint",
+        "Pork loins"
       ]
     },
     {
@@ -7982,7 +10013,9 @@
       "foodSubGroup": "Bovines",
       "displayName": "Beef steak",
       "aliases": [
-        "beef steak"
+        "steak",
+        "steaks",
+        "Beef steaks"
       ]
     },
     {
@@ -7991,9 +10024,9 @@
       "foodSubGroup": "Bovines",
       "displayName": "Sirloin steak",
       "aliases": [
-        "sirloin steak",
         "beef sirloin",
-        "sirloin"
+        "sirloin",
+        "Sirloin steaks"
       ]
     },
     {
@@ -8002,10 +10035,10 @@
       "foodSubGroup": "Bovines",
       "displayName": "Ribeye steak",
       "aliases": [
-        "ribeye steak",
         "rib eye steak",
         "beef ribeye",
-        "ribeye"
+        "ribeye",
+        "Ribeye steaks"
       ]
     },
     {
@@ -8014,8 +10047,8 @@
       "foodSubGroup": "Sheep",
       "displayName": "Lamb leg",
       "aliases": [
-        "lamb leg",
-        "leg of lamb"
+        "leg of lamb",
+        "Lamb legs"
       ]
     },
     {
@@ -8024,8 +10057,8 @@
       "foodSubGroup": "Sheep",
       "displayName": "Lamb shoulder",
       "aliases": [
-        "lamb shoulder",
-        "shoulder of lamb"
+        "shoulder of lamb",
+        "Lamb shoulders"
       ]
     },
     {
@@ -8034,9 +10067,151 @@
       "foodSubGroup": "Bovines",
       "displayName": "Minced beef",
       "aliases": [
-        "minced beef",
         "ground beef",
-        "beef mince"
+        "beef mince",
+        "Minced beefs"
+      ]
+    },
+    {
+      "name": "Ground pork",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Ground pork",
+      "aliases": [
+        "minced pork",
+        "pork mince",
+        "Ground porks"
+      ]
+    },
+    {
+      "name": "Duck breast",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Duck breast",
+      "aliases": [
+        "duck breast",
+        "duck breasts",
+        "breast of duck"
+      ]
+    },
+    {
+      "name": "Duck leg",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Duck leg",
+      "aliases": [
+        "duck leg",
+        "duck legs",
+        "duck drumstick",
+        "duck drumsticks"
+      ]
+    },
+    {
+      "name": "Turkey breast",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Turkey breast",
+      "aliases": [
+        "turkey breast",
+        "turkey breasts",
+        "breast of turkey"
+      ]
+    },
+    {
+      "name": "Turkey thigh",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Turkey thigh",
+      "aliases": [
+        "turkey thigh",
+        "turkey thighs"
+      ]
+    },
+    {
+      "name": "Chicken wing",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Poultry",
+      "displayName": "Chicken wing",
+      "aliases": [
+        "chicken wing",
+        "chicken wings"
+      ]
+    },
+    {
+      "name": "Salmon fillet",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Fishes",
+      "displayName": "Salmon fillet",
+      "aliases": [
+        "salmon fillet",
+        "salmon fillets",
+        "salmon"
+      ]
+    },
+    {
+      "name": "Cod fillet",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Fishes",
+      "displayName": "Cod fillet",
+      "aliases": [
+        "cod fillet",
+        "cod fillets",
+        "cod"
+      ]
+    },
+    {
+      "name": "Bacon",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Bacon",
+      "aliases": [
+        "bacon",
+        "streaky bacon",
+        "back bacon",
+        "bacon rashers"
+      ]
+    },
+    {
+      "name": "Pork belly",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Pork belly",
+      "aliases": [
+        "pork belly",
+        "belly of pork"
+      ]
+    },
+    {
+      "name": "Pork chop",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Pork chop",
+      "aliases": [
+        "pork chop",
+        "pork chops"
+      ]
+    },
+    {
+      "name": "Lamb chop",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Sheep",
+      "displayName": "Lamb chop",
+      "aliases": [
+        "lamb chop",
+        "lamb chops",
+        "lamb cutlet",
+        "lamb cutlets"
+      ]
+    },
+    {
+      "name": "Minced lamb",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Sheep",
+      "displayName": "Minced lamb",
+      "aliases": [
+        "minced lamb",
+        "ground lamb",
+        "lamb mince"
       ]
     }
   ]

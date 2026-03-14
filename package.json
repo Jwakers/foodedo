@@ -13,6 +13,7 @@
     "validate-recipes": "tsx scripts/validate-recipes.ts",
     "generate-recipe-images": "tsx scripts/generate-recipe-images.ts",
     "ingredients-seed-preview": "tsx scripts/ingredients-seed-preview.ts",
+    "populate-ingredient-aliases": "tsx scripts/populate-ingredient-aliases.ts",
     "seed-ingredients": "tsx scripts/seed-ingredients.ts"
   },
   "dependencies": {

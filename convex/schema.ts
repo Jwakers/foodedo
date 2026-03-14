@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import {
   COMPLEXITY_TIERS,
   CUISINES,
+  // ... keep alphabetical-ish import grouping
   PREPARATION_OPTIONS,
   PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
@@ -11,6 +12,8 @@ import {
   SUBSCRIPTION_TIERS,
   UNITS_FLAT,
 } from "./lib/constants";
+import { INGREDIENT_FOOD_GROUPS } from "./lib/ingredientFoodGroups";
+import { INGREDIENT_FOOD_SUB_GROUPS } from "./lib/ingredientFoodSubGroups";
 
 const categoriesUnion = v.union(...RECIPE_CATEGORIES.map(v.literal));
 const creationSourceUnion = v.union(...RECIPE_CREATION_SOURCES.map(v.literal));
@@ -21,12 +24,20 @@ const recipeSourceUnion = v.union(...RECIPE_SOURCES.map(v.literal));
 const primaryProteinUnion = v.union(...PRIMARY_PROTEINS.map(v.literal));
 const complexityTierUnion = v.union(...COMPLEXITY_TIERS.map(v.literal));
 const cuisineUnion = v.union(...CUISINES.map(v.literal));
+const ingredientFoodGroupUnion = v.union(
+  ...INGREDIENT_FOOD_GROUPS.map(v.literal),
+);
+const ingredientFoodSubGroupUnion = v.union(
+  ...INGREDIENT_FOOD_SUB_GROUPS.map(v.literal),
+);
 
 export {
   categoriesUnion,
   complexityTierUnion,
   creationSourceUnion,
   cuisineUnion,
+  ingredientFoodGroupUnion,
+  ingredientFoodSubGroupUnion,
   preparationUnion,
   primaryProteinUnion,
   recipeSourceUnion,
@@ -117,8 +128,8 @@ export default defineSchema({
   ingredients: defineTable({
     name: v.string(),
     displayName: v.optional(v.string()),
-    foodGroup: v.optional(v.string()),
-    foodSubGroup: v.optional(v.string()),
+    foodGroup: v.optional(ingredientFoodGroupUnion),
+    foodSubGroup: v.optional(ingredientFoodSubGroupUnion),
     isCustom: v.boolean(),
     externalId: v.optional(v.string()), // e.g. FOOD00001 for sync/upsert from seed
     aliases: v.optional(v.array(v.string())), // optional; for manual synonym lookup
@@ -218,6 +229,16 @@ export default defineSchema({
     preparation: v.optional(v.string()),
     checked: v.boolean(),
     order: v.number(), // Preserve item order
+    ingredientId: v.optional(v.id("ingredients")), // Canonical ingredient for grouping
+    // List of (amount, unit) per use – when present, display these instead of combining
+    amountEntries: v.optional(
+      v.array(
+        v.object({
+          amount: v.union(v.number(), v.string(), v.null()),
+          unit: v.optional(v.string()),
+        }),
+      ),
+    ),
   }).index("by_shopping_list", ["shoppingListId"]),
 
   mealPlans: defineTable({

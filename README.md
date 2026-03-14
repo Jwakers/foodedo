@@ -10,7 +10,9 @@ Ingredients convenience infra:
 - [ ] Add a mapping system that maps ingredients to their ingredient table counterpart
 - [ ] Add a shopping list combination logic, synonyms and measurement normalisation
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
+- [ ] Fix the shopping list bugs where you cant click the sticky buttons when they are sticky, both on generate shopping list and confirm buttons.
 
+- [ ] Plan a strategise about SEO and AEO improvements. Organic reach is very high priority at this stage
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.
