@@ -11,6 +11,7 @@ Ingredients convenience infra:
 - [ ] Add a shopping list combination logic, synonyms and measurement normalisation
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
 - [ ] Fix the shopping list bugs where you cant click the sticky buttons when they are sticky, both on generate shopping list and confirm buttons.
+- [ ] Urgent, shopping list from last nights meal plan was not shared with Amber automatically
 
 - [ ] Plan a strategise about SEO and AEO improvements. Organic reach is very high priority at this stage
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
