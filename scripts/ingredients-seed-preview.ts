@@ -87,9 +87,11 @@ function main() {
           const key = (item.externalId ?? item.name ?? "").trim();
           const preserved = key ? aliasByKey.get(key) : undefined;
           if (preserved !== undefined) {
-            const merged = [...(preserved ?? []), ...(item.aliases ?? [])];
+            const merged = [...(preserved ?? []), ...(item.aliases ?? [])]
+              .map((a) => a.trim())
+              .filter((a) => a.length > 0);
             const mergedAliases = Array.from(
-              new Map(merged.map((a) => [a.trim().toLowerCase(), a])).values()
+              new Map(merged.map((a) => [a.toLowerCase(), a])).values()
             );
             return { ...item, aliases: mergedAliases };
           }

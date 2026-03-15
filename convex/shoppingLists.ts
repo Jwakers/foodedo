@@ -9,6 +9,7 @@ import {
 import { isHouseholdMember } from "./households";
 import { canAccessMealPlan } from "./mealPlans";
 import { normaliseNameForGrouping } from "./lib/ingredientGrouping";
+import { combineAmounts } from "./lib/unitConversion";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -90,19 +91,22 @@ function aggregateIngredientsFromRecipes(
       if (!ingredient?.name) continue;
       const key = getAggregationKey(ingredient);
       const rawAmount = ingredient.amount;
-      const amountValue =
-        rawAmount === undefined
-          ? null
-          : typeof rawAmount === "number"
-            ? rawAmount
-            : Number(rawAmount);
-      const parsedNumeric =
-        amountValue !== null && Number.isFinite(amountValue as number);
-      const storedAmount: number | string | null = parsedNumeric
-        ? (amountValue as number)
-        : typeof rawAmount === "string"
-          ? rawAmount
-          : rawAmount ?? null;
+      let amountValue: number | null = null;
+      let storedAmount: number | string | null = null;
+      if (rawAmount === undefined || rawAmount === null) {
+        storedAmount = null;
+      } else if (typeof rawAmount === "number") {
+        amountValue = Number.isFinite(rawAmount) ? rawAmount : null;
+        storedAmount = amountValue;
+      } else {
+        const trimmedAmount = String(rawAmount).trim();
+        if (trimmedAmount === "") {
+          storedAmount = null;
+        } else {
+          amountValue = Number(trimmedAmount);
+          storedAmount = Number.isFinite(amountValue) ? amountValue : trimmedAmount;
+        }
+      }
 
       const entry = { amount: storedAmount, unit: ingredient.unit };
       const existing = combined.get(key);
@@ -118,6 +122,16 @@ function aggregateIngredientsFromRecipes(
         continue;
       }
       existing.amountEntries.push(entry);
+      const entries = existing.amountEntries;
+      const aggregated = entries.slice(1).reduce<{
+        amount: number | string | null;
+        unit?: string;
+      }>(
+        (acc, e) => combineAmounts(acc.amount, acc.unit, e.amount, e.unit),
+        { amount: entries[0]!.amount, unit: entries[0]!.unit }
+      );
+      existing.amount = aggregated.amount ?? null;
+      existing.unit = aggregated.unit;
     }
   }
 
@@ -125,8 +139,8 @@ function aggregateIngredientsFromRecipes(
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((item) => ({
       ...item,
-      amount: item.amountEntries[0]?.amount ?? null,
-      unit: item.amountEntries[0]?.unit,
+      amount: item.amount,
+      unit: item.unit,
     }));
 }
 
@@ -506,6 +520,14 @@ export const updateItems = mutation({
         unit: v.optional(v.string()),
         preparation: v.optional(v.string()),
         ingredientId: v.optional(v.id("ingredients")),
+        amountEntries: v.optional(
+          v.array(
+            v.object({
+              amount: v.union(v.number(), v.string(), v.null()),
+              unit: v.optional(v.string()),
+            })
+          )
+        ),
       })
     ),
   },
@@ -547,6 +569,10 @@ export const updateItems = mutation({
     // Update or create items
     await Promise.all(
       args.items.map((item, i) => {
+        const amountEntries =
+          item.amountEntries ?? (item.amount != null || item.unit
+            ? [{ amount: item.amount, unit: item.unit }]
+            : undefined);
         if (item.id && existingIds.has(item.id)) {
           // Update existing item
           return ctx.db.patch(item.id, {
@@ -556,6 +582,7 @@ export const updateItems = mutation({
             preparation: item.preparation,
             order: i,
             ingredientId: item.ingredientId,
+            ...(amountEntries !== undefined && { amountEntries }),
           });
         } else {
           // Create new item
@@ -568,6 +595,7 @@ export const updateItems = mutation({
             checked: false,
             order: i,
             ingredientId: item.ingredientId,
+            ...(amountEntries !== undefined && { amountEntries }),
           });
         }
       })

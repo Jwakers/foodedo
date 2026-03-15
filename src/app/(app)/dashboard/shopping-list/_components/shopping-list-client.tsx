@@ -35,6 +35,7 @@ import useSubscription from "@/lib/hooks/use-subscription";
 import { normaliseNameForGrouping } from "@/lib/ingredient-grouping";
 import { isPantryStaple } from "@/lib/pantry-staples";
 import { cn, titleCase } from "@/lib/utils";
+import { combineAmounts } from "@/lib/unit-conversion";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -918,8 +919,6 @@ const buildShoppingListItems = (
       }
       const hasAmount = storedAmount != null;
       const hasUnit = Boolean(ingredient.unit?.trim());
-      if (!hasAmount && !hasUnit) return;
-
       const entry: AmountEntry = {
         amount: storedAmount,
         unit: ingredient.unit,
@@ -932,11 +931,32 @@ const buildShoppingListItems = (
           preparation: ingredient.preparation,
           amount: storedAmount,
           ingredientId: ingredient.ingredientId,
-          amountEntries: [entry],
+          amountEntries: hasAmount || hasUnit ? [entry] : [],
         });
         return;
       }
-      existing.amountEntries.push(entry);
+      if (hasAmount || hasUnit) {
+        const result = combineAmounts(
+          existing.amount,
+          existing.unit,
+          storedAmount,
+          ingredient.unit
+        );
+        const merged =
+          result.amount != null &&
+          (typeof result.amount !== "string" || !result.amount.includes(" + "));
+        if (merged) {
+          existing.amount = result.amount;
+          existing.unit = result.unit;
+          existing.amountEntries = [
+            { amount: result.amount, unit: result.unit },
+          ];
+        } else {
+          existing.amountEntries.push(entry);
+          existing.amount = result.amount;
+          existing.unit = result.unit;
+        }
+      }
     });
   });
 
@@ -944,7 +964,7 @@ const buildShoppingListItems = (
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((item) => ({
       ...item,
-      amount: item.amountEntries[0]?.amount ?? null,
-      unit: item.amountEntries[0]?.unit,
+      amount: item.amount,
+      unit: item.unit,
     }));
 };

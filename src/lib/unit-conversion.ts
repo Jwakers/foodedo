@@ -106,17 +106,20 @@ export function combineAmounts(
     }
   }
 
-  const parts = [existingAmount, newAmount]
-    .filter((v) => v !== null && v !== undefined)
-    .map(String);
+  const parts: string[] = [];
+  if (existingAmount !== null && existingAmount !== undefined) {
+    parts.push(
+      existingUnit?.trim()
+        ? `${existingAmount} ${existingUnit}`
+        : String(existingAmount)
+    );
+  }
+  if (newAmount !== null && newAmount !== undefined) {
+    parts.push(
+      newUnit?.trim() ? `${newAmount} ${newUnit}` : String(newAmount)
+    );
+  }
   const amount = parts.length > 0 ? parts.join(" + ") : null;
-  const unit =
-    normUnitA !== normUnitB
-      ? !normUnitA
-        ? newUnit ?? undefined
-        : !normUnitB
-          ? existingUnit ?? undefined
-          : undefined
-      : existingUnit ?? newUnit;
+  const unit = sameUnit ? (existingUnit ?? newUnit) : undefined;
   return { amount, unit };
 }
