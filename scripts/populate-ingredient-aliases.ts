@@ -336,6 +336,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   Cowpea: ["cowpeas", "black-eyed pea", "black-eyed peas", "blackeye pea"],
   "Muscadine grape": ["muscadine", "muscadines", "grape", "grapes"],
   "Common grape": ["grape", "grapes", "table grape", "table grapes"],
+  Grape: ["grapes"],
   Corn: ["sweetcorn", "sweet corn", "maize", "corn on the cob", "corn kernels"],
   "Arctic blackberry": ["blackberry", "blackberries"],
   Banana: ["bananas", "plantain"],
@@ -1065,10 +1066,14 @@ function getItemKey(item: SeedItem): string {
 }
 
 /**
- * Ensure each alias is assigned to only one ingredient (first claimant wins).
- * Duplicate aliases would make ingredient resolution non-deterministic.
+ * Ensure each alias is assigned to only one ingredient. When multiple ingredients
+ * claim the same alias, prefer the "owner" (the one whose name/displayName/plural/singular
+ * matches the alias) so e.g. "grapes" goes to "Grape" not "Common grape".
  */
 function deduplicateAliasesAcrossIngredients(items: SeedItem[]): void {
+  const keyToItem = new Map<string, SeedItem>();
+  for (const item of items) keyToItem.set(getItemKey(item), item);
+
   const aliasToClaimants = new Map<string, string[]>();
   for (const item of items) {
     const key = getItemKey(item);
@@ -1080,15 +1085,25 @@ function deduplicateAliasesAcrossIngredients(items: SeedItem[]): void {
       aliasToClaimants.set(norm, list);
     }
   }
+
+  /** For an alias norm, which claimant key should keep it (owner wins, else first). */
+  const winner = (norm: string, claimantKeys: string[]): string => {
+    if (claimantKeys.length <= 1) return claimantKeys[0] ?? "";
+    const owners = claimantKeys.filter((k) => {
+      const it = keyToItem.get(k);
+      return it && getOwnIdentifiers(it).has(norm);
+    });
+    return owners.length === 1 ? owners[0]! : claimantKeys[0]!;
+  };
+
   let removed = 0;
   for (const item of items) {
     const key = getItemKey(item);
     const kept = (item.aliases ?? []).filter((a) => {
       const norm = a.trim().toLowerCase();
       const claimants = aliasToClaimants.get(norm) ?? [];
-      if (claimants.length <= 1) return true;
-      const firstClaimant = claimants[0];
-      if (firstClaimant !== key) {
+      const winnerKey = winner(norm, claimants);
+      if (winnerKey !== key) {
         removed++;
         return false;
       }
@@ -1103,6 +1118,104 @@ function deduplicateAliasesAcrossIngredients(items: SeedItem[]): void {
   }
 }
 
+/** Simple plural form of a single word (e.g. carrot → carrots, potato → potatoes). */
+function pluralizeWord(word: string): string {
+  if (word.endsWith("s")) return word;
+  if (
+    word.length >= 2 &&
+    word.endsWith("y") &&
+    !/[-aeiou]$/i.test(word.slice(-2, -1))
+  )
+    return word.slice(0, -1) + "ies";
+  if (
+    /[osxz]$/.test(word) ||
+    word.endsWith("ch") ||
+    word.endsWith("sh")
+  )
+    return word + "es";
+  return word + "s";
+}
+
+/** Simple singular form of a single word (e.g. carrots → carrot, potatoes → potato). */
+function singularizeWord(word: string): string {
+  if (
+    word.endsWith("ies") &&
+    word.length > 3 &&
+    !/[-aeiou]/i.test(word[word.length - 4] ?? "")
+  )
+    return word.slice(0, -3) + "y";
+  if (word.endsWith("es") && word.length > 2 && !word.endsWith("ies"))
+    return word.slice(0, -2);
+  if (word.endsWith("s") && word.length > 1) return word.slice(0, -1);
+  return word;
+}
+
+/** Apply plural/singular to the last word of a phrase (e.g. "sweet potato" → "sweet potatoes"). */
+function pluralizeLastWord(phrase: string): string {
+  const i = phrase.lastIndexOf(" ");
+  if (i === -1) return pluralizeWord(phrase);
+  return phrase.slice(0, i + 1) + pluralizeWord(phrase.slice(i + 1));
+}
+function singularizeLastWord(phrase: string): string {
+  const i = phrase.lastIndexOf(" ");
+  if (i === -1) return singularizeWord(phrase);
+  return phrase.slice(0, i + 1) + singularizeWord(phrase.slice(i + 1));
+}
+
+/** Build set of normalized identifiers (name, displayName, plural, singular) for one item. */
+function getOwnIdentifiers(item: SeedItem): Set<string> {
+  const own = new Set<string>();
+  for (const raw of [item.name, item.displayName].filter(Boolean)) {
+    const n = (raw ?? "").trim().toLowerCase();
+    if (!n) continue;
+    own.add(n);
+    const pl = pluralizeLastWord(n);
+    if (pl !== n) own.add(pl);
+    const sing = singularizeLastWord(n);
+    if (sing !== n) own.add(sing);
+  }
+  return own;
+}
+
+/**
+ * Remove any alias that equals (case-insensitive) another ingredient's name or displayName,
+ * or the plural/singular form of that name. Prevents e.g. "Wild carrot" from claiming
+ * "carrot" or "carrots" when "Carrot" is its own ingredient. An ingredient may keep its
+ * own plural/singular as aliases (e.g. Grape keeps "grapes", Hazelnut keeps "hazelnuts").
+ */
+function removeReservedNameAliases(items: SeedItem[]): void {
+  const reserved = new Set<string>();
+  for (const item of items) {
+    for (const raw of [item.name, item.displayName].filter(Boolean)) {
+      const n = (raw ?? "").trim().toLowerCase();
+      if (!n) continue;
+      reserved.add(n);
+      const pl = pluralizeLastWord(n);
+      if (pl !== n) reserved.add(pl);
+      const sing = singularizeLastWord(n);
+      if (sing !== n) reserved.add(sing);
+    }
+  }
+  let removed = 0;
+  for (const item of items) {
+    const own = getOwnIdentifiers(item);
+    item.aliases = (item.aliases ?? []).filter((a) => {
+      const norm = a.trim().toLowerCase();
+      if (!norm) return false;
+      if (reserved.has(norm) && !own.has(norm)) {
+        removed++;
+        return false;
+      }
+      return true;
+    });
+  }
+  if (removed > 0) {
+    console.warn(
+      `Removed ${removed} alias(es) that matched another ingredient's name/displayName or its plural/singular.`,
+    );
+  }
+}
+
 function main() {
   const seedPath = path.resolve(__dirname, "../convex/ingredients-seed.json");
   const raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as {
@@ -1113,6 +1226,7 @@ function main() {
     item.aliases = dedupe(getAliases(item), item.name);
   }
   deduplicateAliasesAcrossIngredients(items);
+  removeReservedNameAliases(items);
   const withAliases = items.filter((i) => (i.aliases ?? []).length > 0).length;
   fs.writeFileSync(seedPath, JSON.stringify({ items }, null, 2), "utf-8");
   console.log(
