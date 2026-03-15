@@ -21,7 +21,6 @@ export const INGREDIENT_FOOD_GROUPS = [
   "Fruits",
   "Gourds",
   "Herbs and Spices",
-  "Herbs and spices",
   "Milk and milk products",
   "Nuts",
   "Pulses",
@@ -33,4 +32,3 @@ export const INGREDIENT_FOOD_GROUPS = [
 ] as const;
 
 export type IngredientFoodGroup = (typeof INGREDIENT_FOOD_GROUPS)[number];
-

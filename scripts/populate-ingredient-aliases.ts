@@ -190,7 +190,6 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Passion fruit": [
     "passion fruits",
     "passionfruit",
-    "passionfruit",
     "granadilla",
   ],
   Parsnip: ["parsnips"],
@@ -341,7 +340,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Arctic blackberry": ["blackberry", "blackberries"],
   Banana: ["bananas", "plantain"],
   Bayberry: ["bayberries", "wax myrtle"],
-  Celeriac: ["celery root", "celery root", "celeriacs"],
+  Celeriac: ["celery root", "celeriacs"],
   "Celery stalks": ["celery", "celery stalk", "celery sticks", "celery ribs"],
   "Chinese chives": ["garlic chives", "chinese chive", "gau choy"],
   Ginseng: ["ginseng root", "panax ginseng"],

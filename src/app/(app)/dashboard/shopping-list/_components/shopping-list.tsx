@@ -361,7 +361,7 @@ export default function ShoppingList({
                     >
                       <div className="size-5 border-2 rounded shrink-0 mt-0.5">
                         {item.checked && (
-                          <div className="w-full h-full flex items-center justify-center">
+                          <div className="size-full flex items-center justify-center">
                             ✓
                           </div>
                         )}

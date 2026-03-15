@@ -86,7 +86,13 @@ function main() {
         items = items.map((item) => {
           const key = (item.externalId ?? item.name ?? "").trim();
           const preserved = key ? aliasByKey.get(key) : undefined;
-          if (preserved !== undefined) return { ...item, aliases: preserved };
+          if (preserved !== undefined) {
+            const merged = [...(preserved ?? []), ...(item.aliases ?? [])];
+            const mergedAliases = Array.from(
+              new Map(merged.map((a) => [a.trim().toLowerCase(), a])).values()
+            );
+            return { ...item, aliases: mergedAliases };
+          }
           return item;
         });
         console.log("Preserved aliases for", aliasByKey.size, "ingredients from existing seed");

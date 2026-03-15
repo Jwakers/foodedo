@@ -54,7 +54,8 @@ export function loadAndTransform(seedPath: string): IngredientSeedItem[] {
       const row = JSON.parse(line) as FoodJsonLine;
       if (!row.name?.trim()) continue;
       // Skip category rows (e.g. "Herbs and Spices", "Fruits") – they are labels, not ingredients
-      if (row.category === "generic") continue;
+      const category = (row.category ?? "").trim().toLowerCase();
+      if (category === "generic") continue;
       items.push(toSeedItem(row));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

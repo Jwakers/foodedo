@@ -82,6 +82,9 @@ export function combineAmounts(
 
   const catA = getUnitCategory(existingUnit);
   const catB = getUnitCategory(newUnit);
+  const normUnitA = (existingUnit ?? "").trim().toLowerCase();
+  const normUnitB = (newUnit ?? "").trim().toLowerCase();
+  const sameUnit = normUnitA === normUnitB;
 
   if (existingNum !== null && newNum !== null) {
     const baseA = toBaseAmount(existingNum, existingUnit);
@@ -94,11 +97,11 @@ export function combineAmounts(
     if (
       (catA === "items" || catA === "count") &&
       (catB === "items" || catB === "count") &&
-      existingUnit === newUnit
+      sameUnit
     ) {
       return {
         amount: existingNum + newNum,
-        unit: existingUnit,
+        unit: existingUnit ?? newUnit,
       };
     }
   }
@@ -106,8 +109,14 @@ export function combineAmounts(
   const parts = [existingAmount, newAmount]
     .filter((v) => v !== null && v !== undefined)
     .map(String);
-  return {
-    amount: parts.length > 0 ? parts.join(" + ") : null,
-    unit: existingUnit ?? newUnit,
-  };
+  const amount = parts.length > 0 ? parts.join(" + ") : null;
+  const unit =
+    normUnitA !== normUnitB
+      ? !normUnitA
+        ? newUnit ?? undefined
+        : !normUnitB
+          ? existingUnit ?? undefined
+          : undefined
+      : existingUnit ?? newUnit;
+  return { amount, unit };
 }

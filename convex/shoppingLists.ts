@@ -640,12 +640,14 @@ export const updateItemAmount = mutation({
       throw new ConvexError("Can only update items in draft mode");
     }
 
-    const updates: { amount: number | string | null; amountEntries?: typeof item.amountEntries } = { amount: args.amount };
+    const updates: { amount: number | string | null; amountEntries?: { amount: number | string | null; unit?: string }[] } = { amount: args.amount };
     if (item.amountEntries && item.amountEntries.length > 0) {
       updates.amountEntries = [
         { ...item.amountEntries[0]!, amount: args.amount },
         ...item.amountEntries.slice(1),
       ];
+    } else {
+      updates.amountEntries = [{ amount: args.amount, unit: item.unit }];
     }
     await ctx.db.patch(args.itemId, updates);
 

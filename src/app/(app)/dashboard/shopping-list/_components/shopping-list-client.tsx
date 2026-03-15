@@ -140,6 +140,16 @@ export default function ShoppingListClient() {
   const [selectedPantryKeys, setSelectedPantryKeys] = useState<Set<string>>(
     new Set(),
   );
+  useEffect(() => {
+    setSelectedPantryKeys((prev) => {
+      const validKeys = new Set(pantryItems.map((item) => getItemKey(item)));
+      const next = new Set([...prev].filter((k) => validKeys.has(k)));
+      if (next.size !== prev.size) return next;
+      if ([...next].some((k) => !prev.has(k))) return next;
+      if ([...prev].some((k) => !next.has(k))) return next;
+      return prev;
+    });
+  }, [pantryItems]);
   const [showDoneDialog, setShowDoneDialog] = useState(false);
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
@@ -891,17 +901,24 @@ const buildShoppingListItems = (
       if (!ingredient?.name) return;
 
       const key = getAggregationKey(ingredient);
-      const amountValue =
-        ingredient.amount === undefined
-          ? null
-          : typeof ingredient.amount === "number"
-            ? ingredient.amount
-            : Number(ingredient.amount);
-      const storedAmount: number | string | null = Number.isFinite(amountValue)
-        ? amountValue
-        : typeof ingredient.amount === "string"
-          ? ingredient.amount
-          : (ingredient.amount ?? null);
+      const rawAmount = ingredient.amount;
+      let storedAmount: number | string | null = null;
+      if (rawAmount === undefined || rawAmount === null) {
+        storedAmount = null;
+      } else if (typeof rawAmount === "number") {
+        storedAmount = Number.isFinite(rawAmount) ? rawAmount : null;
+      } else {
+        const str = String(rawAmount).trim();
+        if (str === "") {
+          storedAmount = null;
+        } else {
+          const num = Number(str);
+          storedAmount = Number.isFinite(num) ? num : str;
+        }
+      }
+      const hasAmount = storedAmount != null;
+      const hasUnit = Boolean(ingredient.unit?.trim());
+      if (!hasAmount && !hasUnit) return;
 
       const entry: AmountEntry = {
         amount: storedAmount,
