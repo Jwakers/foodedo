@@ -3,7 +3,7 @@
     {
       "name": "Angelica",
       "externalId": "FOOD00001",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Angelica",
       "aliases": []
@@ -19,7 +19,7 @@
     {
       "name": "Silver linden",
       "externalId": "FOOD00003",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Silver linden",
       "aliases": []
@@ -59,7 +59,7 @@
     {
       "name": "Garlic",
       "externalId": "FOOD00008",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Garlic",
       "aliases": ["garlic clove", "garlic cloves"]
@@ -67,7 +67,7 @@
     {
       "name": "Chives",
       "externalId": "FOOD00009",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Chives",
       "aliases": ["chive", "fresh chives"]
@@ -75,7 +75,7 @@
     {
       "name": "Lemon verbena",
       "externalId": "FOOD00010",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon verbena",
       "aliases": ["verbena", "fresh lemon verbena"]
@@ -99,7 +99,7 @@
     {
       "name": "Dill",
       "externalId": "FOOD00013",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Dill",
       "aliases": ["dill weed", "fresh dill", "dill leaves"]
@@ -115,7 +115,7 @@
     {
       "name": "Wild celery",
       "externalId": "FOOD00015",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Wild celery",
       "aliases": []
@@ -139,7 +139,7 @@
     {
       "name": "Horseradish",
       "externalId": "FOOD00018",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Horseradish",
       "aliases": ["horseradish root", "fresh horseradish"]
@@ -147,7 +147,7 @@
     {
       "name": "Tarragon",
       "externalId": "FOOD00019",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Tarragon",
       "aliases": ["fresh tarragon", "tarragon leaves"]
@@ -155,7 +155,7 @@
     {
       "name": "Mugwort",
       "externalId": "FOOD00020",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mugwort",
       "aliases": []
@@ -203,7 +203,7 @@
     {
       "name": "Borage",
       "externalId": "FOOD00026",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Borage",
       "aliases": []
@@ -283,7 +283,7 @@
     {
       "name": "Turnip",
       "externalId": "FOOD00036",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Turnip",
       "aliases": ["turnips"]
@@ -307,7 +307,7 @@
     {
       "name": "Capers",
       "externalId": "FOOD00039",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Capers",
       "aliases": ["caper", "caper berries"]
@@ -331,7 +331,7 @@
     {
       "name": "Safflower",
       "externalId": "FOOD00042",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Safflower",
       "aliases": ["safflower oil", "safflowers"]
@@ -339,7 +339,7 @@
     {
       "name": "Caraway",
       "externalId": "FOOD00043",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Caraway",
       "aliases": ["caraway seed", "caraway seeds"]
@@ -363,7 +363,7 @@
     {
       "name": "Roman camomile",
       "externalId": "FOOD00046",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Roman camomile",
       "aliases": ["roman chamomile", "chamomile"]
@@ -395,7 +395,7 @@
     {
       "name": "Chinese cinnamon",
       "externalId": "FOOD00050",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Chinese cinnamon",
       "aliases": ["cassia", "cassia bark", "cassia cinnamon"]
@@ -403,7 +403,7 @@
     {
       "name": "Ceylon cinnamon",
       "externalId": "FOOD00051",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Ceylon cinnamon",
       "aliases": ["true cinnamon"]
@@ -475,7 +475,7 @@
     {
       "name": "Coriander",
       "externalId": "FOOD00061",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Coriander",
       "aliases": [
@@ -496,7 +496,7 @@
     {
       "name": "Saffron",
       "externalId": "FOOD00063",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Saffron",
       "aliases": ["saffron threads", "saffron strands"]
@@ -528,7 +528,7 @@
     {
       "name": "Cumin",
       "externalId": "FOOD00067",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Cumin",
       "aliases": ["cumin seed", "cumin seeds"]
@@ -536,7 +536,7 @@
     {
       "name": "Turmeric",
       "externalId": "FOOD00068",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Turmeric",
       "aliases": ["turmeric root", "fresh turmeric"]
@@ -552,7 +552,7 @@
     {
       "name": "Lemon grass",
       "externalId": "FOOD00070",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon grass",
       "aliases": ["lemongrass", "citronella"]
@@ -584,7 +584,7 @@
     {
       "name": "Cardamom",
       "externalId": "FOOD00074",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Cardamom",
       "aliases": ["cardamom pod", "cardamom pods", "cardamon", "green cardamom"]
@@ -648,7 +648,7 @@
     {
       "name": "Fennel",
       "externalId": "FOOD00082",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Fennel",
       "aliases": ["fennel bulb", "fennel bulbs", "fresh fennel"]
@@ -680,7 +680,7 @@
     {
       "name": "Sunflower",
       "externalId": "FOOD00086",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sunflower",
       "aliases": ["sunflower seeds", "sunflower seed"]
@@ -704,7 +704,7 @@
     {
       "name": "Hyssop",
       "externalId": "FOOD00089",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Hyssop",
       "aliases": ["hyssop herb"]
@@ -712,7 +712,7 @@
     {
       "name": "Star anise",
       "externalId": "FOOD00090",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Star anise",
       "aliases": ["star anise seed", "star aniseeds", "badian"]
@@ -768,7 +768,7 @@
     {
       "name": "Sweet bay",
       "externalId": "FOOD00097",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Bay leaf",
       "aliases": ["bay leaves", "laurel", "bay"]
@@ -784,7 +784,7 @@
     {
       "name": "Lovage",
       "externalId": "FOOD00100",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lovage",
       "aliases": ["lovage leaves", "fresh lovage"]
@@ -792,7 +792,7 @@
     {
       "name": "Flaxseed",
       "externalId": "FOOD00101",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Flaxseed",
       "aliases": ["flax seed", "flax seeds", "linseed", "linseeds"]
@@ -800,7 +800,7 @@
     {
       "name": "Mexican oregano",
       "externalId": "FOOD00102",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mexican oregano",
       "aliases": []
@@ -840,7 +840,7 @@
     {
       "name": "German camomile",
       "externalId": "FOOD00107",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "German camomile",
       "aliases": ["german chamomile", "camomile"]
@@ -848,7 +848,7 @@
     {
       "name": "Lemon balm",
       "externalId": "FOOD00108",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon balm",
       "aliases": ["melissa", "lemon balm leaves", "fresh lemon balm"]
@@ -856,7 +856,7 @@
     {
       "name": "Mentha",
       "externalId": "FOOD00109",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mentha",
       "aliases": ["mint", "mints"]
@@ -864,7 +864,7 @@
     {
       "name": "Orange mint",
       "externalId": "FOOD00110",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Orange mint",
       "aliases": ["fresh mint"]
@@ -872,7 +872,7 @@
     {
       "name": "Cornmint",
       "externalId": "FOOD00111",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Cornmint",
       "aliases": ["corn mint", "field mint"]
@@ -880,7 +880,7 @@
     {
       "name": "Spearmint",
       "externalId": "FOOD00112",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Spearmint",
       "aliases": ["spear mint", "fresh spearmint", "mint leaves"]
@@ -888,7 +888,7 @@
     {
       "name": "Peppermint",
       "externalId": "FOOD00113",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Peppermint",
       "aliases": ["peppermint leaves"]
@@ -928,7 +928,7 @@
     {
       "name": "Nutmeg",
       "externalId": "FOOD00118",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Nutmeg",
       "aliases": ["nutmeg seed", "ground nutmeg", "whole nutmeg"]
@@ -936,7 +936,7 @@
     {
       "name": "Sweet basil",
       "externalId": "FOOD00119",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Basil",
       "aliases": ["fresh basil", "basil leaves"]
@@ -944,7 +944,7 @@
     {
       "name": "Evening primrose",
       "externalId": "FOOD00120",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Evening primrose",
       "aliases": []
@@ -960,7 +960,7 @@
     {
       "name": "Sweet marjoram",
       "externalId": "FOOD00122",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sweet marjoram",
       "aliases": ["marjoram", "fresh marjoram"]
@@ -968,7 +968,7 @@
     {
       "name": "Pot marjoram",
       "externalId": "FOOD00123",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Pot marjoram",
       "aliases": []
@@ -976,7 +976,7 @@
     {
       "name": "Common oregano",
       "externalId": "FOOD00124",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Oregano",
       "aliases": ["oregano leaves", "fresh oregano"]
@@ -1000,7 +1000,7 @@
     {
       "name": "Poppy",
       "externalId": "FOOD00127",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Poppy seed",
       "aliases": ["poppy seeds"]
@@ -1032,7 +1032,7 @@
     {
       "name": "Parsley",
       "externalId": "FOOD00131",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Parsley",
       "aliases": [
@@ -1091,7 +1091,7 @@
     {
       "name": "Anise",
       "externalId": "FOOD00137",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Anise",
       "aliases": ["aniseed", "anise seed", "anise seeds"]
@@ -1107,7 +1107,7 @@
     {
       "name": "Pepper (Spice)",
       "externalId": "FOOD00139",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Pepper",
       "aliases": ["black pepper", "peppercorn", "peppercorns", "ground pepper"]
@@ -1138,7 +1138,7 @@
     {
       "name": "Purslane",
       "externalId": "FOOD00142",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Purslane",
       "aliases": ["purslane leaves", "common purslane"]
@@ -1258,7 +1258,7 @@
     {
       "name": "Watercress",
       "externalId": "FOOD00158",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Watercress",
       "aliases": ["water cress", "water cresses"]
@@ -1266,7 +1266,7 @@
     {
       "name": "Rosemary",
       "externalId": "FOOD00159",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Rosemary",
       "aliases": [
@@ -1303,7 +1303,7 @@
     {
       "name": "Sorrel",
       "externalId": "FOOD00164",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sorrel",
       "aliases": ["sorrel leaves", "garden sorrel"]
@@ -1311,7 +1311,7 @@
     {
       "name": "Common sage",
       "externalId": "FOOD00165",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sage",
       "aliases": ["sage leaves", "fresh sage", "dried sage"]
@@ -1327,7 +1327,7 @@
     {
       "name": "Summer savory",
       "externalId": "FOOD00167",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Summer savory",
       "aliases": ["savory", "fresh savory"]
@@ -1335,7 +1335,7 @@
     {
       "name": "Winter savory",
       "externalId": "FOOD00168",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Winter savory",
       "aliases": []
@@ -1351,7 +1351,7 @@
     {
       "name": "Sesame",
       "externalId": "FOOD00170",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sesame",
       "aliases": ["sesame seeds", "sesame seed"]
@@ -1415,7 +1415,7 @@
     {
       "name": "Cloves",
       "externalId": "FOOD00179",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Cloves",
       "aliases": ["clove", "whole cloves", "clove spice"]
@@ -1431,7 +1431,7 @@
     {
       "name": "Dandelion",
       "externalId": "FOOD00181",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Dandelion",
       "aliases": ["dandelion greens", "dandelion leaves", "dandelions"]
@@ -1447,7 +1447,7 @@
     {
       "name": "Common thyme",
       "externalId": "FOOD00183",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Thyme",
       "aliases": ["thyme", "thyme leaves", "fresh thyme", "dried thyme"]
@@ -1455,7 +1455,7 @@
     {
       "name": "Linden",
       "externalId": "FOOD00184",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Linden",
       "aliases": ["lime blossom", "linden flower", "lime flower"]
@@ -1463,7 +1463,7 @@
     {
       "name": "Small-leaf linden",
       "externalId": "FOOD00185",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Small-leaf linden",
       "aliases": []
@@ -1471,7 +1471,7 @@
     {
       "name": "Fenugreek",
       "externalId": "FOOD00186",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Fenugreek",
       "aliases": ["fenugreek seed", "fenugreek seeds", "methi", "kasuri methi"]
@@ -1548,7 +1548,7 @@
     {
       "name": "Vanilla",
       "externalId": "FOOD00195",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Vanilla",
       "aliases": [
@@ -1561,7 +1561,7 @@
     {
       "name": "Common verbena",
       "externalId": "FOOD00196",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Verbena",
       "aliases": []
@@ -1653,7 +1653,7 @@
     {
       "name": "Ginger",
       "externalId": "FOOD00206",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Ginger",
       "aliases": ["ginger root", "fresh ginger", "root ginger"]
@@ -1733,7 +1733,7 @@
     {
       "name": "Chinese chives",
       "externalId": "FOOD00216",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Chinese chives",
       "aliases": ["garlic chives", "chinese chive", "gau choy"]
@@ -1757,7 +1757,7 @@
     {
       "name": "Ginseng",
       "externalId": "FOOD00219",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Ginseng",
       "aliases": ["ginseng root", "panax ginseng"]
@@ -1893,7 +1893,7 @@
     {
       "name": "Lemon thyme",
       "externalId": "FOOD00238",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Lemon thyme",
       "aliases": ["fresh lemon thyme"]
@@ -1917,7 +1917,7 @@
     {
       "name": "Welsh onion",
       "externalId": "FOOD00241",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Welsh onion",
       "aliases": [
@@ -1987,7 +1987,7 @@
     {
       "name": "Celery leaves",
       "externalId": "FOOD00249",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Celery leaves",
       "aliases": ["celery leaf", "celery tops"]
@@ -2067,7 +2067,7 @@
     {
       "name": "Italian oregano",
       "externalId": "FOOD00259",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Italian oregano",
       "aliases": []
@@ -2121,7 +2121,7 @@
     {
       "name": "Pineappple sage",
       "externalId": "FOOD00266",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Pineappple sage",
       "aliases": ["pineapple sage", "fresh pineapple sage"]
@@ -2250,7 +2250,7 @@
     {
       "name": "Alfalfa",
       "externalId": "FOOD00286",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Alfalfa",
       "aliases": ["fresh Alfalfa"]
@@ -2258,7 +2258,7 @@
     {
       "name": "Allspice",
       "externalId": "FOOD00287",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Allspice",
       "aliases": ["allspice berries", "ground allspice", "jamaican pepper"]
@@ -2266,7 +2266,7 @@
     {
       "name": "Amaranth",
       "externalId": "FOOD00288",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Amaranth",
       "aliases": ["fresh Amaranth"]
@@ -2448,7 +2448,7 @@
     {
       "name": "Breadnut tree seed",
       "externalId": "FOOD00310",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Breadnut tree seed",
       "aliases": ["breadnut", "breadnuts"]
@@ -2584,7 +2584,7 @@
     {
       "name": "Chervil",
       "externalId": "FOOD00327",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Chervil",
       "aliases": ["fresh chervil", "chervil leaves", "french parsley"]
@@ -2592,7 +2592,7 @@
     {
       "name": "Chia",
       "externalId": "FOOD00328",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Chia",
       "aliases": ["chia seeds", "chia seed"]
@@ -2705,7 +2705,7 @@
     {
       "name": "Cottonseed",
       "externalId": "FOOD00341",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Cottonseed",
       "aliases": []
@@ -2777,7 +2777,7 @@
     {
       "name": "Dock",
       "externalId": "FOOD00350",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Dock",
       "aliases": ["fresh Dock"]
@@ -2897,7 +2897,7 @@
     {
       "name": "Fireweed",
       "externalId": "FOOD00365",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Fireweed",
       "aliases": ["fresh Fireweed"]
@@ -2913,7 +2913,7 @@
     {
       "name": "Ginkgo nuts",
       "externalId": "FOOD00367",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Ginkgo nuts",
       "aliases": ["ginkgo", "ginkgo nut"]
@@ -3190,7 +3190,7 @@
     {
       "name": "Lotus",
       "externalId": "FOOD00401",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Lotus",
       "aliases": []
@@ -3286,7 +3286,7 @@
     {
       "name": "White mustard",
       "externalId": "FOOD00413",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "White mustard",
       "aliases": []
@@ -3486,7 +3486,7 @@
     {
       "name": "Opium poppy",
       "externalId": "FOOD00438",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Opium poppy",
       "aliases": []
@@ -3510,7 +3510,7 @@
     {
       "name": "Quinoa",
       "externalId": "FOOD00441",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Quinoa",
       "aliases": ["quinoa grain", "quinoa seeds", "quinua"]
@@ -3550,7 +3550,7 @@
     {
       "name": "Rose hip",
       "externalId": "FOOD00446",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Rose hip",
       "aliases": ["fresh Rose hip"]
@@ -3558,7 +3558,7 @@
     {
       "name": "Roselle",
       "externalId": "FOOD00447",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Roselle",
       "aliases": ["fresh Roselle"]
@@ -3782,7 +3782,7 @@
     {
       "name": "Hedge mustard",
       "externalId": "FOOD00475",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Hedge mustard",
       "aliases": []
@@ -3894,7 +3894,7 @@
     {
       "name": "Teff",
       "externalId": "FOOD00489",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Teff",
       "aliases": ["fresh Teff"]
@@ -3966,7 +3966,7 @@
     {
       "name": "Wasabi",
       "externalId": "FOOD00498",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Wasabi",
       "aliases": ["wasabi root", "japanese horseradish"]
@@ -4030,7 +4030,7 @@
     {
       "name": "Tea leaf willow",
       "externalId": "FOOD00506",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Tea leaf willow",
       "aliases": ["fresh Tea leaf willow"]
@@ -4342,7 +4342,7 @@
     {
       "name": "Rowal",
       "externalId": "FOOD00545",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Other seeds",
       "displayName": "Rowal",
       "aliases": []
@@ -4409,7 +4409,7 @@
     {
       "name": "Epazote",
       "externalId": "FOOD00552",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Epazote",
       "aliases": ["fresh Epazote"]
@@ -4457,7 +4457,7 @@
     {
       "name": "Sourdock",
       "externalId": "FOOD00558",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Sourdock",
       "aliases": ["fresh Sourdock"]
@@ -4569,7 +4569,7 @@
     {
       "name": "Cinnamon",
       "externalId": "FOOD00572",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Cinnamon",
       "aliases": ["cinnamon stick", "cinnamon sticks"]
@@ -4721,7 +4721,7 @@
     {
       "name": "Oil palm",
       "externalId": "FOOD00591",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Oil palm",
       "aliases": []
@@ -4737,7 +4737,7 @@
     {
       "name": "Sago palm",
       "externalId": "FOOD00593",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sago palm",
       "aliases": []
@@ -4966,14 +4966,7 @@
       "displayName": "Whisky",
       "aliases": []
     },
-    {
-      "name": "Ice cream",
-      "externalId": "FOOD00624",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Frozen desserts",
-      "displayName": "Ice cream",
-      "aliases": []
-    },
+
     {
       "name": "Gin",
       "externalId": "FOOD00625",
@@ -4982,22 +4975,7 @@
       "displayName": "Gin",
       "aliases": []
     },
-    {
-      "name": "Honey",
-      "externalId": "FOOD00626",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Other confectioneries",
-      "displayName": "Honey",
-      "aliases": []
-    },
-    {
-      "name": "Liquorice",
-      "externalId": "FOOD00627",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Liquorice",
-      "aliases": []
-    },
+
     {
       "name": "Vinegar",
       "externalId": "FOOD00628",
@@ -5046,38 +5024,7 @@
       "displayName": "Madeira wine",
       "aliases": []
     },
-    {
-      "name": "Nougat",
-      "externalId": "FOOD00634",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Other confectioneries",
-      "displayName": "Nougat",
-      "aliases": []
-    },
-    {
-      "name": "Toffee",
-      "externalId": "FOOD00635",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Other confectioneries",
-      "displayName": "Toffee",
-      "aliases": []
-    },
-    {
-      "name": "Cake",
-      "externalId": "FOOD00636",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Cake",
-      "aliases": []
-    },
-    {
-      "name": "Pizza",
-      "externalId": "FOOD00637",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Pizza",
-      "aliases": []
-    },
+
     {
       "name": "Ymer",
       "externalId": "FOOD00638",
@@ -5094,38 +5041,7 @@
       "displayName": "Crisp bread",
       "aliases": []
     },
-    {
-      "name": "Pastry",
-      "externalId": "FOOD00641",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Pastry",
-      "aliases": []
-    },
-    {
-      "name": "Dragée",
-      "externalId": "FOOD00642",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Dragée",
-      "aliases": []
-    },
-    {
-      "name": "Chewing gum",
-      "externalId": "FOOD00643",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Chewing gum",
-      "aliases": []
-    },
-    {
-      "name": "Marzipan",
-      "externalId": "FOOD00644",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Other confectioneries",
-      "displayName": "Marzipan",
-      "aliases": []
-    },
+
     {
       "name": "Salad dressing",
       "externalId": "FOOD00645",
@@ -5188,43 +5104,16 @@
       "displayName": "Sugar",
       "aliases": ["sugars", "white sugar", "granulated sugar", "caster sugar"]
     },
-    {
-      "name": "Sausage",
-      "externalId": "FOOD00652",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Ground meat",
-      "displayName": "Sausage",
-      "aliases": []
-    },
-    {
-      "name": "Meatball",
-      "externalId": "FOOD00653",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Ground meat",
-      "displayName": "Meatball",
-      "aliases": []
-    },
+
     {
       "name": "Mustard",
       "externalId": "FOOD00654",
       "foodGroup": "Baking goods",
       "foodSubGroup": "Condiments",
       "displayName": "Mustard",
-      "aliases": [
-        "mustard seed",
-        "mustard seeds",
-        "dijon mustard",
-        "wholegrain mustard"
-      ]
-    },
-    {
-      "name": "Pate",
-      "externalId": "FOOD00655",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Ground meat",
-      "displayName": "Pate",
       "aliases": []
     },
+
     {
       "name": "Sugar substitute",
       "externalId": "FOOD00656",
@@ -5273,14 +5162,7 @@
       "displayName": "Leavening agent",
       "aliases": []
     },
-    {
-      "name": "Marshmallow",
-      "externalId": "FOOD00662",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Marshmallow",
-      "aliases": []
-    },
+
     {
       "name": "Gelatin",
       "externalId": "FOOD00663",
@@ -5305,22 +5187,7 @@
       "displayName": "Milk (Human)",
       "aliases": []
     },
-    {
-      "name": "Dumpling",
-      "externalId": "FOOD00669",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Dumpling",
-      "aliases": []
-    },
-    {
-      "name": "Soup",
-      "externalId": "FOOD00670",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Soup",
-      "aliases": []
-    },
+
     {
       "name": "Syrup",
       "externalId": "FOOD00673",
@@ -5345,38 +5212,16 @@
       "displayName": "Remoulade",
       "aliases": []
     },
-    {
-      "name": "Chocolate spread",
-      "externalId": "FOOD00676",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Spreads",
-      "displayName": "Chocolate spread",
-      "aliases": []
-    },
-    {
-      "name": "Fruit gum",
-      "externalId": "FOOD00677",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Fruit gum",
-      "aliases": []
-    },
+
     {
       "name": "Curry powder",
       "externalId": "FOOD00678",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herb and spice mixtures",
       "displayName": "Curry powder",
       "aliases": []
     },
-    {
-      "name": "Meringue",
-      "externalId": "FOOD00680",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Other confectioneries",
-      "displayName": "Meringue",
-      "aliases": []
-    },
+
     {
       "name": "Lard",
       "externalId": "FOOD00681",
@@ -5497,22 +5342,7 @@
       "displayName": "Cichlidae (Tilapia)",
       "aliases": ["cichlidae"]
     },
-    {
-      "name": "Icing",
-      "externalId": "FOOD00700",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Other confectioneries",
-      "displayName": "Icing",
-      "aliases": []
-    },
-    {
-      "name": "Snack bar",
-      "externalId": "FOOD00701",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Snack bar",
-      "aliases": []
-    },
+
     {
       "name": "Green turtle",
       "externalId": "FOOD00702",
@@ -5529,46 +5359,7 @@
       "displayName": "Energy drink",
       "aliases": []
     },
-    {
-      "name": "Burrito",
-      "externalId": "FOOD00704",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Tex-Mex cuisine",
-      "displayName": "Burrito",
-      "aliases": []
-    },
-    {
-      "name": "Hamburger",
-      "externalId": "FOOD00705",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Sandwiches",
-      "displayName": "Hamburger",
-      "aliases": []
-    },
-    {
-      "name": "Baked beans",
-      "externalId": "FOOD00706",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Baked beans",
-      "aliases": []
-    },
-    {
-      "name": "Chili",
-      "externalId": "FOOD00707",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Tex-Mex cuisine",
-      "displayName": "Chili",
-      "aliases": []
-    },
-    {
-      "name": "Taco",
-      "externalId": "FOOD00708",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Tex-Mex cuisine",
-      "displayName": "Taco",
-      "aliases": []
-    },
+
     {
       "name": "Tortilla",
       "externalId": "FOOD00709",
@@ -5577,14 +5368,7 @@
       "displayName": "Tortilla",
       "aliases": []
     },
-    {
-      "name": "Nachos",
-      "externalId": "FOOD00710",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Tex-Mex cuisine",
-      "displayName": "Nachos",
-      "aliases": []
-    },
+
     {
       "name": "Processed cheese",
       "externalId": "FOOD00711",
@@ -5593,14 +5377,7 @@
       "displayName": "Processed cheese",
       "aliases": []
     },
-    {
-      "name": "Salad",
-      "externalId": "FOOD00712",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Salad",
-      "aliases": []
-    },
+
     {
       "name": "Cream substitute",
       "externalId": "FOOD00713",
@@ -5609,14 +5386,7 @@
       "displayName": "Cream substitute",
       "aliases": []
     },
-    {
-      "name": "Dulce de leche",
-      "externalId": "FOOD00714",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Spreads",
-      "displayName": "Dulce de leche",
-      "aliases": []
-    },
+
     {
       "name": "Topping",
       "externalId": "FOOD00715",
@@ -5625,60 +5395,13 @@
       "displayName": "Topping",
       "aliases": []
     },
-    {
-      "name": "Sweet custard",
-      "externalId": "FOOD00716",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Milk desserts",
-      "displayName": "Sweet custard",
-      "aliases": []
-    },
-    {
-      "name": "Egg roll",
-      "externalId": "FOOD00717",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Asian cuisine",
-      "displayName": "Egg roll",
-      "aliases": []
-    },
+
     {
       "name": "Heart of palm",
       "externalId": "FOOD00718",
       "foodGroup": "Vegetables",
       "foodSubGroup": "Other vegetables",
       "displayName": "Heart of palm",
-      "aliases": []
-    },
-    {
-      "name": "Popcorn",
-      "externalId": "FOOD00719",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Popcorn",
-      "aliases": []
-    },
-    {
-      "name": "Potato chip",
-      "externalId": "FOOD00720",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Potato chip",
-      "aliases": []
-    },
-    {
-      "name": "Tortilla chip",
-      "externalId": "FOOD00721",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Tortilla chip",
-      "aliases": []
-    },
-    {
-      "name": "Corn chip",
-      "externalId": "FOOD00722",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Corn chip",
       "aliases": []
     },
     {
@@ -5689,46 +5412,7 @@
       "displayName": "Hibiscus tea",
       "aliases": []
     },
-    {
-      "name": "Stew",
-      "externalId": "FOOD00724",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Stew",
-      "aliases": []
-    },
-    {
-      "name": "Gelatin dessert",
-      "externalId": "FOOD00725",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Gelatin dessert",
-      "aliases": []
-    },
-    {
-      "name": "Junket",
-      "externalId": "FOOD00726",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Milk desserts",
-      "displayName": "Junket",
-      "aliases": []
-    },
-    {
-      "name": "Falafel",
-      "externalId": "FOOD00727",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Falafel",
-      "aliases": []
-    },
-    {
-      "name": "Frybread",
-      "externalId": "FOOD00728",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Frybread",
-      "aliases": []
-    },
+
     {
       "name": "Morchella (Morel)",
       "externalId": "FOOD00731",
@@ -5737,14 +5421,7 @@
       "displayName": "Morchella (Morel)",
       "aliases": ["morchella"]
     },
-    {
-      "name": "Pancake",
-      "externalId": "FOOD00732",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Pancake",
-      "aliases": []
-    },
+
     {
       "name": "Pectin",
       "externalId": "FOOD00733",
@@ -5753,22 +5430,7 @@
       "displayName": "Pectin",
       "aliases": []
     },
-    {
-      "name": "Pudding",
-      "externalId": "FOOD00734",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Pudding",
-      "aliases": []
-    },
-    {
-      "name": "Waffle",
-      "externalId": "FOOD00735",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Waffle",
-      "aliases": []
-    },
+
     {
       "name": "Soy milk",
       "externalId": "FOOD00736",
@@ -5777,14 +5439,7 @@
       "displayName": "Soy milk",
       "aliases": []
     },
-    {
-      "name": "Meatloaf",
-      "externalId": "FOOD00737",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Ground meat",
-      "displayName": "Meatloaf",
-      "aliases": []
-    },
+
     {
       "name": "Sake",
       "externalId": "FOOD00738",
@@ -5801,14 +5456,7 @@
       "displayName": "Cocktail",
       "aliases": []
     },
-    {
-      "name": "Couscous",
-      "externalId": "FOOD00740",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Berber cuisine",
-      "displayName": "Couscous",
-      "aliases": []
-    },
+
     {
       "name": "Bulgur",
       "externalId": "FOOD00741",
@@ -5833,14 +5481,7 @@
       "displayName": "Coffee mocha",
       "aliases": []
     },
-    {
-      "name": "Chimichanga",
-      "externalId": "FOOD00744",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Mexican cuisine",
-      "displayName": "Chimichanga",
-      "aliases": []
-    },
+
     {
       "name": "Semolina",
       "externalId": "FOOD00745",
@@ -5857,38 +5498,7 @@
       "displayName": "Tapioca pearl",
       "aliases": []
     },
-    {
-      "name": "Tostada",
-      "externalId": "FOOD00747",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Mexican cuisine",
-      "displayName": "Tostada",
-      "aliases": []
-    },
-    {
-      "name": "Quesadilla",
-      "externalId": "FOOD00748",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Mexican cuisine",
-      "displayName": "Quesadilla",
-      "aliases": []
-    },
-    {
-      "name": "Baked potato",
-      "externalId": "FOOD00749",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Potato dishes",
-      "displayName": "Baked potato",
-      "aliases": []
-    },
-    {
-      "name": "Hot dog",
-      "externalId": "FOOD00750",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Sandwiches",
-      "displayName": "Hot dog",
-      "aliases": []
-    },
+
     {
       "name": "Spread",
       "externalId": "FOOD00751",
@@ -5897,14 +5507,7 @@
       "displayName": "Spread",
       "aliases": []
     },
-    {
-      "name": "Enchilada",
-      "externalId": "FOOD00752",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Mexican cuisine",
-      "displayName": "Enchilada",
-      "aliases": []
-    },
+
     {
       "name": "Egg substitute",
       "externalId": "FOOD00753",
@@ -5929,14 +5532,7 @@
       "displayName": "Ketchup",
       "aliases": []
     },
-    {
-      "name": "Breakfast sandwich",
-      "externalId": "FOOD00757",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Sandwiches",
-      "displayName": "Breakfast sandwich",
-      "aliases": []
-    },
+
     {
       "name": "Adobo",
       "externalId": "FOOD00758",
@@ -5945,14 +5541,7 @@
       "displayName": "Adobo",
       "aliases": []
     },
-    {
-      "name": "Macaroni and cheese",
-      "externalId": "FOOD00759",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Pasta dishes",
-      "displayName": "Macaroni and cheese",
-      "aliases": []
-    },
+
     {
       "name": "Butterfat",
       "externalId": "FOOD00760",
@@ -5969,14 +5558,7 @@
       "displayName": "Horned melon",
       "aliases": ["kiwano", "african cucumber"]
     },
-    {
-      "name": "Hushpuppy",
-      "externalId": "FOOD00762",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "American cuisine",
-      "displayName": "Hushpuppy",
-      "aliases": []
-    },
+
     {
       "name": "Fruit juice",
       "externalId": "FOOD00763",
@@ -6009,30 +5591,7 @@
       "displayName": "Soy yogurt",
       "aliases": []
     },
-    {
-      "name": "Vegetarian food",
-      "externalId": "FOOD00768",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Vegetarian food",
-      "aliases": []
-    },
-    {
-      "name": "Veggie burger",
-      "externalId": "FOOD00769",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Sandwiches",
-      "displayName": "Veggie burger",
-      "aliases": []
-    },
-    {
-      "name": "Cold cut",
-      "externalId": "FOOD00770",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Ground meat",
-      "displayName": "Cold cut",
-      "aliases": []
-    },
+
     {
       "name": "Mixed nuts",
       "externalId": "FOOD00771",
@@ -6052,7 +5611,7 @@
     {
       "name": "Babassu palm",
       "externalId": "FOOD00773",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Babassu palm",
       "aliases": []
@@ -6060,7 +5619,7 @@
     {
       "name": "Cupuaçu",
       "externalId": "FOOD00774",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Cupuaçu",
       "aliases": []
@@ -6068,7 +5627,7 @@
     {
       "name": "Shea tree",
       "externalId": "FOOD00775",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Shea tree",
       "aliases": []
@@ -6076,7 +5635,7 @@
     {
       "name": "Oil-seed Camellia",
       "externalId": "FOOD00776",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Oil-seed Camellia",
       "aliases": []
@@ -6084,7 +5643,7 @@
     {
       "name": "Ucuhuba",
       "externalId": "FOOD00777",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Ucuhuba",
       "aliases": []
@@ -6121,14 +5680,7 @@
       "displayName": "Pie filling",
       "aliases": []
     },
-    {
-      "name": "Pie",
-      "externalId": "FOOD00782",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Pie",
-      "aliases": []
-    },
+
     {
       "name": "Shortening",
       "externalId": "FOOD00783",
@@ -6162,14 +5714,6 @@
       "aliases": []
     },
     {
-      "name": "Cracker",
-      "externalId": "FOOD00787",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Cracker",
-      "aliases": []
-    },
-    {
       "name": "Nance",
       "externalId": "FOOD00788",
       "foodGroup": "Fruits",
@@ -6193,46 +5737,7 @@
       "displayName": "Natto",
       "aliases": []
     },
-    {
-      "name": "Ravioli",
-      "externalId": "FOOD00791",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Pasta dishes",
-      "displayName": "Ravioli",
-      "aliases": []
-    },
-    {
-      "name": "Scrapple",
-      "externalId": "FOOD00792",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "American cuisine",
-      "displayName": "Scrapple",
-      "aliases": []
-    },
-    {
-      "name": "Succotash",
-      "externalId": "FOOD00794",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "American cuisine",
-      "displayName": "Succotash",
-      "aliases": []
-    },
-    {
-      "name": "Tamale",
-      "externalId": "FOOD00795",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Latin American cuisine",
-      "displayName": "Tamale",
-      "aliases": []
-    },
-    {
-      "name": "Rice cake",
-      "externalId": "FOOD00796",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Asian cuisine",
-      "displayName": "Rice cake",
-      "aliases": []
-    },
+
     {
       "name": "Tree fern",
       "externalId": "FOOD00797",
@@ -6262,14 +5767,7 @@
         "all purpose flour"
       ]
     },
-    {
-      "name": "Akutaq",
-      "externalId": "FOOD00800",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Akutaq",
-      "aliases": []
-    },
+
     {
       "name": "Dough",
       "externalId": "FOOD00801",
@@ -6407,14 +5905,6 @@
       "aliases": []
     },
     {
-      "name": "Trail mix",
-      "externalId": "FOOD00819",
-      "foodGroup": "Snack foods",
-      "foodSubGroup": "Snack foods",
-      "displayName": "Trail mix",
-      "aliases": []
-    },
-    {
       "name": "Greenthread tea",
       "externalId": "FOOD00820",
       "foodGroup": "Teas",
@@ -6454,30 +5944,7 @@
       "displayName": "Soft drink",
       "aliases": []
     },
-    {
-      "name": "Frozen yogurt",
-      "externalId": "FOOD00825",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Frozen desserts",
-      "displayName": "Frozen yogurt",
-      "aliases": []
-    },
-    {
-      "name": "Milkshake",
-      "externalId": "FOOD00826",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Frozen desserts",
-      "displayName": "Milkshake",
-      "aliases": []
-    },
-    {
-      "name": "Chocolate mousse",
-      "externalId": "FOOD00827",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Desserts",
-      "displayName": "Chocolate mousse",
-      "aliases": []
-    },
+
     {
       "name": "Dripping",
       "externalId": "FOOD00828",
@@ -6486,30 +5953,7 @@
       "displayName": "Dripping",
       "aliases": []
     },
-    {
-      "name": "Pupusa",
-      "externalId": "FOOD00829",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Latin American cuisine",
-      "displayName": "Pupusa",
-      "aliases": []
-    },
-    {
-      "name": "Empanada",
-      "externalId": "FOOD00830",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Latin American cuisine",
-      "displayName": "Empanada",
-      "aliases": []
-    },
-    {
-      "name": "Arepa",
-      "externalId": "FOOD00831",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Latin American cuisine",
-      "displayName": "Arepa",
-      "aliases": []
-    },
+
     {
       "name": "Ascidians",
       "externalId": "FOOD00832",
@@ -6518,38 +5962,16 @@
       "displayName": "Ascidians",
       "aliases": []
     },
-    {
-      "name": "Gefilte fish",
-      "externalId": "FOOD00833",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Jewish cuisine",
-      "displayName": "Gefilte fish",
-      "aliases": []
-    },
+
     {
       "name": "Yellow pond-lily",
       "externalId": "FOOD00834",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Yellow pond-lily",
       "aliases": ["fresh Yellow pond-lily"]
     },
-    {
-      "name": "Fish burger",
-      "externalId": "FOOD00835",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Sandwiches",
-      "displayName": "Fish burger",
-      "aliases": []
-    },
-    {
-      "name": "Pot pie",
-      "externalId": "FOOD00837",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Other dishes",
-      "displayName": "Pot pie",
-      "aliases": []
-    },
+
     {
       "name": "Stuffing",
       "externalId": "FOOD00838",
@@ -6566,22 +5988,7 @@
       "displayName": "Edible shell",
       "aliases": []
     },
-    {
-      "name": "Fudge",
-      "externalId": "FOOD00840",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Fudge",
-      "aliases": []
-    },
-    {
-      "name": "Candy bar",
-      "externalId": "FOOD00841",
-      "foodGroup": "Confectioneries",
-      "foodSubGroup": "Candies",
-      "displayName": "Candy bar",
-      "aliases": []
-    },
+
     {
       "name": "Condensed milk",
       "externalId": "FOOD00842",
@@ -6606,30 +6013,7 @@
       "displayName": "Margarine-like spread",
       "aliases": []
     },
-    {
-      "name": "Hummus",
-      "externalId": "FOOD00845",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Levantine cuisine",
-      "displayName": "Hummus",
-      "aliases": []
-    },
-    {
-      "name": "Potato puffs",
-      "externalId": "FOOD00846",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Potato dishes",
-      "displayName": "Potato puffs",
-      "aliases": []
-    },
-    {
-      "name": "Potato gratin",
-      "externalId": "FOOD00847",
-      "foodGroup": "Dishes",
-      "foodSubGroup": "Potato dishes",
-      "displayName": "Potato gratin",
-      "aliases": []
-    },
+
     {
       "name": "Milk substitute",
       "externalId": "FOOD00848",
@@ -6649,7 +6033,7 @@
     {
       "name": "Soft-necked garlic",
       "externalId": "FOOD00850",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Soft-necked garlic",
       "aliases": ["fresh Soft-necked garlic"]
@@ -6893,7 +6277,7 @@
     {
       "name": "Asparagus fern",
       "externalId": "FOOD00902",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Asparagus fern",
       "aliases": ["fresh Asparagus fern"]
@@ -6949,7 +6333,7 @@
     {
       "name": "Olive oil",
       "externalId": "FOOD00909",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Olive oil",
       "aliases": [
@@ -6977,7 +6361,7 @@
     {
       "name": "linseed oil",
       "externalId": "FOOD00912",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "linseed oil",
       "aliases": ["flaxseed oil", "flax oil", "linseed oils"]
@@ -6985,7 +6369,7 @@
     {
       "name": "Rapeseed oil",
       "externalId": "FOOD00913",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Rapeseed oil",
       "aliases": ["rapeseed oils"]
@@ -6993,7 +6377,7 @@
     {
       "name": "Soybean oil",
       "externalId": "FOOD00914",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Soybean oil",
       "aliases": ["soy oil", "soybean oils"]
@@ -7001,7 +6385,7 @@
     {
       "name": "Guarana",
       "externalId": "FOOD00915",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Guarana",
       "aliases": ["fresh Guarana"]
@@ -7009,7 +6393,7 @@
     {
       "name": "Mate",
       "externalId": "FOOD00916",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Mate",
       "aliases": ["fresh Mate"]
@@ -7049,7 +6433,7 @@
     {
       "name": "White mulberry",
       "externalId": "FOOD00921",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "White mulberry",
       "aliases": ["fresh White mulberry"]
@@ -7057,7 +6441,7 @@
     {
       "name": "Canola oil",
       "externalId": "FOOD00922",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Canola oil",
       "aliases": ["canola oils"]
@@ -7121,7 +6505,7 @@
     {
       "name": "Red clover",
       "externalId": "FOOD00930",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Red clover",
       "aliases": ["fresh Red clover"]
@@ -7206,7 +6590,7 @@
     {
       "name": "Sunflower oil",
       "externalId": "FOOD00940",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sunflower oil",
       "aliases": ["sunflower oils", "sunflower cooking oil"]
@@ -7214,7 +6598,7 @@
     {
       "name": "Coconut oil",
       "externalId": "FOOD00941",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Coconut oil",
       "aliases": ["coconut oils", "virgin coconut oil"]
@@ -7222,7 +6606,7 @@
     {
       "name": "Peanut oil",
       "externalId": "FOOD00942",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Peanut oil",
       "aliases": ["groundnut oil", "peanut oils"]
@@ -7230,7 +6614,7 @@
     {
       "name": "Cottonseed oil",
       "externalId": "FOOD00943",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Cottonseed oil",
       "aliases": []
@@ -7238,7 +6622,7 @@
     {
       "name": "Corn oil",
       "externalId": "FOOD00944",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Corn oil",
       "aliases": ["maize oil", "corn oils"]
@@ -7246,7 +6630,7 @@
     {
       "name": "Avocado oil",
       "externalId": "FOOD00945",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Avocado oil",
       "aliases": ["avocado oils"]
@@ -7254,7 +6638,7 @@
     {
       "name": "Grapeseed oil",
       "externalId": "FOOD00946",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Grapeseed oil",
       "aliases": ["grape seed oil", "grapeseed oils"]
@@ -7262,7 +6646,7 @@
     {
       "name": "Sesame oil",
       "externalId": "FOOD00947",
-      "foodGroup": "Herbs and Spices",
+      "foodGroup": "Herbs and spices",
       "foodSubGroup": "Oilseed crops",
       "displayName": "Sesame oil",
       "aliases": ["sesame oils", "toasted sesame oil"]

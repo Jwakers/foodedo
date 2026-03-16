@@ -14,23 +14,18 @@ export const INGREDIENT_FOOD_GROUPS = [
   "Cereals and cereal products",
   "Cocoa and cocoa products",
   "Coffee and coffee products",
-  "Confectioneries",
   "Dishes",
   "Eggs",
   "Fats and oils",
   "Fruits",
   "Gourds",
-  "Herbs and Spices",
   "Herbs and spices",
   "Milk and milk products",
   "Nuts",
   "Pulses",
-  "Snack foods",
   "Soy",
   "Teas",
-  "Unclassified",
   "Vegetables",
 ] as const;
 
 export type IngredientFoodGroup = (typeof INGREDIENT_FOOD_GROUPS)[number];
-

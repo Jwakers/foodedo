@@ -64,7 +64,7 @@ export const INGREDIENT_FOOD_SUB_GROUPS = [
   "Herb and spice mixtures",
   "Herbal teas",
   "Herbs",
-  "Herbs and Spices",
+  "Herbs and spices",
   "Jewish cuisine",
   "Lagomorphs",
   "Latin American cuisine",
@@ -130,4 +130,5 @@ export const INGREDIENT_FOOD_SUB_GROUPS = [
   "Wrappers",
 ] as const;
 
-export type IngredientFoodSubGroup = (typeof INGREDIENT_FOOD_SUB_GROUPS)[number];
+export type IngredientFoodSubGroup =
+  (typeof INGREDIENT_FOOD_SUB_GROUPS)[number];

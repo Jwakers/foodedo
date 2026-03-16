@@ -62,7 +62,7 @@ export const INGREDIENT_FOOD_SUB_GROUPS = [
   "Herb and spice mixtures",
   "Herbal teas",
   "Herbs",
-  "Herbs and Spices",
+  "Herbs and spices",
   "Jewish cuisine",
   "Lagomorphs",
   "Latin American cuisine",

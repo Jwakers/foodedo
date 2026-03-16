@@ -31,10 +31,16 @@ function singularizeLastWord(phrase: string): string {
 
 /**
  * Resolve a free-text name to a canonical ingredient id using a pre-fetched list.
- * Matches by normalised name first, then by any alias. When multiple ingredients
- * share an alias (e.g. "carrots"), prefers the one whose name is the singular
- * form of the input (e.g. "Carrot") so "carrots" resolves to Carrot not Wild carrot.
- * No DB calls. Use when you already have all ingredients (e.g. recipe create/update).
+ *
+ * Priority:
+ * 1. Match by normalised displayName first (highest priority).
+ * 2. Then match by normalised name.
+ * 3. Finally, match by any alias.
+ *
+ * When multiple ingredients share an alias (e.g. "carrots"), prefers the one whose
+ * name is the singular form of the input (e.g. "Carrot") so "carrots" resolves to
+ * Carrot not Wild carrot. No DB calls. Use when you already have all ingredients
+ * (e.g. recipe create/update).
  */
 export function resolveIngredientIdFromList(
   ingredients: Doc<"ingredients">[],
@@ -43,6 +49,26 @@ export function resolveIngredientIdFromList(
   const normalised = normaliseIngredientName(name);
   if (!normalised) return null;
 
+  // 1) Prefer displayName matches
+  const byDisplayNameMatches = ingredients.filter((ing) => {
+    if (!ing.displayName) return false;
+    return normaliseIngredientName(ing.displayName) === normalised;
+  });
+  if (byDisplayNameMatches.length === 1) {
+    return byDisplayNameMatches[0]!._id;
+  }
+  if (byDisplayNameMatches.length > 1) {
+    const singularInput = singularizeLastWord(normalised);
+    const byDisplayOwner = byDisplayNameMatches.find((ing) => {
+      const dn = normaliseIngredientName(ing.displayName ?? "");
+      const n = normaliseIngredientName(ing.name);
+      return dn === singularInput || dn === normalised || n === singularInput;
+    });
+    if (byDisplayOwner) return byDisplayOwner._id;
+    return byDisplayNameMatches[0]!._id;
+  }
+
+  // 2) Then match by canonical name
   const byName = ingredients.find(
     (ing) => normaliseIngredientName(ing.name) === normalised
   );

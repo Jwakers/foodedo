@@ -611,6 +611,7 @@ export const seedIngredients = internalMutation({
           .filter((q) => q.eq(q.field("name"), item.name))
           .first();
       }
+
       const doc = {
         name: item.name,
         foodGroup: item.foodGroup,
@@ -639,6 +640,9 @@ export const seedIngredients = internalMutation({
  * ingredients table (names + aliases). Always overwrites: each ingredient's
  * ingredientId is set to the resolved value or undefined (never left as-is).
  * Run repeatedly as ingredients/aliases change.
+ *
+ * Prerequisite: run seedIngredients first so the ingredients table is
+ * populated from convex/ingredients-seed.json (same deployment as this backfill).
  *
  * Run: npx convex run migrations:backfillRecipeIngredientIds
  */
@@ -681,7 +685,11 @@ export const backfillRecipeIngredientIds = internalMutation({
       }
     }
 
-    return { updated, totalRecipes: recipes.length };
+    return {
+      updated,
+      totalRecipes: recipes.length,
+      ingredientsTableCount: allIngredients.length,
+    };
   },
 });
 
@@ -727,6 +735,83 @@ export const clearRecipeIngredientIds = internalMutation({
 });
 
 /**
+ * Report: list all recipe ingredients and their associated canonical ingredient
+ * (if any). Intended for manual review of ingredient mappings.
+ *
+ * Run (prints JSON to stdout; redirect to a file if desired):
+ *   npx convex run migrations:getRecipeIngredientAssociations
+ *   npx convex run migrations:getRecipeIngredientAssociations > docs/ingredient-associations.json
+ */
+export const getRecipeIngredientAssociations = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db.query("recipes").collect();
+
+    const ingredientIdSet = new Set<Id<"ingredients">>();
+    for (const recipe of recipes) {
+      for (const ing of recipe.ingredients ?? []) {
+        if (ing.ingredientId) {
+          ingredientIdSet.add(ing.ingredientId);
+        }
+      }
+    }
+
+    const ingredientDocs: Record<string, Doc<"ingredients">> = {};
+    for (const id of ingredientIdSet) {
+      const doc = await ctx.db.get(id);
+      if (doc) {
+        ingredientDocs[id] = doc;
+      }
+    }
+
+    const withReference: {
+      recipeId: Id<"recipes">;
+      recipeTitle: string;
+      ingredientIndex: number;
+      ingredientName: string;
+      ingredientId: Id<"ingredients">;
+      canonicalName: string | null;
+      canonicalDisplayName: string | null;
+    }[] = [];
+
+    const withoutReference: {
+      recipeId: Id<"recipes">;
+      recipeTitle: string;
+      ingredientIndex: number;
+      ingredientName: string;
+    }[] = [];
+
+    for (const recipe of recipes) {
+      const ingredients = recipe.ingredients ?? [];
+      ingredients.forEach((ing, index) => {
+        const id = ing.ingredientId ?? null;
+        if (!id) {
+          withoutReference.push({
+            recipeId: recipe._id,
+            recipeTitle: recipe.title ?? "",
+            ingredientIndex: index,
+            ingredientName: ing.name ?? "",
+          });
+          return;
+        }
+        const canonical = ingredientDocs[id];
+        withReference.push({
+          recipeId: recipe._id,
+          recipeTitle: recipe.title ?? "",
+          ingredientIndex: index,
+          ingredientName: ing.name ?? "",
+          ingredientId: id,
+          canonicalName: canonical?.name ?? null,
+          canonicalDisplayName: canonical?.displayName ?? null,
+        });
+      });
+    }
+
+    return { withReference, withoutReference };
+  },
+});
+
+/**
  * One-off: delete ingredient rows that are category labels (e.g. top-level
  * groups like "Fruits" or "Cereals and cereal products") that should not
  * exist as individual ingredients.
@@ -749,7 +834,7 @@ const INGREDIENT_CATEGORY_NAMES = new Set([
   "Fishes",
   "Fruits",
   "Green vegetables",
-  "Herbs and Spices",
+  "Herbs and spices",
   "Lentils",
   "Milk and milk products",
   "Mollusks",
@@ -766,7 +851,9 @@ export const deleteCategoryIngredients = internalMutation({
   args: {},
   handler: async (ctx) => {
     const all = await ctx.db.query("ingredients").collect();
-    const toDelete = all.filter((ing) => INGREDIENT_CATEGORY_NAMES.has(ing.name));
+    const toDelete = all.filter((ing) =>
+      INGREDIENT_CATEGORY_NAMES.has(ing.name),
+    );
     for (const doc of toDelete) {
       await ctx.db.delete(doc._id);
     }

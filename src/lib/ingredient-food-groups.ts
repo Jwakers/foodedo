@@ -20,7 +20,7 @@ export const INGREDIENT_FOOD_GROUPS = [
   "Fats and oils",
   "Fruits",
   "Gourds",
-  "Herbs and Spices",
+  "Herbs and spices",
   "Milk and milk products",
   "Nuts",
   "Pulses",
