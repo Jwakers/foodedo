@@ -1,7 +1,7 @@
 /**
  * Distinct ingredient food sub-groups currently present in the database / seed.
  *
- * Source: convex/ingredients-seed.json, docs/ingredients-seed-preview.json, docs/Food.json
+ * Source: convex/ingredients-seed.json and live ingredient data.
  * Keep in sync when new food sub-groups appear. Run:
  *   npx convex run ingredients:getDistinctFoodSubGroups
  * (after deploying) to verify against live data.

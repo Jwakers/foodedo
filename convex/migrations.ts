@@ -385,8 +385,8 @@ export const backfillMealPlanIsGenerated = internalMutation({
 });
 
 /**
- * Migration to remove the createdAt field from all mealPlans
- * Run this once to clean up existing data after schema change
+ * Migration to remove the createdAt field from all mealPlans.
+ * One-off cleanup after schema change; no longer related to ingredients.
  */
 export const removeMealPlanCreatedAtField = internalMutation({
   args: {},
@@ -581,9 +581,12 @@ type SeedItem = {
 
 /**
  * Seed ingredients table from convex/ingredients-seed.json. Upserts by externalId.
- * Regenerate the seed file with: pnpm run ingredients-seed-preview
- * Then run: npx convex run migrations:seedIngredients
- * Uses whatever deployment is active (dev by default); run with npx convex dev first for local/dev.
+ * This reads the existing, manually curated seed file without regenerating it.
+ *
+ * Run: npx convex run migrations:seedIngredients
+ *
+ * Uses whatever deployment is active (dev by default); run with npx convex dev
+ * first for local/dev so changes apply to the correct environment.
  */
 export const seedIngredients = internalMutation({
   args: {},
@@ -683,8 +686,53 @@ export const backfillRecipeIngredientIds = internalMutation({
 });
 
 /**
- * One-off: delete ingredient rows that are category labels from Food.json (category=generic).
- * Run once after filtering generic rows in the seed loader: npx convex run migrations:deleteCategoryIngredients
+ * One-off: clear ingredientId on all recipe ingredients.
+ *
+ * Useful when reseeding the ingredients table such that IDs may change:
+ * - Run seedIngredients to upsert the new ingredient catalog.
+ * - Run clearRecipeIngredientIds to remove all existing ingredientId links.
+ * - Run backfillRecipeIngredientIds to re-resolve ingredientId for each recipe.
+ *
+ * Run:
+ *   npx convex run migrations:clearRecipeIngredientIds
+ */
+export const clearRecipeIngredientIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db.query("recipes").collect();
+    let updated = 0;
+
+    for (const recipe of recipes) {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+      const nextIngredients = recipe.ingredients.map((ing) => {
+        if (ing.ingredientId === undefined) return ing;
+        const { ingredientId, ...rest } = ing;
+        return { ...rest, ingredientId: undefined };
+      });
+
+      const changed = nextIngredients.some(
+        (n, i) =>
+          (recipe.ingredients![i]?.ingredientId ?? undefined) !==
+          (n.ingredientId ?? undefined),
+      );
+      if (!changed) continue;
+
+      await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+      updated++;
+    }
+
+    return { updated, totalRecipes: recipes.length };
+  },
+});
+
+/**
+ * One-off: delete ingredient rows that are category labels (e.g. top-level
+ * groups like "Fruits" or "Cereals and cereal products") that should not
+ * exist as individual ingredients.
+ *
+ * Run once if these labels were imported into the ingredients table:
+ *   npx convex run migrations:deleteCategoryIngredients
  */
 const INGREDIENT_CATEGORY_NAMES = new Set([
   "Alcoholic beverages",
