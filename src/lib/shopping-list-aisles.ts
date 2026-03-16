@@ -59,7 +59,7 @@ const FOOD_GROUP_TO_AISLE: Partial<Record<LowercaseFoodGroup, AisleCategory>> =
     "baking goods": "Bakery & Grains",
 
     // Herbs & Spices
-    "Herbs and spices": "Herbs & Spices",
+    "herbs and spices": "Herbs & Spices",
 
     // Pantry
     "fats and oils": "Pantry",
