@@ -9,27 +9,6 @@ export function normaliseIngredientName(name: string): string {
 }
 
 /**
- * Simple singularise of the last word (e.g. "carrots" -> "carrot") for alias-owner preference.
- * Handles common English plural patterns so "carrots" prefers ingredient "Carrot" over "Wild carrot".
- */
-function singularizeLastWord(phrase: string): string {
-  const trimmed = phrase.trim();
-  const lastSpace = trimmed.lastIndexOf(" ");
-  const lastWord = lastSpace === -1 ? trimmed : trimmed.slice(lastSpace + 1);
-  const rest = lastSpace === -1 ? "" : trimmed.slice(0, lastSpace + 1);
-  if (!lastWord) return phrase;
-  let singular = lastWord;
-  if (lastWord.endsWith("ies") && lastWord.length > 4) {
-    singular = lastWord.slice(0, -3) + "y";
-  } else if (lastWord.endsWith("es") && lastWord.length > 3) {
-    singular = lastWord.slice(0, -2);
-  } else if (lastWord.endsWith("s") && lastWord.length > 1 && !lastWord.endsWith("ss")) {
-    singular = lastWord.slice(0, -1);
-  }
-  return rest + singular;
-}
-
-/**
  * Resolve a free-text name to a canonical ingredient id using a pre-fetched list.
  *
  * Priority:
@@ -37,10 +16,8 @@ function singularizeLastWord(phrase: string): string {
  * 2. Then match by normalised name.
  * 3. Finally, match by any alias.
  *
- * When multiple ingredients share an alias (e.g. "carrots"), prefers the one whose
- * name is the singular form of the input (e.g. "Carrot") so "carrots" resolves to
- * Carrot not Wild carrot. No DB calls. Use when you already have all ingredients
- * (e.g. recipe create/update).
+ * When multiple ingredients match on displayName or alias, the first match is used.
+ * No DB calls. Use when you already have all ingredients (e.g. recipe create/update).
  */
 export function resolveIngredientIdFromList(
   ingredients: Doc<"ingredients">[],
@@ -58,13 +35,6 @@ export function resolveIngredientIdFromList(
     return byDisplayNameMatches[0]!._id;
   }
   if (byDisplayNameMatches.length > 1) {
-    const singularInput = singularizeLastWord(normalised);
-    const byDisplayOwner = byDisplayNameMatches.find((ing) => {
-      const dn = normaliseIngredientName(ing.displayName ?? "");
-      const n = normaliseIngredientName(ing.name);
-      return dn === singularInput || dn === normalised || n === singularInput;
-    });
-    if (byDisplayOwner) return byDisplayOwner._id;
     return byDisplayNameMatches[0]!._id;
   }
 
@@ -79,13 +49,7 @@ export function resolveIngredientIdFromList(
   );
   if (byAliasMatches.length === 0) return null;
   if (byAliasMatches.length === 1) return byAliasMatches[0]!._id;
-
-  const singularInput = singularizeLastWord(normalised);
-  const owner = byAliasMatches.find((ing) => {
-    const n = normaliseIngredientName(ing.name);
-    return n === singularInput || n === normalised;
-  });
-  return (owner ?? byAliasMatches[0])!._id;
+  return byAliasMatches[0]!._id;
 }
 
 /**

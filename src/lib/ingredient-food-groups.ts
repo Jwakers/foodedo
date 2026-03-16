@@ -27,7 +27,6 @@ export const INGREDIENT_FOOD_GROUPS = [
   "Snack foods",
   "Soy",
   "Teas",
-  "Unclassified",
   "Vegetables",
 ] as const;
 

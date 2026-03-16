@@ -73,10 +73,6 @@ const FOOD_GROUP_TO_AISLE: Partial<Record<LowercaseFoodGroup, AisleCategory>> =
     "baby foods": "Pantry",
     beverages: "Pantry",
     "snack foods": "Pantry",
-
-    // Other
-    dishes: "Other",
-    unclassified: "Other",
   };
 
 /**
