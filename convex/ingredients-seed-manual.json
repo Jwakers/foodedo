@@ -248,6 +248,58 @@
         "ground lamb",
         "lamb mince"
       ]
+    },
+    {
+      "name": "Ground cumin",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground cumin",
+      "aliases": [
+        "ground cumin",
+        "cumin powder"
+      ]
+    },
+    {
+      "name": "Ground turmeric",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground turmeric",
+      "aliases": [
+        "ground turmeric",
+        "turmeric powder"
+      ]
+    },
+    {
+      "name": "Ground nutmeg",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground nutmeg",
+      "aliases": [
+        "ground nutmeg",
+        "nutmeg powder"
+      ]
+    },
+    {
+      "name": "Ground allspice",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground allspice",
+      "aliases": [
+        "ground allspice",
+        "allspice powder"
+      ]
+    },
+    {
+      "name": "Ground black pepper",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground black pepper",
+      "aliases": [
+        "ground pepper",
+        "ground black pepper",
+        "freshly ground black pepper",
+        "freshly ground pepper"
+      ]
     }
   ]
 }

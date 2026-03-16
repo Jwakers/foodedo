@@ -217,6 +217,7 @@ export default function ShoppingListClient() {
           preparation: item.preparation,
           ingredientId: item.ingredientId,
           amountEntries: item.amountEntries,
+          ...(item.recipeIds?.length ? { recipeIds: item.recipeIds } : {}),
         })),
         chalkboardItemIds: Array.from(selectedChalkboardItems),
       });
@@ -884,6 +885,7 @@ const buildShoppingListItems = (
   amount: number | string | null;
   ingredientId?: Id<"ingredients">;
   amountEntries: AmountEntry[];
+  recipeIds: Id<"recipes">[];
 }> => {
   const combined = new Map<
     string,
@@ -894,6 +896,7 @@ const buildShoppingListItems = (
       amount: number | string | null;
       ingredientId?: Id<"ingredients">;
       amountEntries: AmountEntry[];
+      recipeIds: Set<Id<"recipes">>;
     }
   >();
 
@@ -932,9 +935,11 @@ const buildShoppingListItems = (
           amount: storedAmount,
           ingredientId: ingredient.ingredientId,
           amountEntries: hasAmount || hasUnit ? [entry] : [],
+          recipeIds: new Set([recipe._id]),
         });
         return;
       }
+      existing.recipeIds.add(recipe._id);
       if (hasAmount || hasUnit) {
         const result = combineAmounts(
           existing.amount,
@@ -963,8 +968,12 @@ const buildShoppingListItems = (
   return Array.from(combined.values())
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((item) => ({
-      ...item,
+      name: item.name,
       amount: item.amount,
       unit: item.unit,
+      preparation: item.preparation,
+      ingredientId: item.ingredientId,
+      amountEntries: item.amountEntries,
+      recipeIds: Array.from(item.recipeIds),
     }));
 };

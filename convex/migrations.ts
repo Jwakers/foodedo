@@ -633,8 +633,9 @@ export const seedIngredients = internalMutation({
 
 /**
  * Backfill ingredientId on existing recipe ingredients using the current
- * ingredients table (names + aliases). Uses a single query (Convex allows only
- * one paginated query per function, so we use collect()).
+ * ingredients table (names + aliases). Always overwrites: each ingredient's
+ * ingredientId is set to the resolved value or undefined (never left as-is).
+ * Run repeatedly as ingredients/aliases change.
  *
  * Run: npx convex run migrations:backfillRecipeIngredientIds
  */
@@ -649,9 +650,10 @@ export const backfillRecipeIngredientIds = internalMutation({
     for (const recipe of recipes) {
       if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
 
-      let changed = false;
       const nextIngredients = recipe.ingredients.map((ing) => {
-        if (ing.ingredientId || !ing.name) return ing;
+        if (!ing.name) {
+          return { ...ing, ingredientId: undefined };
+        }
         const key = normaliseIngredientName(ing.name);
         let resolved: Id<"ingredients"> | undefined =
           ingredientIdCache.get(key);
@@ -662,13 +664,14 @@ export const backfillRecipeIngredientIds = internalMutation({
             resolved = found;
           }
         }
-        if (resolved !== undefined) {
-          changed = true;
-          return { ...ing, ingredientId: resolved };
-        }
-        return ing;
+        return { ...ing, ingredientId: resolved };
       });
 
+      const changed = nextIngredients.some(
+        (n, i) =>
+          (recipe.ingredients![i]?.ingredientId ?? undefined) !==
+          (n.ingredientId ?? undefined),
+      );
       if (changed) {
         await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
         updated++;

@@ -64,7 +64,10 @@ function getAggregationKey(ing: RecipeIngredient): string {
 }
 
 function aggregateIngredientsFromRecipes(
-  recipes: { ingredients?: Doc<"recipes">["ingredients"] }[]
+  recipes: {
+    _id: Id<"recipes">;
+    ingredients?: Doc<"recipes">["ingredients"];
+  }[]
 ): {
   name: string;
   amount: number | string | null;
@@ -72,6 +75,7 @@ function aggregateIngredientsFromRecipes(
   preparation?: string;
   ingredientId?: Id<"ingredients">;
   amountEntries: Array<{ amount: number | string | null; unit?: string }>;
+  recipeIds: Id<"recipes">[];
 }[] {
   const combined = new Map<
     string,
@@ -82,6 +86,7 @@ function aggregateIngredientsFromRecipes(
       amount: number | string | null;
       ingredientId?: Id<"ingredients">;
       amountEntries: Array<{ amount: number | string | null; unit?: string }>;
+      recipeIds: Set<Id<"recipes">>;
     }
   >();
 
@@ -111,6 +116,7 @@ function aggregateIngredientsFromRecipes(
       const entry = { amount: storedAmount, unit: ingredient.unit };
       const existing = combined.get(key);
       if (!existing) {
+        const recipeIds = new Set<Id<"recipes">>([recipe._id]);
         combined.set(key, {
           name: ingredient.name,
           unit: ingredient.unit,
@@ -118,9 +124,11 @@ function aggregateIngredientsFromRecipes(
           amount: storedAmount,
           ingredientId: ingredient.ingredientId,
           amountEntries: [entry],
+          recipeIds,
         });
         continue;
       }
+      existing.recipeIds.add(recipe._id);
       existing.amountEntries.push(entry);
       const entries = existing.amountEntries;
       const aggregated = entries.slice(1).reduce<{
@@ -138,9 +146,13 @@ function aggregateIngredientsFromRecipes(
   return Array.from(combined.values())
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((item) => ({
-      ...item,
+      name: item.name,
       amount: item.amount,
       unit: item.unit,
+      preparation: item.preparation,
+      ingredientId: item.ingredientId,
+      amountEntries: item.amountEntries,
+      recipeIds: Array.from(item.recipeIds),
     }));
 }
 
@@ -367,6 +379,7 @@ export const createShoppingList = mutation({
         preparation: v.optional(v.string()),
         ingredientId: v.optional(v.id("ingredients")),
         amountEntries: v.optional(v.array(amountEntryValidator)),
+        recipeIds: v.optional(v.array(v.id("recipes"))),
       })
     ),
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
@@ -419,6 +432,7 @@ export const createShoppingList = mutation({
           order: i,
           ingredientId: item.ingredientId,
           amountEntries: entries,
+          ...(item.recipeIds != null && item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
         });
       })
     );
@@ -498,6 +512,7 @@ export const createShoppingListFromMealPlan = mutation({
           order: i,
           ingredientId: item.ingredientId,
           amountEntries: entries,
+          recipeIds: item.recipeIds,
         });
       })
     );
@@ -528,6 +543,7 @@ export const updateItems = mutation({
             })
           )
         ),
+        recipeIds: v.optional(v.array(v.id("recipes"))),
       })
     ),
   },
@@ -583,6 +599,7 @@ export const updateItems = mutation({
             order: i,
             ingredientId: item.ingredientId,
             ...(amountEntries !== undefined && { amountEntries }),
+            ...(item.recipeIds !== undefined && { recipeIds: item.recipeIds }),
           });
         } else {
           // Create new item
@@ -596,6 +613,8 @@ export const updateItems = mutation({
             order: i,
             ingredientId: item.ingredientId,
             ...(amountEntries !== undefined && { amountEntries }),
+            ...(item.recipeIds != null &&
+              item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
           });
         }
       })

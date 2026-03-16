@@ -31,7 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="w-full min-w-0">{children}</main>
         <div className="sticky pointer-events-none bottom-0 z-10 flex flex-col gap-2 items-start">
           <CannyFeedbackButton />
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto w-full">
             <Navbar />
           </div>
         </div>

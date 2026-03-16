@@ -25,11 +25,20 @@ export type AisleCategory = (typeof AISLE_ORDER)[number];
 type LowercaseFoodGroup = Lowercase<IngredientFoodGroup>;
 
 /**
+ * Aquatic food sub-groups that are plant-based (e.g. seaweed). These are mapped
+ * to Vegetables (or Herbs & Spices) instead of Protein.
+ */
+const AQUATIC_PLANT_SUB_GROUPS = new Set([
+  "seaweed", // kombu, kelp, nori, etc.
+]);
+
+/**
  * Maps ingredient foodGroup (lowercased) to broad aisle categories.
  * Keys must be lowercase IngredientFoodGroup; unmapped groups fall back to "Other".
+ * Note: "aquatic foods" is overridden by sub-group for plant-based aquatic (e.g. seaweed).
  */
 const FOOD_GROUP_TO_AISLE: Partial<Record<LowercaseFoodGroup, AisleCategory>> = {
-  // Protein
+  // Protein (animal aquatic only; plant aquatic handled in getAisleForFoodGroupAndSubGroup)
   "animal foods": "Protein",
   "aquatic foods": "Protein",
   eggs: "Protein",
@@ -77,4 +86,20 @@ export function getAisleForFoodGroup(foodGroup: string | undefined): AisleCatego
   if (!foodGroup?.trim()) return "Other";
   const key = foodGroup.trim().toLowerCase() as LowercaseFoodGroup;
   return FOOD_GROUP_TO_AISLE[key] ?? "Other";
+}
+
+/**
+ * Returns the aisle category using both food group and sub-group.
+ * Aquatic plant products (e.g. seaweed, kombu) are mapped to Vegetables instead of Protein.
+ */
+export function getAisleForFoodGroupAndSubGroup(
+  foodGroup: string | undefined,
+  foodSubGroup: string | undefined,
+): AisleCategory {
+  const groupKey = foodGroup?.trim().toLowerCase();
+  const subKey = foodSubGroup?.trim().toLowerCase();
+  if (groupKey === "aquatic foods" && subKey && AQUATIC_PLANT_SUB_GROUPS.has(subKey)) {
+    return "Vegetables";
+  }
+  return getAisleForFoodGroup(foodGroup);
 }

@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -15,7 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import useShare from "@/lib/hooks/use-share";
-import { AISLE_ORDER, getAisleForFoodGroup } from "@/lib/shopping-list-aisles";
+import {
+  AISLE_ORDER,
+  getAisleForFoodGroupAndSubGroup,
+} from "@/lib/shopping-list-aisles";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -80,12 +83,16 @@ export default function ShoppingList({
       shoppingList.items
         .map((i) => i.ingredientId)
         .filter((id): id is Id<"ingredients"> => id != null),
-    [shoppingList.items]
+    [shoppingList.items],
   );
   const ingredientsMap = useQuery(
     api.ingredients.getByIds,
-    ingredientIds.length > 0 ? { ids: ingredientIds } : "skip"
+    ingredientIds.length > 0 ? { ids: ingredientIds } : "skip",
   );
+  const isDev =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_SHOW_RECIPE_LINKS === "true";
+  /** Canonical name from ingredients table when resolved; otherwise original from recipe. */
   const getDisplayName = (item: (typeof shoppingList.items)[number]) => {
     if (item.ingredientId && ingredientsMap?.[item.ingredientId]) {
       const ing = ingredientsMap[item.ingredientId];
@@ -93,18 +100,14 @@ export default function ShoppingList({
     }
     return item.name;
   };
-  const getAliasesHint = (item: (typeof shoppingList.items)[number]) => {
-    if (!item.ingredientId || !ingredientsMap?.[item.ingredientId]?.aliases?.length)
-      return null;
-    const aliases = ingredientsMap[item.ingredientId].aliases?.slice(0, 3) ?? [];
-    return aliases.length > 0 ? aliases.join(", ") : null;
-  };
+  /** Original ingredient name from the recipe (for dev-mode brackets). */
+  const getOriginalRecipeName = (item: (typeof shoppingList.items)[number]) =>
+    item.name;
   const getCategory = (item: (typeof shoppingList.items)[number]) => {
-    const foodGroup =
-      item.ingredientId && ingredientsMap?.[item.ingredientId]?.foodGroup
-        ? ingredientsMap[item.ingredientId].foodGroup!
-        : undefined;
-    return getAisleForFoodGroup(foodGroup);
+    const ing = item.ingredientId ? ingredientsMap?.[item.ingredientId] : undefined;
+    const foodGroup = ing?.foodGroup ?? undefined;
+    const foodSubGroup = ing?.foodSubGroup ?? undefined;
+    return getAisleForFoodGroupAndSubGroup(foodGroup, foodSubGroup);
   };
   const getAmountLines = (item: (typeof shoppingList.items)[number]) => {
     const entries =
@@ -123,9 +126,11 @@ export default function ShoppingList({
   const allIngredients = useMemo(
     () =>
       [...shoppingList.items].sort((a, b) =>
-        getDisplayName(a).localeCompare(getDisplayName(b), undefined, { sensitivity: "base" })
+        getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
+          sensitivity: "base",
+        }),
       ),
-    [shoppingList.items, ingredientsMap]
+    [shoppingList.items, ingredientsMap],
   );
   const ingredientsByCategory = useMemo(() => {
     const groups = new Map<string, (typeof shoppingList.items)[number][]>();
@@ -141,7 +146,10 @@ export default function ShoppingList({
     const sortedCategories = [...groups.keys()].sort(
       (a, b) => orderIdx(a) - orderIdx(b),
     );
-    return sortedCategories.map((cat) => ({ category: cat, items: groups.get(cat)! }));
+    return sortedCategories.map((cat) => ({
+      category: cat,
+      items: groups.get(cat)!,
+    }));
   }, [allIngredients, ingredientsMap]);
 
   // Get chalkboard data
@@ -323,9 +331,13 @@ export default function ShoppingList({
       ...items.map((item) => {
         const checked = item.checked ? "✓ " : "";
         const amtLines = getAmountLines(item);
-        const amtStr =
-          amtLines.length > 0 ? amtLines.join(", ") + " " : "";
-        return `${checked}• ${amtStr}${getDisplayName(item)}`;
+        const amtStr = amtLines.length > 0 ? amtLines.join(", ") + " " : "";
+        const showOriginalInDev =
+          isDev && item.ingredientId && ingredientsMap?.[item.ingredientId];
+        const nameStr =
+          getDisplayName(item) +
+          (showOriginalInDev ? ` (${getOriginalRecipeName(item)})` : "");
+        return `${checked}• ${amtStr}${nameStr}`;
       }),
       "",
     ]);
@@ -369,6 +381,14 @@ export default function ShoppingList({
                       <div className="flex-1">
                         <span className={cn(item.checked && "line-through")}>
                           {getDisplayName(item)}
+                          {isDev &&
+                            item.ingredientId &&
+                            ingredientsMap?.[item.ingredientId] && (
+                              <>
+                                {" "}
+                                ({getOriginalRecipeName(item)})
+                              </>
+                            )}
                         </span>
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
@@ -496,146 +516,151 @@ export default function ShoppingList({
                   </h4>
                   <div className="space-y-2">
                     {items.map((item) => (
-                  <div
-                    key={item._id}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                      isFinalised && item.checked
-                        ? "bg-muted/50 opacity-60"
-                        : "hover:bg-muted/30 hover:border-primary/30",
-                    )}
-                  >
-                    {/* Checkbox (only in finalized state) */}
-                    {isFinalised && (
-                      <Checkbox
-                        checked={item.checked}
-                        onCheckedChange={() => handleCheckItem(item._id)}
-                        className="size-5"
-                      />
-                    )}
+                      <div
+                        key={item._id}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                          isFinalised && item.checked
+                            ? "bg-muted/50 opacity-60"
+                            : "hover:bg-muted/30 hover:border-primary/30",
+                        )}
+                      >
+                        {/* Checkbox (only in finalized state) */}
+                        {isFinalised && (
+                          <Checkbox
+                            checked={item.checked}
+                            onCheckedChange={() => handleCheckItem(item._id)}
+                            className="size-5"
+                          />
+                        )}
 
-                    {/* Item Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p
-                          className={cn(
-                            "font-medium capitalize",
-                            isFinalised && item.checked && "line-through",
-                          )}
-                        >
-                          {getDisplayName(item)}
-                        </p>
-                        {getAliasesHint(item) && (
-                          <p className="text-xs text-muted-foreground">
-                            e.g. {getAliasesHint(item)}
-                          </p>
+                        {/* Item Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <p
+                              className={cn(
+                                "font-medium capitalize",
+                                isFinalised && item.checked && "line-through",
+                              )}
+                            >
+                              {getDisplayName(item)}
+                              {isDev &&
+                                item.ingredientId &&
+                                ingredientsMap?.[item.ingredientId] && (
+                                  <span className="text-muted-foreground font-normal">
+                                    {" "}
+                                    ({getOriginalRecipeName(item)})
+                                  </span>
+                                )}
+                            </p>
+                          </div>
+
+                          {/* Amount Display/Controls */}
+                          {(() => {
+                            const entries =
+                              item.amountEntries &&
+                              item.amountEntries.length > 0
+                                ? item.amountEntries
+                                : [
+                                    {
+                                      amount: item.amount,
+                                      unit: item.unit,
+                                    },
+                                  ].filter(
+                                    (e) =>
+                                      e.amount != null ||
+                                      (e.unit != null && e.unit !== ""),
+                                  );
+                            if (entries.length === 0) return null;
+                            // Multiple uses: list each on its own line
+                            if (entries.length > 1) {
+                              return (
+                                <div className="space-y-0.5">
+                                  {entries.map((entry, i) => (
+                                    <p
+                                      key={i}
+                                      className="text-sm text-muted-foreground capitalize"
+                                    >
+                                      {entry.amount ?? ""} {entry.unit ?? ""}
+                                    </p>
+                                  ))}
+                                </div>
+                              );
+                            }
+                            // Single use: editable when draft + numeric
+                            const single = entries[0]!;
+                            if (isFinalised) {
+                              return (
+                                <p className="text-sm text-muted-foreground capitalize">
+                                  {single.amount ?? ""} {single.unit ?? ""}
+                                </p>
+                              );
+                            }
+                            const isNumeric =
+                              typeof single.amount === "number" &&
+                              !isNaN(single.amount);
+                            return (
+                              <div className="flex items-center gap-1.5">
+                                {isNumeric ? (
+                                  <>
+                                    <button
+                                      onClick={() =>
+                                        handleAmountChange(
+                                          item._id,
+                                          (single.amount as number) - 1,
+                                        )
+                                      }
+                                      className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
+                                      aria-label="Decrease amount"
+                                    >
+                                      <Minus className="size-3.5 text-muted-foreground" />
+                                    </button>
+                                    <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
+                                      {single.amount}
+                                    </span>
+                                    <button
+                                      onClick={() =>
+                                        handleAmountChange(
+                                          item._id,
+                                          (single.amount as number) + 1,
+                                        )
+                                      }
+                                      className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
+                                      aria-label="Increase amount"
+                                    >
+                                      <Plus className="size-3.5 text-muted-foreground" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">
+                                    {single.amount}
+                                  </span>
+                                )}
+                                {single.unit && (
+                                  <span className="text-sm text-muted-foreground ml-0.5">
+                                    {single.unit}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Remove Button (only in editing state) */}
+                        {!isFinalised && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleRemoveItem(item._id)}
+                          >
+                            <X className="size-4" />
+                            <span className="sr-only">
+                              Remove {getDisplayName(item)}
+                            </span>
+                          </Button>
                         )}
                       </div>
-
-                      {/* Amount Display/Controls */}
-                      {(() => {
-                        const entries =
-                          item.amountEntries && item.amountEntries.length > 0
-                            ? item.amountEntries
-                            : [
-                                {
-                                  amount: item.amount,
-                                  unit: item.unit,
-                                },
-                              ].filter(
-                                (e) =>
-                                  e.amount != null ||
-                                  (e.unit != null && e.unit !== ""),
-                              );
-                        if (entries.length === 0) return null;
-                        // Multiple uses: list each on its own line
-                        if (entries.length > 1) {
-                          return (
-                            <div className="space-y-0.5">
-                              {entries.map((entry, i) => (
-                                <p
-                                  key={i}
-                                  className="text-sm text-muted-foreground capitalize"
-                                >
-                                  {entry.amount ?? ""}{" "}
-                                  {entry.unit ?? ""}
-                                </p>
-                              ))}
-                            </div>
-                          );
-                        }
-                        // Single use: editable when draft + numeric
-                        const single = entries[0]!;
-                        if (isFinalised) {
-                          return (
-                            <p className="text-sm text-muted-foreground capitalize">
-                              {single.amount ?? ""} {single.unit ?? ""}
-                            </p>
-                          );
-                        }
-                        const isNumeric =
-                          typeof single.amount === "number" &&
-                          !isNaN(single.amount);
-                        return (
-                          <div className="flex items-center gap-1.5">
-                            {isNumeric ? (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    handleAmountChange(
-                                      item._id,
-                                      (single.amount as number) - 1,
-                                    )
-                                  }
-                                  className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
-                                  aria-label="Decrease amount"
-                                >
-                                  <Minus className="size-3.5 text-muted-foreground" />
-                                </button>
-                                <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
-                                  {single.amount}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    handleAmountChange(
-                                      item._id,
-                                      (single.amount as number) + 1,
-                                    )
-                                  }
-                                  className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
-                                  aria-label="Increase amount"
-                                >
-                                  <Plus className="size-3.5 text-muted-foreground" />
-                                </button>
-                              </>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">
-                                {single.amount}
-                              </span>
-                            )}
-                            {single.unit && (
-                              <span className="text-sm text-muted-foreground ml-0.5">
-                                {single.unit}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Remove Button (only in editing state) */}
-                    {!isFinalised && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleRemoveItem(item._id)}
-                      >
-                        <X className="size-4" />
-                        <span className="sr-only">Remove {getDisplayName(item)}</span>
-                      </Button>
-                    )}
-                  </div>
                     ))}
                   </div>
                 </div>

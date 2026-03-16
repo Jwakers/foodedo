@@ -45,6 +45,31 @@ async function resolveMethodImageUrls(
   );
 }
 
+/**
+ * Return { _id, title } for recipe IDs (for shopping list dev links). Only returns recipes the user can access.
+ */
+export const getRecipeTitles = query({
+  args: {
+    ids: v.array(v.id("recipes")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    const result: { _id: Id<"recipes">; title: string }[] = [];
+    for (const id of args.ids) {
+      const recipe = await ctx.db.get(id);
+      if (!recipe) continue;
+      if (recipe.source === "system") {
+        result.push({ _id: id, title: recipe.title });
+        continue;
+      }
+      if (!user) continue;
+      const { canAccess } = await canAccessRecipe(ctx, user._id, id);
+      if (canAccess) result.push({ _id: id, title: recipe.title });
+    }
+    return result;
+  },
+});
+
 export const getRecipe = query({
   args: {
     recipeId: v.id("recipes"),

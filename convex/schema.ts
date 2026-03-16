@@ -239,6 +239,8 @@ export default defineSchema({
         }),
       ),
     ),
+    // Recipe IDs this line came from (for dev-mode "from" links)
+    recipeIds: v.optional(v.array(v.id("recipes"))),
   }).index("by_shopping_list", ["shoppingListId"]),
 
   mealPlans: defineTable({

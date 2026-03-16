@@ -24,7 +24,7 @@ type SeedItem = {
 /** Explicit aliases for ingredient names. Use [] for "no aliases". Add entries as needed. */
 const ALIAS_MAP: Record<string, string[]> = {
   Angelica: [],
-  "Savoy cabbage": ["cabbage", "cabbages", "savoy"],
+  "Savoy cabbage": ["savoy", "savoy cabbages"],
   "Silver linden": [],
   Kiwi: ["kiwis", "kiwi fruit"],
   Allium: [],
@@ -57,15 +57,10 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Brussel sprouts": ["brussels sprouts", "brussel sprout", "brussels"],
   Kohlrabi: ["kohlrabis"],
   Broccoli: ["broccolis", "broccoli florets"],
-  "Chinese cabbage": [
-    "cabbage",
-    "napa cabbage",
-    "bok choy",
-    "chinese cabbages",
-  ],
+  "Chinese cabbage": ["cabbage", "napa cabbage", "chinese cabbages"],
   Turnip: ["turnips"],
   "Pigeon pea": ["pigeon peas", "toor dal", "arhar dal"],
-  Tea: ["black tea", "green tea", "tea leaves"],
+  Tea: ["tea leaves"],
   Capers: ["caper", "caper berries"],
   Pepper: ["peppers", "bell pepper", "bell peppers", "sweet pepper"],
   Papaya: ["papayas", "pawpaw", "pawpaws"],
@@ -75,15 +70,10 @@ const ALIAS_MAP: Record<string, string[]> = {
   Chestnut: ["chestnuts"],
   "Roman camomile": ["roman chamomile", "chamomile"],
   Chickpea: ["chickpeas", "garbanzo", "garbanzo beans", "ceci"],
-  Endive: ["endives", "chicory"],
+  Endive: ["endives"],
   Chicory: ["chicory root", "chicories"],
-  "Chinese cinnamon": ["cassia", "cinnamon", "cassia cinnamon"],
-  "Ceylon cinnamon": [
-    "cinnamon",
-    "cinnamon stick",
-    "cinnamon sticks",
-    "true cinnamon",
-  ],
+  "Chinese cinnamon": ["cassia", "cassia bark", "cassia cinnamon"],
+  "Ceylon cinnamon": ["cinnamon", "true cinnamon"],
   Watermelon: ["watermelons"],
   Lime: ["limes", "lime juice", "key lime", "key limes"],
   Lemon: ["lemons", "lemon juice", "lemon zest"],
@@ -111,12 +101,12 @@ const ALIAS_MAP: Record<string, string[]> = {
   Muskmelon: ["cantaloupe", "cantaloupes", "muskmelons"],
   Cucumber: ["cucumbers", "cuke", "cukes"],
   Cucurbita: ["squash", "pumpkin"],
-  Cumin: ["cumin seed", "cumin seeds", "ground cumin"],
-  Turmeric: ["turmeric root", "ground turmeric", "fresh turmeric"],
+  Cumin: ["cumin seed", "cumin seeds"],
+  Turmeric: ["turmeric root", "fresh turmeric"],
   Quince: ["quinces"],
   "Lemon grass": ["lemongrass", "lemon grass", "citronella"],
   "Globe artichoke": ["artichoke", "artichokes", "globe artichokes"],
-  "Wild carrot": ["carrot", "carrots", "wild carrots"],
+  "Wild carrot": ["wild carrots"],
   "Japanese persimmon": ["persimmon", "persimmons", "kaki", "sharon fruit"],
   Cardamom: ["cardamom pod", "cardamom pods", "cardamon", "green cardamom"],
   "Black crowberry": ["crowberry", "crowberries"],
@@ -139,7 +129,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   Barley: ["pearl barley", "barley grain", "barley grains"],
   Hyssop: ["hyssop herb"],
   "Star anise": ["star anise seed", "star aniseeds", "badian"],
-  "Swamp cabbage": ["cabbage", "water spinach", "kangkong", "ong choy"],
+  "Swamp cabbage": ["water spinach", "kangkong", "ong choy"],
   "Sweet potato": ["sweet potatoes", "kumara", "yam", "yams"],
   "Black walnut": ["black walnuts", "walnut", "walnuts"],
   "Common walnut": ["walnut", "walnuts", "english walnut", "english walnuts"],
@@ -150,7 +140,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Garden cress": ["cress", "garden cress", "cresses"],
   Lovage: ["lovage leaves", "fresh lovage"],
   Flaxseed: ["flax seed", "flax seeds", "linseed", "linseeds"],
-  "Mexican oregano": ["oregano", "mexican oregano"],
+  "Mexican oregano": ["mexican oregano"],
   Lichee: ["lychee", "lychees", "litchi", "litchis"],
   Lupine: ["lupin", "lupins", "lupini"],
   Apple: ["apples"],
@@ -172,9 +162,9 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Bitter gourd": ["bitter melon", "bitter melons", "bitter gourds", "karela"],
   Mulberry: ["mulberries"],
   "Black mulberry": ["mulberries", "black mulberries"],
-  Nutmeg: ["nutmeg seed", "ground nutmeg", "whole nutmeg"],
-  "Sweet basil": ["basil", "fresh basil", "basil leaves", "thai basil"],
-  "Evening primrose": ["evening primrose oil"],
+  Nutmeg: ["nutmeg seed", "whole nutmeg"],
+  "Sweet basil": ["basil", "fresh basil", "basil leaves"],
+  "Evening primrose": [],
   Olive: ["olives", "green olive", "black olive", "olive fruit"],
   "Sweet marjoram": ["marjoram", "sweet marjoram", "fresh marjoram"],
   "Pot marjoram": ["marjoram", "pot marjoram"],
@@ -184,14 +174,10 @@ const ALIAS_MAP: Record<string, string[]> = {
     "fresh oregano",
     "dried oregano",
   ],
-  Rice: ["rice grain", "rice grains", "white rice", "brown rice"],
+  Rice: ["rice grain", "rice grains"],
   Millet: ["millets", "millet grain"],
   Poppy: ["poppy seed", "poppy seeds"],
-  "Passion fruit": [
-    "passion fruits",
-    "passionfruit",
-    "granadilla",
-  ],
+  "Passion fruit": ["passion fruits", "passionfruit", "granadilla"],
   Parsnip: ["parsnips"],
   Avocado: ["avocados", "avocado pear", "alligator pear"],
   Parsley: [
@@ -213,13 +199,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Black chokeberry": ["chokeberry", "chokeberries", "aronia", "aronias"],
   Anise: ["aniseed", "anise seed", "anise seeds"],
   "Pine nut": ["pine nuts", "pignoli", "pinoli"],
-  "Pepper (Spice)": [
-    "black pepper",
-    "peppercorn",
-    "peppercorns",
-    "ground pepper",
-    "freshly ground black pepper",
-  ],
+  "Pepper (Spice)": ["black pepper", "peppercorn", "peppercorns"],
   Pistachio: ["pistachios", "pistachio nut", "pistachio nuts"],
   "Common pea": [
     "pea",
@@ -262,7 +242,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Summer savory": ["savory", "summer savory", "fresh savory"],
   "Winter savory": ["savory", "winter savory"],
   Rye: ["rye grain", "rye bread"],
-  Sesame: ["sesame seeds", "sesame seed", "sesame oil"],
+  Sesame: ["sesame seeds", "sesame seed"],
   "Garden tomato": ["tomato", "tomatoes", "tomatoe", "fresh tomato"],
   "Cherry tomato": [
     "cherry tomatoes",
@@ -285,18 +265,14 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Small-leaf linden": ["linden", "lime blossom"],
   Fenugreek: ["fenugreek seed", "fenugreek seeds", "methi", "kasuri methi"],
   "Common wheat": ["wheat", "wheat grain", "wheat flour", "wheat berries"],
-  "Vaccinium (Blueberry, Cranberry, Huckleberry)": [
-    "blueberry",
-    "cranberry",
-    "huckleberry",
-  ],
+  "Vaccinium (Blueberry, Cranberry, Huckleberry)": [],
   "Lowbush blueberry": [
     "blueberry",
     "blueberries",
     "wild blueberry",
     "wild blueberries",
   ],
-  Sparkleberry: ["blueberry", "farkleberry"],
+  Sparkleberry: ["farkleberry"],
   "Highbush blueberry": ["blueberry", "blueberries"],
   "American cranberry": ["cranberry", "cranberries", "american cranberries"],
   Bilberry: ["bilberries", "european blueberry", "whortleberry"],
@@ -308,7 +284,7 @@ const ALIAS_MAP: Record<string, string[]> = {
     "vanilla pod",
     "vanilla pods",
   ],
-  "Common verbena": ["verbena", "lemon verbena"],
+  "Common verbena": ["verbena"],
   "Broad bean": [
     "broad beans",
     "fava bean",
@@ -339,7 +315,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   Grape: ["grapes"],
   Corn: ["sweetcorn", "sweet corn", "maize", "corn on the cob", "corn kernels"],
   "Arctic blackberry": ["blackberry", "blackberries"],
-  Banana: ["bananas", "plantain"],
+  Banana: ["bananas"],
   Bayberry: ["bayberries", "wax myrtle"],
   Celeriac: ["celery root", "celeriacs"],
   "Celery stalks": ["celery", "celery stalk", "celery sticks", "celery ribs"],
@@ -442,23 +418,18 @@ const ALIAS_MAP: Record<string, string[]> = {
   Chia: ["chia seeds", "chia seed"],
   Breadfruit: ["breadfruits"],
   Kale: ["kales", "curly kale", "kale leaves", "tuscan kale"],
-  Kelp: ["kelp seaweed", "seaweed", "kombu"],
+  Kelp: ["kelp seaweed", "kombu"],
   Kumquat: ["kumquats", "cumquat", "cumquats"],
   Okra: ["okras", "ladies fingers", "bamya", "bamia"],
   Quinoa: ["quinoa grain", "quinoa seeds", "quinua"],
-  Yam: ["yams", "sweet potato", "sweet potatoes"],
+  Yam: ["yams"],
   Jicama: ["jicamas", "mexican turnip", "mexican yam bean"],
   Ginger: ["ginger root", "fresh ginger", "root ginger"],
-  Cinnamon: [
-    "cinnamon stick",
-    "cinnamon sticks",
-    "ground cinnamon",
-    "ceylon cinnamon",
-  ],
+  Cinnamon: ["cinnamon stick", "cinnamon sticks"],
   Crab: ["crabs", "crab meat", "crabmeat"],
   Anchovy: ["anchovies", "anchovy fillet", "anchovy fillets"],
   Cheese: ["cheeses", "cheese slice", "cheese slices"],
-  "Milk (Cow)": ["milk", "cow milk", "dairy milk", "whole milk", "skim milk"],
+  "Milk (Cow)": ["milk", "cow milk", "dairy milk"],
   Eggs: [
     "egg",
     "eggs",
@@ -467,23 +438,11 @@ const ALIAS_MAP: Record<string, string[]> = {
     "chicken egg",
     "chicken eggs",
   ],
-  Yogurt: [
-    "yoghurt",
-    "yoghurts",
-    "yogurt",
-    "yoghurts",
-    "plain yogurt",
-    "greek yogurt",
-  ],
+  Yogurt: ["yoghurt", "yoghurts", "yogurt", "yogurts"],
   Honey: ["honey"],
-  Vinegar: [
-    "vinegars",
-    "white vinegar",
-    "apple cider vinegar",
-    "red wine vinegar",
-  ],
+  Vinegar: ["vinegars"],
   Salt: ["table salt", "sea salt", "kosher salt", "salt"],
-  Butter: ["butters", "unsalted butter", "salted butter"],
+  Butter: ["butters"],
   Cream: [
     "creams",
     "heavy cream",
@@ -491,13 +450,7 @@ const ALIAS_MAP: Record<string, string[]> = {
     "whipping cream",
     "single cream",
   ],
-  Sugar: [
-    "sugars",
-    "white sugar",
-    "granulated sugar",
-    "caster sugar",
-    "brown sugar",
-  ],
+  Sugar: ["sugars", "white sugar", "granulated sugar", "caster sugar"],
   Mustard: [
     "mustard seed",
     "mustard seeds",
@@ -510,7 +463,6 @@ const ALIAS_MAP: Record<string, string[]> = {
     "plain flour",
     "all-purpose flour",
     "all purpose flour",
-    "self-raising flour",
   ],
   "Olive oil": [
     "extra virgin olive oil",
@@ -518,22 +470,13 @@ const ALIAS_MAP: Record<string, string[]> = {
     "virgin olive oil",
     "olive oil",
   ],
-  "Soy sauce": ["soy sauces", "light soy sauce", "dark soy sauce", "tamari"],
-  Tofu: ["tofu block", "tofu blocks", "bean curd", "silken tofu", "firm tofu"],
-  Chocolate: [
-    "chocolate bar",
-    "chocolate bars",
-    "dark chocolate",
-    "milk chocolate",
-  ],
+  "Soy sauce": ["soy sauces", "tamari"],
+  Tofu: ["tofu block", "tofu blocks", "bean curd"],
+  Chocolate: ["chocolate bar", "chocolate bars"],
   Bread: ["bread loaf", "bread loaves", "sliced bread"],
   "Egg yolk": ["egg yolks", "yolk", "yolks"],
   "Almond milk": ["almond milks", "almond beverage"],
-  "Coconut milk": [
-    "coconut creams",
-    "canned coconut milk",
-    "tinned coconut milk",
-  ],
+  "Coconut milk": ["canned coconut milk", "tinned coconut milk"],
   "Salted butter": ["butter", "salted butters"],
   "Sunflower oil": ["sunflower oils", "sunflower cooking oil"],
   "Coconut oil": ["coconut oils", "virgin coconut oil"],
@@ -595,14 +538,7 @@ const ALIAS_MAP: Record<string, string[]> = {
     "bell pepper",
     "bell peppers",
   ],
-  "Jalapeno pepper": [
-    "jalapeño",
-    "jalapeños",
-    "jalapeno",
-    "jalapenos",
-    "green chilli",
-    "green chillies",
-  ],
+  "Jalapeno pepper": ["jalapeño", "jalapeños", "jalapeno", "jalapenos"],
   "Red grape": ["red grapes", "grape", "grapes"],
   "Green grape": [
     "green grapes",
@@ -612,12 +548,7 @@ const ALIAS_MAP: Record<string, string[]> = {
     "white grapes",
   ],
   "Iceberg lettuce": ["iceberg", "iceberg lettuces", "crisphead lettuce"],
-  "Romaine lettuce": [
-    "romaine",
-    "romaine lettuces",
-    "cos lettuce",
-    "cos lettuces",
-  ],
+  "Romaine lettuce": ["romaine", "romaine lettuces"],
   "Acorn squash": ["acorn squashes", "squash", "squashes"],
   Plantain: ["plantains", "cooking banana", "cooking bananas"],
   Clementine: ["clementines", "mandarin", "mandarins"],
@@ -666,13 +597,7 @@ const ALIAS_MAP: Record<string, string[]> = {
     "rock melon",
     "rock melons",
   ],
-  "Cape gooseberry": [
-    "gooseberry",
-    "gooseberries",
-    "physalis",
-    "golden berry",
-    "golden berries",
-  ],
+  "Cape gooseberry": ["physalis", "golden berry", "golden berries"],
   "Herbal tea": ["herb tea", "herb teas", "tisane", "tisanes", "infusion"],
   "White bread": [
     "white bread loaf",
@@ -700,7 +625,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Lamb shoulder": ["lamb shoulder", "shoulder of lamb"],
   "Minced beef": ["minced beef", "ground beef", "beef mince"],
   "Ground pork": ["ground pork", "minced pork", "pork mince"],
-  Allspice: ["allspice berries", "ground allspice", "jamaican pepper"],
+  Allspice: ["allspice berries", "jamaican pepper"],
   "Winter squash": ["squash", "squashes", "winter squashes", "pumpkin"],
   "Bamboo shoots": ["bamboo shoot", "bamboo shoots", "canned bamboo shoots"],
   "Atlantic cod": ["cod", "cod fillet", "cod fillets", "fresh cod"],
@@ -731,7 +656,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   Scallop: ["scallops", "sea scallop", "sea scallops", "scallop meat"],
   Squid: ["squids", "calamari", "squid rings"],
   "American lobster": ["lobster", "lobsters", "maine lobster", "lobster tail"],
-  Cassava: ["cassava root", "yuca", "manioc", "tapioca root"],
+  Cassava: ["cassava root", "yuca", "manioc"],
   Chayote: ["chayotes", "choko", "chokos", "mirliton", "christophene"],
   Jackfruit: ["jackfruits", "jack fruit", "young jackfruit", "green jackfruit"],
   Durian: ["durians", "durian fruit"],
@@ -772,46 +697,17 @@ const ALIAS_MAP: Record<string, string[]> = {
     "mutton meat",
   ],
   Clam: ["clams", "clam meat", "clamshell", "fresh clams"],
-  "Blue cheese": [
-    "blue cheeses",
-    "bleu cheese",
-    "roquefort",
-    "gorgonzola",
-    "stilton",
-  ],
-  "Sour cream": ["sour creams", "soured cream", "crème fraîche"],
+  "Blue cheese": ["blue cheeses", "bleu cheese"],
+  "Sour cream": ["sour creams", "soured cream"],
   "Cottage cheese": ["cottage cheeses", "curd cheese", "farmer cheese"],
   "Swiss cheese": ["swiss cheeses", "emmental", "emmentaler"],
   "Monterey Jack cheese": ["monterey jack", "jack cheese", "pepper jack"],
   "Milk (Human)": [],
   Wheat: ["wheat grain", "wheat berries", "wheat flour", "whole wheat"],
-  "Red wine": [
-    "red wines",
-    "red wine vinegar",
-    "cabernet",
-    "merlot",
-    "pinot noir",
-  ],
-  "White wine": [
-    "white wines",
-    "white wine vinegar",
-    "chardonnay",
-    "sauvignon blanc",
-  ],
-  "Black tea": [
-    "black teas",
-    "english breakfast",
-    "earl grey",
-    "tea",
-    "tea leaves",
-  ],
-  "Green tea": [
-    "green teas",
-    "green tea leaves",
-    "matcha",
-    "sencha",
-    "jasmine tea",
-  ],
+  "Red wine": ["red wines", "cabernet", "merlot", "pinot noir"],
+  "White wine": ["white wines", "chardonnay", "sauvignon blanc"],
+  "Black tea": ["black teas", "english breakfast", "tea", "tea leaves"],
+  "Green tea": ["green teas", "green tea leaves"],
   "linseed oil": ["linseed oil", "flaxseed oil", "flax oil"],
   Cabbage: ["cabbages", "green cabbage", "white cabbage", "head of cabbage"],
   Mushrooms: [
@@ -849,7 +745,7 @@ const ALIAS_MAP: Record<string, string[]> = {
   "Velvet duck": ["duck", "duck meat"],
   "European anchovy": ["anchovy", "anchovies"],
   "European rabbit": ["rabbit", "rabbit meat"],
-  "Deer": ["venison", "deer meat"],
+  Deer: ["venison", "deer meat"],
   "Mule deer": ["deer", "venison", "deer meat"],
   Rabbit: ["rabbit meat"],
   "Guinea hen": ["guinea fowl", "guinea"],
@@ -878,27 +774,27 @@ const ALIAS_MAP: Record<string, string[]> = {
   Cuttlefish: ["cuttlefish squid"],
   "Jerusalem artichoke": ["sunchoke", "sunchokes", "jerusalem artichokes"],
   "Butternut squash": ["butternut", "butternut squashes"],
-  "Elderberry": ["elderberries", "elder"],
-  "Loganberry": ["loganberries"],
-  "Salmonberry": ["salmonberries"],
-  "Groundcherry": ["ground cherries", "husk cherry"],
+  Elderberry: ["elderberries", "elder"],
+  Loganberry: ["loganberries"],
+  Salmonberry: ["salmonberries"],
+  Groundcherry: ["ground cherries", "husk cherry"],
   "Mexican groundcherry": ["tomatillo", "tomatillos", "ground cherry"],
   "Horned melon": ["kiwano", "african cucumber"],
-  Cherimoya: ["cherimoyas", "custard apple"],
+  Cherimoya: ["cherimoyas"],
   "Sugar apple": ["sweet sop", "custard apple"],
   "Breadnut tree seed": ["breadnut", "breadnuts"],
   "Ginkgo nuts": ["ginkgo", "ginkgo nut"],
-  "Hazelnut": ["hazelnuts", "filbert", "filberts"],
+  Hazelnut: ["hazelnuts", "filbert", "filberts"],
   "Japanese chestnut": ["chestnut", "chestnuts"],
   "European chestnut": ["chestnut", "chestnuts", "sweet chestnut"],
   "Chinese chestnut": ["chestnut", "chestnuts"],
   Carob: ["carob powder", "carob pods"],
-  "Cardoon": ["cardoons", "artichoke thistle"],
+  Cardoon: ["cardoons", "artichoke thistle"],
   Acerola: ["acerola cherry", "barbados cherry"],
   "Natal plum": ["natal plums", "num-num"],
   "Java plum": ["java plums", "jambul", "black plum"],
   Pitanga: ["surinam cherry", "brazilian cherry"],
-  "Lambsquarters": ["lamb's quarters", "goosefoot", "wild spinach"],
+  Lambsquarters: ["lamb's quarters", "goosefoot", "wild spinach"],
   "Irish moss": ["carrageenan moss", "sea moss"],
   Nopal: ["nopales", "prickly pear cactus", "cactus paddle"],
   "Prickly pear": ["prickly pears", "cactus fruit", "tuna fruit"],
@@ -975,16 +871,16 @@ function getAliases(item: SeedItem): string[] {
       aliases.push(`fresh ${name}`, `${name} leaves`);
     }
   }
-  if (foodSubGroup === "cabbages" || nameLower.includes("cabbage")) {
-    if (!aliases.some((a) => a.toLowerCase().includes("cabbage"))) {
-      aliases.push("cabbage", "cabbages");
-    }
+  // Do not add generic "cabbage"/"cabbages" – different cabbage types are distinct ingredients
+  if (foodSubGroup === "cabbages" && nameLower.includes("cabbage")) {
+    aliases.push(pluralize(name));
   }
+  // Do not add generic "onion"/"onions" – different alliums are distinct (e.g. leek, shallot)
   if (
     foodSubGroup === "onion-family vegetables" &&
     nameLower.includes("onion")
   ) {
-    aliases.push("onion", "onions");
+    aliases.push(pluralize(name));
   }
   if (foodSubGroup === "nuts" && nameLower.endsWith(" nut")) {
     const base = name.slice(0, -4).trim();
@@ -1029,7 +925,7 @@ function getAliases(item: SeedItem): string[] {
     aliases.push(pluralize(name));
   }
   if (foodSubGroup === "peas" && nameLower.includes("pea") && !aliases.length) {
-    aliases.push("pea", "peas");
+    aliases.push(pluralize(name));
   }
 
   const normal = nameLower.replace(/\s*\([^)]*\)\s*/g, "").trim();
@@ -1127,11 +1023,7 @@ function pluralizeWord(word: string): string {
     !/[-aeiou]$/i.test(word.slice(-2, -1))
   )
     return word.slice(0, -1) + "ies";
-  if (
-    /[osxz]$/.test(word) ||
-    word.endsWith("ch") ||
-    word.endsWith("sh")
-  )
+  if (/[osxz]$/.test(word) || word.endsWith("ch") || word.endsWith("sh"))
     return word + "es";
   return word + "s";
 }
