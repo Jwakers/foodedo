@@ -54,6 +54,8 @@ export default defineSchema({
     image: v.optional(v.string()),
     // this the Clerk ID, stored in the subject JWT field
     externalId: v.string(),
+    // Super user: only set via Convex dashboard / DB; no app mutation may update this
+    isSuperUser: v.optional(v.boolean()),
     subscriptionTier: v.optional(subscriptionTiersUnion),
     // Subscription tracking for failsafe sync
     subscriptionStatus: v.optional(v.string()), // active, canceled, etc.
@@ -78,8 +80,8 @@ export default defineSchema({
           amount: v.optional(v.number()),
           unit: v.optional(unitsUnion),
           preparation: v.optional(preparationUnion),
-        })
-      )
+        }),
+      ),
     ),
     method: v.optional(
       v.array(
@@ -87,8 +89,8 @@ export default defineSchema({
           title: v.string(),
           description: v.optional(v.string()),
           image: v.optional(v.id("_storage")),
-        })
-      )
+        }),
+      ),
     ),
     updatedAt: v.number(),
     // How the recipe was created (for publishing rights / attribution)
@@ -104,7 +106,7 @@ export default defineSchema({
         protein: v.optional(v.number()),
         fat: v.optional(v.number()),
         carbohydrates: v.optional(v.number()),
-      })
+      }),
     ),
     // Intelligent Weekly Generator metadata
     source: v.optional(recipeSourceUnion),
@@ -130,7 +132,7 @@ export default defineSchema({
     displayName: v.optional(v.string()),
     foodGroup: v.optional(ingredientFoodGroupUnion),
     foodSubGroup: v.optional(ingredientFoodSubGroupUnion),
-    isCustom: v.boolean(),
+    isCustom: v.optional(v.boolean()), //TO BE REMOVED AFTER MIGRATION
     externalId: v.optional(v.string()), // e.g. FOOD00001 for sync/upsert from seed
     aliases: v.optional(v.array(v.string())), // optional; for manual synonym lookup
   }).index("by_externalId", ["externalId"]),
@@ -158,7 +160,7 @@ export default defineSchema({
     status: v.union(
       v.literal("pending"),
       v.literal("accepted"),
-      v.literal("expired")
+      v.literal("expired"),
     ),
     token: v.string(),
     expiresAt: v.number(),
@@ -180,7 +182,11 @@ export default defineSchema({
   })
     .index("by_recipe_and_actor", ["recipeId", "actorType", "actorId"])
     .index("by_actor", ["actorType", "actorId"])
-    .index("by_actor_lastSuggestedAt", ["actorType", "actorId", "lastSuggestedAt"]),
+    .index("by_actor_lastSuggestedAt", [
+      "actorType",
+      "actorId",
+      "lastSuggestedAt",
+    ]),
 
   householdRecipes: defineTable({
     householdId: v.id("households"),
@@ -206,7 +212,7 @@ export default defineSchema({
     status: v.union(
       v.literal("draft"),
       v.literal("active"),
-      v.literal("completed")
+      v.literal("completed"),
     ),
     finalisedAt: v.optional(v.number()),
     completedAt: v.optional(v.number()),

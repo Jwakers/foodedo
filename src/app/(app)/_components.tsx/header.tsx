@@ -35,6 +35,7 @@ import {
   MessageCircleQuestionMark,
   MessageSquare,
   Moon,
+  Shield,
   ShoppingCart,
   Sun,
   Users,
@@ -291,6 +292,36 @@ export function Header() {
                       </Link>
                     </Button>
                   </li>
+                  {user?.isSuperUser ? (
+                    <>
+                      <li className="pt-4 mt-4 border-t border-border">
+                        <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                          <Shield className="size-3.5" />
+                          Super user
+                        </div>
+                      </li>
+                      <li>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start h-auto"
+                          asChild
+                        >
+                          <Link
+                            href={ROUTES.ADMIN_INGREDIENTS}
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            <Utensils className="size-4 mr-3" />
+                            <div className="text-left">
+                              <div className="font-medium">Ingredients</div>
+                              <div className="text-sm text-muted-foreground">
+                                Manage canonical ingredients
+                              </div>
+                            </div>
+                          </Link>
+                        </Button>
+                      </li>
+                    </>
+                  ) : null}
                 </ul>
               </nav>
               <SheetFooter className="shrink-0">
