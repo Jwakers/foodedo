@@ -55,6 +55,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useCallback, useEffect, useState } from "react";
 
 type FormState = {
@@ -115,7 +116,10 @@ export function AdminIngredientsClient() {
     name: string;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [aliasDialog, setAliasDialog] = useState<{ alias: string } | null>(null);
+  const [aliasDialog, setAliasDialog] = useState<{
+    alias: string;
+    error?: string;
+  } | null>(null);
   const [aliasSelectedId, setAliasSelectedId] = useState<Id<"ingredients"> | null>(null);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const [ingredientSearch, setIngredientSearch] = useState("");
@@ -238,6 +242,14 @@ export function AdminIngredientsClient() {
     try {
       await removeMutation({ id: deleteTarget.id });
       setDeleteTarget(null);
+    } catch (err: unknown) {
+      const message =
+        err instanceof ConvexError
+          ? err.message
+          : err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "Failed to delete ingredient.";
+      toast.error(message);
     } finally {
       setIsDeleting(false);
     }
@@ -246,6 +258,7 @@ export function AdminIngredientsClient() {
   const handleAddAlias = async () => {
     if (!aliasDialog || !aliasSelectedId) return;
     setIsAddingAlias(true);
+    setAliasDialog((prev) => (prev ? { ...prev, error: undefined } : null));
     try {
       await addAliasMutation({
         ingredientId: aliasSelectedId,
@@ -254,7 +267,15 @@ export function AdminIngredientsClient() {
       setAliasDialog(null);
       setAliasSelectedId(null);
     } catch (err: unknown) {
-      console.error(err);
+      const message =
+        err instanceof ConvexError
+          ? err.message
+          : err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "Failed to add alias.";
+      setAliasDialog((prev) =>
+        prev ? { ...prev, error: message } : null,
+      );
     } finally {
       setIsAddingAlias(false);
     }
@@ -735,6 +756,11 @@ export function AdminIngredientsClient() {
             </p>
           </DialogHeader>
           <div className="space-y-4">
+            {aliasDialog?.error && (
+              <p className="text-destructive text-sm" role="alert">
+                {aliasDialog.error}
+              </p>
+            )}
             <div className="space-y-2">
               <Label htmlFor="alias-text">Alias text</Label>
               <Input
@@ -742,7 +768,9 @@ export function AdminIngredientsClient() {
                 value={aliasDialog?.alias ?? ""}
                 onChange={(e) =>
                   setAliasDialog((prev) =>
-                    prev ? { ...prev, alias: e.target.value } : null
+                    prev
+                      ? { ...prev, alias: e.target.value, error: undefined }
+                      : null
                   )
                 }
                 placeholder="e.g. garlic clove"

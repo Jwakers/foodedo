@@ -748,10 +748,13 @@ export const backfillRecipeIngredientIds = internalMutation({
   },
 });
 
+const RECONCILE_BATCH_SIZE = 100;
+
 /**
  * Re-resolve ingredientId on all recipe ingredients and shopping list items
- * using the current ingredients table (names + aliases). Call after ingredients
- * are added, updated, removed, or have aliases changed so references stay correct.
+ * using the current ingredients table (names + aliases). Processes in batches
+ * to avoid OOM/timeouts. Call after ingredients are added, updated, removed,
+ * or have aliases changed so references stay correct.
  * Used by admin ingredient mutations via scheduler; can also be run manually:
  *   npx convex run migrations:reconcileIngredientReferences
  */
@@ -763,56 +766,105 @@ export const reconcileIngredientReferences = internalMutation({
     let recipesUpdated = 0;
     let shoppingItemsUpdated = 0;
 
-    const recipes = await ctx.db.query("recipes").collect();
-    for (const recipe of recipes) {
-      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+    let recipeCursor: number | null = null;
+    while (true) {
+      const recipesBatch: Doc<"recipes">[] =
+        recipeCursor === null
+          ? await ctx.db
+              .query("recipes")
+              .order("asc")
+              .take(RECONCILE_BATCH_SIZE)
+          : await ctx.db
+              .query("recipes")
+              .order("asc")
+              .filter((q) =>
+                q.gt(q.field("_creationTime"), recipeCursor as number),
+              )
+              .take(RECONCILE_BATCH_SIZE);
 
-      const nextIngredients = recipe.ingredients.map((ing) => {
-        if (!ing.name) {
-          return { ...ing, ingredientId: undefined };
+      if (recipesBatch.length === 0) break;
+
+      for (const recipe of recipesBatch) {
+        if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+        type RecipeIngredient = Doc<"recipes">["ingredients"] extends
+          | (infer I)[]
+          | undefined
+          ? I
+          : never;
+        const nextIngredients = recipe.ingredients.map((ing: RecipeIngredient) => {
+          if (!ing.name) {
+            return { ...ing, ingredientId: undefined };
+          }
+          const key = normaliseIngredientName(ing.name);
+          let resolved: Id<"ingredients"> | undefined =
+            ingredientIdCache.get(key);
+          if (resolved === undefined) {
+            const found = resolveIngredientIdFromList(
+              allIngredients,
+              ing.name,
+            );
+            if (found) {
+              ingredientIdCache.set(key, found);
+              resolved = found;
+            }
+          }
+          return { ...ing, ingredientId: resolved };
+        });
+
+        const changed = nextIngredients.some(
+          (n: RecipeIngredient, i: number) =>
+            (recipe.ingredients![i]?.ingredientId ?? undefined) !==
+            (n.ingredientId ?? undefined),
+        );
+        if (changed) {
+          await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+          recipesUpdated++;
         }
-        const key = normaliseIngredientName(ing.name);
+      }
+
+      recipeCursor = recipesBatch[recipesBatch.length - 1]!._creationTime;
+    }
+
+    let shoppingCursor: number | null = null;
+    while (true) {
+      const itemsBatch: Doc<"shoppingListItems">[] =
+        shoppingCursor === null
+          ? await ctx.db
+              .query("shoppingListItems")
+              .order("asc")
+              .take(RECONCILE_BATCH_SIZE)
+          : await ctx.db
+              .query("shoppingListItems")
+              .order("asc")
+              .filter((q) =>
+                q.gt(q.field("_creationTime"), shoppingCursor as number),
+              )
+              .take(RECONCILE_BATCH_SIZE);
+
+      if (itemsBatch.length === 0) break;
+
+      for (const item of itemsBatch) {
+        if (!item.name?.trim()) continue;
+        const key = normaliseIngredientName(item.name);
         let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
         if (resolved === undefined) {
-          const found = resolveIngredientIdFromList(allIngredients, ing.name);
+          const found = resolveIngredientIdFromList(allIngredients, item.name);
           if (found) {
             ingredientIdCache.set(key, found);
             resolved = found;
           }
         }
-        return { ...ing, ingredientId: resolved };
-      });
-
-      const changed = nextIngredients.some(
-        (n, i) =>
-          (recipe.ingredients![i]?.ingredientId ?? undefined) !==
-          (n.ingredientId ?? undefined),
-      );
-      if (changed) {
-        await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
-        recipesUpdated++;
-      }
-    }
-
-    const shoppingListItems = await ctx.db.query("shoppingListItems").collect();
-    for (const item of shoppingListItems) {
-      if (!item.name?.trim()) continue;
-      const key = normaliseIngredientName(item.name);
-      let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
-      if (resolved === undefined) {
-        const found = resolveIngredientIdFromList(allIngredients, item.name);
-        if (found) {
-          ingredientIdCache.set(key, found);
-          resolved = found;
+        const currentId = item.ingredientId ?? undefined;
+        if (currentId !== resolved) {
+          await ctx.db.patch(item._id, {
+            ingredientId: resolved,
+          });
+          shoppingItemsUpdated++;
         }
       }
-      const currentId = item.ingredientId ?? undefined;
-      if (currentId !== resolved) {
-        await ctx.db.patch(item._id, {
-          ingredientId: resolved,
-        });
-        shoppingItemsUpdated++;
-      }
+
+      shoppingCursor = itemsBatch[itemsBatch.length - 1]!._creationTime;
     }
 
     return {
