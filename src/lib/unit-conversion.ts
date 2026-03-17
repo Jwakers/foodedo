@@ -120,6 +120,9 @@ export function combineAmounts(
     );
   }
   const amount = parts.length > 0 ? parts.join(" + ") : null;
-  const unit = sameUnit ? (existingUnit ?? newUnit) : undefined;
+  const unit =
+    sameUnit && !(existingUnit?.trim() || newUnit?.trim())
+      ? (existingUnit ?? newUnit)
+      : undefined;
   return { amount, unit };
 }

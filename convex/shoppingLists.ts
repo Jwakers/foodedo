@@ -113,7 +113,11 @@ function aggregateIngredientsFromRecipes(
         }
       }
 
-      const entry = { amount: storedAmount, unit: ingredient.unit };
+      const hasAmountOrUnit =
+        storedAmount != null || ingredient.unit !== undefined;
+      const entry = hasAmountOrUnit
+        ? { amount: storedAmount, unit: ingredient.unit }
+        : null;
       const existing = combined.get(key);
       if (!existing) {
         const recipeIds = new Set<Id<"recipes">>([recipe._id]);
@@ -123,23 +127,30 @@ function aggregateIngredientsFromRecipes(
           preparation: ingredient.preparation,
           amount: storedAmount,
           ingredientId: ingredient.ingredientId,
-          amountEntries: [entry],
+          amountEntries: entry ? [entry] : [],
           recipeIds,
         });
         continue;
       }
       existing.recipeIds.add(recipe._id);
-      existing.amountEntries.push(entry);
+      if (entry) {
+        existing.amountEntries.push(entry);
+      }
       const entries = existing.amountEntries;
-      const aggregated = entries.slice(1).reduce<{
-        amount: number | string | null;
-        unit?: string;
-      }>(
-        (acc, e) => combineAmounts(acc.amount, acc.unit, e.amount, e.unit),
-        { amount: entries[0]!.amount, unit: entries[0]!.unit }
-      );
-      existing.amount = aggregated.amount ?? null;
-      existing.unit = aggregated.unit;
+      if (entries.length > 0) {
+        const aggregated = entries.slice(1).reduce<{
+          amount: number | string | null;
+          unit?: string;
+        }>(
+          (acc, e) => combineAmounts(acc.amount, acc.unit, e.amount, e.unit),
+          { amount: entries[0]!.amount, unit: entries[0]!.unit }
+        );
+        existing.amount = aggregated.amount ?? null;
+        existing.unit = aggregated.unit;
+      } else {
+        existing.amount = null;
+        existing.unit = undefined;
+      }
     }
   }
 
@@ -385,6 +396,9 @@ export const createShoppingList = mutation({
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
   },
   handler: async (ctx, args) => {
+    if (!args.items?.length) {
+      throw new ConvexError("Cannot create a shopping list with zero items.");
+    }
     const user = await getCurrentUserOrThrow(ctx);
     const subscription = await getUserSubscription(user, ctx);
 
@@ -469,6 +483,11 @@ export const createShoppingListFromMealPlan = mutation({
       (r): r is NonNullable<typeof r> => r != null
     );
     const items = aggregateIngredientsFromRecipes(validRecipes);
+    if (!items.length) {
+      throw new ConvexError(
+        "Cannot create a shopping list from this meal plan: no ingredients found."
+      );
+    }
 
     const subscription = await getUserSubscription(user, ctx);
     const activeLists = await ctx.db

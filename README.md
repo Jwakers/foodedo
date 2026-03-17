@@ -13,10 +13,9 @@ Ingredients convenience infra:
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
 - [ ] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
 - [ ] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
-- [ ] Simple utility to quickly add new ingredients to the ingredients table, update ingredient aliases and sync with production (use plan mode for this feature) - After this is set up it may we bee all the script and code for creating ingredients can be removed. We should also be able to easily update displayName for example for common oregano, that should just be oregano.
-- [ ] Ingredient code clean up - don't skip this step, there is loads of new code for this and I assume a lot of it can once the production seed is done.
-
-- [ ] Plan a strategy for SEO and AEO improvements. Organic reach is very high priority at this stage.
+- [ ] After setup, the scripts and code used to create ingredients can be removed (use plan mode for this feature). Display names (e.g. common oregano → oregano) should be easy to update.
+- [ ] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
+- [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.

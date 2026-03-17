@@ -3,7 +3,7 @@
  * deselected by default so users opt-in to include them.
  */
 
-import { normaliseNameForGrouping } from "./ingredient-grouping";
+import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
 
 export const PANTRY_STAPLE_NAMES = new Set([
   // Salt & pepper

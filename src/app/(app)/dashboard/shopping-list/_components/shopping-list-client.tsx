@@ -21,7 +21,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,10 +31,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
-import { normaliseNameForGrouping } from "@/lib/ingredient-grouping";
+import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
 import { isPantryStaple } from "@/lib/pantry-staples";
-import { cn, titleCase } from "@/lib/utils";
 import { combineAmounts } from "@/lib/unit-conversion";
+import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -50,7 +49,6 @@ import {
   Clock,
   Home,
   ListChecks,
-  Package,
   Plus,
   Search,
   ShoppingCart,
@@ -785,15 +783,6 @@ function getAggregationKey(ingredient: RecipeIngredient): string {
   return normaliseNameForGrouping(ingredient?.name ?? "") || "unnamed";
 }
 
-function getItemKey(item: {
-  name: string;
-  ingredientId?: Id<"ingredients">;
-}): string {
-  return (
-    item.ingredientId ?? (normaliseNameForGrouping(item.name) || "unnamed")
-  );
-}
-
 type AmountEntry = { amount: number | string | null; unit?: string };
 
 const buildShoppingListItems = (
@@ -865,7 +854,7 @@ const buildShoppingListItems = (
           existing.amount,
           existing.unit,
           storedAmount,
-          ingredient.unit
+          ingredient.unit,
         );
         const merged =
           result.amount != null &&

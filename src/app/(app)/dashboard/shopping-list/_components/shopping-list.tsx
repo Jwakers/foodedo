@@ -100,6 +100,14 @@ export default function ShoppingList({
     }
     return item.name;
   };
+  /** Stable key for de-duplication (chalkboard vs list); uses canonical ingredient name when resolved. */
+  const getCanonicalKey = (item: (typeof shoppingList.items)[number]) => {
+    if (item.ingredientId && ingredientsMap?.[item.ingredientId]) {
+      const ing = ingredientsMap[item.ingredientId];
+      return (ing.name ?? ing.displayName ?? item.name).trim().toLowerCase();
+    }
+    return (item.name ?? "").trim().toLowerCase();
+  };
   /** Original ingredient name from the recipe (for dev-mode brackets). */
   const getOriginalRecipeName = (item: (typeof shoppingList.items)[number]) =>
     item.name;
@@ -190,7 +198,7 @@ export default function ShoppingList({
     if (personalChalkboard) {
       count += personalChalkboard.filter(
         (item) =>
-          !allIngredients.some((ing) => namesEqual(ing.name, item.text)),
+          !allIngredients.some((ing) => namesEqual(getCanonicalKey(ing), item.text)),
       ).length;
     }
 
@@ -199,7 +207,7 @@ export default function ShoppingList({
       Object.values(allHouseholdChalkboards).forEach((items) => {
         count += items.filter(
           (item) =>
-            !allIngredients.some((ing) => namesEqual(ing.name, item.text)),
+            !allIngredients.some((ing) => namesEqual(getCanonicalKey(ing), item.text)),
         ).length;
       });
     }
@@ -257,7 +265,7 @@ export default function ShoppingList({
       personalChalkboard.forEach((item) => {
         // Only add if not already in shopping list
         const alreadyAdded = allIngredients.some((ing) =>
-          namesEqual(ing.name, item.text),
+          namesEqual(getCanonicalKey(ing), item.text),
         );
         if (!alreadyAdded) {
           itemsToAdd.push({
@@ -276,7 +284,7 @@ export default function ShoppingList({
           householdItems.forEach((item) => {
             // Only add if not already in shopping list
             const alreadyAdded = allIngredients.some((ing) =>
-              namesEqual(ing.name, item.text),
+              namesEqual(getCanonicalKey(ing), item.text),
             );
             if (!alreadyAdded) {
               itemsToAdd.push({
@@ -751,7 +759,7 @@ export default function ShoppingList({
                     const availableItems = personalChalkboard?.filter(
                       (item) =>
                         !allIngredients.some((ing) =>
-                          namesEqual(ing.name, item.text),
+                          namesEqual(getCanonicalKey(ing), item.text),
                         ),
                     );
                     const count = availableItems?.length || 0;
@@ -770,7 +778,7 @@ export default function ShoppingList({
                   personalChalkboard.filter(
                     (item) =>
                       !allIngredients.some((ing) =>
-                        namesEqual(ing.name, item.text),
+                        namesEqual(getCanonicalKey(ing), item.text),
                       ),
                   ).length === 0
                 }
@@ -791,7 +799,7 @@ export default function ShoppingList({
                     const availableItems = householdItems.filter(
                       (item) =>
                         !allIngredients.some((ing) =>
-                          namesEqual(ing.name, item.text),
+                          namesEqual(getCanonicalKey(ing), item.text),
                         ),
                     );
                     const isSelected = selectedHouseholdIds.has(household._id);
@@ -838,7 +846,7 @@ export default function ShoppingList({
                 personalChalkboard.forEach((item) => {
                   if (
                     !allIngredients.some((ing) =>
-                      namesEqual(ing.name, item.text),
+                      namesEqual(getCanonicalKey(ing), item.text),
                     )
                   ) {
                     previewItems.push({ id: item._id, text: item.text });
@@ -853,7 +861,7 @@ export default function ShoppingList({
                   householdItems?.forEach((item) => {
                     if (
                       !allIngredients.some((ing) =>
-                        namesEqual(ing.name, item.text),
+                        namesEqual(getCanonicalKey(ing), item.text),
                       )
                     ) {
                       previewItems.push({ id: item._id, text: item.text });

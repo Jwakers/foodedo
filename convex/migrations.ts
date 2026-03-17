@@ -879,6 +879,28 @@ export const deleteCategoryIngredients = internalMutation({
     const toDelete = all.filter((ing) =>
       INGREDIENT_CATEGORY_NAMES.has(ing.name),
     );
+    const idsToDelete = new Set(toDelete.map((d) => d._id));
+
+    // Clear recipe.ingredients[].ingredientId and shoppingListItems.ingredientId before delete
+    const recipes = await ctx.db.query("recipes").collect();
+    for (const recipe of recipes) {
+      const ingredients = recipe.ingredients ?? [];
+      const updated = ingredients.map((ing) =>
+        ing.ingredientId && idsToDelete.has(ing.ingredientId)
+          ? { ...ing, ingredientId: undefined }
+          : ing
+      );
+      if (updated.some((ing, i) => (ingredients[i]?.ingredientId ?? null) !== (ing.ingredientId ?? null))) {
+        await ctx.db.patch(recipe._id, { ingredients: updated });
+      }
+    }
+    const allItems = await ctx.db.query("shoppingListItems").collect();
+    for (const item of allItems) {
+      if (item.ingredientId && idsToDelete.has(item.ingredientId)) {
+        await ctx.db.patch(item._id, { ingredientId: undefined });
+      }
+    }
+
     for (const doc of toDelete) {
       await ctx.db.delete(doc._id);
     }
