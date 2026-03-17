@@ -5,21 +5,14 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken breast",
-      "aliases": [
-        "chicken breast",
-        "chicken breasts",
-        "breast of chicken"
-      ]
+      "aliases": ["chicken breasts", "breast of chicken"]
     },
     {
       "name": "Chicken thigh",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken thigh",
-      "aliases": [
-        "chicken thigh",
-        "chicken thighs"
-      ]
+      "aliases": ["chicken thighs"]
     },
     {
       "name": "Chicken leg",
@@ -27,7 +20,6 @@
       "foodSubGroup": "Poultry",
       "displayName": "Chicken leg",
       "aliases": [
-        "chicken leg",
         "chicken legs",
         "chicken drumstick",
         "chicken drumsticks"
@@ -38,63 +30,42 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Pork loin",
-      "aliases": [
-        "pork loin",
-        "loin of pork",
-        "pork loin joint"
-      ]
+      "aliases": ["loin of pork", "pork loin joint"]
     },
     {
       "name": "Beef steak",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Beef steak",
-      "aliases": [
-        "beef steak"
-      ]
+      "aliases": []
     },
     {
       "name": "Sirloin steak",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Sirloin steak",
-      "aliases": [
-        "sirloin steak",
-        "beef sirloin",
-        "sirloin"
-      ]
+      "aliases": ["beef sirloin", "sirloin"]
     },
     {
       "name": "Ribeye steak",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Bovines",
       "displayName": "Ribeye steak",
-      "aliases": [
-        "ribeye steak",
-        "rib eye steak",
-        "beef ribeye",
-        "ribeye"
-      ]
+      "aliases": ["rib eye steak", "beef ribeye", "ribeye"]
     },
     {
       "name": "Lamb leg",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Sheep",
       "displayName": "Lamb leg",
-      "aliases": [
-        "lamb leg",
-        "leg of lamb"
-      ]
+      "aliases": ["leg of lamb"]
     },
     {
       "name": "Lamb shoulder",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Sheep",
       "displayName": "Lamb shoulder",
-      "aliases": [
-        "lamb shoulder",
-        "shoulder of lamb"
-      ]
+      "aliases": ["shoulder of lamb"]
     },
     {
       "name": "Minced beef",
@@ -102,9 +73,9 @@
       "foodSubGroup": "Bovines",
       "displayName": "Minced beef",
       "aliases": [
-        "minced beef",
         "ground beef",
-        "beef mince"
+        "beef mince",
+        "lean minced beef"
       ]
     },
     {
@@ -112,182 +83,119 @@
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Ground pork",
-      "aliases": [
-        "ground pork",
-        "minced pork",
-        "pork mince"
-      ]
+      "aliases": ["minced pork", "pork mince"]
     },
     {
       "name": "Duck breast",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Duck breast",
-      "aliases": [
-        "duck breast",
-        "duck breasts",
-        "breast of duck"
-      ]
+      "aliases": ["duck breasts", "breast of duck"]
     },
     {
       "name": "Duck leg",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Duck leg",
-      "aliases": [
-        "duck leg",
-        "duck legs",
-        "duck drumstick",
-        "duck drumsticks"
-      ]
+      "aliases": ["duck legs", "duck drumstick", "duck drumsticks"]
     },
     {
       "name": "Turkey breast",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Turkey breast",
-      "aliases": [
-        "turkey breast",
-        "turkey breasts",
-        "breast of turkey"
-      ]
+      "aliases": ["turkey breasts", "breast of turkey"]
     },
     {
       "name": "Turkey thigh",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Turkey thigh",
-      "aliases": [
-        "turkey thigh",
-        "turkey thighs"
-      ]
+      "aliases": ["turkey thighs"]
     },
     {
       "name": "Chicken wing",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Poultry",
       "displayName": "Chicken wing",
-      "aliases": [
-        "chicken wing",
-        "chicken wings"
-      ]
+      "aliases": ["chicken wings"]
     },
     {
       "name": "Salmon fillet",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Fishes",
       "displayName": "Salmon fillet",
-      "aliases": [
-        "salmon fillet",
-        "salmon fillets",
-        "salmon"
-      ]
+      "aliases": ["salmon fillets", "salmon"]
     },
     {
       "name": "Cod fillet",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Fishes",
       "displayName": "Cod fillet",
-      "aliases": [
-        "cod fillet",
-        "cod fillets",
-        "cod"
-      ]
+      "aliases": ["cod fillets", "cod"]
     },
     {
       "name": "Bacon",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Bacon",
-      "aliases": [
-        "bacon",
-        "streaky bacon",
-        "back bacon",
-        "bacon rashers"
-      ]
+      "aliases": ["streaky bacon", "back bacon", "bacon rashers"]
     },
     {
       "name": "Pork belly",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Pork belly",
-      "aliases": [
-        "pork belly",
-        "belly of pork"
-      ]
+      "aliases": ["belly of pork"]
     },
     {
       "name": "Pork chop",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Swine",
       "displayName": "Pork chop",
-      "aliases": [
-        "pork chop",
-        "pork chops"
-      ]
+      "aliases": ["pork chops"]
     },
     {
       "name": "Lamb chop",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Sheep",
       "displayName": "Lamb chop",
-      "aliases": [
-        "lamb chop",
-        "lamb chops",
-        "lamb cutlet",
-        "lamb cutlets"
-      ]
+      "aliases": ["lamb chops", "lamb cutlet", "lamb cutlets"]
     },
     {
       "name": "Minced lamb",
       "foodGroup": "Animal foods",
       "foodSubGroup": "Sheep",
       "displayName": "Minced lamb",
-      "aliases": [
-        "minced lamb",
-        "ground lamb",
-        "lamb mince"
-      ]
+      "aliases": ["ground lamb", "lamb mince"]
     },
     {
       "name": "Ground cumin",
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ground cumin",
-      "aliases": [
-        "ground cumin",
-        "cumin powder"
-      ]
+      "aliases": ["cumin powder"]
     },
     {
       "name": "Ground turmeric",
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ground turmeric",
-      "aliases": [
-        "ground turmeric",
-        "turmeric powder"
-      ]
+      "aliases": ["turmeric powder"]
     },
     {
       "name": "Ground nutmeg",
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ground nutmeg",
-      "aliases": [
-        "ground nutmeg",
-        "nutmeg powder"
-      ]
+      "aliases": ["nutmeg powder"]
     },
     {
       "name": "Ground allspice",
       "foodGroup": "Herbs and Spices",
       "foodSubGroup": "Spices",
       "displayName": "Ground allspice",
-      "aliases": [
-        "ground allspice",
-        "allspice powder"
-      ]
+      "aliases": ["allspice powder"]
     },
     {
       "name": "Ground black pepper",
@@ -296,11 +204,365 @@
       "displayName": "Ground black pepper",
       "aliases": [
         "ground pepper",
-        "ground black pepper",
         "freshly ground black pepper",
         "freshly ground pepper"
       ]
+    },
+    {
+      "name": "Chicken stock",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Baking goods",
+      "displayName": "Chicken stock",
+      "aliases": []
+    },
+    {
+      "name": "Dijon mustard",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Dijon mustard",
+      "aliases": []
+    },
+    {
+      "name": "Beef stock",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Baking goods",
+      "displayName": "Beef stock",
+      "aliases": ["beef broth"]
+    },
+    {
+      "name": "Vegetable stock",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Baking goods",
+      "displayName": "Vegetable stock",
+      "aliases": []
+    },
+    {
+      "name": "Crème fraîche",
+      "foodGroup": "Milk and milk products",
+      "foodSubGroup": "Fermented milk products",
+      "displayName": "Crème fraîche",
+      "aliases": ["creme fraiche"]
+    },
+    {
+      "name": "Frozen peas",
+      "foodGroup": "Vegetables",
+      "foodSubGroup": "Peas",
+      "displayName": "Frozen peas",
+      "aliases": []
+    },
+    {
+      "name": "Bread",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Leavened breads",
+      "displayName": "Bread",
+      "aliases": [
+        "baguette",
+        "breadcrumbs",
+        "bread crumbs",
+        "buns",
+        "panko breadcrumbs"
+      ]
+    },
+    {
+      "name": "Worcestershire sauce",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Worcestershire sauce",
+      "aliases": ["worcestershire"]
+    },
+    {
+      "name": "Oyster sauce",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Oyster sauce",
+      "aliases": []
+    },
+    {
+      "name": "Fish sauce",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Fish sauce",
+      "aliases": []
+    },
+    {
+      "name": "Hoisin sauce",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Hoisin sauce",
+      "aliases": []
+    },
+    {
+      "name": "Vanilla extract",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Vanilla extract",
+      "aliases": []
+    },
+    {
+      "name": "Onion powder",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Onion powder",
+      "aliases": []
+    },
+    {
+      "name": "Garlic powder",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Garlic powder",
+      "aliases": ["granulated garlic"]
+    },
+    {
+      "name": "Dried oregano",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Dried oregano",
+      "aliases": []
+    },
+    {
+      "name": "Dried basil",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Dried basil",
+      "aliases": []
+    },
+    {
+      "name": "Dried thyme",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Dried thyme",
+      "aliases": []
+    },
+    {
+      "name": "Dried parsley",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Dried parsley",
+      "aliases": []
+    },
+    {
+      "name": "Dried rosemary",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Dried rosemary",
+      "aliases": []
+    },
+    {
+      "name": "Ground ginger",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground ginger",
+      "aliases": ["ginger powder"]
+    },
+    {
+      "name": "Dried bay leaves",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Dried bay leaves",
+      "aliases": []
+    },
+    {
+      "name": "Corn starch",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Cereal products",
+      "displayName": "Corn starch",
+      "aliases": ["cornflour", "cornstarch"]
+    },
+    {
+      "name": "Taco seasoning",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Taco seasoning",
+      "aliases": []
+    },
+    {
+      "name": "Fajita seasoning",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Fajita seasoning",
+      "aliases": []
+    },
+    {
+      "name": "Guacamole",
+      "foodGroup": "Vegetables",
+      "foodSubGroup": "Fruit vegetables",
+      "displayName": "Guacamole",
+      "aliases": []
+    },
+    {
+      "name": "Shortcrust pastry",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Cereal products",
+      "displayName": "Shortcrust pastry",
+      "aliases": []
+    },
+    {
+      "name": "Puff pastry",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Cereal products",
+      "displayName": "Puff pastry",
+      "aliases": []
+    },
+    {
+      "name": "Garam masala",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Garam masala",
+      "aliases": []
+    },
+    {
+      "name": "Curry paste",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Curry paste",
+      "aliases": ["green curry paste", "red curry paste"]
+    },
+    {
+      "name": "Honey",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Seasonings",
+      "displayName": "Honey",
+      "aliases": []
+    },
+    {
+      "name": "Teriyaki sauce",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Teriyaki sauce",
+      "aliases": []
+    },
+    {
+      "name": "Pesto",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Pesto",
+      "aliases": []
+    },
+    {
+      "name": "Chorizo",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Chorizo",
+      "aliases": []
+    },
+    {
+      "name": "Salsa",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Salsa",
+      "aliases": []
+    },
+    {
+      "name": "Hummus",
+      "foodGroup": "Pulses",
+      "foodSubGroup": "Beans",
+      "displayName": "Hummus",
+      "aliases": []
+    },
+    {
+      "name": "Mayonnaise",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Mayonnaise",
+      "aliases": []
+    },
+    {
+      "name": "Sriracha",
+      "foodGroup": "Baking goods",
+      "foodSubGroup": "Condiments",
+      "displayName": "Sriracha",
+      "aliases": []
+    },
+    {
+      "name": "Couscous",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Cereal products",
+      "displayName": "Couscous",
+      "aliases": []
+    },
+    {
+      "name": "Paprika",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Paprika",
+      "aliases": ["smoked paprika", "chili powder", "chilli powder"]
+    },
+    {
+      "name": "Smoked paprika",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Smoked paprika",
+      "aliases": []
+    },
+    {
+      "name": "Graham crackers",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Cereal products",
+      "displayName": "Graham crackers",
+      "aliases": ["graham cracker"]
+    },
+    {
+      "name": "Pitta bread",
+      "foodGroup": "Cereals and cereal products",
+      "foodSubGroup": "Flat breads",
+      "displayName": "Pitta bread",
+      "aliases": ["pita bread"]
+    },
+    {
+      "name": "Ground coriander",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Spices",
+      "displayName": "Ground coriander",
+      "aliases": ["coriander powder"]
+    },
+    {
+      "name": "Tenderstem broccoli",
+      "foodGroup": "Vegetables",
+      "foodSubGroup": "Brassicas",
+      "displayName": "Tenderstem broccoli",
+      "aliases": []
+    },
+    {
+      "name": "Curry leaves",
+      "foodGroup": "Herbs and Spices",
+      "foodSubGroup": "Herbs",
+      "displayName": "Curry leaves",
+      "aliases": []
+    },
+    {
+      "name": "Green chillies",
+      "foodGroup": "Vegetables",
+      "foodSubGroup": "Fruit vegetables",
+      "displayName": "Green chillies",
+      "aliases": []
+    },
+    {
+      "name": "Prunes",
+      "foodGroup": "Fruits",
+      "foodSubGroup": "Drupes",
+      "displayName": "Prunes",
+      "aliases": []
+    },
+    {
+      "name": "Banana shallots",
+      "foodGroup": "Vegetables",
+      "foodSubGroup": "Onion-family vegetables",
+      "displayName": "Banana shallots",
+      "aliases": []
+    },
+    {
+      "name": "Cremini mushrooms",
+      "foodGroup": "Vegetables",
+      "foodSubGroup": "Mushrooms",
+      "displayName": "Cremini mushrooms",
+      "aliases": []
+    },
+    {
+      "name": "Pork tenderloin",
+      "foodGroup": "Animal foods",
+      "foodSubGroup": "Swine",
+      "displayName": "Pork tenderloin",
+      "aliases": []
     }
   ]
 }
-

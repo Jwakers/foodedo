@@ -19,7 +19,9 @@ import {
   normaliseIngredientName,
   resolveIngredientIdFromList,
 } from "./ingredients";
+import { INGREDIENT_FOOD_GROUPS } from "./lib/ingredientFoodGroups";
 import ingredientsSeedData from "./ingredients-seed.json";
+import ingredientsSeedManualData from "./ingredients-seed-manual.json";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
 /**
@@ -591,8 +593,28 @@ type SeedItem = {
 export const seedIngredients = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const items: SeedItem[] =
+    const baseItems: SeedItem[] =
       (ingredientsSeedData as { items: SeedItem[] }).items ?? [];
+    const manualItems: SeedItem[] =
+      (ingredientsSeedManualData as { items: SeedItem[] }).items ?? [];
+    // Combine base seed and manual additions into a single list.
+    // Manual items come last so they can override by name when no externalId is present.
+    const items: SeedItem[] = [...baseItems, ...manualItems];
+
+    // Load all existing ingredients once to stay under Convex read limits.
+    const existingIngredients = await ctx.db.query("ingredients").collect();
+    const byExternalId = new Map<string, Doc<"ingredients">>();
+    const byNormalisedName = new Map<string, Doc<"ingredients">>();
+    for (const ing of existingIngredients) {
+      if (ing.externalId) {
+        byExternalId.set(ing.externalId, ing);
+      }
+      const key = normaliseIngredientName(ing.name);
+      if (!byNormalisedName.has(key)) {
+        byNormalisedName.set(key, ing);
+      }
+    }
+
     let inserted = 0;
     let updated = 0;
     for (const item of items) {
@@ -601,20 +623,23 @@ export const seedIngredients = internalMutation({
         trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
       let existing: Doc<"ingredients"> | null = null;
       if (extId) {
-        existing = await ctx.db
-          .query("ingredients")
-          .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-          .first();
+        existing = byExternalId.get(extId) ?? null;
       } else {
-        existing = await ctx.db
-          .query("ingredients")
-          .filter((q) => q.eq(q.field("name"), item.name))
-          .first();
+        existing = byNormalisedName.get(normaliseIngredientName(item.name)) ?? null;
       }
+
+      // Normalise foodGroup to schema value (e.g. "Herbs and Spices" -> "Herbs and spices")
+      const rawGroup = item.foodGroup;
+      const foodGroup: Doc<"ingredients">["foodGroup"] | undefined =
+        rawGroup && typeof rawGroup === "string"
+          ? ((INGREDIENT_FOOD_GROUPS as readonly string[]).find(
+              (g) => g.toLowerCase() === rawGroup.toLowerCase()
+            ) as Doc<"ingredients">["foodGroup"] | undefined) ?? undefined
+          : (rawGroup as Doc<"ingredients">["foodGroup"] | undefined);
 
       const doc = {
         name: item.name,
-        foodGroup: item.foodGroup,
+        foodGroup,
         displayName: item.displayName,
         foodSubGroup: (item.foodSubGroup ?? undefined) as
           | Doc<"ingredients">["foodSubGroup"]

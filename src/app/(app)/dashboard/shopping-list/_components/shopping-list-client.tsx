@@ -138,19 +138,6 @@ export default function ShoppingListClient() {
     }
     return { mainItems: main, pantryItems: pantry };
   }, [flatIngredients]);
-  const [selectedPantryKeys, setSelectedPantryKeys] = useState<Set<string>>(
-    new Set(),
-  );
-  useEffect(() => {
-    setSelectedPantryKeys((prev) => {
-      const validKeys = new Set(pantryItems.map((item) => getItemKey(item)));
-      const next = new Set([...prev].filter((k) => validKeys.has(k)));
-      if (next.size !== prev.size) return next;
-      if ([...next].some((k) => !prev.has(k))) return next;
-      if ([...prev].some((k) => !next.has(k))) return next;
-      return prev;
-    });
-  }, [pantryItems]);
   const [showDoneDialog, setShowDoneDialog] = useState(false);
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
@@ -193,14 +180,12 @@ export default function ShoppingListClient() {
     });
   };
 
-  const itemsToCreate = useMemo(() => {
-    const items = [...mainItems];
-    for (const item of pantryItems) {
-      const key = getItemKey(item);
-      if (selectedPantryKeys.has(key)) items.push(item);
-    }
-    return items;
-  }, [mainItems, pantryItems, selectedPantryKeys]);
+  // When creating a list, always include both main items and pantry staples.
+  // Users can choose to drop pantry staples later on the shopping list screen.
+  const itemsToCreate = useMemo(
+    () => [...mainItems, ...pantryItems],
+    [mainItems, pantryItems],
+  );
 
   const handleGenerateList = async () => {
     if (accessibleLists === undefined) {
@@ -551,71 +536,6 @@ export default function ShoppingListClient() {
                     />
                   ))}
                 </div>
-              )}
-
-              {/* Pantry staples section */}
-              {selectedRecipeIds.size > 0 && pantryItems.length > 0 && (
-                <Card className="mt-8 border-dashed">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <Package className="size-5 text-muted-foreground shrink-0 mt-0.5" />
-                      <div>
-                        <h3 className="font-semibold mb-1">
-                          Do you want to include these pantry staples?
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          These are commonly kept on hand. Leave unchecked if
-                          you already have them.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {pantryItems.map((item) => {
-                        const key = getItemKey(item);
-                        const checked = selectedPantryKeys.has(key);
-                        return (
-                          <label
-                            key={key}
-                            className={cn(
-                              "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
-                              checked
-                                ? "bg-primary/10 border-primary/30"
-                                : "hover:bg-muted/50 border-border",
-                            )}
-                          >
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={(c) => {
-                                setSelectedPantryKeys((prev) => {
-                                  const next = new Set(prev);
-                                  if (c) next.add(key);
-                                  else next.delete(key);
-                                  return next;
-                                });
-                              }}
-                            />
-                            <span className="text-sm font-medium">
-                              {item.name}
-                              {item.amountEntries &&
-                                item.amountEntries.length > 0 && (
-                                  <span className="text-muted-foreground font-normal ml-1">
-                                    (
-                                    {item.amountEntries
-                                      .map((e) =>
-                                        `${e.amount ?? ""} ${e.unit ?? ""}`.trim(),
-                                      )
-                                      .filter(Boolean)
-                                      .join(", ")}
-                                    )
-                                  </span>
-                                )}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
               )}
 
               {/* Generate Button */}
