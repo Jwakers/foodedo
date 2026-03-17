@@ -675,52 +675,64 @@ export const seedIngredients = internalMutation({
  *   npx convex run migrations:clearIngredientIsCustom
  */
 export const clearIngredientIsCustom = internalMutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    cursor: v.optional(
+      v.object({
+        creationTime: v.number(),
+        id: v.id("ingredients"),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
     type IngredientCursor = { creationTime: number; id: Id<"ingredients"> };
-    let cursor: IngredientCursor | null = null;
+    let cursor: IngredientCursor | null = args.cursor ?? null;
     let cleared = 0;
 
-    while (true) {
-      const batch: Doc<"ingredients">[] =
-        cursor === null
-          ? await ctx.db
-              .query("ingredients")
-              .order("asc")
-              .take(RECONCILE_BATCH_SIZE)
-          : await ctx.db
-              .query("ingredients")
-              .order("asc")
-              .filter((q) =>
-                q.or(
-                  q.gt(q.field("_creationTime"), cursor!.creationTime),
-                  q.and(
-                    q.eq(q.field("_creationTime"), cursor!.creationTime),
-                    q.gt(q.field("_id"), cursor!.id),
-                  ),
+    const batch: Doc<"ingredients">[] =
+      cursor === null
+        ? await ctx.db
+            .query("ingredients")
+            .order("asc")
+            .take(RECONCILE_BATCH_SIZE)
+        : await ctx.db
+            .query("ingredients")
+            .order("asc")
+            .filter((q) =>
+              q.or(
+                q.gt(q.field("_creationTime"), cursor!.creationTime),
+                q.and(
+                  q.eq(q.field("_creationTime"), cursor!.creationTime),
+                  q.gt(q.field("_id"), cursor!.id),
                 ),
-              )
-              .take(RECONCILE_BATCH_SIZE);
+              ),
+            )
+            .take(RECONCILE_BATCH_SIZE);
 
-      if (batch.length === 0) break;
+    for (const ing of batch) {
+      await ctx.db.replace(ing._id, {
+        name: ing.name,
+        displayName: ing.displayName ?? undefined,
+        foodGroup: ing.foodGroup ?? undefined,
+        foodSubGroup: ing.foodSubGroup ?? undefined,
+        externalId: ing.externalId ?? undefined,
+        aliases: ing.aliases ?? [],
+      });
+      cleared++;
+    }
 
-      for (const ing of batch) {
-        await ctx.db.replace(ing._id, {
-          name: ing.name,
-          displayName: ing.displayName ?? undefined,
-          foodGroup: ing.foodGroup ?? undefined,
-          foodSubGroup: ing.foodSubGroup ?? undefined,
-          externalId: ing.externalId ?? undefined,
-          aliases: ing.aliases ?? [],
-        });
-        cleared++;
-      }
-
+    if (batch.length > 0) {
       const last = batch[batch.length - 1]!;
       cursor = { creationTime: last._creationTime, id: last._id };
     }
 
-    return { cleared };
+    const scheduled = batch.length === RECONCILE_BATCH_SIZE;
+    if (scheduled) {
+      await ctx.scheduler.runAfter(0, internal.migrations.clearIngredientIsCustom, {
+        cursor: cursor ?? undefined,
+      });
+    }
+
+    return { cleared, scheduled };
   },
 });
 
