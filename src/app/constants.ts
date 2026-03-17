@@ -44,6 +44,8 @@ export const ROUTES = {
   /** URL for a specific blog post (use with slug from Sanity) */
   blogPost: (slug: string) => `/blog/${slug}`,
   BETA: "/beta",
+  /** Super user: manage canonical ingredients (admin only) */
+  ADMIN_INGREDIENTS: "/dashboard/admin/ingredients",
 } as const;
 
 export const CATEGORY_COLORS: Record<

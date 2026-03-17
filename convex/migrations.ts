@@ -644,7 +644,6 @@ export const seedIngredients = internalMutation({
         foodSubGroup: (item.foodSubGroup ?? undefined) as
           | Doc<"ingredients">["foodSubGroup"]
           | undefined,
-        isCustom: false,
         externalId: extId,
         aliases: item.aliases ?? [],
       };
@@ -652,11 +651,42 @@ export const seedIngredients = internalMutation({
         await ctx.db.patch(existing._id, doc);
         updated++;
       } else {
-        await ctx.db.insert("ingredients", doc);
+        const id = await ctx.db.insert("ingredients", doc);
         inserted++;
+        // So subsequent items in this run with the same name (e.g. manual override of base) update instead of re-inserting
+        const insertedDoc = await ctx.db.get(id);
+        if (insertedDoc) {
+          byNormalisedName.set(normaliseIngredientName(insertedDoc.name), insertedDoc);
+          if (insertedDoc.externalId) {
+            byExternalId.set(insertedDoc.externalId, insertedDoc);
+          }
+        }
       }
     }
     return { inserted, updated, total: items.length };
+  },
+});
+
+/**
+ * One-off: remove isCustom from all ingredients by replacing each document with
+ * the same data minus isCustom. Run once after removing isCustom from the schema:
+ *   npx convex run migrations:clearIngredientIsCustom
+ */
+export const clearIngredientIsCustom = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const ingredients = await ctx.db.query("ingredients").collect();
+    for (const ing of ingredients) {
+      await ctx.db.replace(ing._id, {
+        name: ing.name,
+        displayName: ing.displayName ?? undefined,
+        foodGroup: ing.foodGroup ?? undefined,
+        foodSubGroup: ing.foodSubGroup ?? undefined,
+        externalId: ing.externalId ?? undefined,
+        aliases: ing.aliases ?? undefined,
+      });
+    }
+    return { cleared: ingredients.length };
   },
 });
 
@@ -714,6 +744,81 @@ export const backfillRecipeIngredientIds = internalMutation({
       updated,
       totalRecipes: recipes.length,
       ingredientsTableCount: allIngredients.length,
+    };
+  },
+});
+
+/**
+ * Re-resolve ingredientId on all recipe ingredients and shopping list items
+ * using the current ingredients table (names + aliases). Call after ingredients
+ * are added, updated, removed, or have aliases changed so references stay correct.
+ * Used by admin ingredient mutations via scheduler; can also be run manually:
+ *   npx convex run migrations:reconcileIngredientReferences
+ */
+export const reconcileIngredientReferences = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const allIngredients = await ctx.db.query("ingredients").collect();
+    const ingredientIdCache = new Map<string, Id<"ingredients">>();
+    let recipesUpdated = 0;
+    let shoppingItemsUpdated = 0;
+
+    const recipes = await ctx.db.query("recipes").collect();
+    for (const recipe of recipes) {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+      const nextIngredients = recipe.ingredients.map((ing) => {
+        if (!ing.name) {
+          return { ...ing, ingredientId: undefined };
+        }
+        const key = normaliseIngredientName(ing.name);
+        let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+        if (resolved === undefined) {
+          const found = resolveIngredientIdFromList(allIngredients, ing.name);
+          if (found) {
+            ingredientIdCache.set(key, found);
+            resolved = found;
+          }
+        }
+        return { ...ing, ingredientId: resolved };
+      });
+
+      const changed = nextIngredients.some(
+        (n, i) =>
+          (recipe.ingredients![i]?.ingredientId ?? undefined) !==
+          (n.ingredientId ?? undefined),
+      );
+      if (changed) {
+        await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+        recipesUpdated++;
+      }
+    }
+
+    const shoppingListItems = await ctx.db.query("shoppingListItems").collect();
+    for (const item of shoppingListItems) {
+      if (!item.name?.trim()) continue;
+      const key = normaliseIngredientName(item.name);
+      let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+      if (resolved === undefined) {
+        const found = resolveIngredientIdFromList(allIngredients, item.name);
+        if (found) {
+          ingredientIdCache.set(key, found);
+          resolved = found;
+        }
+      }
+      const currentId = item.ingredientId ?? undefined;
+      if (currentId !== resolved) {
+        await ctx.db.patch(item._id, {
+          ingredientId: resolved,
+        });
+        shoppingItemsUpdated++;
+      }
+    }
+
+    return {
+      recipesUpdated,
+      shoppingItemsUpdated,
+      ingredientsCount: allIngredients.length,
     };
   },
 });
