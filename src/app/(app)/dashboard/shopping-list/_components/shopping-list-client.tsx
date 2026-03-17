@@ -31,6 +31,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
+import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
+import { isPantryStaple } from "@/lib/pantry-staples";
+import { combineAmounts } from "convex/lib/unitConversion";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -121,6 +124,18 @@ export default function ShoppingListClient() {
     () => buildShoppingListItems(selectedRecipes ?? []),
     [selectedRecipes],
   );
+  const { mainItems, pantryItems } = useMemo(() => {
+    const main: typeof flatIngredients = [];
+    const pantry: typeof flatIngredients = [];
+    for (const item of flatIngredients) {
+      if (isPantryStaple(item.name)) {
+        pantry.push(item);
+      } else {
+        main.push(item);
+      }
+    }
+    return { mainItems: main, pantryItems: pantry };
+  }, [flatIngredients]);
   const [showDoneDialog, setShowDoneDialog] = useState(false);
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
@@ -163,6 +178,13 @@ export default function ShoppingListClient() {
     });
   };
 
+  // When creating a list, always include both main items and pantry staples.
+  // Users can choose to drop pantry staples later on the shopping list screen.
+  const itemsToCreate = useMemo(
+    () => [...mainItems, ...pantryItems],
+    [mainItems, pantryItems],
+  );
+
   const handleGenerateList = async () => {
     if (accessibleLists === undefined) {
       toast.info("Loading your shopping lists…");
@@ -171,11 +193,14 @@ export default function ShoppingListClient() {
 
     try {
       const { listId } = await createShoppingList({
-        items: flatIngredients.map((item) => ({
+        items: itemsToCreate.map((item) => ({
           name: item.name,
-          amount: item.amount ?? null,
-          unit: item.unit,
+          amount: item.amountEntries?.[0]?.amount ?? item.amount ?? null,
+          unit: item.amountEntries?.[0]?.unit ?? item.unit,
           preparation: item.preparation,
+          ingredientId: item.ingredientId,
+          amountEntries: item.amountEntries,
+          ...(item.recipeIds?.length ? { recipeIds: item.recipeIds } : {}),
         })),
         chalkboardItemIds: Array.from(selectedChalkboardItems),
       });
@@ -513,7 +538,7 @@ export default function ShoppingListClient() {
 
               {/* Generate Button */}
               {selectedRecipeIds.size > 0 && (
-                <div className="sticky bottom-nav mt-8">
+                <div className="sticky bottom-nav z-10 mt-8 bg-background pt-2 pb-1">
                   <Button
                     size="lg"
                     className="w-full shadow-lg"
@@ -521,7 +546,8 @@ export default function ShoppingListClient() {
                   >
                     <ShoppingCart className="size-5 mr-2" />
                     Create Shopping List ({selectedRecipeIds.size}{" "}
-                    {selectedRecipeIds.size === 1 ? "recipe" : "recipes"})
+                    {selectedRecipeIds.size === 1 ? "recipe" : "recipes"}) ·{" "}
+                    {itemsToCreate.length} items
                   </Button>
                 </div>
               )}
@@ -748,14 +774,28 @@ function SelectedRecipesList({ recipes }: { recipes: Recipe[] }) {
   );
 }
 
-const normaliseKey = (ingredient: NonNullable<Recipe["ingredients"]>[number]) =>
-  [
-    ingredient?.name?.trim().toLowerCase() ?? "",
-    ingredient?.unit?.trim().toLowerCase() ?? "",
-    ingredient?.preparation?.trim().toLowerCase() ?? "",
-  ].join("|");
+type RecipeIngredient = NonNullable<Recipe["ingredients"]>[number];
 
-const buildShoppingListItems = (recipes: Recipe[]) => {
+function getAggregationKey(ingredient: RecipeIngredient): string {
+  if (ingredient?.ingredientId) {
+    return ingredient.ingredientId;
+  }
+  return normaliseNameForGrouping(ingredient?.name ?? "") || "unnamed";
+}
+
+type AmountEntry = { amount: number | string | null; unit?: string };
+
+const buildShoppingListItems = (
+  recipes: Recipe[],
+): Array<{
+  name: string;
+  unit?: string;
+  preparation?: string;
+  amount: number | string | null;
+  ingredientId?: Id<"ingredients">;
+  amountEntries: AmountEntry[];
+  recipeIds: Id<"recipes">[];
+}> => {
   const combined = new Map<
     string,
     {
@@ -763,6 +803,9 @@ const buildShoppingListItems = (recipes: Recipe[]) => {
       unit?: string;
       preparation?: string;
       amount: number | string | null;
+      ingredientId?: Id<"ingredients">;
+      amountEntries: AmountEntry[];
+      recipeIds: Set<Id<"recipes">>;
     }
   >();
 
@@ -770,45 +813,76 @@ const buildShoppingListItems = (recipes: Recipe[]) => {
     recipe.ingredients?.forEach((ingredient) => {
       if (!ingredient?.name) return;
 
-      const key = normaliseKey(ingredient);
+      const key = getAggregationKey(ingredient);
+      const rawAmount = ingredient.amount;
+      let storedAmount: number | string | null = null;
+      if (rawAmount === undefined || rawAmount === null) {
+        storedAmount = null;
+      } else if (typeof rawAmount === "number") {
+        storedAmount = Number.isFinite(rawAmount) ? rawAmount : null;
+      } else {
+        const str = String(rawAmount).trim();
+        if (str === "") {
+          storedAmount = null;
+        } else {
+          const num = Number(str);
+          storedAmount = Number.isFinite(num) ? num : str;
+        }
+      }
+      const hasAmount = storedAmount != null;
+      const hasUnit = Boolean(ingredient.unit?.trim());
+      const entry: AmountEntry = {
+        amount: storedAmount,
+        unit: ingredient.unit,
+      };
       const existing = combined.get(key);
-
-      // Handle optional amounts - if amount is undefined, treat it as null
-      const amountValue =
-        ingredient.amount === undefined
-          ? null
-          : typeof ingredient.amount === "number"
-            ? ingredient.amount
-            : Number(ingredient.amount);
-
       if (!existing) {
         combined.set(key, {
           name: ingredient.name,
           unit: ingredient.unit,
           preparation: ingredient.preparation,
-          amount: Number.isFinite(amountValue) ? amountValue : null,
+          amount: storedAmount,
+          ingredientId: ingredient.ingredientId,
+          amountEntries: hasAmount || hasUnit ? [entry] : [],
+          recipeIds: new Set([recipe._id]),
         });
         return;
       }
-
-      // Only combine amounts if both are numeric
-      if (
-        typeof existing.amount === "number" &&
-        typeof amountValue === "number" &&
-        Number.isFinite(amountValue)
-      ) {
-        existing.amount += amountValue;
-      } else if (ingredient.amount !== undefined) {
-        // If we have a non-null amount to add
-        const parts = [existing.amount, ingredient.amount]
-          .filter((v) => v !== null)
-          .map(String);
-        existing.amount = parts.length > 0 ? parts.join(" + ") : null;
+      existing.recipeIds.add(recipe._id);
+      if (hasAmount || hasUnit) {
+        const result = combineAmounts(
+          existing.amount,
+          existing.unit,
+          storedAmount,
+          ingredient.unit,
+        );
+        const merged =
+          result.amount != null &&
+          (typeof result.amount !== "string" || !result.amount.includes(" + "));
+        if (merged) {
+          existing.amount = result.amount;
+          existing.unit = result.unit;
+          existing.amountEntries = [
+            { amount: result.amount, unit: result.unit },
+          ];
+        } else {
+          existing.amountEntries.push(entry);
+          existing.amount = result.amount;
+          existing.unit = result.unit;
+        }
       }
     });
   });
 
-  return Array.from(combined.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+  return Array.from(combined.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((item) => ({
+      name: item.name,
+      amount: item.amount,
+      unit: item.unit,
+      preparation: item.preparation,
+      ingredientId: item.ingredientId,
+      amountEntries: item.amountEntries,
+      recipeIds: Array.from(item.recipeIds),
+    }));
 };

@@ -11,9 +11,7 @@
     "lint": "eslint",
     "generate-recipes": "tsx scripts/generate-recipes.ts",
     "validate-recipes": "tsx scripts/validate-recipes.ts",
-    "generate-recipe-images": "tsx scripts/generate-recipe-images.ts",
-    "ingredients-seed-preview": "tsx scripts/ingredients-seed-preview.ts",
-    "seed-ingredients": "tsx scripts/seed-ingredients.ts"
+    "generate-recipe-images": "tsx scripts/generate-recipe-images.ts"
   },
   "dependencies": {
     "@clerk/backend": "^2.15.0",

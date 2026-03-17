@@ -6,11 +6,16 @@
 
 Ingredients convenience infra:
 
-- [ ] Add internal use ingredients table from public data
-- [ ] Add a mapping system that maps ingredients to their ingredient table counterpart
-- [ ] Add a shopping list combination logic, synonyms and measurement normalisation
+- [x] Add internal use ingredients table from public data
+- [x] Add a mapping system that maps ingredients to their ingredient table counterpart
+- [x] Add a shopping list combination logic, synonyms and measurement normalisation
+- [ ] MANUALLY REVIEW INGREDIENTS SEED AND ALIASES
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
-
+- [ ] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
+- [ ] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
+- [ ] After setup, the scripts and code used to create ingredients can be removed (use plan mode for this feature). Display names (e.g. common oregano → oregano) should be easy to update.
+- [ ] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
+- [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.

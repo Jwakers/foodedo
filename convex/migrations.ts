@@ -1,13 +1,13 @@
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
+import { internalMutation } from "./_generated/server";
 import {
   COMPLEXITY_TIERS,
-  CUISINES,
-  PRIMARY_PROTEINS,
   ComplexityTier,
   Cuisine,
+  CUISINES,
   PreparationOption,
+  PRIMARY_PROTEINS,
   PrimaryProtein,
   RecipeCategory,
   RecipeSource,
@@ -19,7 +19,9 @@ import {
   normaliseIngredientName,
   resolveIngredientIdFromList,
 } from "./ingredients";
+import { INGREDIENT_FOOD_GROUPS } from "./lib/ingredientFoodGroups";
 import ingredientsSeedData from "./ingredients-seed.json";
+import ingredientsSeedManualData from "./ingredients-seed-manual.json";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
 /**
@@ -385,8 +387,8 @@ export const backfillMealPlanIsGenerated = internalMutation({
 });
 
 /**
- * Migration to remove the createdAt field from all mealPlans
- * Run this once to clean up existing data after schema change
+ * Migration to remove the createdAt field from all mealPlans.
+ * One-off cleanup after schema change; no longer related to ingredients.
  */
 export const removeMealPlanCreatedAtField = internalMutation({
   args: {},
@@ -573,47 +575,78 @@ export const validateRecipesGeneratorEligibility = internalMutation({
 type SeedItem = {
   name: string;
   externalId?: string;
-  foodGroup?: string;
-  foodSubGroup?: string;
+  foodGroup?: Doc<"ingredients">["foodGroup"];
+  foodSubGroup?: Doc<"ingredients">["foodSubGroup"];
   displayName?: string;
   aliases: string[];
 };
 
 /**
  * Seed ingredients table from convex/ingredients-seed.json. Upserts by externalId.
- * Regenerate the seed file with: pnpm run ingredients-seed-preview
- * Then run: npx convex run migrations:seedIngredients
- * Uses whatever deployment is active (dev by default); run with npx convex dev first for local/dev.
+ * This reads the existing, manually curated seed file without regenerating it.
+ *
+ * Run: npx convex run migrations:seedIngredients
+ *
+ * Uses whatever deployment is active (dev by default); run with npx convex dev
+ * first for local/dev so changes apply to the correct environment.
  */
 export const seedIngredients = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const items: SeedItem[] = (ingredientsSeedData as { items: SeedItem[] }).items ?? [];
+    const baseItems: SeedItem[] =
+      (ingredientsSeedData as { items: SeedItem[] }).items ?? [];
+    const manualItems: SeedItem[] =
+      (ingredientsSeedManualData as { items: SeedItem[] }).items ?? [];
+    // Combine base seed and manual additions into a single list.
+    // Manual items come last so they can override by name when no externalId is present.
+    const items: SeedItem[] = [...baseItems, ...manualItems];
+
+    // Load all existing ingredients once to stay under Convex read limits.
+    const existingIngredients = await ctx.db.query("ingredients").collect();
+    const byExternalId = new Map<string, Doc<"ingredients">>();
+    const byNormalisedName = new Map<string, Doc<"ingredients">>();
+    for (const ing of existingIngredients) {
+      if (ing.externalId) {
+        byExternalId.set(ing.externalId, ing);
+      }
+      const key = normaliseIngredientName(ing.name);
+      if (!byNormalisedName.has(key)) {
+        byNormalisedName.set(key, ing);
+      }
+    }
+
     let inserted = 0;
     let updated = 0;
     for (const item of items) {
       const trimmed = item.externalId?.trim();
-      const extId = trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
+      const extId =
+        trimmed !== undefined && trimmed !== "" ? trimmed : undefined;
       let existing: Doc<"ingredients"> | null = null;
       if (extId) {
-        existing = await ctx.db
-          .query("ingredients")
-          .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-          .first();
+        existing = byExternalId.get(extId) ?? null;
       } else {
-        existing = await ctx.db
-          .query("ingredients")
-          .filter((q) => q.eq(q.field("name"), item.name))
-          .first();
+        existing = byNormalisedName.get(normaliseIngredientName(item.name)) ?? null;
       }
+
+      // Normalise foodGroup to schema value (e.g. "Herbs and Spices" -> "Herbs and spices")
+      const rawGroup = item.foodGroup;
+      const foodGroup: Doc<"ingredients">["foodGroup"] | undefined =
+        rawGroup && typeof rawGroup === "string"
+          ? ((INGREDIENT_FOOD_GROUPS as readonly string[]).find(
+              (g) => g.toLowerCase() === rawGroup.toLowerCase()
+            ) as Doc<"ingredients">["foodGroup"] | undefined) ?? undefined
+          : (rawGroup as Doc<"ingredients">["foodGroup"] | undefined);
+
       const doc = {
         name: item.name,
-        foodGroup: item.foodGroup,
+        foodGroup,
         displayName: item.displayName,
-        foodSubGroup: item.foodSubGroup ?? undefined,
+        foodSubGroup: (item.foodSubGroup ?? undefined) as
+          | Doc<"ingredients">["foodSubGroup"]
+          | undefined,
         isCustom: false,
         externalId: extId,
-        aliases: item.aliases,
+        aliases: item.aliases ?? [],
       };
       if (existing) {
         await ctx.db.patch(existing._id, doc);
@@ -629,8 +662,12 @@ export const seedIngredients = internalMutation({
 
 /**
  * Backfill ingredientId on existing recipe ingredients using the current
- * ingredients table (names + aliases). Uses a single query (Convex allows only
- * one paginated query per function, so we use collect()).
+ * ingredients table (names + aliases). Always overwrites: each ingredient's
+ * ingredientId is set to the resolved value or undefined (never left as-is).
+ * Run repeatedly as ingredients/aliases change.
+ *
+ * Prerequisite: run seedIngredients first so the ingredients table is
+ * populated from convex/ingredients-seed.json (same deployment as this backfill).
  *
  * Run: npx convex run migrations:backfillRecipeIngredientIds
  */
@@ -645,11 +682,13 @@ export const backfillRecipeIngredientIds = internalMutation({
     for (const recipe of recipes) {
       if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
 
-      let changed = false;
       const nextIngredients = recipe.ingredients.map((ing) => {
-        if (ing.ingredientId || !ing.name) return ing;
+        if (!ing.name) {
+          return { ...ing, ingredientId: undefined };
+        }
         const key = normaliseIngredientName(ing.name);
-        let resolved: Id<"ingredients"> | undefined = ingredientIdCache.get(key);
+        let resolved: Id<"ingredients"> | undefined =
+          ingredientIdCache.get(key);
         if (resolved === undefined) {
           const found = resolveIngredientIdFromList(allIngredients, ing.name);
           if (found) {
@@ -657,19 +696,214 @@ export const backfillRecipeIngredientIds = internalMutation({
             resolved = found;
           }
         }
-        if (resolved !== undefined) {
-          changed = true;
-          return { ...ing, ingredientId: resolved };
-        }
-        return ing;
+        return { ...ing, ingredientId: resolved };
       });
 
+      const changed = nextIngredients.some(
+        (n, i) =>
+          (recipe.ingredients![i]?.ingredientId ?? undefined) !==
+          (n.ingredientId ?? undefined),
+      );
       if (changed) {
         await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
         updated++;
       }
     }
 
+    return {
+      updated,
+      totalRecipes: recipes.length,
+      ingredientsTableCount: allIngredients.length,
+    };
+  },
+});
+
+/**
+ * One-off: clear ingredientId on all recipe ingredients.
+ *
+ * Useful when reseeding the ingredients table such that IDs may change:
+ * - Run seedIngredients to upsert the new ingredient catalog.
+ * - Run clearRecipeIngredientIds to remove all existing ingredientId links.
+ * - Run backfillRecipeIngredientIds to re-resolve ingredientId for each recipe.
+ *
+ * Run:
+ *   npx convex run migrations:clearRecipeIngredientIds
+ */
+export const clearRecipeIngredientIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db.query("recipes").collect();
+    let updated = 0;
+
+    for (const recipe of recipes) {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+
+      const nextIngredients = recipe.ingredients.map((ing) => {
+        if (ing.ingredientId === undefined) return ing;
+        const { ingredientId, ...rest } = ing;
+        return { ...rest, ingredientId: undefined };
+      });
+
+      const changed = nextIngredients.some(
+        (n, i) =>
+          (recipe.ingredients![i]?.ingredientId ?? undefined) !==
+          (n.ingredientId ?? undefined),
+      );
+      if (!changed) continue;
+
+      await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+      updated++;
+    }
+
     return { updated, totalRecipes: recipes.length };
+  },
+});
+
+/**
+ * Report: list all recipe ingredients and their associated canonical ingredient
+ * (if any). Intended for manual review of ingredient mappings.
+ *
+ * Run (prints JSON to stdout; redirect to a file if desired):
+ *   npx convex run migrations:getRecipeIngredientAssociations
+ *   npx convex run migrations:getRecipeIngredientAssociations > docs/ingredient-associations.json
+ */
+export const getRecipeIngredientAssociations = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db.query("recipes").collect();
+
+    const ingredientIdSet = new Set<Id<"ingredients">>();
+    for (const recipe of recipes) {
+      for (const ing of recipe.ingredients ?? []) {
+        if (ing.ingredientId) {
+          ingredientIdSet.add(ing.ingredientId);
+        }
+      }
+    }
+
+    const ingredientDocs: Record<string, Doc<"ingredients">> = {};
+    for (const id of ingredientIdSet) {
+      const doc = await ctx.db.get(id);
+      if (doc) {
+        ingredientDocs[id] = doc;
+      }
+    }
+
+    const withReference: {
+      recipeId: Id<"recipes">;
+      recipeTitle: string;
+      ingredientIndex: number;
+      ingredientName: string;
+      ingredientId: Id<"ingredients">;
+      canonicalName: string | null;
+      canonicalDisplayName: string | null;
+    }[] = [];
+
+    const withoutReference: {
+      recipeId: Id<"recipes">;
+      recipeTitle: string;
+      ingredientIndex: number;
+      ingredientName: string;
+    }[] = [];
+
+    for (const recipe of recipes) {
+      const ingredients = recipe.ingredients ?? [];
+      ingredients.forEach((ing, index) => {
+        const id = ing.ingredientId ?? null;
+        if (!id) {
+          withoutReference.push({
+            recipeId: recipe._id,
+            recipeTitle: recipe.title ?? "",
+            ingredientIndex: index,
+            ingredientName: ing.name ?? "",
+          });
+          return;
+        }
+        const canonical = ingredientDocs[id];
+        withReference.push({
+          recipeId: recipe._id,
+          recipeTitle: recipe.title ?? "",
+          ingredientIndex: index,
+          ingredientName: ing.name ?? "",
+          ingredientId: id,
+          canonicalName: canonical?.name ?? null,
+          canonicalDisplayName: canonical?.displayName ?? null,
+        });
+      });
+    }
+
+    return { withReference, withoutReference };
+  },
+});
+
+/**
+ * One-off: delete ingredient rows that are category labels (e.g. top-level
+ * groups like "Fruits" or "Cereals and cereal products") that should not
+ * exist as individual ingredients.
+ *
+ * Run once if these labels were imported into the ingredients table:
+ *   npx convex run migrations:deleteCategoryIngredients
+ */
+const INGREDIENT_CATEGORY_NAMES = new Set([
+  "Alcoholic beverages",
+  "Beverages",
+  "Brassicas",
+  "Cereals and cereal products",
+  "Citrus",
+  "Cocoa and cocoa products",
+  "Coffee",
+  "Coffee and coffee products",
+  "Crustaceans",
+  "Eggs",
+  "Fats and oils",
+  "Fishes",
+  "Fruits",
+  "Green vegetables",
+  "Herbs and spices",
+  "Lentils",
+  "Milk and milk products",
+  "Mollusks",
+  "Mushrooms",
+  "Nuts",
+  "Onion-family vegetables",
+  "Pomes",
+  "Pulses",
+  "Roe",
+  "Root vegetables",
+]);
+
+export const deleteCategoryIngredients = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("ingredients").collect();
+    const toDelete = all.filter((ing) =>
+      INGREDIENT_CATEGORY_NAMES.has(ing.name),
+    );
+    const idsToDelete = new Set(toDelete.map((d) => d._id));
+
+    // Clear recipe.ingredients[].ingredientId and shoppingListItems.ingredientId before delete
+    const recipes = await ctx.db.query("recipes").collect();
+    for (const recipe of recipes) {
+      const ingredients = recipe.ingredients ?? [];
+      const updated = ingredients.map((ing) =>
+        ing.ingredientId && idsToDelete.has(ing.ingredientId)
+          ? { ...ing, ingredientId: undefined }
+          : ing
+      );
+      if (updated.some((ing, i) => (ingredients[i]?.ingredientId ?? null) !== (ing.ingredientId ?? null))) {
+        await ctx.db.patch(recipe._id, { ingredients: updated });
+      }
+    }
+    const allItems = await ctx.db.query("shoppingListItems").collect();
+    for (const item of allItems) {
+      if (item.ingredientId && idsToDelete.has(item.ingredientId)) {
+        await ctx.db.patch(item._id, { ingredientId: undefined });
+      }
+    }
+
+    for (const doc of toDelete) {
+      await ctx.db.delete(doc._id);
+    }
+    return { deleted: toDelete.length, names: toDelete.map((d) => d.name) };
   },
 });

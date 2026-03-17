@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -15,6 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import useShare from "@/lib/hooks/use-share";
+import {
+  AISLE_ORDER,
+  getAisleForFoodGroupAndSubGroup,
+} from "@/lib/shopping-list-aisles";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -30,7 +34,7 @@ import {
   ShoppingCart,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type ShoppingList = NonNullable<
@@ -74,7 +78,87 @@ export default function ShoppingList({
   const addChalkboardItems = useMutation(api.shoppingLists.addChalkboardItems);
 
   const isFinalised = shoppingList.status === "active";
-  const allIngredients = shoppingList.items;
+  const ingredientIds = useMemo(
+    () =>
+      shoppingList.items
+        .map((i) => i.ingredientId)
+        .filter((id): id is Id<"ingredients"> => id != null),
+    [shoppingList.items],
+  );
+  const ingredientsMap = useQuery(
+    api.ingredients.getByIds,
+    ingredientIds.length > 0 ? { ids: ingredientIds } : "skip",
+  );
+  const isDev =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_SHOW_RECIPE_LINKS === "true";
+  /** Canonical name from ingredients table when resolved; otherwise original from recipe. */
+  const getDisplayName = (item: (typeof shoppingList.items)[number]) => {
+    if (item.ingredientId && ingredientsMap?.[item.ingredientId]) {
+      const ing = ingredientsMap[item.ingredientId];
+      return ing.displayName ?? ing.name ?? item.name;
+    }
+    return item.name;
+  };
+  /** Stable key for de-duplication (chalkboard vs list); uses canonical ingredient name when resolved. */
+  const getCanonicalKey = (item: (typeof shoppingList.items)[number]) => {
+    if (item.ingredientId && ingredientsMap?.[item.ingredientId]) {
+      const ing = ingredientsMap[item.ingredientId];
+      return (ing.name ?? ing.displayName ?? item.name).trim().toLowerCase();
+    }
+    return (item.name ?? "").trim().toLowerCase();
+  };
+  /** Original ingredient name from the recipe (for dev-mode brackets). */
+  const getOriginalRecipeName = (item: (typeof shoppingList.items)[number]) =>
+    item.name;
+  const getCategory = (item: (typeof shoppingList.items)[number]) => {
+    const ing = item.ingredientId ? ingredientsMap?.[item.ingredientId] : undefined;
+    const foodGroup = ing?.foodGroup ?? undefined;
+    const foodSubGroup = ing?.foodSubGroup ?? undefined;
+    return getAisleForFoodGroupAndSubGroup(foodGroup, foodSubGroup);
+  };
+  const getAmountLines = (item: (typeof shoppingList.items)[number]) => {
+    const entries =
+      item.amountEntries && item.amountEntries.length > 0
+        ? item.amountEntries
+        : [
+            {
+              amount: item.amount,
+              unit: item.unit,
+            },
+          ];
+    return entries
+      .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
+      .filter(Boolean);
+  };
+  const allIngredients = useMemo(
+    () =>
+      [...shoppingList.items].sort((a, b) =>
+        getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
+          sensitivity: "base",
+        }),
+      ),
+    [shoppingList.items, ingredientsMap],
+  );
+  const ingredientsByCategory = useMemo(() => {
+    const groups = new Map<string, (typeof shoppingList.items)[number][]>();
+    for (const item of allIngredients) {
+      const cat = getCategory(item);
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat)!.push(item);
+    }
+    const orderIdx = (cat: string) => {
+      const i = AISLE_ORDER.indexOf(cat as (typeof AISLE_ORDER)[number]);
+      return i >= 0 ? i : AISLE_ORDER.length;
+    };
+    const sortedCategories = [...groups.keys()].sort(
+      (a, b) => orderIdx(a) - orderIdx(b),
+    );
+    return sortedCategories.map((cat) => ({
+      category: cat,
+      items: groups.get(cat)!,
+    }));
+  }, [allIngredients, ingredientsMap]);
 
   // Get chalkboard data
   const households = useQuery(api.households.getUserHouseholds);
@@ -114,7 +198,7 @@ export default function ShoppingList({
     if (personalChalkboard) {
       count += personalChalkboard.filter(
         (item) =>
-          !allIngredients.some((ing) => namesEqual(ing.name, item.text)),
+          !allIngredients.some((ing) => namesEqual(getCanonicalKey(ing), item.text)),
       ).length;
     }
 
@@ -123,7 +207,7 @@ export default function ShoppingList({
       Object.values(allHouseholdChalkboards).forEach((items) => {
         count += items.filter(
           (item) =>
-            !allIngredients.some((ing) => namesEqual(ing.name, item.text)),
+            !allIngredients.some((ing) => namesEqual(getCanonicalKey(ing), item.text)),
         ).length;
       });
     }
@@ -181,7 +265,7 @@ export default function ShoppingList({
       personalChalkboard.forEach((item) => {
         // Only add if not already in shopping list
         const alreadyAdded = allIngredients.some((ing) =>
-          namesEqual(ing.name, item.text),
+          namesEqual(getCanonicalKey(ing), item.text),
         );
         if (!alreadyAdded) {
           itemsToAdd.push({
@@ -200,7 +284,7 @@ export default function ShoppingList({
           householdItems.forEach((item) => {
             // Only add if not already in shopping list
             const alreadyAdded = allIngredients.some((ing) =>
-              namesEqual(ing.name, item.text),
+              namesEqual(getCanonicalKey(ing), item.text),
             );
             if (!alreadyAdded) {
               itemsToAdd.push({
@@ -250,16 +334,22 @@ export default function ShoppingList({
   };
 
   const handleShare = async () => {
-    // Create a formatted text version of the shopping list
-    const listText = `Shopping List - ${new Date().toLocaleDateString()}\n\n${allIngredients
-      .map((item) => {
+    const lines = ingredientsByCategory.flatMap(({ category, items }) => [
+      category,
+      ...items.map((item) => {
         const checked = item.checked ? "✓ " : "";
-        const amt = item.amount != null ? String(item.amount) : "";
-        const unit = item.unit ? ` ${item.unit}` : "";
-        const space = amt || unit ? " " : "";
-        return `${checked}• ${amt}${unit}${space}${item.name}`;
-      })
-      .join("\n")}`;
+        const amtLines = getAmountLines(item);
+        const amtStr = amtLines.length > 0 ? amtLines.join(", ") + " " : "";
+        const showOriginalInDev =
+          isDev && item.ingredientId && ingredientsMap?.[item.ingredientId];
+        const nameStr =
+          getDisplayName(item) +
+          (showOriginalInDev ? ` (${getOriginalRecipeName(item)})` : "");
+        return `${checked}• ${amtStr}${nameStr}`;
+      }),
+      "",
+    ]);
+    const listText = `Shopping List - ${new Date().toLocaleDateString()}\n\n${lines.join("\n")}`;
 
     // Check if Web Share API is available (primarily mobile)
     if (canShare) {
@@ -277,31 +367,48 @@ export default function ShoppingList({
       <div className="hidden print:block">
         <div className="p-8">
           <h1 className="text-3xl font-bold mb-2">Shopping List</h1>
-          <div className="space-y-1">
-            {allIngredients.map((item) => {
-              return (
-                <div
-                  key={item._id}
-                  className="flex items-start gap-3 py-2 border-b"
-                >
-                  <div className="size-5 border-2 rounded flex-shrink-0 mt-0.5">
-                    {item.checked && (
-                      <div className="w-full h-full flex items-center justify-center">
-                        ✓
+          <div className="space-y-4">
+            {ingredientsByCategory.map(({ category, items }) => (
+              <div key={category}>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  {category}
+                </h2>
+                <div className="space-y-1">
+                  {items.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-start gap-3 py-2 border-b"
+                    >
+                      <div className="size-5 border-2 rounded shrink-0 mt-0.5">
+                        {item.checked && (
+                          <div className="size-full flex items-center justify-center">
+                            ✓
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <span className={cn(item.checked && "line-through")}>
-                      {item.name}
-                    </span>
-                    <span className="ml-2">
-                      {item.amount ?? ""} {item.unit ?? ""}
-                    </span>
-                  </div>
+                      <div className="flex-1">
+                        <span className={cn(item.checked && "line-through")}>
+                          {getDisplayName(item)}
+                          {isDev &&
+                            item.ingredientId &&
+                            ingredientsMap?.[item.ingredientId] && (
+                              <>
+                                {" "}
+                                ({getOriginalRecipeName(item)})
+                              </>
+                            )}
+                        </span>
+                        {getAmountLines(item).length > 0 && (
+                          <span className="ml-2">
+                            {getAmountLines(item).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
           <p className="text-sm mt-8">Total items: {allIngredients.length}</p>
@@ -409,112 +516,163 @@ export default function ShoppingList({
               </div>
             )}
 
-            <div className="space-y-2">
-              {allIngredients.map((item) => {
-                return (
-                  <div
-                    key={item._id}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                      isFinalised && item.checked
-                        ? "bg-muted/50 opacity-60"
-                        : "hover:bg-muted/30 hover:border-primary/30",
-                    )}
-                  >
-                    {/* Checkbox (only in finalized state) */}
-                    {isFinalised && (
-                      <Checkbox
-                        checked={item.checked}
-                        onCheckedChange={() => handleCheckItem(item._id)}
-                        className="size-5"
-                      />
-                    )}
-
-                    {/* Item Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p
-                          className={cn(
-                            "font-medium capitalize",
-                            isFinalised && item.checked && "line-through",
-                          )}
-                        >
-                          {item.name}
-                        </p>
-                      </div>
-
-                      {/* Amount Display/Controls */}
-                      {(item.amount !== undefined && item.amount !== null) ||
-                      item.unit !== undefined ? (
-                        isFinalised ? (
-                          // Static display when finalized
-                          <p className="text-sm text-muted-foreground capitalize">
-                            {item.amount ?? ""} {item.unit ?? ""}
-                          </p>
-                        ) : (
-                          // Editable controls before finalized
-                          <div className="flex items-center gap-1.5">
-                            {typeof item.amount === "number" &&
-                            !isNaN(item.amount) ? (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    handleAmountChange(
-                                      item._id,
-                                      (item.amount as number) - 1,
-                                    )
-                                  }
-                                  className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
-                                  aria-label="Decrease amount"
-                                >
-                                  <Minus className="size-3.5 text-muted-foreground" />
-                                </button>
-                                <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
-                                  {item.amount}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    handleAmountChange(
-                                      item._id,
-                                      (item.amount as number) + 1,
-                                    )
-                                  }
-                                  className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
-                                  aria-label="Increase amount"
-                                >
-                                  <Plus className="size-3.5 text-muted-foreground" />
-                                </button>
-                              </>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">
-                                {item.amount}
-                              </span>
-                            )}
-                            {item.unit && (
-                              <span className="text-sm text-muted-foreground ml-0.5">
-                                {item.unit}
-                              </span>
-                            )}
-                          </div>
-                        )
-                      ) : null}
-                    </div>
-
-                    {/* Remove Button (only in editing state) */}
-                    {!isFinalised && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleRemoveItem(item._id)}
+            <div className="space-y-6">
+              {ingredientsByCategory.map(({ category, items }) => (
+                <div key={category}>
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {category}
+                  </h4>
+                  <div className="space-y-2">
+                    {items.map((item) => (
+                      <div
+                        key={item._id}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                          isFinalised && item.checked
+                            ? "bg-muted/50 opacity-60"
+                            : "hover:bg-muted/30 hover:border-primary/30",
+                        )}
                       >
-                        <X className="size-4" />
-                        <span className="sr-only">Remove {item.name}</span>
-                      </Button>
-                    )}
+                        {/* Checkbox (only in finalized state) */}
+                        {isFinalised && (
+                          <Checkbox
+                            checked={item.checked}
+                            onCheckedChange={() => handleCheckItem(item._id)}
+                            className="size-5"
+                          />
+                        )}
+
+                        {/* Item Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <p
+                              className={cn(
+                                "font-medium capitalize",
+                                isFinalised && item.checked && "line-through",
+                              )}
+                            >
+                              {getDisplayName(item)}
+                              {isDev &&
+                                item.ingredientId &&
+                                ingredientsMap?.[item.ingredientId] && (
+                                  <span className="text-muted-foreground font-normal">
+                                    {" "}
+                                    ({getOriginalRecipeName(item)})
+                                  </span>
+                                )}
+                            </p>
+                          </div>
+
+                          {/* Amount Display/Controls */}
+                          {(() => {
+                            const entries =
+                              item.amountEntries &&
+                              item.amountEntries.length > 0
+                                ? item.amountEntries
+                                : [
+                                    {
+                                      amount: item.amount,
+                                      unit: item.unit,
+                                    },
+                                  ].filter(
+                                    (e) =>
+                                      e.amount != null ||
+                                      (e.unit != null && e.unit !== ""),
+                                  );
+                            if (entries.length === 0) return null;
+                            // Multiple uses: list each on its own line
+                            if (entries.length > 1) {
+                              return (
+                                <div className="space-y-0.5">
+                                  {entries.map((entry, i) => (
+                                    <p
+                                      key={i}
+                                      className="text-sm text-muted-foreground capitalize"
+                                    >
+                                      {entry.amount ?? ""} {entry.unit ?? ""}
+                                    </p>
+                                  ))}
+                                </div>
+                              );
+                            }
+                            // Single use: editable when draft + numeric
+                            const single = entries[0]!;
+                            if (isFinalised) {
+                              return (
+                                <p className="text-sm text-muted-foreground capitalize">
+                                  {single.amount ?? ""} {single.unit ?? ""}
+                                </p>
+                              );
+                            }
+                            const isNumeric =
+                              typeof single.amount === "number" &&
+                              !isNaN(single.amount);
+                            return (
+                              <div className="flex items-center gap-1.5">
+                                {isNumeric ? (
+                                  <>
+                                    <button
+                                      onClick={() =>
+                                        handleAmountChange(
+                                          item._id,
+                                          (single.amount as number) - 1,
+                                        )
+                                      }
+                                      className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
+                                      aria-label="Decrease amount"
+                                    >
+                                      <Minus className="size-3.5 text-muted-foreground" />
+                                    </button>
+                                    <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
+                                      {single.amount}
+                                    </span>
+                                    <button
+                                      onClick={() =>
+                                        handleAmountChange(
+                                          item._id,
+                                          (single.amount as number) + 1,
+                                        )
+                                      }
+                                      className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
+                                      aria-label="Increase amount"
+                                    >
+                                      <Plus className="size-3.5 text-muted-foreground" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">
+                                    {single.amount}
+                                  </span>
+                                )}
+                                {single.unit && (
+                                  <span className="text-sm text-muted-foreground ml-0.5">
+                                    {single.unit}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Remove Button (only in editing state) */}
+                        {!isFinalised && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleRemoveItem(item._id)}
+                          >
+                            <X className="size-4" />
+                            <span className="sr-only">
+                              Remove {getDisplayName(item)}
+                            </span>
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             {allIngredients.length === 0 && (
@@ -601,7 +759,7 @@ export default function ShoppingList({
                     const availableItems = personalChalkboard?.filter(
                       (item) =>
                         !allIngredients.some((ing) =>
-                          namesEqual(ing.name, item.text),
+                          namesEqual(getCanonicalKey(ing), item.text),
                         ),
                     );
                     const count = availableItems?.length || 0;
@@ -620,7 +778,7 @@ export default function ShoppingList({
                   personalChalkboard.filter(
                     (item) =>
                       !allIngredients.some((ing) =>
-                        namesEqual(ing.name, item.text),
+                        namesEqual(getCanonicalKey(ing), item.text),
                       ),
                   ).length === 0
                 }
@@ -641,7 +799,7 @@ export default function ShoppingList({
                     const availableItems = householdItems.filter(
                       (item) =>
                         !allIngredients.some((ing) =>
-                          namesEqual(ing.name, item.text),
+                          namesEqual(getCanonicalKey(ing), item.text),
                         ),
                     );
                     const isSelected = selectedHouseholdIds.has(household._id);
@@ -688,7 +846,7 @@ export default function ShoppingList({
                 personalChalkboard.forEach((item) => {
                   if (
                     !allIngredients.some((ing) =>
-                      namesEqual(ing.name, item.text),
+                      namesEqual(getCanonicalKey(ing), item.text),
                     )
                   ) {
                     previewItems.push({ id: item._id, text: item.text });
@@ -703,7 +861,7 @@ export default function ShoppingList({
                   householdItems?.forEach((item) => {
                     if (
                       !allIngredients.some((ing) =>
-                        namesEqual(ing.name, item.text),
+                        namesEqual(getCanonicalKey(ing), item.text),
                       )
                     ) {
                       previewItems.push({ id: item._id, text: item.text });

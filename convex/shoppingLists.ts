@@ -8,6 +8,8 @@ import {
 } from "./_generated/server";
 import { isHouseholdMember } from "./households";
 import { canAccessMealPlan } from "./mealPlans";
+import { normaliseNameForGrouping } from "./lib/ingredientGrouping";
+import { combineAmounts } from "./lib/unitConversion";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -50,25 +52,30 @@ function canModifyShoppingList(
 // HELPERS (ingredient aggregation for meal plan → shopping list)
 // ============================================================================
 
-function normaliseIngredientKey(ing: {
-  name?: string;
-  unit?: string;
-  preparation?: string;
-}): string {
-  return [
-    (ing?.name ?? "").trim().toLowerCase(),
-    (ing?.unit ?? "").trim().toLowerCase(),
-    (ing?.preparation ?? "").trim().toLowerCase(),
-  ].join("|");
+type RecipeIngredient = Doc<"recipes">["ingredients"] extends (infer I)[] | undefined
+  ? I
+  : never;
+
+function getAggregationKey(ing: RecipeIngredient): string {
+  if (ing?.ingredientId) {
+    return ing.ingredientId;
+  }
+  return normaliseNameForGrouping(ing?.name ?? "") || "unnamed";
 }
 
 function aggregateIngredientsFromRecipes(
-  recipes: { ingredients?: Doc<"recipes">["ingredients"] }[]
+  recipes: {
+    _id: Id<"recipes">;
+    ingredients?: Doc<"recipes">["ingredients"];
+  }[]
 ): {
   name: string;
   amount: number | string | null;
   unit?: string;
   preparation?: string;
+  ingredientId?: Id<"ingredients">;
+  amountEntries: Array<{ amount: number | string | null; unit?: string }>;
+  recipeIds: Id<"recipes">[];
 }[] {
   const combined = new Map<
     string,
@@ -77,6 +84,9 @@ function aggregateIngredientsFromRecipes(
       unit?: string;
       preparation?: string;
       amount: number | string | null;
+      ingredientId?: Id<"ingredients">;
+      amountEntries: Array<{ amount: number | string | null; unit?: string }>;
+      recipeIds: Set<Id<"recipes">>;
     }
   >();
 
@@ -84,50 +94,77 @@ function aggregateIngredientsFromRecipes(
     const ingredients = recipe.ingredients ?? [];
     for (const ingredient of ingredients) {
       if (!ingredient?.name) continue;
-      const key = normaliseIngredientKey(ingredient);
-      const existing = combined.get(key);
+      const key = getAggregationKey(ingredient);
       const rawAmount = ingredient.amount;
-      const amountValue =
-        rawAmount === undefined
-          ? null
-          : typeof rawAmount === "number"
-            ? rawAmount
-            : Number(rawAmount);
-      const parsedNumeric =
-        amountValue !== null && Number.isFinite(amountValue as number);
-      const storedAmount: number | string | null = parsedNumeric
-        ? (amountValue as number)
-        : typeof rawAmount === "string"
-          ? rawAmount
-          : rawAmount ?? null;
+      let amountValue: number | null = null;
+      let storedAmount: number | string | null = null;
+      if (rawAmount === undefined || rawAmount === null) {
+        storedAmount = null;
+      } else if (typeof rawAmount === "number") {
+        amountValue = Number.isFinite(rawAmount) ? rawAmount : null;
+        storedAmount = amountValue;
+      } else {
+        const trimmedAmount = String(rawAmount).trim();
+        if (trimmedAmount === "") {
+          storedAmount = null;
+        } else {
+          amountValue = Number(trimmedAmount);
+          storedAmount = Number.isFinite(amountValue) ? amountValue : trimmedAmount;
+        }
+      }
 
+      const hasAmountOrUnit =
+        storedAmount != null || ingredient.unit !== undefined;
+      const entry = hasAmountOrUnit
+        ? { amount: storedAmount, unit: ingredient.unit }
+        : null;
+      const existing = combined.get(key);
       if (!existing) {
+        const recipeIds = new Set<Id<"recipes">>([recipe._id]);
         combined.set(key, {
           name: ingredient.name,
           unit: ingredient.unit,
           preparation: ingredient.preparation,
           amount: storedAmount,
+          ingredientId: ingredient.ingredientId,
+          amountEntries: entry ? [entry] : [],
+          recipeIds,
         });
         continue;
       }
-      if (
-        typeof existing.amount === "number" &&
-        parsedNumeric &&
-        amountValue !== null
-      ) {
-        existing.amount += amountValue as number;
-      } else if (rawAmount !== undefined) {
-        const parts = [existing.amount, storedAmount]
-          .filter((v) => v !== null && v !== undefined)
-          .map(String);
-        existing.amount = parts.length > 0 ? parts.join(" + ") : null;
+      existing.recipeIds.add(recipe._id);
+      if (entry) {
+        existing.amountEntries.push(entry);
+      }
+      const entries = existing.amountEntries;
+      if (entries.length > 0) {
+        const aggregated = entries.slice(1).reduce<{
+          amount: number | string | null;
+          unit?: string;
+        }>(
+          (acc, e) => combineAmounts(acc.amount, acc.unit, e.amount, e.unit),
+          { amount: entries[0]!.amount, unit: entries[0]!.unit }
+        );
+        existing.amount = aggregated.amount ?? null;
+        existing.unit = aggregated.unit;
+      } else {
+        existing.amount = null;
+        existing.unit = undefined;
       }
     }
   }
 
-  return Array.from(combined.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  return Array.from(combined.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((item) => ({
+      name: item.name,
+      amount: item.amount,
+      unit: item.unit,
+      preparation: item.preparation,
+      ingredientId: item.ingredientId,
+      amountEntries: item.amountEntries,
+      recipeIds: Array.from(item.recipeIds),
+    }));
 }
 
 // ============================================================================
@@ -338,6 +375,11 @@ export const getAllActiveShoppingLists = query({
 /**
  * Create a new shopping list in draft mode
  */
+const amountEntryValidator = v.object({
+  amount: v.union(v.number(), v.string(), v.null()),
+  unit: v.optional(v.string()),
+});
+
 export const createShoppingList = mutation({
   args: {
     items: v.array(
@@ -346,11 +388,17 @@ export const createShoppingList = mutation({
         amount: v.union(v.number(), v.string(), v.null()),
         unit: v.optional(v.string()),
         preparation: v.optional(v.string()),
+        ingredientId: v.optional(v.id("ingredients")),
+        amountEntries: v.optional(v.array(amountEntryValidator)),
+        recipeIds: v.optional(v.array(v.id("recipes"))),
       })
     ),
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
   },
   handler: async (ctx, args) => {
+    if (!args.items?.length) {
+      throw new ConvexError("Cannot create a shopping list with zero items.");
+    }
     const user = await getCurrentUserOrThrow(ctx);
     const subscription = await getUserSubscription(user, ctx);
 
@@ -384,14 +432,21 @@ export const createShoppingList = mutation({
     // Create all items
     await Promise.all(
       args.items.map((item, i) => {
+        const entries = item.amountEntries ?? [
+          { amount: item.amount, unit: item.unit },
+        ];
+        const first = entries[0];
         return ctx.db.insert("shoppingListItems", {
           shoppingListId: listId,
           name: item.name,
-          amount: item.amount,
-          unit: item.unit,
+          amount: first?.amount ?? item.amount,
+          unit: first?.unit ?? item.unit,
           preparation: item.preparation,
           checked: false,
           order: i,
+          ingredientId: item.ingredientId,
+          amountEntries: entries,
+          ...(item.recipeIds != null && item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
         });
       })
     );
@@ -428,6 +483,11 @@ export const createShoppingListFromMealPlan = mutation({
       (r): r is NonNullable<typeof r> => r != null
     );
     const items = aggregateIngredientsFromRecipes(validRecipes);
+    if (!items.length) {
+      throw new ConvexError(
+        "Cannot create a shopping list from this meal plan: no ingredients found."
+      );
+    }
 
     const subscription = await getUserSubscription(user, ctx);
     const activeLists = await ctx.db
@@ -456,17 +516,24 @@ export const createShoppingListFromMealPlan = mutation({
     });
 
     await Promise.all(
-      items.map((item, i) =>
-        ctx.db.insert("shoppingListItems", {
+      items.map((item, i) => {
+        const entries = item.amountEntries ?? [
+          { amount: item.amount, unit: item.unit },
+        ];
+        const first = entries[0];
+        return ctx.db.insert("shoppingListItems", {
           shoppingListId: listId,
           name: item.name,
-          amount: item.amount,
-          unit: item.unit,
+          amount: first?.amount ?? item.amount,
+          unit: first?.unit ?? item.unit,
           preparation: item.preparation,
           checked: false,
           order: i,
-        })
-      )
+          ingredientId: item.ingredientId,
+          amountEntries: entries,
+          recipeIds: item.recipeIds,
+        });
+      })
     );
 
     return { listId };
@@ -486,6 +553,16 @@ export const updateItems = mutation({
         amount: v.union(v.number(), v.string(), v.null()),
         unit: v.optional(v.string()),
         preparation: v.optional(v.string()),
+        ingredientId: v.optional(v.id("ingredients")),
+        amountEntries: v.optional(
+          v.array(
+            v.object({
+              amount: v.union(v.number(), v.string(), v.null()),
+              unit: v.optional(v.string()),
+            })
+          )
+        ),
+        recipeIds: v.optional(v.array(v.id("recipes"))),
       })
     ),
   },
@@ -527,6 +604,10 @@ export const updateItems = mutation({
     // Update or create items
     await Promise.all(
       args.items.map((item, i) => {
+        const amountEntries =
+          item.amountEntries ?? (item.amount != null || item.unit
+            ? [{ amount: item.amount, unit: item.unit }]
+            : undefined);
         if (item.id && existingIds.has(item.id)) {
           // Update existing item
           return ctx.db.patch(item.id, {
@@ -535,6 +616,9 @@ export const updateItems = mutation({
             unit: item.unit,
             preparation: item.preparation,
             order: i,
+            ingredientId: item.ingredientId,
+            ...(amountEntries !== undefined && { amountEntries }),
+            ...(item.recipeIds !== undefined && { recipeIds: item.recipeIds }),
           });
         } else {
           // Create new item
@@ -546,6 +630,10 @@ export const updateItems = mutation({
             preparation: item.preparation,
             checked: false,
             order: i,
+            ingredientId: item.ingredientId,
+            ...(amountEntries !== undefined && { amountEntries }),
+            ...(item.recipeIds != null &&
+              item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
           });
         }
       })
@@ -618,9 +706,16 @@ export const updateItemAmount = mutation({
       throw new ConvexError("Can only update items in draft mode");
     }
 
-    await ctx.db.patch(args.itemId, {
-      amount: args.amount,
-    });
+    const updates: { amount: number | string | null; amountEntries?: { amount: number | string | null; unit?: string }[] } = { amount: args.amount };
+    if (item.amountEntries && item.amountEntries.length > 0) {
+      updates.amountEntries = [
+        { ...item.amountEntries[0]!, amount: args.amount },
+        ...item.amountEntries.slice(1),
+      ];
+    } else {
+      updates.amountEntries = [{ amount: args.amount, unit: item.unit }];
+    }
+    await ctx.db.patch(args.itemId, updates);
 
     return { success: true };
   },
