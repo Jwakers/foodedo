@@ -15,6 +15,7 @@ export const INGREDIENT_FOOD_GROUPS = [
   "Cocoa and cocoa products",
   "Coffee and coffee products",
   "Confectioneries",
+  "Dishes",
   "Eggs",
   "Fats and oils",
   "Fruits",

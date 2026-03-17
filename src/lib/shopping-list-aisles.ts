@@ -1,4 +1,4 @@
-import type { IngredientFoodGroup } from "@/lib/ingredient-food-groups";
+import type { IngredientFoodGroup } from "convex/lib/ingredientFoodGroups";
 
 /**
  * Aisle-style categories for the shopping list. Maps fine-grained food groups

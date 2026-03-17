@@ -33,7 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
 import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
 import { isPantryStaple } from "@/lib/pantry-staples";
-import { combineAmounts } from "@/lib/unit-conversion";
+import { combineAmounts } from "convex/lib/unitConversion";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
