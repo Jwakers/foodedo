@@ -7,6 +7,9 @@ import type { MetadataRoute } from "next";
 
 const SLUGS_QUERY = `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{ "slug": slug.current, publishedAt }`;
 
+// Revalidate sitemap every hour (Convex fetch makes this route dynamic; cache for 1h)
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteBaseUrl();
 
