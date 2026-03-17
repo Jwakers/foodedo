@@ -46,7 +46,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Onion-family vegetables",
       "displayName": "Onion",
-      "aliases": ["onions", "white onion", "white onions", "medium onions", "medium onion"]
+      "aliases": [
+        "onions",
+        "white onion",
+        "white onions",
+        "medium onions",
+        "medium onion"
+      ]
     },
     {
       "name": "Leek",
@@ -62,7 +68,13 @@
       "foodGroup": "Herbs and spices",
       "foodSubGroup": "Herbs",
       "displayName": "Garlic",
-      "aliases": ["garlic clove", "garlic cloves", "garlic bulb", "garlic purée", "chopped garlic"]
+      "aliases": [
+        "garlic clove",
+        "garlic cloves",
+        "garlic bulb",
+        "garlic purée",
+        "chopped garlic"
+      ]
     },
     {
       "name": "Chives",
@@ -126,7 +138,13 @@
       "foodGroup": "Nuts",
       "foodSubGroup": "Nuts",
       "displayName": "Peanut",
-      "aliases": ["peanuts", "groundnut", "groundnuts", "smooth peanut butter", "crushed peanuts"]
+      "aliases": [
+        "peanuts",
+        "groundnut",
+        "groundnuts",
+        "smooth peanut butter",
+        "crushed peanuts"
+      ]
     },
     {
       "name": "Burdock",
@@ -374,7 +392,13 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Peas",
       "displayName": "Chickpea",
-      "aliases": ["chickpeas", "garbanzo", "garbanzo beans", "ceci", "canned chickpeas"]
+      "aliases": [
+        "chickpeas",
+        "garbanzo",
+        "garbanzo beans",
+        "ceci",
+        "canned chickpeas"
+      ]
     },
     {
       "name": "Endive",
@@ -422,7 +446,14 @@
       "foodGroup": "Fruits",
       "foodSubGroup": "Citrus",
       "displayName": "Lime",
-      "aliases": ["limes", "key lime", "key limes", "lime juice", "limes, juiced", "lime wedges"]
+      "aliases": [
+        "limes",
+        "key lime",
+        "key limes",
+        "lime juice",
+        "limes, juiced",
+        "lime wedges"
+      ]
     },
     {
       "name": "Lemon",
@@ -957,7 +988,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Olive",
-      "aliases": ["olives", "green olive", "green olives", "black olives", "kalamata olives"]
+      "aliases": [
+        "olives",
+        "green olive",
+        "green olives",
+        "black olives",
+        "kalamata olives"
+      ]
     },
     {
       "name": "Sweet marjoram",
@@ -989,7 +1026,13 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereals",
       "displayName": "Rice",
-      "aliases": ["rice grain", "rice grains", "arborio rice", "basmati rice", "jasmine rice"]
+      "aliases": [
+        "rice grain",
+        "rice grains",
+        "arborio rice",
+        "basmati rice",
+        "jasmine rice"
+      ]
     },
     {
       "name": "Millet",
@@ -1113,7 +1156,17 @@
       "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Pepper",
-      "aliases": ["black pepper", "peppercorn", "peppercorns", "ground pepper", "freshly ground black pepper", "freshly ground pepper", "white pepper", "red pepper flakes", "red chili flakes"]
+      "aliases": [
+        "black pepper",
+        "peppercorn",
+        "peppercorns",
+        "ground pepper",
+        "freshly ground black pepper",
+        "freshly ground pepper",
+        "white pepper",
+        "red pepper flakes",
+        "red chili flakes"
+      ]
     },
     {
       "name": "Pistachio",
@@ -1365,7 +1418,18 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Tomato",
-      "aliases": ["tomatoes", "tomatoe", "fresh tomato", "chopped tomatoes", "tomato purée", "tomato puree", "canned tomatoes", "diced tomatoes with juice", "canned chopped tomatoes", "tomato sauce"]
+      "aliases": [
+        "tomatoes",
+        "tomatoe",
+        "fresh tomato",
+        "chopped tomatoes",
+        "tomato purée",
+        "tomato puree",
+        "canned tomatoes",
+        "diced tomatoes with juice",
+        "canned chopped tomatoes",
+        "tomato sauce"
+      ]
     },
     {
       "name": "Cherry tomato",
@@ -1659,7 +1723,12 @@
       "foodGroup": "Herbs and spices",
       "foodSubGroup": "Spices",
       "displayName": "Ginger",
-      "aliases": ["ginger root", "fresh ginger", "root ginger", "fresh ginger, peeled"]
+      "aliases": [
+        "ginger root",
+        "fresh ginger",
+        "root ginger",
+        "fresh ginger, peeled"
+      ]
     },
     {
       "name": "Arctic blackberry",
@@ -2159,7 +2228,17 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Cereal products",
       "displayName": "Pasta",
-      "aliases": ["pasta noodles", "noodles", "spaghetti", "penne", "macaroni", "fettuccine pasta", "penne pasta", "lasagna sheets", "egg noodles"]
+      "aliases": [
+        "pasta noodles",
+        "noodles",
+        "spaghetti",
+        "penne",
+        "macaroni",
+        "fettuccine pasta",
+        "penne pasta",
+        "lasagna sheets",
+        "egg noodles"
+      ]
     },
     {
       "name": "Biscuit",
@@ -3108,7 +3187,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Kale",
-      "aliases": ["kales", "curly kale", "kale leaves", "curly or dino kale", "dino kale"]
+      "aliases": [
+        "kales",
+        "curly kale",
+        "kale leaves",
+        "curly or dino kale",
+        "dino kale"
+      ]
     },
     {
       "name": "Kelp",
@@ -4928,7 +5013,15 @@
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Fermented milk products",
       "displayName": "Cheese",
-      "aliases": ["cheeses", "cheese slice", "cheese slices", "ricotta cheese", "grated mozzarella", "grated cheese", "vegetarian mature cheddar"]
+      "aliases": [
+        "cheeses",
+        "cheese slice",
+        "cheese slices",
+        "ricotta cheese",
+        "grated mozzarella",
+        "grated cheese",
+        "vegetarian mature cheddar"
+      ]
     },
     {
       "name": "Milk (Cow)",
@@ -4952,7 +5045,14 @@
       "foodGroup": "Pulses",
       "foodSubGroup": "Beans",
       "displayName": "Bean",
-      "aliases": ["black beans", "kidney beans", "red kidney beans", "white beans", "canned kidney beans", "canned black beans"]
+      "aliases": [
+        "black beans",
+        "kidney beans",
+        "red kidney beans",
+        "white beans",
+        "canned kidney beans",
+        "canned black beans"
+      ]
     },
     {
       "name": "Vodka",
@@ -5312,7 +5412,13 @@
       "foodGroup": "Soy",
       "foodSubGroup": "Soy products",
       "displayName": "Soy sauce",
-      "aliases": ["soy sauces", "tamari", "light soy sauce", "tamari or soy sauce", "reduced-sodium soy sauce"]
+      "aliases": [
+        "soy sauces",
+        "tamari",
+        "light soy sauce",
+        "tamari or soy sauce",
+        "reduced-sodium soy sauce"
+      ]
     },
     {
       "name": "Miso",
@@ -5370,7 +5476,12 @@
       "foodGroup": "Cereals and cereal products",
       "foodSubGroup": "Flat breads",
       "displayName": "Tortilla",
-      "aliases": ["mini tortillas", "corn tortillas", "taco shells", "wholemeal wraps"]
+      "aliases": [
+        "mini tortillas",
+        "corn tortillas",
+        "taco shells",
+        "wholemeal wraps"
+      ]
     },
 
     {
@@ -6039,7 +6150,12 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Cabbages",
       "displayName": "Cabbage",
-      "aliases": ["cabbages", "head of cabbage", "red cabbage, rinsed", "red cabbage"]
+      "aliases": [
+        "cabbages",
+        "head of cabbage",
+        "red cabbage, rinsed",
+        "red cabbage"
+      ]
     },
     {
       "name": "Chinese bayberry",
@@ -6174,8 +6290,8 @@
       "externalId": "FOOD00889",
       "foodGroup": "Milk and milk products",
       "foodSubGroup": "Unfermented milks",
-      "displayName": "Cow milk, pasteurized, vitamin A + D added, 0% fat",
-      "aliases": ["skim milk", "fat-free milk", "zero fat milk"]
+      "displayName": "Fat-free milk",
+      "aliases": ["fat-free milk", "zero fat milk"]
     },
     {
       "name": "Cow milk, pasteurized, vitamin A + D added, 1% fat",
@@ -6720,7 +6836,13 @@
       "foodGroup": "Vegetables",
       "foodSubGroup": "Fruit vegetables",
       "displayName": "Jalapeno pepper",
-      "aliases": ["jalapeño", "jalapeños", "jalapeno", "jalapenos", "jalapeño chile"]
+      "aliases": [
+        "jalapeño",
+        "jalapeños",
+        "jalapeno",
+        "jalapenos",
+        "jalapeño chile"
+      ]
     },
     {
       "name": "Greek feta cheese",
