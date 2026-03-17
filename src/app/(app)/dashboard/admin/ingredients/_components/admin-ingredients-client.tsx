@@ -96,11 +96,24 @@ function toTitleCase(s: string): string {
     .join(" ");
 }
 
+function getErrorMessage(err: unknown, defaultMessage = "Something went wrong."): string {
+  if (err instanceof ConvexError) return err.message;
+  if (err && typeof err === "object" && "message" in err)
+    return String((err as { message: unknown }).message);
+  return defaultMessage;
+}
+
 export function AdminIngredientsClient() {
   const router = useRouter();
   const user = useQuery(api.users.current);
-  const ingredients = useQuery(api.adminIngredients.listForAdmin);
-  const brokenRefs = useQuery(api.adminIngredients.getBrokenOrUnlinkedIngredientReferences);
+  const ingredients = useQuery(
+    api.adminIngredients.listForAdmin,
+    user?.isSuperUser ? {} : "skip",
+  );
+  const brokenRefs = useQuery(
+    api.adminIngredients.getBrokenOrUnlinkedIngredientReferences,
+    user?.isSuperUser ? {} : "skip",
+  );
   const createMutation = useMutation(api.adminIngredients.create);
   const updateMutation = useMutation(api.adminIngredients.update);
   const removeMutation = useMutation(api.adminIngredients.remove);
@@ -224,13 +237,7 @@ export function AdminIngredientsClient() {
       }
       setDialogOpen(false);
     } catch (err: unknown) {
-      const message =
-        err instanceof ConvexError
-          ? err.message
-          : err && typeof err === "object" && "message" in err
-            ? String((err as { message: unknown }).message)
-            : "Something went wrong.";
-      setFormError(message);
+      setFormError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -243,13 +250,7 @@ export function AdminIngredientsClient() {
       await removeMutation({ id: deleteTarget.id });
       setDeleteTarget(null);
     } catch (err: unknown) {
-      const message =
-        err instanceof ConvexError
-          ? err.message
-          : err && typeof err === "object" && "message" in err
-            ? String((err as { message: unknown }).message)
-            : "Failed to delete ingredient.";
-      toast.error(message);
+      toast.error(getErrorMessage(err, "Failed to delete ingredient."));
     } finally {
       setIsDeleting(false);
     }
@@ -262,19 +263,13 @@ export function AdminIngredientsClient() {
     try {
       await addAliasMutation({
         ingredientId: aliasSelectedId,
-        alias: aliasDialog.alias,
+        alias: aliasDialog.alias.trim(),
       });
       setAliasDialog(null);
       setAliasSelectedId(null);
     } catch (err: unknown) {
-      const message =
-        err instanceof ConvexError
-          ? err.message
-          : err && typeof err === "object" && "message" in err
-            ? String((err as { message: unknown }).message)
-            : "Failed to add alias.";
       setAliasDialog((prev) =>
-        prev ? { ...prev, error: message } : null,
+        prev ? { ...prev, error: getErrorMessage(err, "Failed to add alias.") } : null,
       );
     } finally {
       setIsAddingAlias(false);
@@ -385,7 +380,7 @@ export function AdminIngredientsClient() {
                               size="icon"
                               className="size-8"
                               onClick={() => openEdit(ing)}
-                              aria-label="Edit"
+                              aria-label={`Edit ${ing.name}`}
                             >
                               <Pencil className="size-4" />
                             </Button>
@@ -396,7 +391,7 @@ export function AdminIngredientsClient() {
                               onClick={() =>
                                 setDeleteTarget({ id: ing._id, name: ing.name })
                               }
-                              aria-label="Remove"
+                              aria-label={`Remove ${ing.name}`}
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -592,7 +587,14 @@ export function AdminIngredientsClient() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             {formError && (
-              <p className="text-destructive text-sm">{formError}</p>
+              <p
+                className="text-destructive text-sm"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+              >
+                {formError}
+              </p>
             )}
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>

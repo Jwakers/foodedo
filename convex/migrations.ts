@@ -669,24 +669,57 @@ export const seedIngredients = internalMutation({
 
 /**
  * One-off: remove isCustom from all ingredients by replacing each document with
- * the same data minus isCustom. Run once after removing isCustom from the schema:
+ * the same data minus isCustom. Run once after removing isCustom from the schema.
+ * Processes in batches; normalizes aliases to an array. Run:
  *   npx convex run migrations:clearIngredientIsCustom
  */
 export const clearIngredientIsCustom = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const ingredients = await ctx.db.query("ingredients").collect();
-    for (const ing of ingredients) {
-      await ctx.db.replace(ing._id, {
-        name: ing.name,
-        displayName: ing.displayName ?? undefined,
-        foodGroup: ing.foodGroup ?? undefined,
-        foodSubGroup: ing.foodSubGroup ?? undefined,
-        externalId: ing.externalId ?? undefined,
-        aliases: ing.aliases ?? undefined,
-      });
+    type IngredientCursor = { creationTime: number; id: Id<"ingredients"> };
+    let cursor: IngredientCursor | null = null;
+    let cleared = 0;
+
+    while (true) {
+      const batch: Doc<"ingredients">[] =
+        cursor === null
+          ? await ctx.db
+              .query("ingredients")
+              .order("asc")
+              .take(RECONCILE_BATCH_SIZE)
+          : await ctx.db
+              .query("ingredients")
+              .order("asc")
+              .filter((q) =>
+                q.or(
+                  q.gt(q.field("_creationTime"), cursor!.creationTime),
+                  q.and(
+                    q.eq(q.field("_creationTime"), cursor!.creationTime),
+                    q.gt(q.field("_id"), cursor!.id),
+                  ),
+                ),
+              )
+              .take(RECONCILE_BATCH_SIZE);
+
+      if (batch.length === 0) break;
+
+      for (const ing of batch) {
+        await ctx.db.replace(ing._id, {
+          name: ing.name,
+          displayName: ing.displayName ?? undefined,
+          foodGroup: ing.foodGroup ?? undefined,
+          foodSubGroup: ing.foodSubGroup ?? undefined,
+          externalId: ing.externalId ?? undefined,
+          aliases: ing.aliases ?? [],
+        });
+        cleared++;
+      }
+
+      const last = batch[batch.length - 1]!;
+      cursor = { creationTime: last._creationTime, id: last._id };
     }
-    return { cleared: ingredients.length };
+
+    return { cleared };
   },
 });
 
@@ -766,7 +799,8 @@ export const reconcileIngredientReferences = internalMutation({
     let recipesUpdated = 0;
     let shoppingItemsUpdated = 0;
 
-    let recipeCursor: number | null = null;
+    type RecipeCursor = { creationTime: number; id: Id<"recipes"> };
+    let recipeCursor: RecipeCursor | null = null;
     while (true) {
       const recipesBatch: Doc<"recipes">[] =
         recipeCursor === null
@@ -778,7 +812,13 @@ export const reconcileIngredientReferences = internalMutation({
               .query("recipes")
               .order("asc")
               .filter((q) =>
-                q.gt(q.field("_creationTime"), recipeCursor as number),
+                q.or(
+                  q.gt(q.field("_creationTime"), recipeCursor!.creationTime),
+                  q.and(
+                    q.eq(q.field("_creationTime"), recipeCursor!.creationTime),
+                    q.gt(q.field("_id"), recipeCursor!.id),
+                  ),
+                ),
               )
               .take(RECONCILE_BATCH_SIZE);
 
@@ -823,10 +863,12 @@ export const reconcileIngredientReferences = internalMutation({
         }
       }
 
-      recipeCursor = recipesBatch[recipesBatch.length - 1]!._creationTime;
+      const last = recipesBatch[recipesBatch.length - 1]!;
+      recipeCursor = { creationTime: last._creationTime, id: last._id };
     }
 
-    let shoppingCursor: number | null = null;
+    type ShoppingCursor = { creationTime: number; id: Id<"shoppingListItems"> };
+    let shoppingCursor: ShoppingCursor | null = null;
     while (true) {
       const itemsBatch: Doc<"shoppingListItems">[] =
         shoppingCursor === null
@@ -838,7 +880,13 @@ export const reconcileIngredientReferences = internalMutation({
               .query("shoppingListItems")
               .order("asc")
               .filter((q) =>
-                q.gt(q.field("_creationTime"), shoppingCursor as number),
+                q.or(
+                  q.gt(q.field("_creationTime"), shoppingCursor!.creationTime),
+                  q.and(
+                    q.eq(q.field("_creationTime"), shoppingCursor!.creationTime),
+                    q.gt(q.field("_id"), shoppingCursor!.id),
+                  ),
+                ),
               )
               .take(RECONCILE_BATCH_SIZE);
 
@@ -864,7 +912,8 @@ export const reconcileIngredientReferences = internalMutation({
         }
       }
 
-      shoppingCursor = itemsBatch[itemsBatch.length - 1]!._creationTime;
+      const lastItem = itemsBatch[itemsBatch.length - 1]!;
+      shoppingCursor = { creationTime: lastItem._creationTime, id: lastItem._id };
     }
 
     return {
