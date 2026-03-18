@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import {
@@ -57,9 +58,19 @@ export function BlogImagesClient() {
   const [generated, setGenerated] = useState<GeneratedImage | null>(null);
 
   const latestFetchId = useRef(0);
+  const latestOffsetRef = useRef(0);
+  const selectedIdRef = useRef<string | null>(null);
   const limit = 20;
   const offset = page * limit;
   const pageCount = Math.max(1, Math.ceil(total / limit));
+
+  useEffect(() => {
+    latestOffsetRef.current = offset;
+  }, [offset]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
 
   useEffect(() => {
     if (user !== undefined && !user) {
@@ -82,9 +93,10 @@ export function BlogImagesClient() {
       const fetchId = ++latestFetchId.current;
       setIsLoading(true);
       try {
+        const currentOffset = latestOffsetRef.current;
         const res = await listSanityPosts({
           q,
-          offset: opts?.resetPage ? 0 : offset,
+          offset: opts?.resetPage ? 0 : currentOffset,
           limit,
         });
         if (fetchId !== latestFetchId.current) return;
@@ -96,7 +108,7 @@ export function BlogImagesClient() {
         setTotal(res.total);
         if (opts?.resetPage) setPage(0);
         setGenerated(null);
-        if (!selectedId && res.posts[0]?._id) {
+        if (!selectedIdRef.current && res.posts[0]?._id) {
           setSelectedId(res.posts[0]._id);
         }
       } catch {
@@ -106,7 +118,7 @@ export function BlogImagesClient() {
         if (fetchId === latestFetchId.current) setIsLoading(false);
       }
     },
-    [isSuperUser, q, offset, selectedId],
+    [isSuperUser, q],
   );
 
   // Debounced search
@@ -303,10 +315,10 @@ export function BlogImagesClient() {
                         <button
                           type="button"
                           onClick={() => handleSelect(p._id)}
-                          className={[
+                          className={cn(
                             "w-full text-left p-3 transition-colors",
                             active ? "bg-muted" : "hover:bg-muted/50",
-                          ].join(" ")}
+                          )}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
@@ -330,7 +342,7 @@ export function BlogImagesClient() {
                               </div>
                             </div>
                             {active ? (
-                              <div className="mt-0.5 h-2 w-2 rounded-full bg-primary" />
+                              <div className="mt-0.5 size-2 rounded-full bg-primary" />
                             ) : null}
                           </div>
                         </button>

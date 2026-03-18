@@ -60,11 +60,15 @@ export async function listSanityPosts(rawInput: unknown): Promise<ListSanityPost
   const { q, offset, limit } = parsed.data;
   const end = offset + limit;
 
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   try {
+    const controller = new AbortController();
+    timeoutId = setTimeout(() => controller.abort(), 10_000);
     const res = await client.fetch<{ total: number; posts: SanityPostListRow[] }>(
       POSTS_QUERY,
       { q: q?.trim() ?? "", offset, end },
-      { cache: "no-store" },
+      // next-sanity forwards these options to fetch()
+      { cache: "no-store", signal: controller.signal } as unknown as { cache: "no-store" },
     );
     return {
       success: true,
@@ -72,8 +76,16 @@ export async function listSanityPosts(rawInput: unknown): Promise<ListSanityPost
       total: res?.total ?? 0,
     };
   } catch (err) {
+    if (
+      (err instanceof DOMException && err.name === "AbortError") ||
+      (err instanceof Error && err.name === "AbortError")
+    ) {
+      return { success: false, error: "Sanity request timed out. Please try again." };
+    }
     const message = err instanceof Error ? err.message : "Failed to list posts.";
     return { success: false, error: message };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 

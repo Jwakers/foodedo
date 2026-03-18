@@ -6,7 +6,7 @@ import { generateImage } from "ai";
 import { z } from "zod";
 
 const GenerateBlogHeroImageInputSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   excerpt: z.string().nullable().optional(),
 });
 
@@ -46,6 +46,8 @@ export async function generateBlogHeroImage(
       model: DEFAULT_MODEL,
       prompt: promptUsed,
       aspectRatio: "16:9",
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(30_000),
     });
     const img = result.image;
     if (!img?.base64) {
