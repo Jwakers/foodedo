@@ -5,6 +5,13 @@ import type { Root, RootContent, PhrasingContent, Text } from "mdast";
 
 type MdastNode = Root | RootContent;
 
+class MarkdownToPortableTextError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "MarkdownToPortableTextError";
+  }
+}
+
 /** Portable Text block (Sanity block content). */
 export type PortableTextBlock = {
   _type: "block";
@@ -103,47 +110,99 @@ function nodeToBlocks(
       ];
     }
     case "list": {
-      const listItemStyle = node.ordered ? "number" : "bullet";
-      const listBlocks: PortableTextBlock[] = [];
-      for (const item of node.children) {
-        if (item.type !== "listItem") continue;
-        const firstParagraph = item.children?.[0];
-        if (firstParagraph?.type === "paragraph") {
-          const children = phrasingToSpans(firstParagraph.children, globalMarkDefs);
-          listBlocks.push({
-            _type: "block",
-            _key: genKey("li"),
-            style: "normal",
-            listItem: listItemStyle,
-            level: 1,
-            children: children.length ? children : [{ _type: "span", _key: genKey("s"), text: "" }],
-            markDefs: collectMarkDefs(children),
-          });
-        }
-      }
-      return listBlocks;
+      return listToBlocks(node as unknown as { ordered?: boolean; children?: unknown[] }, globalMarkDefs, 1);
     }
     case "blockquote": {
-      const firstChild = node.children?.[0];
-      if (firstChild?.type === "paragraph") {
-        const children = phrasingToSpans(firstChild.children, globalMarkDefs);
-        return [
-          {
+      const out: PortableTextBlock[] = [];
+      for (const child of node.children ?? []) {
+        if (child.type === "paragraph") {
+          const children = phrasingToSpans(child.children, globalMarkDefs);
+          out.push({
             _type: "block",
             _key: genKey("bq"),
             style: "blockquote",
-            children: children.length ? children : [{ _type: "span", _key: genKey("s"), text: "" }],
+            children: children.length
+              ? children
+              : [{ _type: "span", _key: genKey("s"), text: "" }],
             markDefs: collectMarkDefs(children),
-          },
-        ];
+          });
+          continue;
+        }
+        throw unsupportedNodeError("nodeToBlocks(blockquote)", child);
       }
-      return [];
+      return out;
     }
     case "thematicBreak":
-      return [];
+      // Preserve content explicitly rather than silently dropping it.
+      return [
+        {
+          _type: "block",
+          _key: genKey("hr"),
+          style: "normal",
+          children: [{ _type: "span", _key: genKey("s"), text: "---", marks: [] }],
+        },
+      ];
+    case "code": {
+      const codeNode = node as unknown as { lang?: string | null; value?: string };
+      const lang = codeNode.lang ? String(codeNode.lang) : "";
+      const value = String(codeNode.value ?? "");
+      const text = ["```" + lang, value.replace(/\n$/, ""), "```"].join("\n");
+      return [
+        {
+          _type: "block",
+          _key: genKey("code"),
+          style: "normal",
+          children: [{ _type: "span", _key: genKey("s"), text, marks: ["code"] }],
+        },
+      ];
+    }
     default:
-      return [];
+      throw unsupportedNodeError("nodeToBlocks", node);
   }
+}
+
+function listToBlocks(
+  listNode: { ordered?: boolean; children?: unknown[] },
+  globalMarkDefs: PortableTextBlock["markDefs"],
+  level: number
+): PortableTextBlock[] {
+  const listItemStyle: PortableTextBlock["listItem"] = listNode.ordered ? "number" : "bullet";
+  const blocks: PortableTextBlock[] = [];
+  const items = (listNode.children ?? []) as Array<{ type?: string; children?: unknown[] }>;
+
+  for (const item of items) {
+    if (item.type !== "listItem") {
+      throw unsupportedNodeError("nodeToBlocks(list)", item);
+    }
+    for (const rawChild of item.children ?? []) {
+      const child = rawChild as { type?: string; children?: unknown[] };
+      if (child.type === "paragraph") {
+        const phrasing = (child.children ?? []) as unknown as PhrasingContent[];
+        const children = phrasingToSpans(phrasing, globalMarkDefs);
+        blocks.push({
+          _type: "block",
+          _key: genKey("li"),
+          style: "normal",
+          listItem: listItemStyle,
+          level,
+          children: children.length
+            ? children
+            : [{ _type: "span", _key: genKey("s"), text: "" }],
+          markDefs: collectMarkDefs(children),
+        });
+        continue;
+      }
+      if (child.type === "list") {
+        blocks.push(
+          ...listToBlocks(child as unknown as { ordered?: boolean; children?: unknown[] }, globalMarkDefs, level + 1)
+        );
+        continue;
+      }
+      throw unsupportedNodeError("nodeToBlocks(listItem)", child);
+    }
+  }
+
+  return blocks;
 }
 
 function phrasingToSpans(
@@ -205,6 +264,17 @@ function phrasingToSpan(
       const value = "value" in node ? String((node as { value?: string }).value ?? "") : "";
       return [{ _type: "span", _key: genKey("s"), text: value, marks: ["code"] }];
     }
+    case "break": {
+      // Hard line break
+      return [{ _type: "span", _key: genKey("s"), text: "\n", marks: [] }];
+    }
+    case "delete": {
+      const inner = phrasingToSpans((node as unknown as { children: PhrasingContent[] }).children, globalMarkDefs);
+      inner.forEach((s) => {
+        s.marks = [...(s.marks ?? []), "strike-through"];
+      });
+      return inner;
+    }
     case "link": {
       const href = (node as { url?: string }).url ?? "";
       const linkKey = `link-${(linkKeyIdx++).toString(36)}`;
@@ -216,6 +286,25 @@ function phrasingToSpan(
       return inner;
     }
     default:
-      return phrasingToSpans("children" in node ? (node as { children: PhrasingContent[] }).children : [], globalMarkDefs);
+      throw unsupportedNodeError("phrasingToSpan", node);
   }
+}
+
+function unsupportedNodeError(where: string, node: unknown): MarkdownToPortableTextError {
+  const type = (node as { type?: unknown })?.type;
+  if (type === "image") {
+    const url = (node as { url?: unknown })?.url;
+    const alt = (node as { alt?: unknown })?.alt;
+    return new MarkdownToPortableTextError(
+      `Unsupported Markdown node in ${where}: image (url=${String(url ?? "")}, alt=${String(alt ?? "")}). Images are not yet supported by the draft creator.`
+    );
+  }
+  if (type === "table") {
+    return new MarkdownToPortableTextError(
+      `Unsupported Markdown node in ${where}: table. Tables are not yet supported by the draft creator.`
+    );
+  }
+  return new MarkdownToPortableTextError(
+    `Unsupported Markdown node in ${where}: ${String(type ?? "unknown")}. Please remove or simplify this content (or we can add support).`
+  );
 }
