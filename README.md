@@ -11,6 +11,10 @@
 - **`SANITY_API_WRITE_TOKEN`** – (Server-only.) API token with write access to the dataset. Required for the “Create draft in Sanity” button in the admin blog generator. Do not expose this in client-side code.
 - **`NEXT_PUBLIC_SANITY_STUDIO_URL`** – (Optional.) Base URL of your Sanity Studio (e.g. `https://your-project.sanity.studio`). When set, the blog generator shows an “Open in Studio” link after creating a draft.
 
+### AI image generation (admin tools)
+
+- **`AI_GATEWAY_API_KEY`** – (Server-only.) Required for AI SDK `generateImage()` calls (used by the “Blog images” admin tool to generate hero images). Get a key from Vercel AI Gateway.
+
 ---
 
 ## Next Immediate Steps

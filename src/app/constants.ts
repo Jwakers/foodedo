@@ -48,6 +48,8 @@ export const ROUTES = {
   ADMIN_INGREDIENTS: "/dashboard/admin/ingredients",
   /** Super user: generate blog drafts (admin only) */
   ADMIN_BLOG_GENERATOR: "/dashboard/admin/blog-generator",
+  /** Super user: generate blog hero images (admin only) */
+  ADMIN_BLOG_IMAGES: "/dashboard/admin/blog-images",
 } as const;
 
 export const CATEGORY_COLORS: Record<

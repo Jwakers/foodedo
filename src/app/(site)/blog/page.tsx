@@ -1,10 +1,10 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { getSiteBaseUrl } from "@/lib/site-url";
-import { client } from "@/sanity/client";
-import type { PostListItem } from "@/sanity/types";
-import { urlFor } from "@/sanity/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getSiteBaseUrl } from "@/lib/site-url";
+import { client } from "@/sanity/client";
+import { urlFor } from "@/sanity/image";
+import type { PostListItem } from "@/sanity/types";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -88,7 +88,7 @@ export default async function BlogPage() {
                 return (
                   <li key={post._id}>
                     <Link href={ROUTES.blogPost(post.slug.current)}>
-                      <Card className="h-full overflow-hidden transition-colors hover:bg-muted/50">
+                      <Card className="h-full overflow-hidden transition-colors hover:bg-muted/50 pt-0">
                         {imageUrl && (
                           <div className="relative aspect-video w-full bg-muted">
                             <Image

@@ -31,6 +31,7 @@ import {
   FileText,
   Globe,
   Home,
+  Image as ImageIcon,
   LogOut,
   Menu,
   MessageCircleQuestionMark,
@@ -76,7 +77,7 @@ export function Header() {
   return (
     <header
       ref={headerRef}
-      className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
     >
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
@@ -336,6 +337,26 @@ export function Header() {
                               <div className="font-medium">Blog generator</div>
                               <div className="text-sm text-muted-foreground">
                                 Generate blog drafts with AI
+                              </div>
+                            </div>
+                          </Link>
+                        </Button>
+                      </li>
+                      <li>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start h-auto"
+                          asChild
+                        >
+                          <Link
+                            href={ROUTES.ADMIN_BLOG_IMAGES}
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            <ImageIcon className="size-4 mr-3" />
+                            <div className="text-left">
+                              <div className="font-medium">Blog images</div>
+                              <div className="text-sm text-muted-foreground">
+                                Generate blog hero images with AI
                               </div>
                             </div>
                           </Link>
