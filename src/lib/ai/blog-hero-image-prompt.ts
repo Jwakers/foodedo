@@ -9,6 +9,13 @@ export const BLOG_HERO_IMAGE_STYLES = [
 
 export type BlogHeroImageStyle = (typeof BLOG_HERO_IMAGE_STYLES)[number];
 
+/**
+ * Intent helpers used by the blog hero image generator.
+ *
+ * This is intentionally exported for potential reuse in future UI/features
+ * (e.g. more deterministic “intent controls”), even though the current
+ * prompt builder primarily relies on style + optional override prompt.
+ */
 export type BlogHeroIntent =
   | "shoppingList"
   | "mealPlanning"
@@ -56,6 +63,12 @@ OUTPUT:
 - Return only the image (no text overlays).`;
 }
 
+/**
+ * Infers a rough blog intent signal from title/excerpt.
+ *
+ * Kept exported for future feature work (and for any external consumers)
+ * even if the current hero prompt no longer injects an intent block.
+ */
 export function inferBlogHeroIntent(
   title: string,
   excerpt?: string | null,
@@ -65,7 +78,7 @@ export function inferBlogHeroIntent(
   // Intent ordering matters: shopping lists & grocery lists are strong signals.
 
   if (
-    /(meal plan|meal planning|meal-plann|weekly plan|planning meals)/i.test(
+    /(meal plan|meal planning|meal-plann|weekly plan|planning meals)/.test(
       text,
     )
   ) {
@@ -73,19 +86,19 @@ export function inferBlogHeroIntent(
   }
 
   if (
-    /(carryover|resting|sear|baste|temperature|how to|technique|crispy|crisp)/i.test(
+    /(carryover|resting|sear|baste|temperature|how to|technique|crispy|crisp)/.test(
       text,
     )
   ) {
     return "technique";
   }
 
-  if (/(ingredient|ingredients|pantry|spice|produce)/i.test(text)) {
+  if (/(ingredient|ingredients|pantry|spice|produce)/.test(text)) {
     return "ingredients";
   }
 
   if (
-    /(recipe|cook|bake|roast|fry|sauce|chicken|beef|pasta|thighs|cooking)/i.test(
+    /(recipe|cook|bake|roast|fry|sauce|chicken|beef|pasta|thighs|cooking)/.test(
       text,
     )
   ) {

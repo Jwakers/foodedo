@@ -222,16 +222,14 @@ export function BlogImagesClient() {
       ? `data:${generated.mediaType};base64,${generated.base64}`
       : null;
 
-  const existingImageUrl =
-    selected?.mainImage?.asset?._ref != null
-      ? (() => {
-          try {
-            return urlFor(selected.mainImage).width(1200).height(675).url();
-          } catch {
-            return null;
-          }
-        })()
-      : null;
+  const existingImageUrl = useMemo(() => {
+    if (selected?.mainImage?.asset?._ref == null) return null;
+    try {
+      return urlFor(selected.mainImage).width(1200).height(675).url();
+    } catch {
+      return null;
+    }
+  }, [selected?.mainImage?.asset?._ref]);
 
   const downloadName = selected?.slug?.current
     ? `blog-hero-${selected.slug.current}`
