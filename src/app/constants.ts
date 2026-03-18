@@ -46,6 +46,8 @@ export const ROUTES = {
   BETA: "/beta",
   /** Super user: manage canonical ingredients (admin only) */
   ADMIN_INGREDIENTS: "/dashboard/admin/ingredients",
+  /** Super user: generate blog drafts (admin only) */
+  ADMIN_BLOG_GENERATOR: "/dashboard/admin/blog-generator",
 } as const;
 
 export const CATEGORY_COLORS: Record<

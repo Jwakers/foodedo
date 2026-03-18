@@ -28,6 +28,7 @@ import {
   ChevronsUpDown,
   Clipboard,
   Compass,
+  FileText,
   Globe,
   Home,
   LogOut,
@@ -315,6 +316,26 @@ export function Header() {
                               <div className="font-medium">Ingredients</div>
                               <div className="text-sm text-muted-foreground">
                                 Manage canonical ingredients
+                              </div>
+                            </div>
+                          </Link>
+                        </Button>
+                      </li>
+                      <li>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start h-auto"
+                          asChild
+                        >
+                          <Link
+                            href={ROUTES.ADMIN_BLOG_GENERATOR}
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            <FileText className="size-4 mr-3" />
+                            <div className="text-left">
+                              <div className="font-medium">Blog generator</div>
+                              <div className="text-sm text-muted-foreground">
+                                Generate blog drafts with AI
                               </div>
                             </div>
                           </Link>
