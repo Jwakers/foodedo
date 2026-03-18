@@ -2,6 +2,17 @@
 
 ---
 
+## Environment variables
+
+### Sanity (blog and draft creation)
+
+- **`NEXT_PUBLIC_SANITY_PROJECT_ID`** – Sanity project ID (required for blog reads and draft creation).
+- **`NEXT_PUBLIC_SANITY_DATASET`** – Sanity dataset (default: `production`).
+- **`SANITY_API_WRITE_TOKEN`** – (Server-only.) API token with write access to the dataset. Required for the “Create draft in Sanity” button in the admin blog generator. Do not expose this in client-side code.
+- **`NEXT_PUBLIC_SANITY_STUDIO_URL`** – (Optional.) Base URL of your Sanity Studio (e.g. `https://your-project.sanity.studio`). When set, the blog generator shows an “Open in Studio” link after creating a draft.
+
+---
+
 ## Next Immediate Steps
 
 Ingredients convenience infra:
@@ -9,11 +20,10 @@ Ingredients convenience infra:
 - [x] Add internal use ingredients table from public data
 - [x] Add a mapping system that maps ingredients to their ingredient table counterpart
 - [x] Add a shopping list combination logic, synonyms and measurement normalisation
-- [ ] MANUALLY REVIEW INGREDIENTS SEED AND ALIASES
+- [x] MANUALLY REVIEW INGREDIENTS SEED AND ALIASES
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
 - [ ] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
 - [ ] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
-- [ ] After setup, the scripts and code used to create ingredients can be removed (use plan mode for this feature). Display names (e.g. common oregano → oregano) should be easy to update.
 - [ ] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
