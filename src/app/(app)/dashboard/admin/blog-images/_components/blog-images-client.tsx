@@ -7,6 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { urlFor } from "@/sanity/image";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -22,6 +31,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import type { BlogHeroImageStyle } from "@/lib/ai/blog-hero-image-prompt";
 
 async function copyToClipboard(text: string, label: string) {
   await navigator.clipboard.writeText(text);
@@ -56,6 +66,8 @@ export function BlogImagesClient() {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generated, setGenerated] = useState<GeneratedImage | null>(null);
+  const [style, setStyle] = useState<BlogHeroImageStyle>("generalAuto");
+  const [overridePrompt, setOverridePrompt] = useState("");
 
   const latestFetchId = useRef(0);
   const latestOffsetRef = useRef(0);
@@ -150,9 +162,12 @@ export function BlogImagesClient() {
     setIsGenerating(true);
     setGenerated(null);
     try {
+      const override = overridePrompt.trim().length ? overridePrompt : null;
       const res = await generateBlogHeroImage({
         title: selected.title ?? "",
         excerpt: selected.excerpt ?? null,
+        style,
+        overridePrompt: override,
       });
       if (!res.success) {
         toast.error(res.error);
@@ -169,7 +184,7 @@ export function BlogImagesClient() {
     } finally {
       setIsGenerating(false);
     }
-  }, [selected]);
+  }, [selected, style, overridePrompt]);
 
   if (user === undefined) {
     return (
@@ -205,6 +220,17 @@ export function BlogImagesClient() {
   const imageDataUrl =
     generated?.base64 && generated.mediaType
       ? `data:${generated.mediaType};base64,${generated.base64}`
+      : null;
+
+  const existingImageUrl =
+    selected?.mainImage?.asset?._ref != null
+      ? (() => {
+          try {
+            return urlFor(selected.mainImage).width(1200).height(675).url();
+          } catch {
+            return null;
+          }
+        })()
       : null;
 
   const downloadName = selected?.slug?.current
@@ -386,6 +412,59 @@ export function BlogImagesClient() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t">
+                  <div className="flex-1">
+                    <Label className="sr-only" htmlFor="hero-style">
+                      Hero style
+                    </Label>
+                    <Select
+                      value={style}
+                      onValueChange={(v) => {
+                        setStyle(v as BlogHeroImageStyle);
+                        setGenerated(null);
+                      }}
+                    >
+                      <SelectTrigger
+                        id="hero-style"
+                        className="w-full sm:w-[260px]"
+                        disabled={overridePrompt.trim().length > 0}
+                      >
+                        <SelectValue placeholder="Choose a style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="generalAuto">General (auto)</SelectItem>
+                        <SelectItem value="finishedDish">Finished dish</SelectItem>
+                        <SelectItem value="ingredientsFlatlay">Ingredients flatlay</SelectItem>
+                        <SelectItem value="techniqueCloseup">Technique close-up</SelectItem>
+                        <SelectItem value="lifestyleTableScene">Lifestyle table scene</SelectItem>
+                        <SelectItem value="minimalStillLife">Minimal still life</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      The prompt uses the selected style. If it still looks
+                      generic, switch style and regenerate—or use the override
+                      box for a very specific composition.
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      <Label htmlFor="hero-override-prompt">
+                        Image prompt override (optional)
+                      </Label>
+                      <Textarea
+                        id="hero-override-prompt"
+                        value={overridePrompt}
+                        onChange={(e) => {
+                          setOverridePrompt(e.target.value);
+                          setGenerated(null);
+                        }}
+                        placeholder="Describe exactly what you want the hero image to show. This overrides style."
+                        className="min-h-28"
+                      />
+                      <div className="text-xs text-muted-foreground">
+                        Leave blank to use the style dropdown.
+                        The generator will still enforce “no readable text/logos”.
+                      </div>
+                    </div>
+                  </div>
                   <Button type="button" onClick={handleGenerate} disabled={isGenerating}>
                     {isGenerating ? (
                       <>
@@ -425,6 +504,21 @@ export function BlogImagesClient() {
 
                 {imageDataUrl ? (
                   <div className="space-y-3">
+                    {existingImageUrl ? (
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium">Current image</div>
+                        <div className="rounded-lg border bg-muted overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={existingImageUrl}
+                            alt={selected.title || "Current hero image"}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="text-sm font-medium">Generated image</div>
                     <div className="rounded-lg border bg-muted overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -458,8 +552,28 @@ export function BlogImagesClient() {
                     </p>
                   </div>
                 ) : (
-                  <div className="rounded-md border p-4 text-sm text-muted-foreground">
-                    Generate an image to preview and download it here.
+                  <div className="space-y-3">
+                    {existingImageUrl ? (
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium">Current image</div>
+                        <div className="rounded-lg border bg-muted overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={existingImageUrl}
+                            alt={selected.title || "Current hero image"}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-md border p-4 text-sm text-muted-foreground">
+                        No `mainImage` set yet for this post.
+                      </div>
+                    )}
+
+                    <div className="rounded-md border p-4 text-sm text-muted-foreground">
+                      Generate an image to preview and download it here.
+                    </div>
                   </div>
                 )}
               </>

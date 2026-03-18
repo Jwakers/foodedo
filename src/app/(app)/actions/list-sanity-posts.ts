@@ -18,6 +18,7 @@ export type SanityPostListRow = {
   excerpt?: string;
   publishedAt?: string;
   slug?: { current?: string };
+  mainImage?: { asset?: { _ref?: string } };
   hasMainImage: boolean;
   isDraft: boolean;
 };
@@ -40,6 +41,7 @@ const POSTS_QUERY = `{
     excerpt,
     publishedAt,
     slug,
+    mainImage,
     "hasMainImage": defined(mainImage.asset),
     "isDraft": _id in path("drafts.**")
   }
