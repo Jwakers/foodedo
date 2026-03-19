@@ -924,8 +924,10 @@ export const updateRecipeImageAndDeleteOld = mutation({
     if (!recipe) {
       throw new ConvexError("Recipe not found");
     }
-    if (recipe.userId !== user._id) {
-      throw new ConvexError("Unauthorised");
+    const isOwner = recipe.userId === user._id;
+    const isSuperUser = user.isSuperUser === true;
+    if (!isOwner && !isSuperUser) {
+      throw new ConvexError("Unauthorised - only the recipe owner can edit it");
     }
 
     // Store the old image ID before updating

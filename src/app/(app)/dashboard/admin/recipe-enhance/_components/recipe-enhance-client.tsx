@@ -4,6 +4,7 @@ import {
   enhanceRecipeWithAI,
   type EnhancedRecipePayload,
 } from "@/app/(app)/actions/enhance-recipe";
+import { generateRecipeImageWithAI } from "@/app/(app)/actions/generate-recipe-image";
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,17 +15,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import type { FunctionReturnType } from "convex/server";
 import { useMutation, useQuery } from "convex/react";
-import { ChefHat, Clock, Loader2, Search, ShieldAlert, Sparkles, Users } from "lucide-react";
+import type { FunctionReturnType } from "convex/server";
+import {
+  ChefHat,
+  Clock,
+  Loader2,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type Recipe = NonNullable<FunctionReturnType<typeof api.recipes.getRecipe>>;
-type SystemRecipe = FunctionReturnType<typeof api.recipes.getSystemRecipes>[number];
-type UserRecipe = FunctionReturnType<typeof api.recipes.getAllUserRecipes>[number];
+type SystemRecipe = FunctionReturnType<
+  typeof api.recipes.getSystemRecipes
+>[number];
+type UserRecipe = FunctionReturnType<
+  typeof api.recipes.getAllUserRecipes
+>[number];
 
 type PickerRecipe = {
   _id: Id<"recipes">;
@@ -38,13 +51,24 @@ type PickerRecipe = {
   source: "discover" | "user";
 };
 
-function formatIngredient(ing: { name: string; amount?: number; unit?: string; preparation?: string }) {
+function formatIngredient(ing: {
+  name: string;
+  amount?: number;
+  unit?: string;
+  preparation?: string;
+}) {
   const parts = [ing.name];
   if (ing.amount != null) parts.unshift(String(ing.amount));
   if (ing.unit) parts.splice(parts.length - 1, 0, ing.unit);
   if (ing.preparation) parts.push(`(${ing.preparation})`);
   return parts.join(" ");
 }
+
+type GeneratedRecipeImage = {
+  base64: string;
+  mediaType: string;
+  promptUsed: string;
+};
 
 export function RecipeEnhanceClient() {
   const router = useRouter();
@@ -54,15 +78,30 @@ export function RecipeEnhanceClient() {
   const systemRecipes = useQuery(api.recipes.getSystemRecipes);
   const userRecipes = useQuery(api.recipes.getAllUserRecipes);
 
-  const [selectedRecipeId, setSelectedRecipeId] = useState<Id<"recipes"> | null>(null);
+  const [selectedRecipeId, setSelectedRecipeId] =
+    useState<Id<"recipes"> | null>(null);
   const [searchDiscover, setSearchDiscover] = useState("");
   const [searchMy, setSearchMy] = useState("");
   const [prompt, setPrompt] = useState("");
   const [enhanced, setEnhanced] = useState<EnhancedRecipePayload | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [activePanel, setActivePanel] = useState<"enhancement" | "image">(
+    "enhancement",
+  );
+
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageBeforeUrl, setImageBeforeUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [generatedImage, setGeneratedImage] =
+    useState<GeneratedRecipeImage | null>(null);
+  const [isSavingImage, setIsSavingImage] = useState(false);
 
   const updateRecipe = useMutation(api.recipes.updateRecipe);
+  const generateUploadUrl = useMutation(api.recipes.generateUploadUrl);
+  const updateRecipeImage = useMutation(
+    api.recipes.updateRecipeImageAndDeleteOld,
+  );
 
   const recipe = useQuery(
     api.recipes.getRecipe,
@@ -156,7 +195,9 @@ export function RecipeEnhanceClient() {
       });
       if (result.success) {
         setEnhanced({
-          ...(result.description != null && { description: result.description }),
+          ...(result.description != null && {
+            description: result.description,
+          }),
           ingredients: result.ingredients,
           method: result.method,
         });
@@ -177,7 +218,9 @@ export function RecipeEnhanceClient() {
     try {
       await updateRecipe({
         recipeId: selectedRecipeId,
-        ...(enhanced.description != null && { description: enhanced.description }),
+        ...(enhanced.description != null && {
+          description: enhanced.description,
+        }),
         ingredients: enhanced.ingredients.map((ing) => ({
           name: ing.name,
           ...(ing.amount != null && { amount: ing.amount }),
@@ -190,6 +233,9 @@ export function RecipeEnhanceClient() {
         })) as Parameters<typeof updateRecipe>[0]["method"],
       });
       toast.success("Recipe updated");
+      setImageBeforeUrl(null);
+      setImagePreviewUrl(null);
+      setGeneratedImage(null);
       setEnhanced(null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to apply changes");
@@ -197,6 +243,113 @@ export function RecipeEnhanceClient() {
       setIsApplying(false);
     }
   }, [enhanced, selectedRecipeId, updateRecipe]);
+
+  const handleRegenerateImage = useCallback(async () => {
+    if (!recipe || !selectedRecipeId) return;
+    if (enhanced) {
+      toast.message("Apply the enhanced recipe first", {
+        description: "Image regeneration uses the currently saved recipe.",
+      });
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    setImageBeforeUrl(recipe.image ?? null);
+    setImagePreviewUrl(null);
+    setGeneratedImage(null);
+
+    try {
+      const methodForAction = (recipe.method ?? []).map((step) => ({
+        title: step.title,
+        description: step.description ?? undefined,
+      }));
+
+      const res = await generateRecipeImageWithAI({
+        title: recipe.title,
+        description: recipe.description ?? null,
+        method: methodForAction,
+      });
+
+      if (!res.success) {
+        toast.error(res.error);
+        return;
+      }
+
+      const previewUrl = `data:${res.mediaType};base64,${res.base64}`;
+      setImagePreviewUrl(previewUrl);
+      setGeneratedImage({
+        base64: res.base64,
+        mediaType: res.mediaType,
+        promptUsed: res.promptUsed,
+      });
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Failed to regenerate image.",
+      );
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  }, [recipe, selectedRecipeId, enhanced]);
+
+  const handleSaveImage = useCallback(async () => {
+    if (!generatedImage || !selectedRecipeId) return;
+    if (enhanced) {
+      toast.message("Apply the enhanced recipe first", {
+        description:
+          "Finish applying ingredients/method before saving an image.",
+      });
+      return;
+    }
+
+    setIsSavingImage(true);
+    try {
+      const postUrl = await generateUploadUrl();
+
+      const binaryString = atob(generatedImage.base64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const uploadRes = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": generatedImage.mediaType },
+        body: bytes,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Image upload failed (${uploadRes.status})`);
+      }
+
+      const uploadJson = (await uploadRes.json()) as {
+        storageId?: Id<"_storage">;
+      };
+      const storageId = uploadJson.storageId;
+      if (!storageId) {
+        throw new Error("Upload failed: missing storageId");
+      }
+
+      await updateRecipeImage({
+        recipeId: selectedRecipeId,
+        storageId,
+      });
+
+      toast.success("Recipe image updated");
+      setGeneratedImage(null);
+      setImagePreviewUrl(null);
+      setImageBeforeUrl(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save image.");
+    } finally {
+      setIsSavingImage(false);
+    }
+  }, [
+    generatedImage,
+    selectedRecipeId,
+    enhanced,
+    generateUploadUrl,
+    updateRecipeImage,
+  ]);
 
   if (user === undefined) {
     return (
@@ -239,10 +392,28 @@ export function RecipeEnhanceClient() {
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Pick a recipe, describe how you want it improved, then generate and
-            apply enhanced description, ingredients, and method. Images are not changed.
+            apply enhanced description, ingredients, and method. You can
+            regenerate the saved recipe image separately.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={activePanel === "enhancement" ? "default" : "secondary"}
+              onClick={() => setActivePanel("enhancement")}
+            >
+              Enhancement
+            </Button>
+            <Button
+              type="button"
+              variant={activePanel === "image" ? "default" : "secondary"}
+              onClick={() => setActivePanel("image")}
+            >
+              Image
+            </Button>
+          </div>
+
           <Tabs defaultValue="discover">
             <TabsList>
               <TabsTrigger value="discover">Discover</TabsTrigger>
@@ -279,6 +450,9 @@ export function RecipeEnhanceClient() {
                       onSelect={() => {
                         setSelectedRecipeId(r._id);
                         setEnhanced(null);
+                        setImageBeforeUrl(null);
+                        setImagePreviewUrl(null);
+                        setGeneratedImage(null);
                       }}
                     />
                   ))
@@ -314,6 +488,9 @@ export function RecipeEnhanceClient() {
                       onSelect={() => {
                         setSelectedRecipeId(r._id);
                         setEnhanced(null);
+                        setImageBeforeUrl(null);
+                        setImagePreviewUrl(null);
+                        setGeneratedImage(null);
                       }}
                     />
                   ))
@@ -323,49 +500,148 @@ export function RecipeEnhanceClient() {
           </Tabs>
 
           {recipe && (
-            <>
-              <div className="rounded-md border bg-muted/30 p-3">
-                <p className="text-sm font-medium">Selected: {recipe.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {recipe.source === "system" ? "Discover" : "My recipe"} ·{" "}
-                  {(recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)} min · Serves{" "}
-                  {recipe.serves}
+            <div className="rounded-md border bg-muted/30 p-3">
+              <p className="text-sm font-medium">Selected: {recipe.title}</p>
+              <p className="text-xs text-muted-foreground">
+                {recipe.source === "system" ? "Discover" : "My recipe"} ·{" "}
+                {(recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)} min · Serves{" "}
+                {recipe.serves}
+              </p>
+            </div>
+          )}
+
+          {activePanel === "enhancement" ? (
+            <div className="space-y-2">
+              {recipe ? (
+                <>
+                  <Label htmlFor="prompt">Enhancement prompt</Label>
+                  <Textarea
+                    id="prompt"
+                    placeholder="e.g. Clarify when to add salt; improve the description to mention resting time; add a note about resting the dough; make step 3 more precise."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="min-h-24"
+                  />
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={!prompt.trim() || isGenerating}
+                    className="w-full sm:w-auto"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Generating…
+                      </>
+                    ) : (
+                      "Generate enhanced recipe"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Pick a recipe to enhance.
                 </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="prompt">Enhancement prompt</Label>
-                <Textarea
-                  id="prompt"
-                  placeholder="e.g. Clarify when to add salt; improve the description to mention resting time; add a note about resting the dough; make step 3 more precise."
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  className="min-h-24"
-                />
-              </div>
-              <Button
-                onClick={handleGenerate}
-                disabled={!prompt.trim() || isGenerating}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Generating…
-                  </>
-                ) : (
-                  "Generate enhanced recipe"
-                )}
-              </Button>
-            </>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recipe ? (
+                <>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Current
+                      </p>
+                      {(imageBeforeUrl ?? recipe.image) ? (
+                        <img
+                          src={imageBeforeUrl ?? recipe.image ?? undefined}
+                          alt="Current recipe"
+                          className="aspect-4/3 w-full rounded-md border object-cover"
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          (no image)
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        New
+                      </p>
+                      {imagePreviewUrl ? (
+                        <img
+                          src={imagePreviewUrl}
+                          alt="New recipe preview"
+                          className="aspect-4/3 w-full rounded-md border object-cover"
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Regenerate to preview.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      onClick={handleRegenerateImage}
+                      disabled={isGeneratingImage || enhanced != null}
+                    >
+                      {isGeneratingImage ? (
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" />
+                          Generating…
+                        </>
+                      ) : (
+                        "Regenerate recipe image"
+                      )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={handleSaveImage}
+                      disabled={
+                        !generatedImage || isSavingImage || enhanced != null
+                      }
+                      variant="secondary"
+                    >
+                      {isSavingImage ? (
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" />
+                          Saving…
+                        </>
+                      ) : (
+                        "Save/overwrite recipe image"
+                      )}
+                    </Button>
+                  </div>
+
+                  {enhanced ? (
+                    <p className="text-sm text-muted-foreground">
+                      Apply the enhanced ingredients/method first; image
+                      regeneration uses the saved recipe.
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Pick a recipe to regenerate its image.
+                </p>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {recipe && enhanced && (
+      {activePanel === "enhancement" && recipe && (
         <Card>
           <CardHeader>
             <CardTitle>Before / After</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Review the changes, then click Apply to update the recipe.
+              {enhanced
+                ? "Review the changes, then click Apply to update the recipe."
+                : "Your current recipe is shown here. Generate to preview ingredients and method changes."}
             </p>
           </CardHeader>
           <CardContent>
@@ -418,47 +694,58 @@ export function RecipeEnhanceClient() {
                   Enhanced
                 </h3>
                 <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">
-                    Description
-                  </p>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {enhanced.description?.trim() || "(none)"}
-                  </p>
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">
-                    Ingredients
-                  </p>
-                  <ul className="list-inside list-disc space-y-1 text-sm">
-                    {enhanced.ingredients.map((ing, i) => (
-                      <li key={i}>{formatIngredient(ing)}</li>
-                    ))}
-                  </ul>
-                  <p className="mt-3 text-xs font-medium text-muted-foreground">
-                    Method
-                  </p>
-                  <ol className="mt-1 list-decimal space-y-2 pl-4 text-sm">
-                    {enhanced.method.map((step, i) => (
-                      <li key={i}>
-                        <span className="font-medium">{step.title}</span>
-                        {step.description && (
-                          <p className="mt-0.5 text-muted-foreground">
-                            {step.description}
-                          </p>
-                        )}
-                      </li>
-                    ))}
-                  </ol>
+                  {enhanced ? (
+                    <>
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">
+                        Description
+                      </p>
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        {enhanced.description?.trim() || "(none)"}
+                      </p>
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">
+                        Ingredients
+                      </p>
+                      <ul className="list-inside list-disc space-y-1 text-sm">
+                        {enhanced.ingredients.map((ing, i) => (
+                          <li key={i}>{formatIngredient(ing)}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-3 text-xs font-medium text-muted-foreground">
+                        Method
+                      </p>
+                      <ol className="mt-1 list-decimal space-y-2 pl-4 text-sm">
+                        {enhanced.method.map((step, i) => (
+                          <li key={i}>
+                            <span className="font-medium">{step.title}</span>
+                            {step.description && (
+                              <p className="mt-0.5 text-muted-foreground">
+                                {step.description}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Generate an enhanced recipe to populate this panel.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
             <div className="mt-4">
-              <Button onClick={handleApply} disabled={isApplying}>
+              <Button
+                onClick={handleApply}
+                disabled={!enhanced || isApplying}
+              >
                 {isApplying ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />
                     Applying…
                   </>
                 ) : (
-                  "Apply to recipe"
+                  enhanced ? "Apply to recipe" : "Apply to recipe"
                 )}
               </Button>
             </div>
