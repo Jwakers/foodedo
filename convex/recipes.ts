@@ -565,7 +565,7 @@ export const updateRecipe = mutation({
   args: {
     recipeId: v.id("recipes"),
     title: v.optional(v.string()),
-    description: v.optional(v.string()),
+    description: v.optional(v.union(v.string(), v.null())),
     prepTime: v.optional(v.number()),
     cookTime: v.optional(v.number()),
     serves: v.optional(v.number()),
@@ -607,7 +607,9 @@ export const updateRecipe = mutation({
     const isOwner = recipe.userId === user._id;
     const isSuperUser = user.isSuperUser === true;
     if (!isOwner && !isSuperUser) {
-      throw new ConvexError("Unauthorised - only the recipe owner can edit it");
+      throw new ConvexError(
+        "Unauthorised - only the recipe owner or a super user can edit it",
+      );
     }
 
     let ingredients = recipe.ingredients;
@@ -725,7 +727,12 @@ export const updateRecipe = mutation({
 
     await ctx.db.patch(args.recipeId, {
       title: args.title ?? recipe.title,
-      description: args.description ?? recipe.description,
+      description:
+        args.description === undefined
+          ? recipe.description
+          : args.description === null
+            ? undefined
+            : args.description,
       prepTime,
       cookTime,
       serves: args.serves ?? recipe.serves,
@@ -927,7 +934,9 @@ export const updateRecipeImageAndDeleteOld = mutation({
     const isOwner = recipe.userId === user._id;
     const isSuperUser = user.isSuperUser === true;
     if (!isOwner && !isSuperUser) {
-      throw new ConvexError("Unauthorised - only the recipe owner can edit it");
+      throw new ConvexError(
+        "Unauthorised - only the recipe owner or a super user can edit it",
+      );
     }
 
     // Store the old image ID before updating

@@ -195,9 +195,7 @@ export function RecipeEnhanceClient() {
       });
       if (result.success) {
         setEnhanced({
-          ...(result.description != null && {
-            description: result.description,
-          }),
+          description: result.description,
           ingredients: result.ingredients,
           method: result.method,
         });
@@ -216,21 +214,69 @@ export function RecipeEnhanceClient() {
     if (!enhanced || !selectedRecipeId) return;
     setIsApplying(true);
     try {
-      await updateRecipe({
-        recipeId: selectedRecipeId,
-        ...(enhanced.description != null && {
-          description: enhanced.description,
-        }),
-        ingredients: enhanced.ingredients.map((ing) => ({
+      if (!recipe) return;
+
+      const normaliseName = (s: string) =>
+        s.trim().toLowerCase().replace(/\s+/g, " ");
+
+      const currentIngredients = recipe.ingredients ?? [];
+      const ingredientQueueByName = new Map<
+        string,
+        typeof currentIngredients
+      >();
+
+      for (const ing of currentIngredients) {
+        const key = normaliseName(ing.name);
+        const arr = ingredientQueueByName.get(key) ?? [];
+        arr.push(ing);
+        ingredientQueueByName.set(key, arr);
+      }
+
+      const mergedIngredients = enhanced.ingredients.map((ing) => {
+        const key = normaliseName(ing.name);
+        const queue = ingredientQueueByName.get(key) ?? [];
+        const match = queue.length > 0 ? queue.shift() : undefined;
+        ingredientQueueByName.set(key, queue);
+
+        return {
+          ...(match?.id != null && { id: match.id }),
+          ...(match?.ingredientId != null && { ingredientId: match.ingredientId }),
           name: ing.name,
           ...(ing.amount != null && { amount: ing.amount }),
           ...(ing.unit != null && { unit: ing.unit }),
           ...(ing.preparation != null && { preparation: ing.preparation }),
-        })) as Parameters<typeof updateRecipe>[0]["ingredients"],
-        method: enhanced.method.map((step) => ({
+        };
+      });
+
+      const validIngredientRowIds = new Set(
+        mergedIngredients
+          .map((i) => i.id)
+          .filter((id): id is string => id != null && id.length > 0),
+      );
+
+      const currentMethod = recipe.method ?? [];
+      const mergedMethod = enhanced.method.map((step, idx) => {
+        const existingStep = currentMethod[idx];
+
+        const filteredIngredientRefs = existingStep?.ingredientRefs?.filter(
+          (ref) => validIngredientRowIds.has(ref),
+        );
+
+        return {
           title: step.title,
           ...(step.description != null && { description: step.description }),
-        })) as Parameters<typeof updateRecipe>[0]["method"],
+          ...(existingStep?.image != null && { image: existingStep.image }),
+          ...(filteredIngredientRefs?.length
+            ? { ingredientRefs: filteredIngredientRefs }
+            : {}),
+        };
+      });
+
+      await updateRecipe({
+        recipeId: selectedRecipeId,
+        description: enhanced.description,
+        ingredients: mergedIngredients,
+        method: mergedMethod,
       });
       toast.success("Recipe updated");
       setImageBeforeUrl(null);
@@ -242,7 +288,7 @@ export function RecipeEnhanceClient() {
     } finally {
       setIsApplying(false);
     }
-  }, [enhanced, selectedRecipeId, updateRecipe]);
+  }, [enhanced, recipe, selectedRecipeId, updateRecipe]);
 
   const handleRegenerateImage = useCallback(async () => {
     if (!recipe || !selectedRecipeId) return;
@@ -423,6 +469,8 @@ export function RecipeEnhanceClient() {
               <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="search-discover"
+                  aria-label="Search Discover recipes"
                   placeholder="Search…"
                   value={searchDiscover}
                   onChange={(e) => setSearchDiscover(e.target.value)}
@@ -463,6 +511,8 @@ export function RecipeEnhanceClient() {
               <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="search-my"
+                  aria-label="Search My recipes"
                   placeholder="Search…"
                   value={searchMy}
                   onChange={(e) => setSearchMy(e.target.value)}

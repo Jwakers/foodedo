@@ -3,6 +3,8 @@
 import { requireSuperUser } from "@/lib/require-super-user";
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import type { Doc } from "convex/_generated/dataModel";
+import type { StructuredIngredient } from "@/lib/types/recipe-parser";
 import {
   cleanIngredients,
   cleanMethodSteps,
@@ -34,15 +36,22 @@ const EnhanceRecipeOutputSchema = z.object({
   description: z.string().nullable(),
   ingredients: z.array(
     z.object({
-      name: z.string(),
-      amount: z.number().nullable(),
+      name: z
+        .string()
+        .refine((s) => s.trim().length > 0, { message: "cannot be blank" }),
+      amount: z
+        .number()
+        .nullable()
+        .refine((v) => v === null || v > 0, { message: "must be positive" }),
       unit: z.string().nullable(),
       preparation: z.string().nullable(),
     }),
   ),
   method: z.array(
     z.object({
-      title: z.string(),
+      title: z
+        .string()
+        .refine((s) => s.trim().length > 0, { message: "cannot be blank" }),
       description: z.string().nullable(),
     }),
   ),
@@ -50,16 +59,13 @@ const EnhanceRecipeOutputSchema = z.object({
 
 export type EnhanceRecipeInput = z.infer<typeof EnhanceRecipeInputSchema>;
 
-/** Success payload: optional fields use undefined for Convex updateRecipe compatibility. */
+type RecipeMethodStep = NonNullable<Doc<"recipes">["method"]>[number];
+
+/** Success payload: uses undefined/null to work with Convex updateRecipe. */
 export type EnhancedRecipePayload = {
-  description?: string;
-  ingredients: Array<{
-    name: string;
-    amount?: number;
-    unit?: string;
-    preparation?: string;
-  }>;
-  method: Array<{ title: string; description?: string }>;
+  description: string | null;
+  ingredients: StructuredIngredient[];
+  method: RecipeMethodStep[];
 };
 
 export async function enhanceRecipeWithAI(
@@ -148,7 +154,7 @@ Return the improved description, ingredients, and method as JSON.`,
 
     const cleanedIngredients = cleanIngredients(
       raw.ingredients.map((ing) => ({
-        name: ing.name,
+        name: ing.name.trim(),
         amount: ing.amount,
         unit: ing.unit,
         preparation: ing.preparation,
@@ -157,12 +163,23 @@ Return the improved description, ingredients, and method as JSON.`,
 
     const cleanedMethod = cleanMethodSteps(
       raw.method.map((step) => ({
-        title: step.title,
+        title: step.title.trim(),
         description: step.description ?? undefined,
       })),
     );
 
-    if (cleanedIngredients.length === 0 || cleanedMethod.length === 0) {
+    const filteredIngredients = cleanedIngredients.filter((ing) => {
+      if (!ing.name?.trim()) return false;
+      if (ing.amount != null && ing.amount <= 0) return false;
+      return true;
+    });
+
+    const filteredMethod = cleanedMethod.filter((step) => {
+      if (!step.title?.trim()) return false;
+      return true;
+    });
+
+    if (filteredIngredients.length === 0 || filteredMethod.length === 0) {
       return {
         success: false,
         error: "AI returned empty ingredients or method. Please try again with a different prompt.",
@@ -170,20 +187,22 @@ Return the improved description, ingredients, and method as JSON.`,
     }
 
     const description =
-      raw.description != null && String(raw.description).trim().length > 0
-        ? String(raw.description).trim()
-        : undefined;
+      raw.description === null
+        ? null
+        : String(raw.description).trim().length > 0
+          ? String(raw.description).trim()
+          : null;
 
     return {
       success: true,
-      ...(description != null && { description }),
-      ingredients: cleanedIngredients.map((ing) => ({
+      description,
+      ingredients: filteredIngredients.map((ing) => ({
         name: ing.name,
         ...(ing.amount != null && { amount: ing.amount }),
         ...(ing.unit != null && { unit: ing.unit }),
         ...(ing.preparation != null && { preparation: ing.preparation }),
       })),
-      method: cleanedMethod.map((step) => ({
+      method: filteredMethod.map((step) => ({
         title: step.title,
         ...(step.description != null && { description: step.description }),
       })),
