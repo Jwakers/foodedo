@@ -41,7 +41,7 @@ export function MethodSection({
     const list = ingredients ?? [];
     const out: { id: string; label: string }[] = [];
     for (const ing of list) {
-      const id = (ing as { id?: string }).id;
+      const id = ing.id;
       if (!id?.trim()) continue;
       out.push({ id, label: ing.name });
     }
