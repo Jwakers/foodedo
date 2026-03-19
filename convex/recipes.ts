@@ -3,6 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { canAccessRecipe } from "./households";
+import { resolveIngredientIdFromList } from "./ingredients";
 import {
   clampEditorialBias,
   CUISINE_MAX_SELECTIONS,
@@ -13,11 +14,10 @@ import {
   complexityTierUnion,
   creationSourceUnion,
   cuisineUnion,
-  primaryProteinUnion,
   preparationUnion,
+  primaryProteinUnion,
   unitsUnion,
 } from "./schema";
-import { resolveIngredientIdFromList } from "./ingredients";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -649,9 +649,7 @@ export const updateRecipe = mutation({
         const refs = step?.ingredientRefs;
         if (refs?.length) {
           const validRefs = new Set(
-            ingList
-              .map((ing) => (ing as { id?: string }).id)
-              .filter((id): id is string => !!id),
+            ingList.map((ing) => ing.id).filter((id): id is string => !!id),
           );
           for (const ref of refs) {
             if (!validRefs.has(ref)) {

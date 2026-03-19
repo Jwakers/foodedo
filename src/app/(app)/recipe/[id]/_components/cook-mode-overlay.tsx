@@ -135,7 +135,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
     if (stepRefs && stepRefs.length > 0) {
       const refSet = new Set(stepRefs);
       return recipeIngredients.filter((ing) => {
-        const id = (ing as { id?: string }).id;
+        const id = ing.id;
         return id && refSet.has(id);
       });
     }
