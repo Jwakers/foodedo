@@ -39,6 +39,7 @@ import {
   Moon,
   Shield,
   ShoppingCart,
+  Sparkles,
   Sun,
   Users,
   Utensils,
@@ -357,6 +358,26 @@ export function Header() {
                               <div className="font-medium">Blog images</div>
                               <div className="text-sm text-muted-foreground">
                                 Generate blog hero images with AI
+                              </div>
+                            </div>
+                          </Link>
+                        </Button>
+                      </li>
+                      <li>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start h-auto"
+                          asChild
+                        >
+                          <Link
+                            href={ROUTES.ADMIN_RECIPE_ENHANCE}
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            <Sparkles className="size-4 mr-3" />
+                            <div className="text-left">
+                              <div className="font-medium">Recipe enhancer</div>
+                              <div className="text-sm text-muted-foreground">
+                                Improve recipe ingredients and method with AI
                               </div>
                             </div>
                           </Link>
