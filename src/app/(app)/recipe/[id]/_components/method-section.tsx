@@ -43,8 +43,7 @@ export function MethodSection({
     for (const ing of list) {
       const id = (ing as { id?: string }).id;
       if (!id?.trim()) continue;
-      const label = ing.name;
-      out.push({ id, label });
+      out.push({ id, label: ing.name });
     }
     return out;
   }, [ingredients]);
@@ -124,7 +123,7 @@ export function MethodSection({
                   key={field.id}
                   className="flex gap-3 items-start p-4 border rounded-lg"
                 >
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm mt-1">
+                  <div className="size-8 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm mt-1">
                     {index + 1}
                   </div>
                   <div className="flex-1 space-y-3">

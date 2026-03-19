@@ -751,10 +751,11 @@ export const backfillRecipeIngredientRowIds = internalMutation({
       if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
       const existing = new Set<string>();
       const nextIngredients = recipe.ingredients.map((ing) => {
+        const trimmed = ing.id?.trim();
         const id =
-          ing.id && ing.id.trim()
-            ? ing.id
-            : generateRecipeIngredientId(existing);
+          !trimmed || existing.has(trimmed)
+            ? generateRecipeIngredientId(existing)
+            : trimmed;
         existing.add(id);
         return { ...ing, id };
       });

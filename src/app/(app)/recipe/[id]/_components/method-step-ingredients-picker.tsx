@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { RecipeEditFormData } from "@/lib/schemas/recipe";
 
@@ -24,10 +24,28 @@ export function MethodStepIngredientsPicker({
   suggestedRefs,
 }: MethodStepIngredientsPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedRefs =
-    form.watch(`method.${stepIndex}.ingredientRefs`) ?? [];
+  const availableIds = useMemo(
+    () => new Set(availableOptions.map((o) => o.id)),
+    [availableOptions],
+  );
+  const rawSelected = form.watch(`method.${stepIndex}.ingredientRefs`) ?? [];
+  const selectedRefs = useMemo(
+    () => rawSelected.filter((id) => availableIds.has(id)),
+    [rawSelected, availableIds],
+  );
+
+  const hasStaleRefs = rawSelected.some((id) => !availableIds.has(id));
+  useEffect(() => {
+    if (hasStaleRefs) {
+      form.setValue(`method.${stepIndex}.ingredientRefs`, selectedRefs, {
+        shouldDirty: true,
+      });
+    }
+  }, [hasStaleRefs, selectedRefs, form, stepIndex]);
+
   const setSelectedRefs = (refs: string[]) => {
-    form.setValue(`method.${stepIndex}.ingredientRefs`, refs, {
+    const pruned = refs.filter((id) => availableIds.has(id));
+    form.setValue(`method.${stepIndex}.ingredientRefs`, pruned, {
       shouldDirty: true,
     });
   };
@@ -49,7 +67,9 @@ export function MethodStepIngredientsPicker({
 
   const addAllSuggested = () => {
     const next = new Set(selectedRefs);
-    suggestedRefs.forEach((r) => next.add(r));
+    suggestedRefs
+      .filter((r) => availableIds.has(r))
+      .forEach((r) => next.add(r));
     setSelectedRefs([...next]);
   };
 

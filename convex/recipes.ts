@@ -615,11 +615,53 @@ export const updateRecipe = mutation({
       ingredients = args.ingredients.map((ing) => {
         const ingredientId =
           resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
-        const id =
-          ing.id && ing.id.trim() ? ing.id : generateRecipeIngredientId(usedIds);
+        const trimmed = ing.id?.trim();
+        if (trimmed && usedIds.has(trimmed)) {
+          throw new ConvexError(
+            `Duplicate recipe ingredient id: "${trimmed}". Each ingredient row id must be unique within the recipe.`,
+          );
+        }
+        const id = trimmed ? trimmed : generateRecipeIngredientId(usedIds);
         usedIds.add(id);
         return { ...ing, ingredientId, id };
       });
+    }
+
+    if (args.method) {
+      const ingList = ingredients ?? [];
+      const validIngredientIds = new Set(
+        ingList
+          .map((ing) => ing.ingredientId)
+          .filter((id): id is NonNullable<typeof id> => id != null),
+      );
+      for (let i = 0; i < args.method.length; i++) {
+        const step = args.method[i];
+        const ids = step?.ingredientIds;
+        if (ids?.length) {
+          for (const id of ids) {
+            if (!validIngredientIds.has(id)) {
+              throw new ConvexError(
+                `Method step ${i + 1}: ingredientIds must only reference ingredients used in this recipe`,
+              );
+            }
+          }
+        }
+        const refs = step?.ingredientRefs;
+        if (refs?.length) {
+          const validRefs = new Set(
+            ingList
+              .map((ing) => (ing as { id?: string }).id)
+              .filter((id): id is string => !!id),
+          );
+          for (const ref of refs) {
+            if (!validRefs.has(ref)) {
+              throw new ConvexError(
+                `Method step ${i + 1}: ingredientRefs must reference recipe ingredient ids on this recipe`,
+              );
+            }
+          }
+        }
+      }
     }
 
     // Clean up orphaned method step images when method is updated
@@ -659,43 +701,6 @@ export const updateRecipe = mutation({
       throw new ConvexError(
         `cuisine must have at most ${CUISINE_MAX_SELECTIONS} items`,
       );
-    }
-
-    if (args.method) {
-      const ingList = ingredients ?? [];
-      const validIngredientIds = new Set(
-        ingList
-          .map((ing) => ing.ingredientId)
-          .filter((id): id is NonNullable<typeof id> => id != null),
-      );
-      for (let i = 0; i < args.method.length; i++) {
-        const step = args.method[i];
-        const ids = step?.ingredientIds;
-        if (ids?.length) {
-          for (const id of ids) {
-            if (!validIngredientIds.has(id)) {
-              throw new ConvexError(
-                `Method step ${i + 1}: ingredientIds must only reference ingredients used in this recipe`,
-              );
-            }
-          }
-        }
-        const refs = step?.ingredientRefs;
-        if (refs?.length) {
-          const validRefs = new Set(
-            ingList
-              .map((ing) => (ing as { id?: string }).id)
-              .filter((id): id is string => !!id),
-          );
-          for (const ref of refs) {
-            if (!validRefs.has(ref)) {
-              throw new ConvexError(
-                `Method step ${i + 1}: ingredientRefs must reference recipe ingredient ids on this recipe`,
-              );
-            }
-          }
-        }
-      }
     }
 
     const prepTime = args.prepTime ?? recipe.prepTime;
