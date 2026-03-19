@@ -76,13 +76,22 @@ export const recipeCreateSchema = baseRecipeSchema
  * - Method steps use string for image storage IDs
  * - Allows prepTime = 0 (for no-prep recipes)
  */
-export const recipeEditSchema = baseRecipeSchema.extend({
-  method: z.array(
-    baseMethodStepSchema.extend({
-      image: z.string().optional(), // Storage ID for the image
-    }),
-  ),
-});
+export const recipeEditSchema = baseRecipeSchema
+  .extend({
+    ingredients: z.array(
+      baseIngredientSchema.extend({
+        id: z.string().optional(), // Stable id within recipe; backfilled by migration
+        ingredientId: z.string().optional(),
+      }),
+    ),
+    method: z.array(
+      baseMethodStepSchema.extend({
+        image: z.string().optional(),
+        ingredientIds: z.array(z.string()).optional(),
+        ingredientRefs: z.array(z.string()).optional(), // recipe.ingredients[].id
+      }),
+    ),
+  });
 
 /**
  * Schema for imported recipes (from AI parsing or URL scraping)

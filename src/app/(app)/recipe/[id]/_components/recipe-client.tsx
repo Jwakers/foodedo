@@ -116,7 +116,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
         method: (recipeForEdit.method || []).map((step) => ({
           title: step.title,
           description: step.description,
-          image: step.image ? String(step.image) : undefined, // Convert Id to string
+          image: step.image ? String(step.image) : undefined,
+          ingredientIds: step.ingredientIds ?? [],
+          ingredientRefs: (step as { ingredientRefs?: string[] }).ingredientRefs ?? [],
         })),
         primaryProtein: recipeForEdit.primaryProtein,
         complexityTier: recipeForEdit.complexityTier,
@@ -138,11 +140,20 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
         cookTime: data.cookTime,
         serves: data.serves,
         category: data.category,
-        ingredients: data.ingredients,
+        ingredients: data.ingredients.map((ing) => ({
+          ...ing,
+          ingredientId: ing.ingredientId as Id<"ingredients"> | undefined,
+        })),
         method: data.method.map((step) => ({
           title: step.title,
           description: step.description,
-          image: step.image ? (step.image as Id<"_storage">) : undefined, // Convert string back to Id
+          image: step.image ? (step.image as Id<"_storage">) : undefined,
+          ingredientIds:
+            step.ingredientIds?.length
+              ? (step.ingredientIds as Id<"ingredients">[])
+              : undefined,
+          ingredientRefs:
+            step.ingredientRefs?.length ? step.ingredientRefs : undefined,
         })),
         primaryProtein: data.primaryProtein,
         complexityTier: data.complexityTier,

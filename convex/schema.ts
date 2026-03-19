@@ -75,6 +75,7 @@ export default defineSchema({
     ingredients: v.optional(
       v.array(
         v.object({
+          id: v.optional(v.string()), // Stable id unique within this recipe; backfilled by migration
           ingredientId: v.optional(v.id("ingredients")),
           name: v.string(),
           amount: v.optional(v.number()),
@@ -89,6 +90,8 @@ export default defineSchema({
           title: v.string(),
           description: v.optional(v.string()),
           image: v.optional(v.id("_storage")),
+          ingredientIds: v.optional(v.array(v.id("ingredients"))),
+          ingredientRefs: v.optional(v.array(v.string())), // recipe.ingredients[].id
         }),
       ),
     ),

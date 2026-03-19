@@ -3,6 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { canAccessRecipe } from "./households";
+import { resolveIngredientIdFromList } from "./ingredients";
 import {
   clampEditorialBias,
   CUISINE_MAX_SELECTIONS,
@@ -13,11 +14,10 @@ import {
   complexityTierUnion,
   creationSourceUnion,
   cuisineUnion,
-  primaryProteinUnion,
   preparationUnion,
+  primaryProteinUnion,
   unitsUnion,
 } from "./schema";
-import { resolveIngredientIdFromList } from "./ingredients";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -28,7 +28,18 @@ type MethodStepWithImage = {
   title: string;
   description?: string;
   image?: Id<"_storage">;
+  ingredientIds?: Id<"ingredients">[];
+  ingredientRefs?: string[];
 };
+
+/** Generate a stable id for a recipe ingredient row; unique within the given set. */
+export function generateRecipeIngredientId(existing: Set<string>): string {
+  let id: string;
+  do {
+    id = "ri_" + crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+  } while (existing.has(id));
+  return id;
+}
 
 async function resolveMethodImageUrls(
   ctx: QueryCtx,
@@ -477,10 +488,13 @@ export const createRecipe = mutation({
     let ingredients = args.ingredients;
     if (ingredients?.length) {
       const allIngredients = await ctx.db.query("ingredients").collect();
+      const usedIds = new Set<string>();
       ingredients = ingredients.map((ing) => {
         const ingredientId =
           resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
-        return { ...ing, ingredientId };
+        const id = generateRecipeIngredientId(usedIds);
+        usedIds.add(id);
+        return { ...ing, ingredientId, id };
       });
     }
 
@@ -559,10 +573,12 @@ export const updateRecipe = mutation({
     ingredients: v.optional(
       v.array(
         v.object({
+          id: v.optional(v.string()),
           name: v.string(),
           amount: v.optional(v.number()),
           unit: v.optional(unitsUnion),
           preparation: v.optional(preparationUnion),
+          ingredientId: v.optional(v.id("ingredients")),
         }),
       ),
     ),
@@ -572,6 +588,8 @@ export const updateRecipe = mutation({
           title: v.string(),
           description: v.optional(v.string()),
           image: v.optional(v.id("_storage")),
+          ingredientIds: v.optional(v.array(v.id("ingredients"))),
+          ingredientRefs: v.optional(v.array(v.string())),
         }),
       ),
     ),
@@ -593,11 +611,55 @@ export const updateRecipe = mutation({
     let ingredients = recipe.ingredients;
     if (args.ingredients?.length) {
       const allIngredients = await ctx.db.query("ingredients").collect();
+      const usedIds = new Set<string>();
       ingredients = args.ingredients.map((ing) => {
         const ingredientId =
           resolveIngredientIdFromList(allIngredients, ing.name) ?? undefined;
-        return { ...ing, ingredientId };
+        const trimmed = ing.id?.trim();
+        if (trimmed && usedIds.has(trimmed)) {
+          throw new ConvexError(
+            `Duplicate recipe ingredient id: "${trimmed}". Each ingredient row id must be unique within the recipe.`,
+          );
+        }
+        const id = trimmed ? trimmed : generateRecipeIngredientId(usedIds);
+        usedIds.add(id);
+        return { ...ing, ingredientId, id };
       });
+    }
+
+    if (args.method) {
+      const ingList = ingredients ?? [];
+      const validIngredientIds = new Set(
+        ingList
+          .map((ing) => ing.ingredientId)
+          .filter((id): id is NonNullable<typeof id> => id != null),
+      );
+      for (let i = 0; i < args.method.length; i++) {
+        const step = args.method[i];
+        const ids = step?.ingredientIds;
+        if (ids?.length) {
+          for (const id of ids) {
+            if (!validIngredientIds.has(id)) {
+              throw new ConvexError(
+                `Method step ${i + 1}: ingredientIds must only reference ingredients used in this recipe`,
+              );
+            }
+          }
+        }
+        const refs = step?.ingredientRefs;
+        if (refs?.length) {
+          const validRefs = new Set(
+            ingList.map((ing) => ing.id).filter((id): id is string => !!id),
+          );
+          for (const ref of refs) {
+            if (!validRefs.has(ref)) {
+              throw new ConvexError(
+                `Method step ${i + 1}: ingredientRefs must reference recipe ingredient ids on this recipe`,
+              );
+            }
+          }
+        }
+      }
     }
 
     // Clean up orphaned method step images when method is updated

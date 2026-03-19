@@ -2,11 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { getRecipeIngredientsForStep } from "@/lib/recipe-step-ingredients";
 import { cn } from "@/lib/utils";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight, Heart, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Recipe } from "./recipe-client";
 
 interface CookModeOverlayProps {
@@ -23,6 +27,35 @@ type IngredientItem = {
 
 export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
   const [currentStep, setCurrentStep] = useState(0);
+
+  const recipeIngredientLines = useMemo(
+    () =>
+      (recipe.ingredients ?? []).map((i) => ({
+        name: i.name,
+        amount: i.amount,
+        unit: i.unit,
+        preparation: i.preparation,
+        ingredientId: i.ingredientId,
+      })),
+    [recipe.ingredients],
+  );
+
+  const ingredientIds = useMemo((): Id<"ingredients">[] => {
+    const seen = new Set<Id<"ingredients">>();
+    const out: Id<"ingredients">[] = [];
+    for (const ing of recipe.ingredients ?? []) {
+      const id = ing.ingredientId;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
+  }, [recipe.ingredients]);
+
+  const ingredientDocs = useQuery(
+    api.ingredients.getByIds,
+    ingredientIds.length > 0 ? { ids: ingredientIds } : "skip",
+  );
 
   const method = recipe.method ?? [];
   const methodSteps = method.length;
@@ -93,6 +126,45 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
         ? ((methodIndex + 1) / methodSteps) * 100
         : 0;
 
+  const matchedStepIngredients = useMemo(() => {
+    if (!isMethodStep || methodSteps === 0) return [];
+    const step = method[methodIndex];
+    if (!step) return [];
+    const recipeIngredients = recipe.ingredients ?? [];
+    const stepRefs = (step as { ingredientRefs?: string[] }).ingredientRefs;
+    if (stepRefs && stepRefs.length > 0) {
+      const refSet = new Set(stepRefs);
+      return recipeIngredients.filter((ing) => {
+        const id = ing.id;
+        return id && refSet.has(id);
+      });
+    }
+    const stepIngredientIds = step.ingredientIds;
+    if (
+      stepIngredientIds &&
+      stepIngredientIds.length > 0 &&
+      recipe.ingredients?.length
+    ) {
+      const idSet = new Set(stepIngredientIds);
+      return recipe.ingredients.filter(
+        (ing) => ing.ingredientId && idSet.has(ing.ingredientId),
+      );
+    }
+    return getRecipeIngredientsForStep(
+      { title: step.title, description: step.description ?? null },
+      recipeIngredientLines,
+      ingredientDocs ?? undefined,
+    );
+  }, [
+    ingredientDocs,
+    isMethodStep,
+    method,
+    methodIndex,
+    methodSteps,
+    recipe.ingredients,
+    recipeIngredientLines,
+  ]);
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
@@ -160,44 +232,47 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
                 <MethodStepSlide
                   step={method[methodIndex]}
                   stepNumber={methodIndex + 1}
+                  matchedIngredients={matchedStepIngredients}
                 />
               )}
             </div>
           </div>
 
-          <footer className="sticky bottom-0 safe-area-inset-bottom flex items-center justify-between gap-4 border-t border-border bg-card/80 px-4 py-4 backdrop-blur-sm">
-            <Button
-              variant="outline"
-              size="lg"
-              disabled={isFirstStep}
-              onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
-              aria-label="Previous step"
-            >
-              <ChevronLeft className="size-5" />
-              Previous
-            </Button>
-            {isCompleteSlide ? (
+          <div className="safe-area-inset-bottom sticky bottom-0">
+            <footer className="flex items-center justify-between gap-4 border-t border-border bg-card/80 px-4 py-4 backdrop-blur-sm">
               <Button
+                variant="outline"
                 size="lg"
-                onClick={onClose}
-                aria-label="Close cooking mode"
+                disabled={isFirstStep}
+                onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
+                aria-label="Previous step"
               >
-                Close
+                <ChevronLeft className="size-5" />
+                Previous
               </Button>
-            ) : (
-              <Button
-                size="lg"
-                disabled={isLastStep}
-                onClick={() =>
-                  setCurrentStep((s) => Math.min(totalSteps - 1, s + 1))
-                }
-                aria-label="Next step"
-              >
-                Next
-                <ChevronRight className="size-5" />
-              </Button>
-            )}
-          </footer>
+              {isCompleteSlide ? (
+                <Button
+                  size="lg"
+                  onClick={onClose}
+                  aria-label="Close cooking mode"
+                >
+                  Close
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  disabled={isLastStep}
+                  onClick={() =>
+                    setCurrentStep((s) => Math.min(totalSteps - 1, s + 1))
+                  }
+                  aria-label="Next step"
+                >
+                  Next
+                  <ChevronRight className="size-5" />
+                </Button>
+              )}
+            </footer>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -255,33 +330,10 @@ function MiseEnPlaceSlide({
         {ingredients.length === 0 ? (
           <p className="mt-6 text-muted-foreground">No ingredients listed.</p>
         ) : (
-          <ul className="mt-6 space-y-2">
-            {ingredients.map((ing, index) => (
-              <li
-                key={`${index}-${ing.name}-${ing.amount}-${ing.unit}`}
-                className="flex flex-wrap items-baseline gap-x-1.5 rounded-lg bg-muted px-4 py-3 text-base"
-              >
-                {!!ing.amount && (
-                  <span className="font-semibold text-foreground">
-                    {ing.amount}
-                  </span>
-                )}
-                {ing.unit && (
-                  <span className="text-muted-foreground uppercase text-sm">
-                    {ing.unit}
-                  </span>
-                )}
-                <span className="font-medium capitalize text-foreground">
-                  {ing.name}
-                </span>
-                {ing.preparation && (
-                  <span className="italic text-muted-foreground capitalize">
-                    — {ing.preparation}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <RecipeIngredientRows
+            ingredients={ingredients}
+            listClassName="mt-6"
+          />
         )}
       </div>
     </section>
@@ -341,9 +393,46 @@ function CompleteSlide({
   );
 }
 
+function RecipeIngredientRows({
+  ingredients,
+  listClassName,
+}: {
+  ingredients: IngredientItem[];
+  listClassName?: string;
+}) {
+  return (
+    <ul className={cn("space-y-2", listClassName)}>
+      {ingredients.map((ing, index) => (
+        <li
+          key={`${index}-${ing.name}-${ing.amount}-${ing.unit}`}
+          className="flex flex-wrap items-baseline gap-x-1.5 rounded-lg bg-muted px-4 py-3 text-base"
+        >
+          {!!ing.amount && (
+            <span className="font-semibold text-foreground">{ing.amount}</span>
+          )}
+          {ing.unit && (
+            <span className="text-muted-foreground text-sm uppercase">
+              {ing.unit}
+            </span>
+          )}
+          <span className="font-medium text-foreground capitalize">
+            {ing.name}
+          </span>
+          {ing.preparation && (
+            <span className="text-muted-foreground capitalize italic">
+              — {ing.preparation}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function MethodStepSlide({
   step,
   stepNumber,
+  matchedIngredients,
 }: {
   step: {
     title: string;
@@ -351,7 +440,10 @@ function MethodStepSlide({
     imageUrl?: string | null;
   };
   stepNumber: number;
+  matchedIngredients: IngredientItem[];
 }) {
+  const forStepHeadingId = `step-for-step-ingredients-${stepNumber}`;
+
   return (
     <section
       className="relative bg-card p-6 md:p-8"
@@ -370,6 +462,30 @@ function MethodStepSlide({
             {step.description}
           </p>
         )}
+        {matchedIngredients.length > 0 ? (
+          <div
+            className="mt-6"
+            role="region"
+            aria-labelledby={forStepHeadingId}
+          >
+            <h2
+              id={forStepHeadingId}
+              className="text-sm font-semibold uppercase tracking-wider text-primary"
+            >
+              For this step
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Gather these from your mise en place when you're ready.
+            </p>
+            <RecipeIngredientRows
+              ingredients={matchedIngredients}
+              listClassName="mt-3"
+            />
+            <p className="mt-0.5 text-xs text-muted-foreground/80">
+              This list may be incomplete
+            </p>
+          </div>
+        ) : null}
         {step.imageUrl && (
           <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-xl border border-border shadow-md">
             <Image
