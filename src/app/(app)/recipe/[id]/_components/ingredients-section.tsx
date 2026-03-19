@@ -45,6 +45,9 @@ export function IngredientsSection({
             size="sm"
             onClick={() =>
               append({
+                id:
+                  "ri_" +
+                  crypto.randomUUID().replace(/-/g, "").slice(0, 12),
                 name: "",
                 amount: undefined,
                 unit: undefined,

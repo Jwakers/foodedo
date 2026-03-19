@@ -26,6 +26,8 @@ Ingredients convenience infra:
 - [x] Add a shopping list combination logic, synonyms and measurement normalisation
 - [x] MANUALLY REVIEW INGREDIENTS SEED AND ALIASES
 - [ ] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
+- [ ] Add a new field for method steps which is ingredients used, an array of references to the ingredients in that recipe. UI should be a simple checkbox grid layout for simplicity. If this array is left blank the cook mode UI will fall back to the token based algorithm as a fallback.
+- [ ] Meal enhancement super user interface
 - [ ] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
 - [ ] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
 - [ ] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.

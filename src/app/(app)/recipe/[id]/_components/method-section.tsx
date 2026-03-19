@@ -6,10 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getSuggestedIngredientRefsForStep } from "@/lib/recipe-step-ingredients";
 import { type RecipeEditFormData } from "@/lib/schemas/recipe";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { useQuery } from "convex/react";
 import { Plus, Trash2 } from "lucide-react";
-import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { useMemo } from "react";
+import { UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
 import { MethodStepImageUpload } from "./method-step-image-upload";
+import { MethodStepIngredientsPicker } from "./method-step-ingredients-picker";
 import { Recipe } from "./recipe-client";
 
 interface MethodSectionProps {
@@ -28,6 +34,58 @@ export function MethodSection({
     name: "method",
   });
 
+  const ingredients = useWatch({ control: form?.control, name: "ingredients" });
+  const methodSteps = useWatch({ control: form?.control, name: "method" });
+
+  const availableIngredientOptions = useMemo(() => {
+    const list = ingredients ?? [];
+    const out: { id: string; label: string }[] = [];
+    for (const ing of list) {
+      const id = (ing as { id?: string }).id;
+      if (!id?.trim()) continue;
+      const label = ing.name;
+      out.push({ id, label });
+    }
+    return out;
+  }, [ingredients]);
+
+  const ingredientIds = useMemo(() => {
+    const list = ingredients ?? [];
+    return list
+      .map((i) => (i as { ingredientId?: string }).ingredientId)
+      .filter((id): id is string => !!id) as Id<"ingredients">[];
+  }, [ingredients]);
+  const uniqueIngredientIds = useMemo(
+    () => [...new Set(ingredientIds)],
+    [ingredientIds],
+  );
+  const ingredientDocs = useQuery(
+    api.ingredients.getByIds,
+    uniqueIngredientIds.length > 0 ? { ids: uniqueIngredientIds } : "skip",
+  );
+
+  const recipeIngredientLines = useMemo(
+    () =>
+      (ingredients ?? []).map(
+        (i: {
+          id?: string;
+          name: string;
+          amount?: number;
+          unit?: string;
+          preparation?: string;
+          ingredientId?: string;
+        }) => ({
+          id: i.id,
+          name: i.name,
+          amount: i.amount,
+          unit: i.unit,
+          preparation: i.preparation,
+          ingredientId: i.ingredientId,
+        }),
+      ),
+    [ingredients],
+  );
+
   const handleRemoveStep = (index: number) => {
     remove(index);
   };
@@ -42,7 +100,12 @@ export function MethodSection({
             variant="outline"
             size="sm"
             onClick={() =>
-              append({ title: "", description: "", image: undefined })
+              append({
+                title: "",
+                description: "",
+                image: undefined,
+                ingredientRefs: [],
+              })
             }
           >
             <Plus className="size-4 mr-2" />
@@ -61,7 +124,7 @@ export function MethodSection({
                   key={field.id}
                   className="flex gap-3 items-start p-4 border rounded-lg"
                 >
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm mt-1">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm mt-1">
                     {index + 1}
                   </div>
                   <div className="flex-1 space-y-3">
@@ -100,6 +163,21 @@ export function MethodSection({
                       existingImageUrl={
                         recipe?.method?.[index]?.imageUrl || undefined
                       }
+                    />
+                    {/* Step ingredients: link recipe ingredients to this step */}
+                    <MethodStepIngredientsPicker
+                      stepIndex={index}
+                      form={form}
+                      availableOptions={availableIngredientOptions}
+                      suggestedRefs={getSuggestedIngredientRefsForStep(
+                        {
+                          title: methodSteps?.[index]?.title ?? "",
+                          description:
+                            methodSteps?.[index]?.description ?? undefined,
+                        },
+                        recipeIngredientLines,
+                        ingredientDocs ?? undefined,
+                      )}
                     />
                   </div>
                   <Button

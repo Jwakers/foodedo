@@ -20,6 +20,7 @@ import {
   normaliseIngredientName,
   resolveIngredientIdFromList,
 } from "./ingredients";
+import { generateRecipeIngredientId } from "./recipes";
 import { INGREDIENT_FOOD_GROUPS } from "./lib/ingredientFoodGroups";
 import ingredientsSeedData from "./ingredients-seed.json";
 import ingredientsSeedManualData from "./ingredients-seed-manual.json";
@@ -733,6 +734,40 @@ export const clearIngredientIsCustom = internalMutation({
     }
 
     return { cleared, scheduled };
+  },
+});
+
+/**
+ * Backfill optional `id` on recipe ingredients. Each ingredient without an id
+ * gets a unique id (unique only within that recipe). Safe to run multiple times.
+ * Run: npx convex run migrations:backfillRecipeIngredientRowIds
+ */
+export const backfillRecipeIngredientRowIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db.query("recipes").collect();
+    let updated = 0;
+    for (const recipe of recipes) {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) continue;
+      const existing = new Set<string>();
+      const nextIngredients = recipe.ingredients.map((ing) => {
+        const id =
+          ing.id && ing.id.trim()
+            ? ing.id
+            : generateRecipeIngredientId(existing);
+        existing.add(id);
+        return { ...ing, id };
+      });
+      const changed = nextIngredients.some(
+        (n, i) =>
+          (recipe.ingredients![i] as { id?: string })?.id !== (n as { id?: string }).id,
+      );
+      if (changed) {
+        await ctx.db.patch(recipe._id, { ingredients: nextIngredients });
+        updated++;
+      }
+    }
+    return { updated, totalRecipes: recipes.length };
   },
 });
 
