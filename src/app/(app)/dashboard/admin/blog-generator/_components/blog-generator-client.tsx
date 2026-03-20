@@ -20,7 +20,7 @@ import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import { Copy, ExternalLink, Loader2, ShieldAlert, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type Draft =
@@ -65,6 +65,14 @@ export function BlogGeneratorClient() {
   const [additionalPrompt, setAdditionalPrompt] = useState("");
   const [isResubmitting, setIsResubmitting] = useState(false);
 
+  // When applying validated/normalized SEO fields back into the editor,
+  // reconcile against a snapshot so we don't clobber concurrent user edits.
+  const normalizationSnapshotRef = useRef<
+    | Pick<GeneratedDraftData, "title" | "slug" | "excerpt" | "markdownBody">
+    | null
+  >(null);
+  const isApplyingNormalizationRef = useRef(false);
+
   useEffect(() => {
     if (user !== undefined && !user) {
       router.replace(ROUTES.DASHBOARD);
@@ -87,8 +95,53 @@ export function BlogGeneratorClient() {
 
   const updateDraftData = useCallback(
     (patch: Partial<GeneratedDraftData>) => {
+      const applyingNormalization = isApplyingNormalizationRef.current;
+      const snapshot = normalizationSnapshotRef.current;
+
       setResult((prev) => {
         if (!prev?.success) return prev;
+
+        if (applyingNormalization && snapshot) {
+          const reconciled: Partial<GeneratedDraftData> = {};
+
+          if (
+            "title" in patch &&
+            patch.title !== undefined &&
+            prev.data.title === snapshot.title
+          ) {
+            reconciled.title = patch.title;
+          }
+          if (
+            "slug" in patch &&
+            patch.slug !== undefined &&
+            prev.data.slug === snapshot.slug
+          ) {
+            reconciled.slug = patch.slug;
+          }
+          if (
+            "excerpt" in patch &&
+            patch.excerpt !== undefined &&
+            prev.data.excerpt === snapshot.excerpt
+          ) {
+            reconciled.excerpt = patch.excerpt;
+          }
+          if (
+            "markdownBody" in patch &&
+            patch.markdownBody !== undefined &&
+            prev.data.markdownBody === snapshot.markdownBody
+          ) {
+            reconciled.markdownBody = patch.markdownBody;
+          }
+
+          return {
+            ...prev,
+            data: {
+              ...prev.data,
+              ...reconciled,
+            },
+          };
+        }
+
         return {
           ...prev,
           data: {
@@ -152,9 +205,18 @@ export function BlogGeneratorClient() {
 
   const handleCreateDraftInSanity = useCallback(async () => {
     if (!result?.success) return;
+    if (isPublishing || isUpdatingDraft || isResubmitting) return;
+
     setIsPublishing(true);
     setPublishResult(null);
     try {
+      normalizationSnapshotRef.current = {
+        title: result.data.title,
+        slug: result.data.slug,
+        excerpt: result.data.excerpt,
+        markdownBody: result.data.markdownBody,
+      };
+
       const validated = await validateBlogDraftForSanityWrite({
         title: result.data.title,
         slug: result.data.slug,
@@ -184,6 +246,13 @@ export function BlogGeneratorClient() {
           sanityId: res.sanityId,
           studioEditUrl: res.studioEditUrl,
         });
+
+        // Reflect any normalisations (slug/H1/etc.) in the editor UI.
+        isApplyingNormalizationRef.current = true;
+        updateDraftData(validated.data);
+        isApplyingNormalizationRef.current = false;
+        normalizationSnapshotRef.current = null;
+
         toast.success("Draft created in Sanity");
       } else {
         toast.error(res.error);
@@ -193,7 +262,7 @@ export function BlogGeneratorClient() {
     } finally {
       setIsPublishing(false);
     }
-  }, [result]);
+  }, [result, isPublishing, isUpdatingDraft, isResubmitting, updateDraftData]);
 
   const handleUpdateDraftInSanity = useCallback(async () => {
     if (!result?.success) return;
@@ -201,6 +270,13 @@ export function BlogGeneratorClient() {
 
     setIsUpdatingDraft(true);
     try {
+      normalizationSnapshotRef.current = {
+        title: result.data.title,
+        slug: result.data.slug,
+        excerpt: result.data.excerpt,
+        markdownBody: result.data.markdownBody,
+      };
+
       const validated = await validateBlogDraftForSanityWrite({
         title: result.data.title,
         slug: result.data.slug,
@@ -228,6 +304,11 @@ export function BlogGeneratorClient() {
         markdownBody: validated.data.markdownBody,
       });
       if (res.success) {
+        isApplyingNormalizationRef.current = true;
+        updateDraftData(validated.data);
+        isApplyingNormalizationRef.current = false;
+        normalizationSnapshotRef.current = null;
+
         toast.success("Draft updated in Sanity");
       } else {
         toast.error(res.error);
@@ -237,7 +318,7 @@ export function BlogGeneratorClient() {
     } finally {
       setIsUpdatingDraft(false);
     }
-  }, [publishResult?.sanityId, result]);
+  }, [publishResult?.sanityId, result, updateDraftData]);
 
   const handleResubmitWithAdditionalPrompt = useCallback(async () => {
     if (!result?.success) return;
@@ -269,6 +350,13 @@ export function BlogGeneratorClient() {
 
       // If the draft already exists in Sanity, update it immediately in-place.
       if (publishResult?.sanityId) {
+        normalizationSnapshotRef.current = {
+          title: res.data.title,
+          slug: res.data.slug,
+          excerpt: res.data.excerpt,
+          markdownBody: res.data.markdownBody,
+        };
+
         const validated = await validateBlogDraftForSanityWrite({
           title: res.data.title,
           slug: res.data.slug,
@@ -279,6 +367,7 @@ export function BlogGeneratorClient() {
 
         if (!validated.success) {
           toast.error(validated.error);
+          normalizationSnapshotRef.current = null;
         } else {
           if (validated.warnings.length) {
             toast.message("Validated with warnings", {
@@ -297,6 +386,11 @@ export function BlogGeneratorClient() {
           if (!up.success) {
             toast.error(up.error);
           } else {
+            isApplyingNormalizationRef.current = true;
+            updateDraftData(validated.data);
+            isApplyingNormalizationRef.current = false;
+            normalizationSnapshotRef.current = null;
+
             toast.success("Sanity draft updated");
           }
         }
@@ -313,6 +407,7 @@ export function BlogGeneratorClient() {
     isPublishing,
     isUpdatingDraft,
     isResubmitting,
+    updateDraftData,
   ]);
 
   if (user === undefined) {

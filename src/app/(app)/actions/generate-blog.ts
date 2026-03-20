@@ -152,8 +152,11 @@ async function fetchExistingTitlesAndSlugsWithIds(): Promise<
       {},
       { cache: "no-store" },
     );
-  } catch {
-    return [];
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `fetchExistingTitlesAndSlugsWithIds failed: ${message}`,
+    );
   }
 }
 
@@ -199,10 +202,17 @@ export async function validateBlogDraftForSanityWrite(
   // Uniqueness checks (exact match only, case-insensitive).
   const rows = await fetchExistingTitlesAndSlugsWithIds();
   const existing: ExistingPostTitleSlug[] = excludeSanityId
-    ? rows.filter((r) => r._id !== excludeSanityId).map(({ title, slug }) => ({
-        title,
-        slug,
-      }))
+    ? rows
+        .filter((r) => {
+          const draftId = excludeSanityId.startsWith("drafts.")
+            ? excludeSanityId
+            : `drafts.${excludeSanityId}`;
+          return r._id !== excludeSanityId && r._id !== draftId;
+        })
+        .map(({ title, slug }) => ({
+          title,
+          slug,
+        }))
     : rows.map(({ title, slug }) => ({ title, slug }));
 
   const exclusions = buildExclusions(existing);
@@ -441,7 +451,12 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
     (async () => {
       const rows = await fetchExistingTitlesAndSlugsWithIds();
       const rowsExcludingCurrent = excludeSanityId
-        ? rows.filter((r) => r._id !== excludeSanityId)
+        ? rows.filter((r) => {
+            const draftId = excludeSanityId.startsWith("drafts.")
+              ? excludeSanityId
+              : `drafts.${excludeSanityId}`;
+            return r._id !== excludeSanityId && r._id !== draftId;
+          })
         : rows;
       return rowsExcludingCurrent.map(({ title, slug }) => ({ title, slug }));
     })(),
