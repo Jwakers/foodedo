@@ -470,9 +470,7 @@ function MethodStepDescriptionWithHighlights({
     nodes.push(
       <mark
         key={`hl-${s.start}-${s.end}-${i}`}
-        className={cn(
-          "bg-transparent text-green-600 underline decoration-green-600 decoration-2 underline-offset-[3px] dark:text-green-400 dark:decoration-green-400",
-        )}
+        className="bg-transparent text-green-600 underline decoration-green-600 decoration-2 underline-offset-[3px] dark:text-green-400 dark:decoration-green-400"
       >
         {text.slice(s.start, s.end)}
       </mark>,
