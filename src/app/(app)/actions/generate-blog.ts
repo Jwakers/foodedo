@@ -78,6 +78,18 @@ function normaliseKey(s: string) {
   return s.trim().toLowerCase();
 }
 
+function normaliseSlugToKebabCase(s: string) {
+  return s
+    .trim()
+    .toLowerCase()
+    // Replace any non-alphanumeric sequence with dashes.
+    .replace(/[^a-z0-9]+/g, "-")
+    // Trim leading/trailing dashes.
+    .replace(/^-+|-+$/g, "")
+    // Collapse multiple dashes.
+    .replace(/-{2,}/g, "-");
+}
+
 function coerceSuggestedLinks(
   links: GenerateBlogResult["suggestedInternalLinks"],
 ): { anchorText: string; href: string }[] {
@@ -121,6 +133,102 @@ function excerptWarnings(excerpt: string) {
   if (len < 150) return [`Excerpt is ${len} chars (target 150–160).`];
   if (len > 160) return [`Excerpt is ${len} chars (target 150–160).`];
   return [];
+}
+
+const ValidateBlogDraftForSanityWriteInputSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  excerpt: z.string(),
+  markdownBody: z.string(),
+  /**
+   * Optional: exclude this specific draft/post from uniqueness checks.
+   * Useful when updating an existing Sanity draft.
+   */
+  excludeSanityId: z.string().min(1).optional(),
+});
+
+export async function validateBlogDraftForSanityWrite(
+  rawInput: unknown,
+): Promise<
+  | {
+      success: true;
+      data: Pick<GenerateBlogResult, "title" | "slug" | "excerpt" | "markdownBody">;
+      warnings: string[];
+    }
+  | { success: false; error: string }
+> {
+  await requireSuperUser();
+
+  const parsed = ValidateBlogDraftForSanityWriteInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid input." };
+  }
+
+  const { title, slug, excerpt, markdownBody, excludeSanityId } = parsed.data;
+
+  const normalisedSlug = normaliseSlugToKebabCase(slug);
+  const slugOk = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalisedSlug);
+  if (!normalisedSlug || !slugOk) {
+    return { success: false, error: "Slug must be strict kebab-case." };
+  }
+
+  const normalisedMarkdownBody = ensureSingleH1(title, markdownBody);
+
+  // Uniqueness checks (exact match only, case-insensitive).
+  let existing: ExistingPostTitleSlug[] = [];
+  if (isSanityConfigured) {
+    try {
+      const rows = await client.fetch<{ _id: string; title?: string; slug?: string }[]>(
+        `*[
+          _type == "post"
+          && defined(slug.current)
+        ]{
+          _id,
+          title,
+          "slug": slug.current
+        }`,
+        {},
+        { cache: "no-store" },
+      );
+
+      existing = excludeSanityId
+        ? rows.filter((r) => r._id !== excludeSanityId).map(({ title, slug }) => ({
+            title,
+            slug,
+          }))
+        : rows.map(({ title, slug }) => ({ title, slug }));
+    } catch {
+      // If the uniqueness check fails, we fall back to not blocking writes.
+      existing = [];
+    }
+  }
+
+  const exclusions = buildExclusions(existing);
+  const titleKey = normaliseKey(title);
+  const slugKey = normaliseKey(normalisedSlug);
+  if (exclusions.titles.has(titleKey)) {
+    return { success: false, error: "Title already exists in Sanity." };
+  }
+  if (exclusions.slugs.has(slugKey)) {
+    return { success: false, error: "Slug already exists in Sanity." };
+  }
+
+  const warnings: string[] = [];
+  warnings.push(...excerptWarnings(excerpt));
+  if (normalisedSlug !== slug.trim()) {
+    warnings.push("Slug was normalized to kebab-case.");
+  }
+
+  return {
+    success: true,
+    data: {
+      title,
+      slug: normalisedSlug,
+      excerpt,
+      markdownBody: normalisedMarkdownBody,
+    },
+    warnings: warnings.filter(Boolean),
+  };
 }
 
 async function loadBlogBrief(): Promise<string> {
@@ -321,6 +429,10 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
   }
 
   const { additionalPrompt, current, excludeSanityId } = parsed.data;
+  const trimmedAdditionalPrompt = additionalPrompt.trim();
+  if (trimmedAdditionalPrompt.length === 0) {
+    return { success: false, error: "Additional prompt is empty." };
+  }
 
   async function fetchExistingTitlesAndSlugsWithIds(): Promise<
     { _id: string; title?: string; slug?: string }[]
@@ -360,7 +472,7 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
     brief,
     existing,
     current,
-    additionalPrompt,
+    additionalPrompt: trimmedAdditionalPrompt,
   });
 
   const result = await generateText({

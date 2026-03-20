@@ -103,15 +103,25 @@ export async function upsertSanityPostDraft(
     const body = markdownToPortableText(markdownBody);
     const client = getSanityWriteClient();
 
-    await client.createOrReplace({
+    // Avoid overwriting Studio-managed fields (like `publishedAt`) by:
+    // 1) only initializing the document if it doesn't exist,
+    // 2) then patch only the fields this code owns.
+    await client.createIfNotExists({
       _id: sanityId,
       _type: "post",
       title,
       slug: { _type: "slug", current: slug },
-      excerpt: excerpt || undefined,
-      body,
-      publishedAt: new Date().toISOString(),
     });
+
+    await client
+      .patch(sanityId)
+      .set({
+        title,
+        slug: { _type: "slug", current: slug },
+        excerpt: excerpt || undefined,
+        body,
+      })
+      .commit();
 
     const studioBase = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL;
     const studioEditUrl = studioBase

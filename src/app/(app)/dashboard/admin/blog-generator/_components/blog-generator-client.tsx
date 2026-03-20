@@ -4,7 +4,11 @@ import {
   createSanityPostDraft,
   upsertSanityPostDraft,
 } from "@/app/(app)/actions/create-sanity-post-draft";
-import { generateBlogDraft, resubmitBlogDraft } from "@/app/(app)/actions/generate-blog";
+import {
+  generateBlogDraft,
+  resubmitBlogDraft,
+  validateBlogDraftForSanityWrite,
+} from "@/app/(app)/actions/generate-blog";
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -151,11 +155,29 @@ export function BlogGeneratorClient() {
     setIsPublishing(true);
     setPublishResult(null);
     try {
-      const res = await createSanityPostDraft({
+      const validated = await validateBlogDraftForSanityWrite({
         title: result.data.title,
         slug: result.data.slug,
         excerpt: result.data.excerpt,
         markdownBody: result.data.markdownBody,
+      });
+
+      if (!validated.success) {
+        toast.error(validated.error);
+        return;
+      }
+
+      if (validated.warnings.length) {
+        toast.message("Validated with warnings", {
+          description: validated.warnings.join(" "),
+        });
+      }
+
+      const res = await createSanityPostDraft({
+        title: validated.data.title,
+        slug: validated.data.slug,
+        excerpt: validated.data.excerpt,
+        markdownBody: validated.data.markdownBody,
       });
       if (res.success) {
         setPublishResult({
@@ -171,7 +193,7 @@ export function BlogGeneratorClient() {
     } finally {
       setIsPublishing(false);
     }
-  }, [result]);
+  }, [result, validateBlogDraftForSanityWrite]);
 
   const handleUpdateDraftInSanity = useCallback(async () => {
     if (!result?.success) return;
@@ -179,12 +201,31 @@ export function BlogGeneratorClient() {
 
     setIsUpdatingDraft(true);
     try {
-      const res = await upsertSanityPostDraft({
-        sanityId: publishResult.sanityId,
+      const validated = await validateBlogDraftForSanityWrite({
         title: result.data.title,
         slug: result.data.slug,
         excerpt: result.data.excerpt,
         markdownBody: result.data.markdownBody,
+        excludeSanityId: publishResult.sanityId,
+      });
+
+      if (!validated.success) {
+        toast.error(validated.error);
+        return;
+      }
+
+      if (validated.warnings.length) {
+        toast.message("Validated with warnings", {
+          description: validated.warnings.join(" "),
+        });
+      }
+
+      const res = await upsertSanityPostDraft({
+        sanityId: publishResult.sanityId,
+        title: validated.data.title,
+        slug: validated.data.slug,
+        excerpt: validated.data.excerpt,
+        markdownBody: validated.data.markdownBody,
       });
       if (res.success) {
         toast.success("Draft updated in Sanity");
@@ -196,10 +237,11 @@ export function BlogGeneratorClient() {
     } finally {
       setIsUpdatingDraft(false);
     }
-  }, [publishResult?.sanityId, result]);
+  }, [publishResult?.sanityId, result, validateBlogDraftForSanityWrite]);
 
   const handleResubmitWithAdditionalPrompt = useCallback(async () => {
     if (!result?.success) return;
+    if (isPublishing || isUpdatingDraft || isResubmitting) return;
     if (additionalPrompt.trim().length === 0) return;
 
     setIsResubmitting(true);
@@ -245,7 +287,16 @@ export function BlogGeneratorClient() {
     } finally {
       setIsResubmitting(false);
     }
-  }, [additionalPrompt, publishResult?.sanityId, result]);
+  }, [
+    additionalPrompt,
+    publishResult?.sanityId,
+    result,
+    isPublishing,
+    isUpdatingDraft,
+    isResubmitting,
+    resubmitBlogDraft,
+    upsertSanityPostDraft,
+  ]);
 
   if (user === undefined) {
     return (
@@ -532,7 +583,12 @@ Include:
                   <Button
                     type="button"
                     onClick={handleResubmitWithAdditionalPrompt}
-                    disabled={!canResubmit || isResubmitting}
+                    disabled={
+                      !canResubmit ||
+                      isResubmitting ||
+                      isPublishing ||
+                      isUpdatingDraft
+                    }
                   >
                     {isResubmitting ? (
                       <>
