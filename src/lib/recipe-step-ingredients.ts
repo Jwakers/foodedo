@@ -71,6 +71,8 @@ function escapeRegex(s: string): string {
 
 type Span = { start: number; end: number };
 
+export type IngredientHighlightSpan = Span;
+
 function spansOverlap(a: Span, b: Span): boolean {
   return !(a.end <= b.start || b.end <= a.start);
 }
@@ -106,6 +108,181 @@ function findFirstNonOverlappingSpan(
     }
   }
   return null;
+}
+
+/**
+ * Maps each character of `normaliseTextForIngredientMatch(text)` to its source range in `text`.
+ */
+function buildNormCharToOriginalMaps(text: string): {
+  norm: string;
+  origStart: number[];
+  origEndExclusive: number[];
+} {
+  const lower = text.toLowerCase();
+  const tokens: { start: number; end: number }[] = [];
+  let i = 0;
+  while (i < lower.length) {
+    const c = lower[i]!;
+    if ((c >= "a" && c <= "z") || (c >= "0" && c <= "9")) {
+      const start = i;
+      while (i < lower.length) {
+        const c2 = lower[i]!;
+        if (!((c2 >= "a" && c2 <= "z") || (c2 >= "0" && c2 <= "9"))) break;
+        i++;
+      }
+      tokens.push({ start, end: i });
+    } else {
+      i++;
+    }
+  }
+  let norm = "";
+  const origStart: number[] = [];
+  const origEndExclusive: number[] = [];
+  for (let t = 0; t < tokens.length; t++) {
+    if (t > 0) {
+      norm += " ";
+      const prev = tokens[t - 1]!;
+      const cur = tokens[t]!;
+      origStart.push(prev.end);
+      origEndExclusive.push(cur.start);
+    }
+    const tok = tokens[t]!;
+    for (let k = tok.start; k < tok.end; k++) {
+      norm += lower[k]!;
+      origStart.push(k);
+      origEndExclusive.push(k + 1);
+    }
+  }
+  return { norm, origStart, origEndExclusive };
+}
+
+function mapNormSpanToOriginal(
+  origStart: number[],
+  origEndExclusive: number[],
+  span: Span,
+): Span | null {
+  if (span.start < 0 || span.end > origStart.length || span.start >= span.end)
+    return null;
+  return {
+    start: origStart[span.start]!,
+    end: origEndExclusive[span.end - 1]!,
+  };
+}
+
+/**
+ * Non-overlapping ingredient matches in normalised step text (same rules as cook-mode matching).
+ * Keys are indices into `recipeIngredients`.
+ */
+function findIngredientMatchSpansInNormalisedStep(
+  normalisedStep: string,
+  recipeIngredients: RecipeIngredientLine[],
+  canonMap: Map<string, CanonicalIngredientForMatch>,
+): Map<number, Span> {
+  const usedSpans: Span[] = [];
+  const matched = new Map<number, Span>();
+
+  const allPhrasesByLine = recipeIngredients.map((line) =>
+    uniquePhrasesLongestFirst(collectPhrasesForLine(line, canonMap)),
+  );
+  const tokenOccurrenceCount = new Map<string, number>();
+  for (const phrases of allPhrasesByLine) {
+    const countedThisLine = new Set<string>();
+    for (const p of phrases) {
+      const norm = normaliseTextForIngredientMatch(p);
+      if (norm && norm.split(/\s+/).length === 1) {
+        if (!countedThisLine.has(norm)) {
+          countedThisLine.add(norm);
+          tokenOccurrenceCount.set(
+            norm,
+            (tokenOccurrenceCount.get(norm) ?? 0) + 1,
+          );
+        }
+      }
+    }
+  }
+  const ambiguousTokens = new Set(
+    [...tokenOccurrenceCount.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([t]) => t),
+  );
+
+  const lineIndicesByMaxPhraseLen = recipeIngredients
+    .map((line, idx) => {
+      const phrases = uniquePhrasesLongestFirst(
+        collectPhrasesForLine(line, canonMap),
+      );
+      const maxLen = phrases.reduce(
+        (m, p) => Math.max(m, normaliseTextForIngredientMatch(p).length),
+        0,
+      );
+      return { i: idx, maxLen };
+    })
+    .sort((a, b) => b.maxLen - a.maxLen)
+    .map((x) => x.i);
+
+  for (const i of lineIndicesByMaxPhraseLen) {
+    const line = recipeIngredients[i]!;
+    const phrases = uniquePhrasesLongestFirst(
+      collectPhrasesForLine(line, canonMap),
+    );
+    for (const phrase of phrases) {
+      const normPhrase = normaliseTextForIngredientMatch(phrase);
+      const isSingleToken =
+        normPhrase && normPhrase.split(/\s+/).length === 1;
+      if (isSingleToken && ambiguousTokens.has(normPhrase)) continue;
+
+      const span = findFirstNonOverlappingSpan(
+        normalisedStep,
+        phrase,
+        usedSpans,
+      );
+      if (span) {
+        usedSpans.push(span);
+        matched.set(i, span);
+        break;
+      }
+    }
+  }
+
+  return matched;
+}
+
+/**
+ * Character ranges in `originalText` where matched ingredients appear (for inline highlighting).
+ * Spans are non-overlapping, sorted by start. Only searches `originalText` (e.g. step description).
+ */
+export function getIngredientHighlightSpansInText(
+  originalText: string,
+  recipeIngredientLines: RecipeIngredientLine[],
+  ingredientDocsById: Record<string, CanonicalIngredientForMatch> | undefined,
+): IngredientHighlightSpan[] {
+  if (!originalText || recipeIngredientLines.length === 0) return [];
+
+  const { norm, origStart, origEndExclusive } =
+    buildNormCharToOriginalMaps(originalText);
+  const normalisedStep = norm;
+  if (!normalisedStep) return [];
+
+  const canonMap = new Map<string, CanonicalIngredientForMatch>();
+  if (ingredientDocsById) {
+    for (const [k, v] of Object.entries(ingredientDocsById)) {
+      if (v) canonMap.set(k, v);
+    }
+  }
+
+  const byLine = findIngredientMatchSpansInNormalisedStep(
+    normalisedStep,
+    recipeIngredientLines,
+    canonMap,
+  );
+
+  const out: IngredientHighlightSpan[] = [];
+  for (const span of byLine.values()) {
+    const mapped = mapNormSpanToOriginal(origStart, origEndExclusive, span);
+    if (mapped && mapped.start < mapped.end) out.push(mapped);
+  }
+  out.sort((a, b) => a.start - b.start);
+  return out;
 }
 
 function collectPhrasesForLine(
@@ -177,77 +354,15 @@ export function getRecipeIngredientIndicesForStep(
     }
   }
 
-  const usedSpans: Span[] = [];
-  const matched = new Set<number>();
-
-  // Tokens that appear in more than one ingredient line: don't match on these alone
-  // (e.g. "beef" in both "boneless beef chuck roast" and "beef broth" -> skip single-token "beef")
-  const allPhrasesByLine = recipeIngredients.map((line) =>
-    uniquePhrasesLongestFirst(collectPhrasesForLine(line, canonMap)),
+  const matchedSpans = findIngredientMatchSpansInNormalisedStep(
+    normalisedStep,
+    recipeIngredients,
+    canonMap,
   );
-  const tokenOccurrenceCount = new Map<string, number>();
-  for (const phrases of allPhrasesByLine) {
-    const countedThisLine = new Set<string>();
-    for (const p of phrases) {
-      const norm = normaliseTextForIngredientMatch(p);
-      if (norm && norm.split(/\s+/).length === 1) {
-        if (!countedThisLine.has(norm)) {
-          countedThisLine.add(norm);
-          tokenOccurrenceCount.set(
-            norm,
-            (tokenOccurrenceCount.get(norm) ?? 0) + 1,
-          );
-        }
-      }
-    }
-  }
-  const ambiguousTokens = new Set(
-    [...tokenOccurrenceCount.entries()]
-      .filter(([, count]) => count > 1)
-      .map(([t]) => t),
-  );
-
-  const lineIndicesByMaxPhraseLen = recipeIngredients
-    .map((line, i) => {
-      const phrases = uniquePhrasesLongestFirst(
-        collectPhrasesForLine(line, canonMap),
-      );
-      const maxLen = phrases.reduce(
-        (m, p) => Math.max(m, normaliseTextForIngredientMatch(p).length),
-        0,
-      );
-      return { i, maxLen };
-    })
-    .sort((a, b) => b.maxLen - a.maxLen)
-    .map((x) => x.i);
-
-  for (const i of lineIndicesByMaxPhraseLen) {
-    const line = recipeIngredients[i]!;
-    const phrases = uniquePhrasesLongestFirst(
-      collectPhrasesForLine(line, canonMap),
-    );
-    for (const phrase of phrases) {
-      const normPhrase = normaliseTextForIngredientMatch(phrase);
-      const isSingleToken =
-        normPhrase && normPhrase.split(/\s+/).length === 1;
-      if (isSingleToken && ambiguousTokens.has(normPhrase)) continue;
-
-      const span = findFirstNonOverlappingSpan(
-        normalisedStep,
-        phrase,
-        usedSpans,
-      );
-      if (span) {
-        usedSpans.push(span);
-        matched.add(i);
-        break;
-      }
-    }
-  }
 
   return recipeIngredients
     .map((_, i) => i)
-    .filter((i) => matched.has(i));
+    .filter((i) => matchedSpans.has(i));
 }
 
 export function getRecipeIngredientsForStep(

@@ -2,7 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { getRecipeIngredientsForStep } from "@/lib/recipe-step-ingredients";
+import {
+  type CanonicalIngredientForMatch,
+  getIngredientHighlightSpansInText,
+  getRecipeIngredientsForStep,
+  type IngredientHighlightSpan,
+} from "@/lib/recipe-step-ingredients";
 import { cn } from "@/lib/utils";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { api } from "convex/_generated/api";
@@ -10,7 +15,7 @@ import type { Id } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight, Heart, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Recipe } from "./recipe-client";
 
 interface CookModeOverlayProps {
@@ -23,6 +28,7 @@ type IngredientItem = {
   amount?: number;
   unit?: string;
   preparation?: string;
+  ingredientId?: string;
 };
 
 export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
@@ -165,6 +171,20 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
     recipeIngredientLines,
   ]);
 
+  const ingredientDocsForMatch = useMemo(() => {
+    if (!ingredientDocs) return undefined;
+    const out: Record<string, CanonicalIngredientForMatch> = {};
+    for (const [id, doc] of Object.entries(ingredientDocs)) {
+      if (!doc) continue;
+      out[id] = {
+        name: doc.name,
+        displayName: doc.displayName ?? null,
+        aliases: doc.aliases ?? null,
+      };
+    }
+    return out;
+  }, [ingredientDocs]);
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
@@ -233,6 +253,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
                   step={method[methodIndex]}
                   stepNumber={methodIndex + 1}
                   matchedIngredients={matchedStepIngredients}
+                  ingredientDocsForMatch={ingredientDocsForMatch}
                 />
               )}
             </div>
@@ -429,10 +450,46 @@ function RecipeIngredientRows({
   );
 }
 
+function MethodStepDescriptionWithHighlights({
+  text,
+  highlightSpans,
+}: {
+  text: string;
+  highlightSpans: IngredientHighlightSpan[];
+}) {
+  if (highlightSpans.length === 0) {
+    return <>{text}</>;
+  }
+  const nodes: ReactNode[] = [];
+  let cursor = 0;
+  for (let i = 0; i < highlightSpans.length; i++) {
+    const s = highlightSpans[i]!;
+    if (s.start > cursor) {
+      nodes.push(text.slice(cursor, s.start));
+    }
+    nodes.push(
+      <mark
+        key={`hl-${s.start}-${s.end}-${i}`}
+        className={cn(
+          "bg-transparent text-green-600 underline decoration-green-600 decoration-2 underline-offset-[3px] dark:text-green-400 dark:decoration-green-400",
+        )}
+      >
+        {text.slice(s.start, s.end)}
+      </mark>,
+    );
+    cursor = s.end;
+  }
+  if (cursor < text.length) {
+    nodes.push(text.slice(cursor));
+  }
+  return <>{nodes}</>;
+}
+
 function MethodStepSlide({
   step,
   stepNumber,
   matchedIngredients,
+  ingredientDocsForMatch,
 }: {
   step: {
     title: string;
@@ -441,8 +498,19 @@ function MethodStepSlide({
   };
   stepNumber: number;
   matchedIngredients: IngredientItem[];
+  ingredientDocsForMatch?: Record<string, CanonicalIngredientForMatch>;
 }) {
   const forStepHeadingId = `step-for-step-ingredients-${stepNumber}`;
+
+  const descriptionHighlightSpans = useMemo(() => {
+    const desc = step.description;
+    if (!desc || matchedIngredients.length === 0) return [];
+    return getIngredientHighlightSpansInText(
+      desc,
+      matchedIngredients,
+      ingredientDocsForMatch,
+    );
+  }, [step.description, matchedIngredients, ingredientDocsForMatch]);
 
   return (
     <section
@@ -459,7 +527,10 @@ function MethodStepSlide({
         </h1>
         {step.description && (
           <p className="mt-4 whitespace-pre-wrap text-lg leading-relaxed text-muted-foreground">
-            {step.description}
+            <MethodStepDescriptionWithHighlights
+              text={step.description}
+              highlightSpans={descriptionHighlightSpans}
+            />
           </p>
         )}
         {matchedIngredients.length > 0 ? (
