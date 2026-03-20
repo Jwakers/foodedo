@@ -1,7 +1,14 @@
 "use client";
 
-import { createSanityPostDraft } from "@/app/(app)/actions/create-sanity-post-draft";
-import { generateBlogDraft } from "@/app/(app)/actions/generate-blog";
+import {
+  createSanityPostDraft,
+  upsertSanityPostDraft,
+} from "@/app/(app)/actions/create-sanity-post-draft";
+import {
+  generateBlogDraft,
+  resubmitBlogDraft,
+  validateBlogDraftForSanityWrite,
+} from "@/app/(app)/actions/generate-blog";
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +20,7 @@ import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import { Copy, ExternalLink, Loader2, ShieldAlert, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type Draft =
@@ -26,10 +33,14 @@ type Draft =
         markdownBody: string;
         primaryKeyword: string;
         suggestedInternalLinks: { anchorText: string; href: string }[];
+        /** Copy-paste utility for external image tools; not sent to Sanity. */
+        imageGenerationPrompt: string;
       };
       warnings: string[];
     }
   | { success: false; error: string };
+
+type GeneratedDraftData = Extract<Draft, { success: true }>["data"];
 
 async function copyToClipboard(text: string, label: string) {
   await navigator.clipboard.writeText(text);
@@ -46,10 +57,21 @@ export function BlogGeneratorClient() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<Draft | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isUpdatingDraft, setIsUpdatingDraft] = useState(false);
   const [publishResult, setPublishResult] = useState<{
     sanityId: string;
     studioEditUrl?: string;
   } | null>(null);
+  const [additionalPrompt, setAdditionalPrompt] = useState("");
+  const [isResubmitting, setIsResubmitting] = useState(false);
+
+  // When applying validated/normalized SEO fields back into the editor,
+  // reconcile against a snapshot so we don't clobber concurrent user edits.
+  const normalizationSnapshotRef = useRef<
+    | Pick<GeneratedDraftData, "title" | "slug" | "excerpt" | "markdownBody">
+    | null
+  >(null);
+  const isApplyingNormalizationRef = useRef(false);
 
   useEffect(() => {
     if (user !== undefined && !user) {
@@ -66,6 +88,71 @@ export function BlogGeneratorClient() {
     if (mode === "fromGuidance") return guidance.trim().length > 0;
     return true;
   }, [isSuperUser, mode, guidance]);
+
+  const canResubmit = useMemo(() => {
+    return Boolean(result?.success && additionalPrompt.trim().length > 0);
+  }, [result, additionalPrompt]);
+
+  const updateDraftData = useCallback(
+    (patch: Partial<GeneratedDraftData>) => {
+      const applyingNormalization = isApplyingNormalizationRef.current;
+      const snapshot = normalizationSnapshotRef.current;
+
+      setResult((prev) => {
+        if (!prev?.success) return prev;
+
+        if (applyingNormalization && snapshot) {
+          const reconciled: Partial<GeneratedDraftData> = {};
+
+          if (
+            "title" in patch &&
+            patch.title !== undefined &&
+            prev.data.title === snapshot.title
+          ) {
+            reconciled.title = patch.title;
+          }
+          if (
+            "slug" in patch &&
+            patch.slug !== undefined &&
+            prev.data.slug === snapshot.slug
+          ) {
+            reconciled.slug = patch.slug;
+          }
+          if (
+            "excerpt" in patch &&
+            patch.excerpt !== undefined &&
+            prev.data.excerpt === snapshot.excerpt
+          ) {
+            reconciled.excerpt = patch.excerpt;
+          }
+          if (
+            "markdownBody" in patch &&
+            patch.markdownBody !== undefined &&
+            prev.data.markdownBody === snapshot.markdownBody
+          ) {
+            reconciled.markdownBody = patch.markdownBody;
+          }
+
+          return {
+            ...prev,
+            data: {
+              ...prev.data,
+              ...reconciled,
+            },
+          };
+        }
+
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            ...patch,
+          },
+        };
+      });
+    },
+    [],
+  );
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate) return;
@@ -108,25 +195,64 @@ export function BlogGeneratorClient() {
       "",
       d.markdownBody.trimEnd(),
       "",
+      "---",
+      "Image generation prompt (utility):",
+      "",
+      d.imageGenerationPrompt.trim(),
+      "",
     ].join("\n");
   }, [result]);
 
   const handleCreateDraftInSanity = useCallback(async () => {
     if (!result?.success) return;
+    if (isPublishing || isUpdatingDraft || isResubmitting) return;
+
     setIsPublishing(true);
     setPublishResult(null);
     try {
-      const res = await createSanityPostDraft({
+      normalizationSnapshotRef.current = {
         title: result.data.title,
         slug: result.data.slug,
         excerpt: result.data.excerpt,
         markdownBody: result.data.markdownBody,
+      };
+
+      const validated = await validateBlogDraftForSanityWrite({
+        title: result.data.title,
+        slug: result.data.slug,
+        excerpt: result.data.excerpt,
+        markdownBody: result.data.markdownBody,
+      });
+
+      if (!validated.success) {
+        toast.error(validated.error);
+        return;
+      }
+
+      if (validated.warnings.length) {
+        toast.message("Validated with warnings", {
+          description: validated.warnings.join(" "),
+        });
+      }
+
+      const res = await createSanityPostDraft({
+        title: validated.data.title,
+        slug: validated.data.slug,
+        excerpt: validated.data.excerpt,
+        markdownBody: validated.data.markdownBody,
       });
       if (res.success) {
         setPublishResult({
           sanityId: res.sanityId,
           studioEditUrl: res.studioEditUrl,
         });
+
+        // Reflect any normalisations (slug/H1/etc.) in the editor UI.
+        isApplyingNormalizationRef.current = true;
+        updateDraftData(validated.data);
+        isApplyingNormalizationRef.current = false;
+        normalizationSnapshotRef.current = null;
+
         toast.success("Draft created in Sanity");
       } else {
         toast.error(res.error);
@@ -136,7 +262,153 @@ export function BlogGeneratorClient() {
     } finally {
       setIsPublishing(false);
     }
-  }, [result]);
+  }, [result, isPublishing, isUpdatingDraft, isResubmitting, updateDraftData]);
+
+  const handleUpdateDraftInSanity = useCallback(async () => {
+    if (!result?.success) return;
+    if (!publishResult?.sanityId) return;
+
+    setIsUpdatingDraft(true);
+    try {
+      normalizationSnapshotRef.current = {
+        title: result.data.title,
+        slug: result.data.slug,
+        excerpt: result.data.excerpt,
+        markdownBody: result.data.markdownBody,
+      };
+
+      const validated = await validateBlogDraftForSanityWrite({
+        title: result.data.title,
+        slug: result.data.slug,
+        excerpt: result.data.excerpt,
+        markdownBody: result.data.markdownBody,
+        excludeSanityId: publishResult.sanityId,
+      });
+
+      if (!validated.success) {
+        toast.error(validated.error);
+        return;
+      }
+
+      if (validated.warnings.length) {
+        toast.message("Validated with warnings", {
+          description: validated.warnings.join(" "),
+        });
+      }
+
+      const res = await upsertSanityPostDraft({
+        sanityId: publishResult.sanityId,
+        title: validated.data.title,
+        slug: validated.data.slug,
+        excerpt: validated.data.excerpt,
+        markdownBody: validated.data.markdownBody,
+      });
+      if (res.success) {
+        isApplyingNormalizationRef.current = true;
+        updateDraftData(validated.data);
+        isApplyingNormalizationRef.current = false;
+        normalizationSnapshotRef.current = null;
+
+        toast.success("Draft updated in Sanity");
+      } else {
+        toast.error(res.error);
+      }
+    } catch {
+      toast.error("Failed to update draft in Sanity");
+    } finally {
+      setIsUpdatingDraft(false);
+    }
+  }, [publishResult?.sanityId, result, updateDraftData]);
+
+  const handleResubmitWithAdditionalPrompt = useCallback(async () => {
+    if (!result?.success) return;
+    if (isPublishing || isUpdatingDraft || isResubmitting) return;
+    if (additionalPrompt.trim().length === 0) return;
+
+    setIsResubmitting(true);
+    try {
+      const res = await resubmitBlogDraft({
+        additionalPrompt: additionalPrompt.trim(),
+        current: result.data,
+        excludeSanityId: publishResult?.sanityId,
+      });
+
+      if (!res.success) {
+        toast.error(res.error);
+        return;
+      }
+
+      if (res.warnings.length) {
+        toast.message("Resubmitted with warnings", {
+          description: res.warnings.join(" "),
+        });
+      } else {
+        toast.success("Resubmission updated the draft");
+      }
+
+      setResult({ success: true, data: res.data, warnings: res.warnings });
+
+      // If the draft already exists in Sanity, update it immediately in-place.
+      if (publishResult?.sanityId) {
+        normalizationSnapshotRef.current = {
+          title: res.data.title,
+          slug: res.data.slug,
+          excerpt: res.data.excerpt,
+          markdownBody: res.data.markdownBody,
+        };
+
+        const validated = await validateBlogDraftForSanityWrite({
+          title: res.data.title,
+          slug: res.data.slug,
+          excerpt: res.data.excerpt,
+          markdownBody: res.data.markdownBody,
+          excludeSanityId: publishResult.sanityId,
+        });
+
+        if (!validated.success) {
+          toast.error(validated.error);
+          normalizationSnapshotRef.current = null;
+        } else {
+          if (validated.warnings.length) {
+            toast.message("Validated with warnings", {
+              description: validated.warnings.join(" "),
+            });
+          }
+
+          const up = await upsertSanityPostDraft({
+            sanityId: publishResult.sanityId,
+            title: validated.data.title,
+            slug: validated.data.slug,
+            excerpt: validated.data.excerpt,
+            markdownBody: validated.data.markdownBody,
+          });
+
+          if (!up.success) {
+            toast.error(up.error);
+          } else {
+            isApplyingNormalizationRef.current = true;
+            updateDraftData(validated.data);
+            isApplyingNormalizationRef.current = false;
+            normalizationSnapshotRef.current = null;
+
+            toast.success("Sanity draft updated");
+          }
+        }
+      }
+    } catch {
+      toast.error("Resubmission failed. Please try again.");
+    } finally {
+      setIsResubmitting(false);
+    }
+  }, [
+    additionalPrompt,
+    publishResult?.sanityId,
+    result,
+    isPublishing,
+    isUpdatingDraft,
+    isResubmitting,
+    updateDraftData,
+  ]);
 
   if (user === undefined) {
     return (
@@ -278,7 +550,13 @@ Include:
                       Copy
                     </Button>
                   </div>
-                  <Input id="out-title" readOnly value={result.data.title} />
+                  <Input
+                    id="out-title"
+                    value={result.data.title}
+                    onChange={(e) =>
+                      updateDraftData({ title: e.target.value })
+                    }
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -294,7 +572,13 @@ Include:
                       Copy
                     </Button>
                   </div>
-                  <Input id="out-slug" readOnly value={result.data.slug} />
+                  <Input
+                    id="out-slug"
+                    value={result.data.slug}
+                    onChange={(e) =>
+                      updateDraftData({ slug: e.target.value })
+                    }
+                  />
                 </div>
               </div>
 
@@ -317,8 +601,10 @@ Include:
                 </div>
                 <Textarea
                   id="out-excerpt"
-                  readOnly
                   value={result.data.excerpt}
+                  onChange={(e) =>
+                    updateDraftData({ excerpt: e.target.value })
+                  }
                 />
               </div>
 
@@ -339,24 +625,137 @@ Include:
                 </div>
                 <Textarea
                   id="out-body"
-                  readOnly
                   value={result.data.markdownBody}
+                  onChange={(e) =>
+                    updateDraftData({ markdownBody: e.target.value })
+                  }
                   className="min-h-[360px] font-mono text-sm"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Primary keyword</Label>
-                <Input readOnly value={result.data.primaryKeyword} />
+                <Input
+                  value={result.data.primaryKeyword}
+                  onChange={(e) =>
+                    updateDraftData({ primaryKeyword: e.target.value })
+                  }
+                />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t">
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-2">
+                  <div>
+                    <Label htmlFor="out-image-prompt">
+                      Image generation prompt
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Utility only — not uploaded to Sanity. Paste into your
+                      image tool for a hero that matches this post.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 self-start"
+                    onClick={() =>
+                      copyToClipboard(
+                        result.data.imageGenerationPrompt,
+                        "image prompt",
+                      )
+                    }
+                  >
+                    <Copy className="mr-2 size-4" />
+                    Copy
+                  </Button>
+                </div>
+                <Textarea
+                  id="out-image-prompt"
+                  value={result.data.imageGenerationPrompt}
+                  onChange={(e) =>
+                    updateDraftData({ imageGenerationPrompt: e.target.value })
+                  }
+                  className="min-h-28 font-mono text-sm"
+                />
+              </div>
+
+              <div className="space-y-2 border-t pt-4">
+                <Label htmlFor="additional-prompt">
+                  Additional changes prompt
+                </Label>
+                <Textarea
+                  id="additional-prompt"
+                  placeholder="e.g. Shorten intro, add a quick checklist, make the tone warmer, and ensure the CTA points to meal planning."
+                  value={additionalPrompt}
+                  onChange={(e) => setAdditionalPrompt(e.target.value)}
+                  className="min-h-24"
+                />
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Button
+                    type="button"
+                    onClick={handleResubmitWithAdditionalPrompt}
+                    disabled={
+                      !canResubmit ||
+                      isResubmitting ||
+                      isPublishing ||
+                      isUpdatingDraft
+                    }
+                  >
+                    {isResubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Resubmitting…
+                      </>
+                    ) : (
+                      "Resubmit & update draft"
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isResubmitting}
+                    onClick={() => setAdditionalPrompt("")}
+                  >
+                    Clear prompt
+                  </Button>
+                </div>
+              </div>
+
+              {publishResult?.sanityId && (
+                <p className="text-sm text-muted-foreground">
+                  Your edits are local until you click{" "}
+                  <span className="font-medium">Update draft in Sanity</span>{" "}
+                  (Title, Slug, Excerpt, Body).
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button
                   type="button"
-                  onClick={handleCreateDraftInSanity}
-                  disabled={isPublishing}
+                  onClick={
+                    publishResult?.sanityId
+                      ? handleUpdateDraftInSanity
+                      : handleCreateDraftInSanity
+                  }
+                  disabled={
+                    (publishResult?.sanityId ? isUpdatingDraft : isPublishing) ||
+                    isResubmitting
+                  }
                 >
-                  {isPublishing ? (
+                  {publishResult?.sanityId ? (
+                    isUpdatingDraft ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Updating draft…
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 size-4" />
+                        Update draft in Sanity
+                      </>
+                    )
+                  ) : isPublishing ? (
                     <>
                       <Loader2 className="mr-2 size-4 animate-spin" />
                       Creating draft…
