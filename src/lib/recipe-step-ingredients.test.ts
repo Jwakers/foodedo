@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import {
+  getIngredientHighlightSpansInText,
   getRecipeIngredientIndicesForStep,
   getRecipeIngredientsForStep,
   normaliseIngredientName,
@@ -161,6 +162,26 @@ function runTests(): boolean {
       undefined,
     );
     assert.deepEqual(idx, [0]);
+  });
+
+  test("highlight spans map to original text (punctuation)", () => {
+    const lines: RecipeIngredientLine[] = [{ name: "garlic" }];
+    const spans = getIngredientHighlightSpansInText(
+      "Grab your chopped garlic, then stir.",
+      lines,
+      undefined,
+    );
+    assert.deepEqual(spans, [{ start: 18, end: 24 }]);
+  });
+
+  test("highlight spans: multi-word ingredient in description", () => {
+    const lines: RecipeIngredientLine[] = [{ name: "olive oil" }];
+    const spans = getIngredientHighlightSpansInText(
+      "Whisk in the olive oil slowly.",
+      lines,
+      undefined,
+    );
+    assert.deepEqual(spans, [{ start: 13, end: 22 }]);
   });
 
   test("ambiguous token beef: step says beef only -> match neither (no false positive for beef broth)", () => {
