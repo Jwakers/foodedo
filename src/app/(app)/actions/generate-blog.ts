@@ -135,6 +135,28 @@ function excerptWarnings(excerpt: string) {
   return [];
 }
 
+async function fetchExistingTitlesAndSlugsWithIds(): Promise<
+  { _id: string; title?: string; slug?: string }[]
+> {
+  if (!isSanityConfigured) return [];
+  try {
+    return await client.fetch<{ _id: string; title?: string; slug?: string }[]>(
+      `*[
+        _type == "post"
+        && defined(slug.current)
+      ]{
+        _id,
+        title,
+        "slug": slug.current
+      }`,
+      {},
+      { cache: "no-store" },
+    );
+  } catch {
+    return [];
+  }
+}
+
 const ValidateBlogDraftForSanityWriteInputSchema = z.object({
   title: z.string().min(1),
   slug: z.string().min(1),
@@ -175,42 +197,22 @@ export async function validateBlogDraftForSanityWrite(
   const normalisedMarkdownBody = ensureSingleH1(title, markdownBody);
 
   // Uniqueness checks (exact match only, case-insensitive).
-  let existing: ExistingPostTitleSlug[] = [];
-  if (isSanityConfigured) {
-    try {
-      const rows = await client.fetch<{ _id: string; title?: string; slug?: string }[]>(
-        `*[
-          _type == "post"
-          && defined(slug.current)
-        ]{
-          _id,
-          title,
-          "slug": slug.current
-        }`,
-        {},
-        { cache: "no-store" },
-      );
-
-      existing = excludeSanityId
-        ? rows.filter((r) => r._id !== excludeSanityId).map(({ title, slug }) => ({
-            title,
-            slug,
-          }))
-        : rows.map(({ title, slug }) => ({ title, slug }));
-    } catch {
-      // If the uniqueness check fails, we fall back to not blocking writes.
-      existing = [];
-    }
-  }
+  const rows = await fetchExistingTitlesAndSlugsWithIds();
+  const existing: ExistingPostTitleSlug[] = excludeSanityId
+    ? rows.filter((r) => r._id !== excludeSanityId).map(({ title, slug }) => ({
+        title,
+        slug,
+      }))
+    : rows.map(({ title, slug }) => ({ title, slug }));
 
   const exclusions = buildExclusions(existing);
   const titleKey = normaliseKey(title);
   const slugKey = normaliseKey(normalisedSlug);
   if (exclusions.titles.has(titleKey)) {
-    return { success: false, error: "Title already exists in Sanity." };
+    return { success: false, error: "a title that already exists in Sanity." };
   }
   if (exclusions.slugs.has(slugKey)) {
-    return { success: false, error: "Slug already exists in Sanity." };
+    return { success: false, error: "a slug that already exists in Sanity." };
   }
 
   const warnings: string[] = [];
@@ -349,10 +351,10 @@ export async function generateBlogDraft(rawInput: unknown): Promise<
   const titleKey = normaliseKey(draft.title);
   const slugKey = normaliseKey(draft.slug);
   if (exclusions.titles.has(titleKey)) {
-    return { success: false, error: "Generated title already exists in Sanity." };
+    return { success: false, error: "Generated title that already exists in Sanity." };
   }
   if (exclusions.slugs.has(slugKey)) {
-    return { success: false, error: "Generated slug already exists in Sanity." };
+    return { success: false, error: "Generated slug that already exists in Sanity." };
   }
 
   const markdownWithLinks = injectInternalLinksIntoMarkdown({
@@ -434,28 +436,6 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
     return { success: false, error: "Additional prompt is empty." };
   }
 
-  async function fetchExistingTitlesAndSlugsWithIds(): Promise<
-    { _id: string; title?: string; slug?: string }[]
-  > {
-    if (!isSanityConfigured) return [];
-    try {
-      return await client.fetch<{ _id: string; title?: string; slug?: string }[]>(
-        `*[
-          _type == "post"
-          && defined(slug.current)
-        ]{
-          _id,
-          title,
-          "slug": slug.current
-        }`,
-        {},
-        { cache: "no-store" },
-      );
-    } catch {
-      return [];
-    }
-  }
-
   const [brief, existing] = await Promise.all([
     loadBlogBrief(),
     (async () => {
@@ -496,10 +476,16 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
   const titleKey = normaliseKey(draft.title);
   const slugKey = normaliseKey(draft.slug);
   if (exclusions.titles.has(titleKey)) {
-    return { success: false, error: "Resubmission generated a title already exists in Sanity." };
+    return {
+      success: false,
+      error: "Resubmission generated a title that already exists in Sanity.",
+    };
   }
   if (exclusions.slugs.has(slugKey)) {
-    return { success: false, error: "Resubmission generated a slug already exists in Sanity." };
+    return {
+      success: false,
+      error: "Resubmission generated a slug that already exists in Sanity.",
+    };
   }
 
   const markdownWithLinks = injectInternalLinksIntoMarkdown({

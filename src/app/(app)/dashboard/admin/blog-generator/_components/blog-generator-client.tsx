@@ -193,7 +193,7 @@ export function BlogGeneratorClient() {
     } finally {
       setIsPublishing(false);
     }
-  }, [result, validateBlogDraftForSanityWrite]);
+  }, [result]);
 
   const handleUpdateDraftInSanity = useCallback(async () => {
     if (!result?.success) return;
@@ -237,7 +237,7 @@ export function BlogGeneratorClient() {
     } finally {
       setIsUpdatingDraft(false);
     }
-  }, [publishResult?.sanityId, result, validateBlogDraftForSanityWrite]);
+  }, [publishResult?.sanityId, result]);
 
   const handleResubmitWithAdditionalPrompt = useCallback(async () => {
     if (!result?.success) return;
@@ -269,17 +269,36 @@ export function BlogGeneratorClient() {
 
       // If the draft already exists in Sanity, update it immediately in-place.
       if (publishResult?.sanityId) {
-        const up = await upsertSanityPostDraft({
-          sanityId: publishResult.sanityId,
+        const validated = await validateBlogDraftForSanityWrite({
           title: res.data.title,
           slug: res.data.slug,
           excerpt: res.data.excerpt,
           markdownBody: res.data.markdownBody,
+          excludeSanityId: publishResult.sanityId,
         });
-        if (!up.success) {
-          toast.error(up.error);
+
+        if (!validated.success) {
+          toast.error(validated.error);
         } else {
-          toast.success("Sanity draft updated");
+          if (validated.warnings.length) {
+            toast.message("Validated with warnings", {
+              description: validated.warnings.join(" "),
+            });
+          }
+
+          const up = await upsertSanityPostDraft({
+            sanityId: publishResult.sanityId,
+            title: validated.data.title,
+            slug: validated.data.slug,
+            excerpt: validated.data.excerpt,
+            markdownBody: validated.data.markdownBody,
+          });
+
+          if (!up.success) {
+            toast.error(up.error);
+          } else {
+            toast.success("Sanity draft updated");
+          }
         }
       }
     } catch {
@@ -294,8 +313,6 @@ export function BlogGeneratorClient() {
     isPublishing,
     isUpdatingDraft,
     isResubmitting,
-    resubmitBlogDraft,
-    upsertSanityPostDraft,
   ]);
 
   if (user === undefined) {
