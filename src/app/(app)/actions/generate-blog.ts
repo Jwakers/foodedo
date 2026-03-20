@@ -13,6 +13,29 @@ const GenerateBlogInputSchema = z.object({
   guidance: z.string().nullable(),
 });
 
+const ResubmitBlogDraftInputSchema = z.object({
+  additionalPrompt: z.string().min(1),
+  current: z.object({
+    title: z.string(),
+    slug: z.string(),
+    excerpt: z.string(),
+    markdownBody: z.string(),
+    primaryKeyword: z.string(),
+    suggestedInternalLinks: z.array(
+      z.object({
+        anchorText: z.string(),
+        href: z.string(),
+      }),
+    ),
+    imageGenerationPrompt: z.string(),
+  }),
+  /**
+   * Optional: if provided, this specific draft document will be excluded from
+   * title/slug uniqueness checks and from the exclusion list prompt.
+   */
+  excludeSanityId: z.string().min(1).optional(),
+});
+
 const GenerateBlogResultSchema = z.object({
   title: z.string().describe("Blog title (ideally 50–60 characters)"),
   slug: z
@@ -39,6 +62,11 @@ const GenerateBlogResultSchema = z.object({
       }),
     )
     .describe("1–3 relevant internal links using relative paths"),
+  imageGenerationPrompt: z
+    .string()
+    .describe(
+      "A single detailed English prompt for a text-to-image tool to create a blog hero image that matches this post. Describe subject, composition, lighting, mood, and setting. Optimise for wide 16:9 hero crop. No readable text, logos, watermarks, or UI. Realistic food/lifestyle photography style.",
+    ),
 });
 
 type GenerateBlogInput = z.infer<typeof GenerateBlogInputSchema>;
@@ -159,6 +187,7 @@ OUTPUT FORMAT (mandatory):
 - markdownBody must contain exactly one H1 and it must match the JSON title.
 - All internal links must be relative paths starting with / (no domain).
 - IMPORTANT: Embed 1–3 internal links inline inside markdownBody using markdown link syntax, e.g. [Try Foodedo](/sign-up). Do not return links only in suggestedInternalLinks.
+- imageGenerationPrompt: a copy-paste-ready prompt for an external image generator (not stored in CMS). Must align with title + excerpt + topic; no readable text in the described scene.
 
 ${modeInstruction}`;
 }
@@ -216,6 +245,149 @@ export async function generateBlogDraft(rawInput: unknown): Promise<
   }
   if (exclusions.slugs.has(slugKey)) {
     return { success: false, error: "Generated slug already exists in Sanity." };
+  }
+
+  const markdownWithLinks = injectInternalLinksIntoMarkdown({
+    markdownBody: draft.markdownBody,
+    suggestedInternalLinks: draft.suggestedInternalLinks,
+  });
+  const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
+
+  const warnings: string[] = [];
+  warnings.push(...excerptWarnings(draft.excerpt));
+  if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
+    warnings.push("Slug is not strict kebab-case.");
+  }
+
+  return {
+    success: true,
+    data: { ...draft, markdownBody },
+    warnings: warnings.filter(Boolean),
+  };
+}
+
+function buildSystemPromptForResubmit(args: {
+  brief: string;
+  existing: ExistingPostTitleSlug[];
+  current: GenerateBlogResult;
+  additionalPrompt: string;
+}) {
+  const existingList = args.existing
+    .slice(0, 500)
+    .map((p) => `- ${p.title ?? "(untitled)"} (/${p.slug ?? ""})`)
+    .join("\n");
+
+  return `You are an expert SEO + AEO blog writer for Foodedo.
+
+You are updating an EXISTING Foodedo blog draft.
+
+You MUST follow this brief exactly:
+${args.brief}
+
+UNIQUENESS CONSTRAINT (mandatory):
+- Do NOT reuse an existing title or slug from the exclusion list below.
+
+EXCLUSION LIST (existing posts):
+${existingList || "- (no existing posts found)"}
+
+CURRENT DRAFT (JSON):
+${JSON.stringify(args.current, null, 2)}
+
+USER CHANGES (additional prompt):
+${args.additionalPrompt}
+
+OUTPUT FORMAT (mandatory):
+- Return ONLY a JSON object that matches the required schema.
+- markdownBody must be Markdown.
+- markdownBody must contain exactly one H1 which matches the JSON title.
+- All internal links must be relative paths starting with / (no domain).
+- IMPORTANT: Embed 1–3 internal links inline inside markdownBody using markdown link syntax, e.g. [Try Foodedo](/sign-up).
+- imageGenerationPrompt: refresh it when the post topic, title, excerpt, or visual angle changes; keep it aligned and copy-paste-ready for image tools (no readable text in scene).
+
+PREFERENCES:
+- Prefer keeping the current title/slug/excerpt/body structure unless the user changes require edits.
+- If you change the title, ensure the H1 in markdownBody updates to match.`;
+}
+
+export async function resubmitBlogDraft(rawInput: unknown): Promise<
+  | { success: true; data: GenerateBlogResult; warnings: string[] }
+  | { success: false; error: string }
+> {
+  await requireSuperUser();
+
+  const parsed = ResubmitBlogDraftInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid input." };
+  }
+
+  const { additionalPrompt, current, excludeSanityId } = parsed.data;
+
+  async function fetchExistingTitlesAndSlugsWithIds(): Promise<
+    { _id: string; title?: string; slug?: string }[]
+  > {
+    if (!isSanityConfigured) return [];
+    try {
+      return await client.fetch<{ _id: string; title?: string; slug?: string }[]>(
+        `*[
+          _type == "post"
+          && defined(slug.current)
+        ]{
+          _id,
+          title,
+          "slug": slug.current
+        }`,
+        {},
+        { cache: "no-store" },
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  const [brief, existing] = await Promise.all([
+    loadBlogBrief(),
+    (async () => {
+      const rows = await fetchExistingTitlesAndSlugsWithIds();
+      const rowsExcludingCurrent = excludeSanityId
+        ? rows.filter((r) => r._id !== excludeSanityId)
+        : rows;
+      return rowsExcludingCurrent.map(({ title, slug }) => ({ title, slug }));
+    })(),
+  ]);
+  const exclusions = buildExclusions(existing);
+
+  const system = buildSystemPromptForResubmit({
+    brief,
+    existing,
+    current,
+    additionalPrompt,
+  });
+
+  const result = await generateText({
+    model: "openai/gpt-4o-mini",
+    system,
+    prompt: "Update the draft according to USER CHANGES. Return JSON only.",
+    output: Output.object({
+      schema: GenerateBlogResultSchema,
+      name: "foodedo_blog_draft",
+    }),
+    temperature: 0.7,
+  });
+
+  const validation = GenerateBlogResultSchema.safeParse(result.output);
+  if (!validation.success) {
+    return { success: false, error: "AI returned invalid blog draft data." };
+  }
+
+  const draft = validation.data;
+
+  const titleKey = normaliseKey(draft.title);
+  const slugKey = normaliseKey(draft.slug);
+  if (exclusions.titles.has(titleKey)) {
+    return { success: false, error: "Resubmission generated a title already exists in Sanity." };
+  }
+  if (exclusions.slugs.has(slugKey)) {
+    return { success: false, error: "Resubmission generated a slug already exists in Sanity." };
   }
 
   const markdownWithLinks = injectInternalLinksIntoMarkdown({

@@ -7,7 +7,12 @@ import type { MetadataRoute } from "next";
 
 const SLUGS_QUERY = `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{ "slug": slug.current, publishedAt }`;
 
-// Revalidate sitemap every hour (Convex fetch makes this route dynamic; cache for 1h)
+// Convex Next.js helpers currently issue fetches with `revalidate: 0`.
+// Force dynamic rendering to prevent Next from attempting to statically
+// pre-render `/sitemap.xml` during the build.
+export const dynamic = "force-dynamic";
+
+// Still revalidate periodically when Next's caching layer applies.
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
