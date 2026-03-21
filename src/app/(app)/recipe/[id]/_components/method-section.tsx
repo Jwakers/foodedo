@@ -104,6 +104,7 @@ export function MethodSection({
                 description: "",
                 image: undefined,
                 ingredientRefs: [],
+                ingredientRefsSource: "auto",
               })
             }
           >

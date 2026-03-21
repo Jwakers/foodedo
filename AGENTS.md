@@ -19,3 +19,12 @@ Project-specific guidance for AI agents. Apply these rules when working in this 
 ## Data & schemas
 
 - Reuse existing schemas (e.g. recipes) where possible instead of defining new ones for each function.
+
+## Convex ops (ingredients & recipes)
+
+Internal mutations live in [`convex/migrations.ts`](convex/migrations.ts). Run against the intended deployment (e.g. with `npx convex dev` or your prod target).
+
+- **`migrations:seedIngredients`** — Upserts the canonical ingredients catalog from [`convex/ingredients-seed.json`](convex/ingredients-seed.json) and [`convex/ingredients-seed-manual.json`](convex/ingredients-seed-manual.json). Use for new environments or after changing seed data.
+- **`migrations:reconcileIngredientReferences`** — Re-resolves `ingredientId` on recipe ingredient lines and shopping list items from the current ingredients table. Scheduled automatically after admin ingredient edits; can be run manually after bulk alias or catalog changes.
+- **`migrations:backfillMethodStepIngredientRefs`** — One-off batched migration: fills `method[].ingredientRefs` and `ingredientRefsSource`, maps legacy `method[].ingredientIds` where present, and strips old step-level canonical ids. Run once after deploying the method-step schema change; safe to re-run (skips recipes already aligned). The schema still allows optional deprecated `method[].ingredientIds` until this has run everywhere; after all documents are patched, remove that field from [`convex/schema.ts`](convex/schema.ts).
+- **Reseed workflow (rare)** — If you replace the ingredients catalog such that Convex ingredient document ids change: `clearRecipeIngredientIds` (still in `migrations.ts`) clears line-level links; then re-seed, run `backfillRecipeIngredientIds` if present, then `reconcileIngredientReferences` and re-run **`backfillMethodStepIngredientRefs`** so method refs stay valid.

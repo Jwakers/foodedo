@@ -267,7 +267,10 @@ export function RecipeEnhanceClient() {
           ...(step.description != null && { description: step.description }),
           ...(existingStep?.image != null && { image: existingStep.image }),
           ...(filteredIngredientRefs?.length
-            ? { ingredientRefs: filteredIngredientRefs }
+            ? {
+                ingredientRefs: filteredIngredientRefs,
+                ingredientRefsSource: "user" as const,
+              }
             : {}),
         };
       });

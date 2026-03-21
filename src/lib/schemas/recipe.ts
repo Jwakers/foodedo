@@ -87,8 +87,8 @@ export const recipeEditSchema = baseRecipeSchema
     method: z.array(
       baseMethodStepSchema.extend({
         image: z.string().optional(),
-        ingredientIds: z.array(z.string()).optional(),
         ingredientRefs: z.array(z.string()).optional(), // recipe.ingredients[].id
+        ingredientRefsSource: z.enum(["auto", "user"]).optional(),
       }),
     ),
   });

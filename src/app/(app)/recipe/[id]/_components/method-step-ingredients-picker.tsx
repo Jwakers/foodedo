@@ -43,9 +43,25 @@ export function MethodStepIngredientsPicker({
     }
   }, [hasStaleRefs, selectedRefs, form, stepIndex]);
 
+  const markUserControlled = () => {
+    form.setValue(`method.${stepIndex}.ingredientRefsSource`, "user", {
+      shouldDirty: true,
+    });
+  };
+
   const setSelectedRefs = (refs: string[]) => {
     const pruned = refs.filter((id) => availableIds.has(id));
+    markUserControlled();
     form.setValue(`method.${stepIndex}.ingredientRefs`, pruned, {
+      shouldDirty: true,
+    });
+  };
+
+  const resetToAutoSuggested = () => {
+    form.setValue(`method.${stepIndex}.ingredientRefsSource`, "auto", {
+      shouldDirty: true,
+    });
+    form.setValue(`method.${stepIndex}.ingredientRefs`, [], {
       shouldDirty: true,
     });
   };
@@ -77,13 +93,14 @@ export function MethodStepIngredientsPicker({
 
   return (
     <div className="space-y-2">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
-        onClick={() => setIsOpen((o) => !o)}
-      >
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
+          onClick={() => setIsOpen((o) => !o)}
+        >
         {isOpen ? (
           <ChevronDown className="size-4" />
         ) : (
@@ -93,7 +110,17 @@ export function MethodStepIngredientsPicker({
           Ingredients for this step
           {selectedRefs.length > 0 && ` (${selectedRefs.length})`}
         </span>
-      </Button>
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={resetToAutoSuggested}
+        >
+          Reset to suggested
+        </Button>
+      </div>
       {isOpen && (
         <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-4">
           {suggestedOptions.length > 0 && (
