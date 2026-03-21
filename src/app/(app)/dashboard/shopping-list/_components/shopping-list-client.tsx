@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -76,6 +77,7 @@ export default function ShoppingListClient() {
 
   const userRecipes = useQuery(api.recipes.getAllUserRecipes);
   const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
+  const households = useQuery(api.households.getUserHouseholds);
   const accessibleLists = useQuery(
     api.shoppingLists.getAccessibleShoppingLists,
   );
@@ -140,6 +142,21 @@ export default function ShoppingListClient() {
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
   >(new Set());
+  /** Household for sharing when creating from recipes; UI defaults the picker when the user has several households. */
+  const [recipeListHouseholdId, setRecipeListHouseholdId] = useState<
+    Id<"households"> | ""
+  >("");
+
+  useEffect(() => {
+    if (
+      households &&
+      households.length > 1 &&
+      recipeListHouseholdId === "" &&
+      households[0]
+    ) {
+      setRecipeListHouseholdId(households[0]._id);
+    }
+  }, [households, recipeListHouseholdId]);
 
   // Mutations
   const createShoppingList = useMutation(api.shoppingLists.createShoppingList);
@@ -192,6 +209,15 @@ export default function ShoppingListClient() {
     }
 
     try {
+      const householdArg =
+        households && households.length > 1
+          ? {
+              householdId:
+                (recipeListHouseholdId as Id<"households">) ||
+                households[0]!._id,
+            }
+          : {};
+
       const { listId } = await createShoppingList({
         items: itemsToCreate.map((item) => ({
           name: item.name,
@@ -203,6 +229,7 @@ export default function ShoppingListClient() {
           ...(item.recipeIds?.length ? { recipeIds: item.recipeIds } : {}),
         })),
         chalkboardItemIds: Array.from(selectedChalkboardItems),
+        ...householdArg,
       });
       toast.success("Shopping list created!");
       router.push(ROUTES.shoppingListWithId(listId));
@@ -372,7 +399,7 @@ export default function ShoppingListClient() {
                 <LimitIndicator
                   current={allActiveShoppingLists?.length ?? 0}
                   max={subscription?.maxActiveShoppingLists ?? 0}
-                  label="active lists"
+                  label="your active lists"
                 />
               </div>
               <div className="grid gap-3 mb-8">
@@ -452,7 +479,7 @@ export default function ShoppingListClient() {
                   <LimitIndicator
                     current={allActiveShoppingLists?.length ?? 0}
                     max={subscription?.maxActiveShoppingLists ?? 0}
-                    label="active lists"
+                    label="your active lists"
                   />
                 </div>
 
@@ -538,11 +565,39 @@ export default function ShoppingListClient() {
 
               {/* Generate Button */}
               {selectedRecipeIds.size > 0 && (
-                <div className="sticky bottom-nav z-10 mt-8 bg-background pt-2 pb-1">
+                <div className="sticky bottom-nav z-10 mt-8 space-y-3 bg-background pt-2 pb-1">
+                  {households && households.length > 1 ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="recipe-list-household">
+                        Share new list with household
+                      </Label>
+                      <Select
+                        value={recipeListHouseholdId || households[0]?._id || ""}
+                        onValueChange={(v) =>
+                          setRecipeListHouseholdId(v as Id<"households">)
+                        }
+                      >
+                        <SelectTrigger
+                          id="recipe-list-household"
+                          className="w-full"
+                        >
+                          <SelectValue placeholder="Select household" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {households.map((h) => (
+                            <SelectItem key={h._id} value={h._id}>
+                              {h.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : null}
                   <Button
                     size="lg"
                     className="w-full shadow-lg"
                     onClick={handleGenerateList}
+                    disabled={households === undefined}
                   >
                     <ShoppingCart className="size-5 mr-2" />
                     Create Shopping List ({selectedRecipeIds.size}{" "}

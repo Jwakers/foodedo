@@ -3,10 +3,14 @@ import { Doc, Id } from "./_generated/dataModel";
 import {
   internalMutation,
   mutation,
+  MutationCtx,
   query,
   QueryCtx,
 } from "./_generated/server";
-import { isHouseholdMember } from "./households";
+import {
+  isHouseholdMember,
+  resolveDefaultHouseholdIdForSharing,
+} from "./households";
 import { canAccessMealPlan } from "./mealPlans";
 import { normaliseNameForGrouping } from "./lib/ingredientGrouping";
 import { combineAmounts } from "./lib/unitConversion";
@@ -20,8 +24,13 @@ import {
 // ACCESS HELPER
 // ============================================================================
 
+// QA / migration: older lists may lack householdId; household visibility for
+// recipe-created lists applies to new rows. Optional backfill: copy mealPlans.householdId
+// onto shoppingLists where mealPlanId is set and householdId is unset.
+
 /**
- * User can access a shopping list if they own it or have access to its linked meal plan.
+ * User can access a shopping list if they own it, are in the list household (when shared),
+ * or have access to its linked meal plan. `isPrivate` limits visibility to the owner only.
  */
 export async function canAccessShoppingList(
   ctx: QueryCtx,
@@ -29,6 +38,11 @@ export async function canAccessShoppingList(
   list: Doc<"shoppingLists">
 ): Promise<boolean> {
   if (list.userId === userId) return true;
+  if (list.isPrivate === true) return false;
+  if (list.householdId) {
+    const inHousehold = await isHouseholdMember(ctx, userId, list.householdId);
+    if (inHousehold) return true;
+  }
   if (list.mealPlanId) {
     const plan = await ctx.db.get(list.mealPlanId);
     if (!plan) return false;
@@ -46,6 +60,33 @@ function canModifyShoppingList(
   list: Doc<"shoppingLists">
 ): boolean {
   return list.userId === userId;
+}
+
+/** Chalkboard rows the user may attach to a list (personal owner or household member). Preserves order, dedupes IDs. */
+async function resolveAccessibleChalkboardItems(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  chalkboardItemIds: Id<"chalkboardItems">[],
+): Promise<{ id: Id<"chalkboardItems">; text: string }[]> {
+  const seen = new Set<Id<"chalkboardItems">>();
+  const out: { id: Id<"chalkboardItems">; text: string }[] = [];
+  for (const cbId of chalkboardItemIds) {
+    if (seen.has(cbId)) continue;
+    seen.add(cbId);
+    const cb = await ctx.db.get(cbId);
+    if (!cb) continue;
+    if (cb.householdId === undefined) {
+      if (cb.addedBy !== userId) continue;
+    } else if (!(await isHouseholdMember(ctx, userId, cb.householdId))) {
+      continue;
+    }
+    const text = cb.text.trim();
+    out.push({
+      id: cbId,
+      text: text.length > 0 ? text : "Chalkboard item",
+    });
+  }
+  return out;
 }
 
 // ============================================================================
@@ -205,7 +246,38 @@ async function getAccessibleMealPlanIds(
 }
 
 /**
- * Get all draft/active shopping lists the current user can access (owned or via linked meal plan), ordered by recency.
+ * Draft/active lists shared to households the user belongs to (excludes private lists and own lists).
+ */
+async function collectHouseholdSharedShoppingLists(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+  seen: Set<Id<"shoppingLists">>
+): Promise<Doc<"shoppingLists">[]> {
+  const memberships = await ctx.db
+    .query("householdMembers")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+
+  const out: Doc<"shoppingLists">[] = [];
+  for (const m of memberships) {
+    const lists = await ctx.db
+      .query("shoppingLists")
+      .withIndex("by_household", (q) => q.eq("householdId", m.householdId))
+      .collect();
+    for (const list of lists) {
+      if (seen.has(list._id)) continue;
+      if (list.status !== "draft" && list.status !== "active") continue;
+      if (list.isPrivate === true) continue;
+      if (list.userId === userId) continue;
+      seen.add(list._id);
+      out.push(list);
+    }
+  }
+  return out;
+}
+
+/**
+ * Get all draft/active shopping lists the current user can access (owned, household-shared, or via linked meal plan), ordered by recency.
  */
 export const getAccessibleShoppingLists = query({
   args: {},
@@ -225,10 +297,11 @@ export const getAccessibleShoppingLists = query({
       )
       .collect();
 
+    const seen = new Set(ownLists.map((l) => l._id));
+
     // Lists linked to meal plans the user can access (bounded by accessible plans, not all lists)
     const accessiblePlanIds = await getAccessibleMealPlanIds(ctx, user._id);
     const linkedLists: Doc<"shoppingLists">[] = [];
-    const seen = new Set(ownLists.map((l) => l._id));
     for (const planId of accessiblePlanIds) {
       const lists = await ctx.db
         .query("shoppingLists")
@@ -242,7 +315,13 @@ export const getAccessibleShoppingLists = query({
       }
     }
 
-    const accessible = [...ownLists, ...linkedLists];
+    const householdLists = await collectHouseholdSharedShoppingLists(
+      ctx,
+      user._id,
+      seen
+    );
+
+    const accessible = [...ownLists, ...linkedLists, ...householdLists];
     accessible.sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0));
     return accessible;
   },
@@ -332,7 +411,13 @@ export const getActiveShoppingList = query({
       }
     }
 
-    const accessible = [...ownLists, ...linkedLists];
+    const householdLists = await collectHouseholdSharedShoppingLists(
+      ctx,
+      user._id,
+      seen
+    );
+
+    const accessible = [...ownLists, ...linkedLists, ...householdLists];
     accessible.sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0));
     const first = accessible[0];
     if (!first) return null;
@@ -350,7 +435,7 @@ export const getActiveShoppingList = query({
 });
 
 /**
- * Get all active shopping lists for the current user (for limit checking)
+ * Active shopping lists owned by the current user only. Used for subscription limits (household-shared lists created by someone else do not count against this cap).
  */
 export const getAllActiveShoppingLists = query({
   handler: async (ctx) => {
@@ -394,6 +479,10 @@ export const createShoppingList = mutation({
       })
     ),
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
+    /** When omitted, uses the user's only household if they have exactly one (unless `isPrivate`). If they have several, omitting leaves the list unshared unless they pick a household in the UI. */
+    householdId: v.optional(v.id("households")),
+    /** Owner-only list; no household sharing. */
+    isPrivate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     if (!args.items?.length) {
@@ -421,15 +510,32 @@ export const createShoppingList = mutation({
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
+    let shareHouseholdId: Id<"households"> | undefined;
+    if (!args.isPrivate) {
+      shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
+        ctx,
+        user._id,
+        args.householdId
+      );
+    }
+
+    const resolvedChalkboard = await resolveAccessibleChalkboardItems(
+      ctx,
+      user._id,
+      args.chalkboardItemIds,
+    );
+
     // Create the shopping list
     const listId = await ctx.db.insert("shoppingLists", {
       userId: user._id,
       status: "draft",
       expiresAt: now + oneWeek,
-      chalkboardItemIds: args.chalkboardItemIds,
+      chalkboardItemIds: resolvedChalkboard.map((r) => r.id),
+      ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
+      ...(args.isPrivate === true && { isPrivate: true }),
     });
 
-    // Create all items
+    // Recipe-derived lines
     await Promise.all(
       args.items.map((item, i) => {
         const entries = item.amountEntries ?? [
@@ -449,6 +555,20 @@ export const createShoppingList = mutation({
           ...(item.recipeIds != null && item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
         });
       })
+    );
+
+    // Chalkboard lines (cleared from chalkboard when list is finalised)
+    const baseOrder = args.items.length;
+    await Promise.all(
+      resolvedChalkboard.map((r, j) =>
+        ctx.db.insert("shoppingListItems", {
+          shoppingListId: listId,
+          name: r.text,
+          amount: null,
+          checked: false,
+          order: baseOrder + j,
+        })
+      )
     );
 
     return { listId };
@@ -483,9 +603,15 @@ export const createShoppingListFromMealPlan = mutation({
       (r): r is NonNullable<typeof r> => r != null
     );
     const items = aggregateIngredientsFromRecipes(validRecipes);
-    if (!items.length) {
+    const resolvedChalkboard = await resolveAccessibleChalkboardItems(
+      ctx,
+      user._id,
+      args.chalkboardItemIds,
+    );
+
+    if (!items.length && !resolvedChalkboard.length) {
       throw new ConvexError(
-        "Cannot create a shopping list from this meal plan: no ingredients found."
+        "Cannot create a shopping list from this meal plan: no ingredients or chalkboard items."
       );
     }
 
@@ -511,8 +637,9 @@ export const createShoppingListFromMealPlan = mutation({
       userId: user._id,
       status: "draft",
       expiresAt: now + oneWeek,
-      chalkboardItemIds: args.chalkboardItemIds,
+      chalkboardItemIds: resolvedChalkboard.map((r) => r.id),
       mealPlanId: args.mealPlanId,
+      ...(plan.householdId !== undefined && { householdId: plan.householdId }),
     });
 
     await Promise.all(
@@ -534,6 +661,19 @@ export const createShoppingListFromMealPlan = mutation({
           recipeIds: item.recipeIds,
         });
       })
+    );
+
+    const baseOrder = items.length;
+    await Promise.all(
+      resolvedChalkboard.map((r, j) =>
+        ctx.db.insert("shoppingListItems", {
+          shoppingListId: listId,
+          name: r.text,
+          amount: null,
+          checked: false,
+          order: baseOrder + j,
+        })
+      )
     );
 
     return { listId };

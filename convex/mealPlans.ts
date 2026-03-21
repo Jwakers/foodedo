@@ -1,7 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, QueryCtx } from "./_generated/server";
-import { canAccessRecipe, isHouseholdMember } from "./households";
+import {
+  canAccessRecipe,
+  isHouseholdMember,
+  resolveDefaultHouseholdIdForSharing,
+} from "./households";
 import {
   MAX_DAYS_IN_MEAL_PLAN,
   RECENTLY_SUGGESTED_DAYS,
@@ -259,6 +263,10 @@ export const getMealPlansForUser = query({
 // MUTATIONS
 // ============================================================================
 
+// QA / migration: meal plans created before default household sharing may still
+// have no householdId; share via shareMealPlanWithHousehold or backfill
+// householdId for rows where the owner has a single household.
+
 /**
  * Create a new meal plan. endDate defaults to MAX_DAYS_IN_MEAL_PLAN days from today if not provided.
  */
@@ -269,6 +277,8 @@ export const createMealPlan = mutation({
     isGenerated: v.optional(v.boolean()),
     generatedAt: v.optional(v.number()),
     generationSeed: v.optional(v.string()),
+    /** When omitted: shared if the user belongs to exactly one household; otherwise the plan is not shared until they use Share or pass this field. */
+    householdId: v.optional(v.id("households")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -286,6 +296,12 @@ export const createMealPlan = mutation({
       );
     }
 
+    const shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
+      ctx,
+      user._id,
+      args.householdId,
+    );
+
     const planId = await ctx.db.insert("mealPlans", {
       userId: user._id,
       endDate,
@@ -294,6 +310,7 @@ export const createMealPlan = mutation({
       isGenerated: args.isGenerated ?? false,
       generatedAt: args.generatedAt,
       generationSeed: args.generationSeed,
+      ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
     });
     return { planId };
   },
@@ -304,19 +321,28 @@ export const createMealPlan = mutation({
  * Spec 6.1, 6.2, 6.5: creates plan, selects MAX_DAYS_IN_MEAL_PLAN recipes (pool + constraints + behavioural scoring), inserts entries, increments suggestedCount for each.
  */
 export const generateWeeklyPlan = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    /** When omitted: shared if the user belongs to exactly one household; otherwise the new plan is private until they share or pass this field. */
+    householdId: v.optional(v.id("households")),
+  },
+  handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
     const now = Date.now();
     const startDate = startOfDayMs(now);
     const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
+
+    const shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
+      ctx,
+      user._id,
+      args.householdId,
+    );
 
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
     const actorType = "user";
     const actorId = user._id;
 
-    const pool = await buildPool(ctx, user._id, null);
+    const pool = await buildPool(ctx, user._id, shareHouseholdId ?? null);
     const recentlySuggested = await getRecentlySuggested(
       ctx,
       actorType,
@@ -347,6 +373,7 @@ export const generateWeeklyPlan = mutation({
       generationSeed,
       generationVersion: 1,
       generatedAt: now,
+      ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
     });
 
     for (let i = 0; i < selectedIds.length; i++) {
@@ -562,7 +589,9 @@ export const shareMealPlanWithHousehold = mutation({
 });
 
 /**
- * Stop sharing meal plan with household. Owner only.
+ * Opt out of household sharing for this meal plan. Owner only.
+ * Household members lose access to the plan and to shopping lists that were only visible via plan access
+ * (lists still linked by `householdId` on the shopping list row remain visible to the household).
  */
 export const unshareMealPlan = mutation({
   args: { mealPlanId: v.id("mealPlans") },

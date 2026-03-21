@@ -54,6 +54,35 @@ export async function isHouseholdMember(
 }
 
 /**
+ * Resolve which household to attach for default-shared content (meal plans, shopping lists).
+ * - Explicit `householdId`: must be a household the user belongs to (throws if not a member).
+ * - Omitted: no households → undefined; exactly one → that household; multiple → undefined
+ *   (no guess—callers that need sharing should pass `householdId`, e.g. from the client UI).
+ */
+export async function resolveDefaultHouseholdIdForSharing(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+  explicitHouseholdId: Id<"households"> | undefined,
+): Promise<Id<"households"> | undefined> {
+  const memberships = await ctx.db
+    .query("householdMembers")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+
+  if (explicitHouseholdId !== undefined) {
+    const ok = await isHouseholdMember(ctx, userId, explicitHouseholdId);
+    if (!ok) {
+      throw new ConvexError("You are not a member of that household");
+    }
+    return explicitHouseholdId;
+  }
+
+  if (memberships.length === 0) return undefined;
+  if (memberships.length === 1) return memberships[0]!.householdId;
+  return undefined;
+}
+
+/**
  * Check if a user can access a recipe (owns it or it's shared to their household)
  */
 export async function canAccessRecipe(

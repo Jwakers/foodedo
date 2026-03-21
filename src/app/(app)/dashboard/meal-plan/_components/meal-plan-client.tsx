@@ -49,11 +49,12 @@ import {
   ShoppingCart,
   Sparkles,
   Trash2,
+  UserMinus,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
 import { MealPlanCard } from "./meal-plan-card";
@@ -104,12 +105,30 @@ export default function MealPlanClient() {
     Id<"households"> | ""
   >("");
   const [showDeletePlanDialog, setShowDeletePlanDialog] = useState(false);
+  const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
+    useState(false);
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  /** When the user has multiple households, we default the picker so generation shares to a household; omitting would leave the new plan private. */
+  const [generateWeekHouseholdId, setGenerateWeekHouseholdId] = useState<
+    Id<"households"> | ""
+  >("");
+
+  useEffect(() => {
+    if (
+      households &&
+      households.length > 1 &&
+      generateWeekHouseholdId === "" &&
+      households[0]
+    ) {
+      setGenerateWeekHouseholdId(households[0]._id);
+    }
+  }, [households, generateWeekHouseholdId]);
   const [isFinalising, setIsFinalising] = useState(false);
-  const [pickerState, setPickerState] = useState<
-    { mode: "add" | "replace"; entry?: CurrentPlan["entries"][number] } | null
-  >(null);
+  const [pickerState, setPickerState] = useState<{
+    mode: "add" | "replace";
+    entry?: CurrentPlan["entries"][number];
+  } | null>(null);
 
   const entriesSorted = useMemo(() => {
     const entries = currentPlan?.entries ?? [];
@@ -124,16 +143,28 @@ export default function MealPlanClient() {
   );
 
   const handleGenerateWeek = useCallback(async () => {
+    if (households === undefined) {
+      toast.info("Loading households…");
+      return;
+    }
     setIsGenerating(true);
     try {
-      await generateWeeklyPlan();
+      const payload =
+        households.length > 1
+          ? {
+              householdId:
+                (generateWeekHouseholdId as Id<"households">) ||
+                households[0]!._id,
+            }
+          : {};
+      await generateWeeklyPlan(payload);
       toast.success("Your week is ready!");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate plan");
     } finally {
       setIsGenerating(false);
     }
-  }, [generateWeeklyPlan]);
+  }, [generateWeeklyPlan, generateWeekHouseholdId, households]);
 
   const handleRegenerateWeek = useCallback(async () => {
     if (!currentPlan) return;
@@ -244,7 +275,8 @@ export default function MealPlanClient() {
     if (!currentPlan) return;
     try {
       await unshareMealPlan({ mealPlanId: currentPlan._id });
-      toast.success("Meal plan is no longer shared");
+      setShowUnshareConfirmDialog(false);
+      toast.success("Meal plan is private again");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to unshare");
     }
@@ -292,8 +324,7 @@ export default function MealPlanClient() {
       if (!currentPlan || !pickerState) return;
       try {
         if (pickerState.mode === "add") {
-          const date =
-            currentPlan.startDate ?? currentPlan.endDate;
+          const date = currentPlan.startDate ?? currentPlan.endDate;
           await addEntry({
             mealPlanId: currentPlan._id,
             date,
@@ -358,15 +389,39 @@ export default function MealPlanClient() {
                 One click to organize your entire week of healthy eating.
               </p>
             </div>
-            <Button
-              size="lg"
-              className="shrink-0"
-              onClick={handleGenerateWeek}
-              disabled={isGenerating}
-            >
-              <Sparkles className="size-5 mr-2" />
-              Generate My Week
-            </Button>
+            <div className="flex flex-col gap-3 w-full sm:w-auto sm:items-end">
+              {households && households.length > 1 ? (
+                <div className="w-full sm:w-64 space-y-1.5">
+                  <Label htmlFor="empty-gen-household">Household</Label>
+                  <Select
+                    value={generateWeekHouseholdId || households[0]?._id || ""}
+                    onValueChange={(v) =>
+                      setGenerateWeekHouseholdId(v as Id<"households">)
+                    }
+                  >
+                    <SelectTrigger id="empty-gen-household">
+                      <SelectValue placeholder="Select household" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {households.map((h) => (
+                        <SelectItem key={h._id} value={h._id}>
+                          {h.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+              <Button
+                size="lg"
+                className="shrink-0 w-full sm:w-auto"
+                onClick={handleGenerateWeek}
+                disabled={isGenerating || households === undefined}
+              >
+                <Sparkles className="size-5 mr-2" />
+                Generate My Week
+              </Button>
+            </div>
           </div>
           <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
             <CardContent className="p-0 flex flex-col items-center">
@@ -380,10 +435,32 @@ export default function MealPlanClient() {
                 Our intelligent system creates a balanced, delicious plan for
                 you in seconds.
               </p>
+              {households && households.length > 1 ? (
+                <div className="w-full max-w-sm mx-auto mb-4 space-y-1.5 text-left">
+                  <Label htmlFor="card-gen-household">Household</Label>
+                  <Select
+                    value={generateWeekHouseholdId || households[0]?._id || ""}
+                    onValueChange={(v) =>
+                      setGenerateWeekHouseholdId(v as Id<"households">)
+                    }
+                  >
+                    <SelectTrigger id="card-gen-household">
+                      <SelectValue placeholder="Select household" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {households.map((h) => (
+                        <SelectItem key={h._id} value={h._id}>
+                          {h.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
               <Button
                 size="lg"
                 onClick={handleGenerateWeek}
-                disabled={isGenerating}
+                disabled={isGenerating || households === undefined}
               >
                 Start Planning
                 <ArrowRight className="size-5 ml-2" />
@@ -409,12 +486,40 @@ export default function MealPlanClient() {
       <div className="w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border">
         {/* Top bar: always show Generate meal plan so user can generate next week early */}
         {currentPlan.isOwner && (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
+            {households && households.length > 1 ? (
+              <div className="flex flex-col gap-1.5 sm:max-w-xs">
+                <Label
+                  htmlFor="top-gen-household"
+                  className="text-xs text-muted-foreground"
+                >
+                  Next week · household
+                </Label>
+                <Select
+                  value={generateWeekHouseholdId || households[0]?._id || ""}
+                  onValueChange={(v) =>
+                    setGenerateWeekHouseholdId(v as Id<"households">)
+                  }
+                >
+                  <SelectTrigger id="top-gen-household" size="sm">
+                    <SelectValue placeholder="Household" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {households.map((h) => (
+                      <SelectItem key={h._id} value={h._id}>
+                        {h.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
             <Button
               variant="outline"
               size="sm"
               onClick={handleGenerateWeek}
-              disabled={isGenerating}
+              disabled={isGenerating || households === undefined}
+              className="shrink-0"
             >
               <Sparkles className="size-4" />
               Generate next week
@@ -473,17 +578,30 @@ export default function MealPlanClient() {
                   </>
                 )}
                 {sharedHousehold ? (
-                  <Button variant="outline" onClick={handleUnshare}>
-                    <Users className="size-4" />
-                    <span className="hidden sm:inline">Stop sharing</span>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={() => setShowUnshareConfirmDialog(true)}
+                    aria-label="Stop sharing this meal plan with your household"
+                  >
+                    <UserMinus className="size-4 shrink-0" />
+                    <span className="max-w-40 truncate sm:max-w-none">
+                      Stop sharing
+                    </span>
                   </Button>
                 ) : (
                   <Button
+                    type="button"
                     variant="outline"
+                    size="sm"
                     onClick={() => setShowShareDialog(true)}
+                    aria-label="Share this meal plan with a household"
                   >
-                    <Users className="size-4" />
-                    <span className="hidden sm:inline">Share</span>
+                    <Users className="size-4 shrink-0" />
+                    <span className="max-w-36 truncate sm:max-w-none">
+                      Share with household
+                    </span>
                   </Button>
                 )}
                 <DropdownMenu>
@@ -539,6 +657,57 @@ export default function MealPlanClient() {
         </AlertDialog>
 
         <AlertDialog
+          open={showUnshareConfirmDialog}
+          onOpenChange={setShowUnshareConfirmDialog}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Stop sharing this plan?</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="grid gap-3 text-sm text-muted-foreground">
+                  {sharedHousehold ? (
+                    <>
+                      <p>
+                        People in{" "}
+                        <strong className="text-foreground">
+                          {sharedHousehold.name}
+                        </strong>{" "}
+                        will no longer see this meal plan. Shopping lists they
+                        could only reach through this plan may disappear from
+                        their list until you share again.
+                      </p>
+                      <p>
+                        This turns off the same household access you get when a
+                        plan is shared automatically after generating a week.
+                        You can use{" "}
+                        <strong className="text-foreground">
+                          Share with household
+                        </strong>{" "}
+                        later to share again.
+                      </p>
+                    </>
+                  ) : (
+                    <p>Household members will no longer see this meal plan.</p>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleUnshare();
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Stop sharing
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
           open={showFinaliseDialog}
           onOpenChange={setShowFinaliseDialog}
         >
@@ -567,12 +736,21 @@ export default function MealPlanClient() {
         </AlertDialog>
 
         {sharedHousehold && (
-          <Card className="mb-6 border-primary/20 bg-primary/5">
-            <CardContent className="py-3 px-4 flex items-center gap-2">
-              <Home className="size-4 text-primary" />
-              <span className="text-sm">
-                Shared with <strong>{sharedHousehold.name}</strong>
-              </span>
+          <Card className="mb-6 border-primary/25 bg-primary/5">
+            <CardContent className="py-4 px-4 flex gap-3 items-start">
+              <div className="mt-0.5 rounded-md bg-primary/15 p-1.5 shrink-0">
+                <Home className="size-4 text-primary" />
+              </div>
+              <div className="min-w-0 space-y-1.5 text-sm">
+                <p className="font-medium text-foreground">
+                  Shared with{" "}
+                  <span className="text-primary">{sharedHousehold.name}</span>
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Everyone in this household can see this plan and shop from
+                  it—including new weeks you generate.{" "}
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -618,7 +796,9 @@ export default function MealPlanClient() {
             if (!open) setPickerState(null);
           }}
           mode={pickerState?.mode ?? "add"}
-          replaceEntry={pickerState?.mode === "replace" ? pickerState.entry : undefined}
+          replaceEntry={
+            pickerState?.mode === "replace" ? pickerState.entry : undefined
+          }
           onSelect={handlePickerSelect}
         />
 
@@ -694,8 +874,12 @@ export default function MealPlanClient() {
             <DialogHeader>
               <DialogTitle>Share with household</DialogTitle>
               <DialogDescription>
-                Household members can view this meal plan and generate their own
-                shopping list from it.
+                Use this when your plan is private and you want household
+                members to see it. If the plan is already shared, use the{" "}
+                <span className="font-medium text-foreground">
+                  Stop sharing
+                </span>{" "}
+                button on the plan (not this dialog) to make it private again.
               </DialogDescription>
             </DialogHeader>
             {households && households.length === 1 ? (

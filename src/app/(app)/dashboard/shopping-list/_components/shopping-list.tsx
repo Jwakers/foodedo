@@ -459,14 +459,23 @@ export default function ShoppingList({
 
             {/* Chalkboard section for non-finalized lists */}
             {!isFinalised && availableChalkboardItemsCount > 0 && (
-              <div className="sticky top-[env(safe-area-inset-top)] mb-6 z-10">
+              <div className="sticky top-[env(safe-area-inset-top)] mb-6 z-10 space-y-2">
+                {shoppingList.chalkboardItemIds.length > 0 ? (
+                  <p className="text-xs text-muted-foreground text-center px-1">
+                    Chalkboard picks from when you created this list are already
+                    in the list below. Use this to add any remaining chalkboard
+                    items.
+                  </p>
+                ) : null}
                 <Button
                   size="lg"
                   className="w-full shadow-lg"
                   onClick={() => setShowChalkboardDialog(true)}
                 >
                   <Clipboard className="size-5" />
-                  Add from Kitchen Chalkboard
+                  {shoppingList.chalkboardItemIds.length > 0
+                    ? "Add more from kitchen chalkboard"
+                    : "Add from kitchen chalkboard"}
                   <Badge
                     variant="secondary"
                     className="ml-1 bg-white/20 text-primary-foreground border-0 px-2.5 py-0.5"
@@ -740,10 +749,14 @@ export default function ShoppingList({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add from Kitchen Chalkboard</DialogTitle>
+            <DialogTitle>
+              {shoppingList.chalkboardItemIds.length > 0
+                ? "Add more from kitchen chalkboard"
+                : "Add from kitchen chalkboard"}
+            </DialogTitle>
             <DialogDescription>
-              Select which chalkboards to add to your shopping list. All items
-              will be added and cleared from the chalkboard.
+              Choose chalkboards to pull items from. Each line is added to this
+              list and removed from the chalkboard when you confirm the list.
             </DialogDescription>
           </DialogHeader>
 
