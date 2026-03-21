@@ -4,6 +4,7 @@ import { CANNY_BOARD_SLUGS, ROUTES } from "@/app/constants";
 import { useUser } from "@clerk/nextjs";
 import { MessageSquare } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useAppFeedbackSuppressed } from "./app-feedback-visibility";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
@@ -98,8 +99,9 @@ export function CannyIdentify() {
 export function CannyFeedbackButton() {
   const pathname = usePathname();
   const boardUrl = getCannyBoardUrl(pathname);
+  const feedbackSuppressed = useAppFeedbackSuppressed();
 
-  if (!cannyAppId || !cannyBoardUrl) return null;
+  if (!cannyAppId || !cannyBoardUrl || feedbackSuppressed) return null;
 
   return (
     <a
