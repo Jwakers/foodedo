@@ -703,7 +703,7 @@ function RecipeSelectionCard({
                   </h3>
                   {isHouseholdRecipe && (
                     <Badge variant="outline" className="shrink-0">
-                      <Home className="h-3 w-3 mr-1" />
+                      <Home className="size-3 mr-1" />
                       Household
                     </Badge>
                   )}

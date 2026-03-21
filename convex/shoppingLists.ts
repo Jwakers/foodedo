@@ -937,13 +937,24 @@ export const addChalkboardItems = mutation({
       -1
     );
 
-    // Add new items
+    const chalkboardItemIds = args.items.map((i) => i.chalkboardItemId);
+    const resolvedChalkboard = await resolveAccessibleChalkboardItems(
+      ctx,
+      user._id,
+      chalkboardItemIds
+    );
+    if (resolvedChalkboard.length === 0) {
+      throw new ConvexError(
+        "None of the requested chalkboard items could be added (not found or no access)."
+      );
+    }
+
     await Promise.all(
-      args.items.map((item) => {
+      resolvedChalkboard.map((item) => {
         maxOrder++;
         return ctx.db.insert("shoppingListItems", {
           shoppingListId: args.listId,
-          name: item.name,
+          name: item.text,
           amount: null,
           checked: false,
           order: maxOrder,
@@ -951,11 +962,10 @@ export const addChalkboardItems = mutation({
       })
     );
 
-    // Update chalkboard item IDs
     await ctx.db.patch(args.listId, {
       chalkboardItemIds: [
         ...list.chalkboardItemIds,
-        ...args.items.map((item) => item.chalkboardItemId),
+        ...resolvedChalkboard.map((item) => item.id),
       ],
     });
 

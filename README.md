@@ -28,9 +28,9 @@ Ingredients convenience infra:
 - [x] Ingredients mentioned in method step should be listed in the method and in the cook mode steps
 - [x] Add a new field for method steps which is ingredients used, an array of references to the ingredients in that recipe. UI should be a simple checkbox grid layout for simplicity. If this array is left blank, the cook mode UI will fall back to the token-based algorithm.
 - [x] Meal enhancement superuser interface
-- [x] Ingredients mentioned in the method steps should be underlined and green in the text ..
-- [ ] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
-- [ ] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
+- [x] Ingredients mentioned in the method steps should be underlined and green in the text.
+- [x] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
+- [x] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
 - [ ] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.

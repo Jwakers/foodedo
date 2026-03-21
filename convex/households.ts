@@ -70,7 +70,9 @@ export async function resolveDefaultHouseholdIdForSharing(
     .collect();
 
   if (explicitHouseholdId !== undefined) {
-    const ok = await isHouseholdMember(ctx, userId, explicitHouseholdId);
+    const ok = memberships.some(
+      (m) => m.householdId === explicitHouseholdId
+    );
     if (!ok) {
       throw new ConvexError("You are not a member of that household");
     }
