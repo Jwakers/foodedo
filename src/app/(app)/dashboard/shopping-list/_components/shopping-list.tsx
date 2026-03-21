@@ -112,7 +112,9 @@ export default function ShoppingList({
   const getOriginalRecipeName = (item: (typeof shoppingList.items)[number]) =>
     item.name;
   const getCategory = (item: (typeof shoppingList.items)[number]) => {
-    const ing = item.ingredientId ? ingredientsMap?.[item.ingredientId] : undefined;
+    const ing = item.ingredientId
+      ? ingredientsMap?.[item.ingredientId]
+      : undefined;
     const foodGroup = ing?.foodGroup ?? undefined;
     const foodSubGroup = ing?.foodSubGroup ?? undefined;
     return getAisleForFoodGroupAndSubGroup(foodGroup, foodSubGroup);
@@ -198,7 +200,9 @@ export default function ShoppingList({
     if (personalChalkboard) {
       count += personalChalkboard.filter(
         (item) =>
-          !allIngredients.some((ing) => namesEqual(getCanonicalKey(ing), item.text)),
+          !allIngredients.some((ing) =>
+            namesEqual(getCanonicalKey(ing), item.text),
+          ),
       ).length;
     }
 
@@ -207,7 +211,9 @@ export default function ShoppingList({
       Object.values(allHouseholdChalkboards).forEach((items) => {
         count += items.filter(
           (item) =>
-            !allIngredients.some((ing) => namesEqual(getCanonicalKey(ing), item.text)),
+            !allIngredients.some((ing) =>
+              namesEqual(getCanonicalKey(ing), item.text),
+            ),
         ).length;
       });
     }
@@ -392,10 +398,7 @@ export default function ShoppingList({
                           {isDev &&
                             item.ingredientId &&
                             ingredientsMap?.[item.ingredientId] && (
-                              <>
-                                {" "}
-                                ({getOriginalRecipeName(item)})
-                              </>
+                              <> ({getOriginalRecipeName(item)})</>
                             )}
                         </span>
                         {getAmountLines(item).length > 0 && (
@@ -456,7 +459,7 @@ export default function ShoppingList({
 
             {/* Chalkboard section for non-finalized lists */}
             {!isFinalised && availableChalkboardItemsCount > 0 && (
-              <div className="sticky top-4 mb-6 z-10">
+              <div className="sticky top-[env(safe-area-inset-top)] mb-6 z-10">
                 <Button
                   size="lg"
                   className="w-full shadow-lg"
