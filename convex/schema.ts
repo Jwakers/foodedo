@@ -224,11 +224,16 @@ export default defineSchema({
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
     // Optional link to meal plan; users with meal plan access can access this list
     mealPlanId: v.optional(v.id("mealPlans")),
+    // When set and not private, any member of this household can access the list
+    householdId: v.optional(v.id("households")),
+    // When true, only the owner can access (opt-out of household visibility)
+    isPrivate: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_status", ["userId", "status"])
     .index("by_expires", ["expiresAt"])
-    .index("by_meal_plan", ["mealPlanId"]),
+    .index("by_meal_plan", ["mealPlanId"])
+    .index("by_household", ["householdId"]),
 
   shoppingListItems: defineTable({
     shoppingListId: v.id("shoppingLists"),

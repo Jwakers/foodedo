@@ -1,5 +1,6 @@
 import { APP_NAME } from "@/app/constants";
 import { Metadata } from "next";
+import { AppFeedbackVisibilityProvider } from "./_components.tsx/app-feedback-visibility";
 import {
   CannyFeedbackButton,
   CannyIdentify,
@@ -26,16 +27,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       data-vaul-drawer-wrapper="true"
     >
       <CannyIdentify />
-      <div className="grid grid-rows-[auto_1fr_auto] min-h-dvh">
-        <Header />
-        <main className="w-full min-w-0">{children}</main>
-        <div className="sticky pointer-events-none bottom-0 z-10 flex flex-col gap-2 items-start">
-          <CannyFeedbackButton />
-          <div className="pointer-events-auto w-full">
-            <Navbar />
+      <AppFeedbackVisibilityProvider>
+        <div className="grid grid-rows-[auto_1fr_auto] min-h-dvh">
+          <Header />
+          <main className="w-full min-w-0">{children}</main>
+          <div className="sticky pointer-events-none bottom-0 z-10 flex flex-col gap-2 items-start">
+            <CannyFeedbackButton />
+            <div className="pointer-events-auto w-full">
+              <Navbar />
+            </div>
           </div>
         </div>
-      </div>
+      </AppFeedbackVisibilityProvider>
     </div>
   );
 }
