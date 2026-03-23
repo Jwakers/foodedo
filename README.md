@@ -33,6 +33,7 @@ Ingredients convenience infra:
 - [x] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
 - [x] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
+- [ ] Move all support documentation to public URLs
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.

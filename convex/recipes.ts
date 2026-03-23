@@ -14,6 +14,7 @@ import {
   CUISINE_MAX_SELECTIONS,
   MAX_WEEKLY_PLAN_POOL_SIZE,
 } from "./lib/constants";
+import { RECIPE_PUBLIC_SLUG_PATTERN } from "./lib/recipePublicSlug";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import {
   categoriesUnion,
@@ -139,6 +140,44 @@ export const getRecipe = query({
     }
 
     return { ...recipe, image, method: methodWithUrls, isOwner, ownerName };
+  },
+});
+
+/**
+ * Public discover page: load a system recipe by URL slug (indexed).
+ */
+export const getSystemRecipeBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const slug = args.slug.trim();
+    if (!slug || !RECIPE_PUBLIC_SLUG_PATTERN.test(slug)) {
+      return null;
+    }
+
+    const matches = await ctx.db
+      .query("recipes")
+      .withIndex("by_publicSlug", (q) => q.eq("publicSlug", slug))
+      .collect();
+
+    const recipe = matches.find((r) => r.source === "system") ?? null;
+    if (!recipe) {
+      return null;
+    }
+
+    const image = recipe.image
+      ? await ctx.storage.getUrl(recipe.image)
+      : null;
+    const methodWithUrls = await resolveMethodImageUrls(
+      ctx,
+      recipe.method ?? [],
+    );
+    return {
+      ...recipe,
+      image,
+      method: methodWithUrls,
+      isOwner: false,
+      ownerName: null,
+    };
   },
 });
 

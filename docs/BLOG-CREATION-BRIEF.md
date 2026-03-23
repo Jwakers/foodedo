@@ -69,7 +69,7 @@ Ensure every post has a unique slug, a compelling excerpt, and a main image so m
 | `/blog` | Blog index; “our blog”, “more articles”, “tips”. |
 | `/blog/{slug}` | Link to another post; use the post’s slug (e.g. `/blog/how-to-start-meal-planning`). |
 | `/discover` | Discover recipes, browse recipes, public recipe gallery. |
-| `/discover/recipe/{ID}` | A specific public (system) recipe; use the recipe’s Convex document ID for `{ID}` (e.g. `/discover/recipe/abc123xyz`). Only use when linking to a known system recipe. |
+| `/discover/recipe/{slug}` | A specific public (system) recipe; use the recipe’s `publicSlug` (kebab-case, e.g. `/discover/recipe/beef-stroganoff`). |
 
 **App / dashboard URLs** (signed-in users go straight there; others are redirected to sign-up — use these in blog copy when the CTA is product-led):
 
