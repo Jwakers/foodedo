@@ -14,6 +14,7 @@ import {
   CUISINE_MAX_SELECTIONS,
   MAX_WEEKLY_PLAN_POOL_SIZE,
 } from "./lib/constants";
+import { RECIPE_PUBLIC_SLUG_PATTERN } from "./lib/recipePublicSlug";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import {
   categoriesUnion,
@@ -143,6 +144,44 @@ export const getRecipe = query({
 });
 
 /**
+ * Public discover page: load a system recipe by URL slug (indexed).
+ */
+export const getSystemRecipeBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const slug = args.slug.trim();
+    if (!slug || !RECIPE_PUBLIC_SLUG_PATTERN.test(slug)) {
+      return null;
+    }
+
+    const matches = await ctx.db
+      .query("recipes")
+      .withIndex("by_publicSlug", (q) => q.eq("publicSlug", slug))
+      .collect();
+
+    const recipe = matches.find((r) => r.source === "system") ?? null;
+    if (!recipe) {
+      return null;
+    }
+
+    const image = recipe.image
+      ? await ctx.storage.getUrl(recipe.image)
+      : null;
+    const methodWithUrls = await resolveMethodImageUrls(
+      ctx,
+      recipe.method ?? [],
+    );
+    return {
+      ...recipe,
+      image,
+      method: methodWithUrls,
+      isOwner: false,
+      ownerName: null,
+    };
+  },
+});
+
+/**
  * Get recipe data for editing (includes storage IDs, not just URLs)
  * This is used when initializing the edit form
  */
@@ -260,6 +299,32 @@ export const getSystemRecipes = query({
       a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
     );
     return withUrls;
+  },
+});
+
+/**
+ * Public discover URLs for sitemap.xml only: `publicSlug` + `updatedAt`.
+ * Does not call storage (no image URLs) and returns a small payload vs `getSystemRecipes`.
+ */
+export const getSystemRecipeSitemapEntries = query({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    return recipes
+      .filter(
+        (r): r is Doc<"recipes"> & { publicSlug: string } =>
+          typeof r.publicSlug === "string" && r.publicSlug.length > 0,
+      )
+      .map((r) => ({ publicSlug: r.publicSlug, updatedAt: r.updatedAt }))
+      .sort((a, b) =>
+        a.publicSlug.localeCompare(b.publicSlug, undefined, {
+          sensitivity: "base",
+        }),
+      );
   },
 });
 

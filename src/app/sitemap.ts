@@ -75,10 +75,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Public discover recipe URLs (SEO); only system recipes are included
   let recipeEntries: MetadataRoute.Sitemap = [];
   try {
-    const systemRecipes = await fetchQuery(api.recipes.getSystemRecipes);
-    recipeEntries = (systemRecipes ?? []).map((recipe) => ({
-      url: `${baseUrl}${ROUTES.discoverRecipe(recipe._id)}`,
-      lastModified: recipe.updatedAt ? new Date(recipe.updatedAt) : new Date(),
+    const sitemapRecipes = await fetchQuery(
+      api.recipes.getSystemRecipeSitemapEntries,
+    );
+    recipeEntries = (sitemapRecipes ?? []).map((recipe) => ({
+      url: `${baseUrl}${ROUTES.discoverRecipe(recipe.publicSlug)}`,
+      lastModified: new Date(recipe.updatedAt),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));

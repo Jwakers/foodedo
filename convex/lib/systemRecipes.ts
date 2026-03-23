@@ -50,6 +50,8 @@ export type SystemRecipeSeed = {
   cuisine?: Cuisine[];
   totalTimeMinutes?: number;
   isGeneratorEligible?: boolean;
+  /** Optional stable public URL segment; otherwise derived from title in migration. */
+  publicSlug?: string;
   /** In seed file this is a URL string; not used by migration (image left unchanged). */
   image?: string;
 };
