@@ -31,7 +31,7 @@ Ingredients convenience infra:
 - [x] Ingredients mentioned in the method steps should be underlined and green in the text.
 - [x] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
 - [x] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
-- [ ] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
+- [x] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Try out [User Finder](https://usersfinder.com/).

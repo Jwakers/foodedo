@@ -1,4 +1,6 @@
-import { APP_NAME } from "@/app/constants";
+import { APP_NAME, ROUTES } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
@@ -30,10 +32,13 @@ export async function generateMetadata({
         (recipe.description?.trim() ?? "").length > 0
           ? recipe.description!.slice(0, 160)
           : `View the recipe for ${recipe.title} on ${APP_NAME}.`;
+      const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.RECIPE}/${recipeId}`;
       return {
         title,
         description,
+        alternates: { canonical: canonicalUrl },
         openGraph: {
+          ...openGraphSiteAndUrl(canonicalUrl),
           title,
           description,
           type: "article",

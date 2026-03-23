@@ -1,5 +1,6 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { client } from "@/sanity/client";
 import { urlFor } from "@/sanity/image";
 import type { Post } from "@/sanity/types";
@@ -59,6 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: canonicalUrl },
     openGraph: {
+      ...openGraphSiteAndUrl(canonicalUrl),
       title,
       description,
       type: "article",

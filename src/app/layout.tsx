@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Lexend } from "next/font/google";
 import { Toaster } from "sonner";
@@ -313,6 +314,7 @@ export default function RootLayout({
             </ThemeProvider>
           </ConvexClientProvider>
         </ClerkProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

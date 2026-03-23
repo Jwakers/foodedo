@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: `${APP_NAME} - Family Meal Planning`,
   description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
   openGraph: {
+    siteName: APP_NAME,
     title: `${APP_NAME} - Family Meal Planning`,
     description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
   },

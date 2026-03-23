@@ -1,5 +1,6 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { buildRecipeJsonLd } from "@/lib/recipe-json-ld";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -16,17 +17,12 @@ export async function generateMetadata({
   params,
 }: DiscoverRecipePageProps): Promise<Metadata> {
   const recipeId = (await params).id as Id<"recipes"> | undefined;
-  const canonicalUrl =
-    recipeId != null
-      ? `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`
-      : undefined;
 
   if (!recipeId) {
-    return {
-      title: "Recipe",
-      ...(canonicalUrl && { alternates: { canonical: canonicalUrl } }),
-    };
+    return { title: "Recipe" };
   }
+
+  const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.discoverRecipe(recipeId)}`;
 
   try {
     const recipe = await fetchQuery(api.recipes.getRecipe, { recipeId });
@@ -41,6 +37,7 @@ export async function generateMetadata({
         description,
         alternates: { canonical: canonicalUrl },
         openGraph: {
+          ...openGraphSiteAndUrl(canonicalUrl),
           title,
           description,
           type: "article",
@@ -69,7 +66,8 @@ export async function generateMetadata({
 
   return {
     title: "Recipe",
-    ...(canonicalUrl && { alternates: { canonical: canonicalUrl } }),
+    alternates: { canonical: canonicalUrl },
+    openGraph: openGraphSiteAndUrl(canonicalUrl),
   };
 }
 
