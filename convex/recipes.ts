@@ -5,10 +5,16 @@ import { mutation, query } from "./_generated/server";
 import { canAccessRecipe } from "./households";
 import { resolveIngredientIdFromList } from "./ingredients";
 import {
+  buildCanonicalIngredientDocsMap,
+  finalizeMethodStepsForSave,
+  recipeLinesForMatcher,
+} from "./lib/applyMethodIngredientRefs";
+import {
   clampEditorialBias,
   CUISINE_MAX_SELECTIONS,
   MAX_WEEKLY_PLAN_POOL_SIZE,
 } from "./lib/constants";
+import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import {
   categoriesUnion,
   complexityTierUnion,
@@ -28,8 +34,8 @@ type MethodStepWithImage = {
   title: string;
   description?: string;
   image?: Id<"_storage">;
-  ingredientIds?: Id<"ingredients">[];
   ingredientRefs?: string[];
+  ingredientRefsSource?: "auto" | "user";
 };
 
 /** Generate a stable id for a recipe ingredient row; unique within the given set. */
@@ -522,6 +528,26 @@ export const createRecipe = mutation({
     const hasGeneratorMetadata =
       args.primaryProtein != null && args.complexityTier != null;
 
+    const lines = recipeLinesForMatcher(ingredients);
+    const canonMap = await buildCanonicalIngredientDocsMap(
+      ctx,
+      (ingredients ?? []) as { ingredientId?: Id<"ingredients"> }[],
+    );
+    const methodWithRefs = args.method.map((step) => {
+      const suggested = getSuggestedIngredientRefsForStep(
+        { title: step.title, description: step.description ?? null },
+        lines,
+        canonMap,
+      );
+      return {
+        title: step.title,
+        description: step.description,
+        image: step.image,
+        ingredientRefs: suggested.length ? suggested : undefined,
+        ingredientRefsSource: "auto" as const,
+      };
+    });
+
     const recipeId = await ctx.db.insert("recipes", {
       userId: user._id,
       title: args.title,
@@ -531,7 +557,7 @@ export const createRecipe = mutation({
       serves: args.serves,
       category: args.category,
       ingredients,
-      method: args.method,
+      method: methodWithRefs,
       creationSource: args.creationSource,
       source: "user",
       nutrition: args.nutrition,
@@ -588,8 +614,10 @@ export const updateRecipe = mutation({
           title: v.string(),
           description: v.optional(v.string()),
           image: v.optional(v.id("_storage")),
-          ingredientIds: v.optional(v.array(v.id("ingredients"))),
           ingredientRefs: v.optional(v.array(v.string())),
+          ingredientRefsSource: v.optional(
+            v.union(v.literal("auto"), v.literal("user")),
+          ),
         }),
       ),
     ),
@@ -613,7 +641,9 @@ export const updateRecipe = mutation({
     }
 
     let ingredients = recipe.ingredients;
+    let ingredientsUpdated = false;
     if (args.ingredients?.length) {
+      ingredientsUpdated = true;
       const allIngredients = await ctx.db.query("ingredients").collect();
       const usedIds = new Set<string>();
       ingredients = args.ingredients.map((ing) => {
@@ -631,30 +661,29 @@ export const updateRecipe = mutation({
       });
     }
 
-    if (args.method) {
+    let methodToPersist: Doc<"recipes">["method"] | undefined;
+    const shouldFinalizeMethod =
+      args.method !== undefined ||
+      (ingredientsUpdated && (recipe.method?.length ?? 0) > 0);
+
+    if (shouldFinalizeMethod) {
+      const inputSteps = args.method ?? recipe.method ?? [];
       const ingList = ingredients ?? [];
-      const validIngredientIds = new Set(
-        ingList
-          .map((ing) => ing.ingredientId)
-          .filter((id): id is NonNullable<typeof id> => id != null),
+      const validRefs = new Set(
+        ingList.map((ing) => ing.id).filter((id): id is string => !!id),
       );
-      for (let i = 0; i < args.method.length; i++) {
-        const step = args.method[i];
-        const ids = step?.ingredientIds;
-        if (ids?.length) {
-          for (const id of ids) {
-            if (!validIngredientIds.has(id)) {
-              throw new ConvexError(
-                `Method step ${i + 1}: ingredientIds must only reference ingredients used in this recipe`,
-              );
-            }
-          }
-        }
+      const lines = recipeLinesForMatcher(ingList);
+      const canonMap = await buildCanonicalIngredientDocsMap(ctx, ingList);
+      methodToPersist = finalizeMethodStepsForSave(
+        inputSteps,
+        lines,
+        canonMap,
+        recipe.method,
+      );
+      for (let i = 0; i < methodToPersist.length; i++) {
+        const step = methodToPersist[i];
         const refs = step?.ingredientRefs;
         if (refs?.length) {
-          const validRefs = new Set(
-            ingList.map((ing) => ing.id).filter((id): id is string => !!id),
-          );
           for (const ref of refs) {
             if (!validRefs.has(ref)) {
               throw new ConvexError(
@@ -738,7 +767,7 @@ export const updateRecipe = mutation({
       serves: args.serves ?? recipe.serves,
       category: args.category ?? recipe.category,
       ingredients,
-      method: args.method ?? recipe.method,
+      method: methodToPersist ?? recipe.method,
       updatedAt: Date.now(),
       primaryProtein,
       complexityTier,

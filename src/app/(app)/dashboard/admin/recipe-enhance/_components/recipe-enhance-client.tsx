@@ -262,12 +262,30 @@ export function RecipeEnhanceClient() {
           (ref) => validIngredientRowIds.has(ref),
         );
 
+        const preservedSource =
+          existingStep?.ingredientRefsSource === "user" ||
+          existingStep?.ingredientRefsSource === "auto"
+            ? existingStep.ingredientRefsSource
+            : ("auto" as const);
+
+        const hadStepRefsOrSource =
+          existingStep != null &&
+          (existingStep.ingredientRefs != null ||
+            existingStep.ingredientRefsSource === "user" ||
+            existingStep.ingredientRefsSource === "auto");
+
         return {
           title: step.title,
           ...(step.description != null && { description: step.description }),
           ...(existingStep?.image != null && { image: existingStep.image }),
-          ...(filteredIngredientRefs?.length
-            ? { ingredientRefs: filteredIngredientRefs }
+          ...(hadStepRefsOrSource
+            ? {
+                ingredientRefs:
+                  filteredIngredientRefs && filteredIngredientRefs.length > 0
+                    ? filteredIngredientRefs
+                    : undefined,
+                ingredientRefsSource: preservedSource,
+              }
             : {}),
         };
       });

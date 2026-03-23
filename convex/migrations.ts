@@ -17,14 +17,26 @@ import {
 
 import { WithoutSystemFields } from "convex/server";
 import {
+  buildCanonicalIngredientDocsMap,
+  recipeLinesForMatcher,
+} from "./lib/applyMethodIngredientRefs";
+import {
   normaliseIngredientName,
   resolveIngredientIdFromList,
 } from "./ingredients";
 import { generateRecipeIngredientId } from "./recipes";
 import { INGREDIENT_FOOD_GROUPS } from "./lib/ingredientFoodGroups";
+import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import ingredientsSeedData from "./ingredients-seed.json";
 import ingredientsSeedManualData from "./ingredients-seed-manual.json";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
+
+/**
+ * Several exports below are historical one-off ops (e.g. `backfillRecipeIngredientRowIds`,
+ * `backfillRecipeIngredientIds`, `clearRecipeIngredientIds`, `deleteCategoryIngredients`,
+ * `getRecipeIngredientAssociations`). They stay in-repo for rare DB maintenance; confirm
+ * production/staging state before deleting any of them. See AGENTS.md for day-to-day ops.
+ */
 
 /**
  * Migration to clear image on all system recipes (e.g. before regenerating images).
@@ -670,74 +682,6 @@ export const seedIngredients = internalMutation({
 });
 
 /**
- * One-off: remove isCustom from all ingredients by replacing each document with
- * the same data minus isCustom. Run once after removing isCustom from the schema.
- * Processes in batches; normalizes aliases to an array. Run:
- *   npx convex run migrations:clearIngredientIsCustom
- */
-export const clearIngredientIsCustom = internalMutation({
-  args: {
-    cursor: v.optional(
-      v.object({
-        creationTime: v.number(),
-        id: v.id("ingredients"),
-      }),
-    ),
-  },
-  handler: async (ctx, args) => {
-    type IngredientCursor = { creationTime: number; id: Id<"ingredients"> };
-    let cursor: IngredientCursor | null = args.cursor ?? null;
-    let cleared = 0;
-
-    const batch: Doc<"ingredients">[] =
-      cursor === null
-        ? await ctx.db
-            .query("ingredients")
-            .order("asc")
-            .take(RECONCILE_BATCH_SIZE)
-        : await ctx.db
-            .query("ingredients")
-            .order("asc")
-            .filter((q) =>
-              q.or(
-                q.gt(q.field("_creationTime"), cursor!.creationTime),
-                q.and(
-                  q.eq(q.field("_creationTime"), cursor!.creationTime),
-                  q.gt(q.field("_id"), cursor!.id),
-                ),
-              ),
-            )
-            .take(RECONCILE_BATCH_SIZE);
-
-    for (const ing of batch) {
-      await ctx.db.replace(ing._id, {
-        name: ing.name,
-        displayName: ing.displayName ?? undefined,
-        foodGroup: ing.foodGroup ?? undefined,
-        foodSubGroup: ing.foodSubGroup ?? undefined,
-        externalId: ing.externalId ?? undefined,
-        aliases: ing.aliases ?? [],
-      });
-      cleared++;
-    }
-
-    if (batch.length > 0) {
-      const last = batch[batch.length - 1]!;
-      cursor = { creationTime: last._creationTime, id: last._id };
-    }
-
-    const scheduled = batch.length === RECONCILE_BATCH_SIZE;
-    if (scheduled) {
-      await ctx.scheduler.runAfter(0, internal.migrations.clearIngredientIsCustom, {
-        cursor: cursor ?? undefined,
-      });
-    }
-
-    return { cleared, scheduled };
-  },
-});
-
-/**
  * Backfill optional `id` on recipe ingredients. Each ingredient without an id
  * gets a unique id (unique only within that recipe). Safe to run multiple times.
  * Run: npx convex run migrations:backfillRecipeIngredientRowIds
@@ -1194,5 +1138,154 @@ export const deleteCategoryIngredients = internalMutation({
       await ctx.db.delete(doc._id);
     }
     return { deleted: toDelete.length, names: toDelete.map((d) => d.name) };
+  },
+});
+
+const METHOD_INGREDIENT_REFS_BATCH = 50;
+
+function methodStepsIngredientBackfillPatchNeeded(
+  old: Doc<"recipes">["method"] | undefined,
+  next: NonNullable<Doc<"recipes">["method"]>,
+): boolean {
+  if ((old?.length ?? 0) !== next.length) return true;
+  for (let i = 0; i < next.length; i++) {
+    const a = old![i]!;
+    const b = next[i]!;
+    if (
+      a.title !== b.title ||
+      (a.description ?? "") !== (b.description ?? "") ||
+      a.image !== b.image
+    ) {
+      return true;
+    }
+    if (a.ingredientRefsSource !== b.ingredientRefsSource) return true;
+    const ar = [...(a.ingredientRefs ?? [])].sort().join("\0");
+    const br = [...(b.ingredientRefs ?? [])].sort().join("\0");
+    if (ar !== br) return true;
+    const legacy = a as { ingredientIds?: Id<"ingredients">[] };
+    if (legacy.ingredientIds && legacy.ingredientIds.length > 0) return true;
+  }
+  return false;
+}
+
+/**
+ * Backfill `method[].ingredientRefs` + `ingredientRefsSource` for all recipes using the shared matcher;
+ * strips legacy `method[].ingredientIds` from stored steps.
+ *
+ * Run: `npx convex run migrations:backfillMethodStepIngredientRefs`
+ * Re-run safe: skips recipes that already match the target shape.
+ */
+export const backfillMethodStepIngredientRefs = internalMutation({
+  args: {
+    recipeCursor: v.optional(recipeCursorValidator),
+  },
+  handler: async (ctx, args) => {
+    type RecipeCursor = { creationTime: number; id: Id<"recipes"> };
+    let recipeCursor: RecipeCursor | null = args.recipeCursor ?? null;
+
+    const batch: Doc<"recipes">[] =
+      recipeCursor === null
+        ? await ctx.db
+            .query("recipes")
+            .order("asc")
+            .take(METHOD_INGREDIENT_REFS_BATCH)
+        : await ctx.db
+            .query("recipes")
+            .order("asc")
+            .filter((q) =>
+              q.or(
+                q.gt(q.field("_creationTime"), recipeCursor!.creationTime),
+                q.and(
+                  q.eq(q.field("_creationTime"), recipeCursor!.creationTime),
+                  q.gt(q.field("_id"), recipeCursor!.id),
+                ),
+              ),
+            )
+            .take(METHOD_INGREDIENT_REFS_BATCH);
+
+    let recipesUpdated = 0;
+
+    for (const recipe of batch) {
+      const lines = recipeLinesForMatcher(recipe.ingredients);
+      const canonMap = await buildCanonicalIngredientDocsMap(
+        ctx,
+        recipe.ingredients,
+      );
+      const validLineIds = new Set(
+        lines.map((l) => l.id).filter((id): id is string => !!id),
+      );
+      const nextMethod = (recipe.method ?? []).map((step) => {
+        const legacyIds = (step as { ingredientIds?: Id<"ingredients">[] })
+          .ingredientIds;
+        const existingRefs = step.ingredientRefs ?? [];
+        if (existingRefs.length > 0) {
+          const filteredRefs = existingRefs.filter((r) => validLineIds.has(r));
+          if (filteredRefs.length > 0) {
+            return {
+              title: step.title,
+              description: step.description,
+              image: step.image,
+              ingredientRefs: filteredRefs,
+              ingredientRefsSource: "user" as const,
+            };
+          }
+        }
+        if (legacyIds?.length) {
+          const lineIds: string[] = [];
+          const seen = new Set<string>();
+          for (const line of lines) {
+            if (
+              line.id &&
+              line.ingredientId &&
+              legacyIds.some((lid) => lid === line.ingredientId) &&
+              !seen.has(line.id)
+            ) {
+              seen.add(line.id);
+              lineIds.push(line.id);
+            }
+          }
+          return {
+            title: step.title,
+            description: step.description,
+            image: step.image,
+            ingredientRefs: lineIds.length ? lineIds : undefined,
+            ingredientRefsSource: "auto" as const,
+          };
+        }
+        const suggested = getSuggestedIngredientRefsForStep(
+          { title: step.title, description: step.description ?? null },
+          lines,
+          canonMap,
+        );
+        return {
+          title: step.title,
+          description: step.description,
+          image: step.image,
+          ingredientRefs: suggested.length ? suggested : undefined,
+          ingredientRefsSource: "auto" as const,
+        };
+      });
+
+      if (methodStepsIngredientBackfillPatchNeeded(recipe.method, nextMethod)) {
+        await ctx.db.patch(recipe._id, { method: nextMethod });
+        recipesUpdated++;
+      }
+    }
+
+    if (batch.length > 0) {
+      const last = batch[batch.length - 1]!;
+      recipeCursor = { creationTime: last._creationTime, id: last._id };
+    }
+
+    const hasMore = batch.length === METHOD_INGREDIENT_REFS_BATCH;
+    if (hasMore) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.backfillMethodStepIngredientRefs,
+        { recipeCursor: recipeCursor! },
+      );
+    }
+
+    return { recipesUpdated, scheduled: hasMore };
   },
 });

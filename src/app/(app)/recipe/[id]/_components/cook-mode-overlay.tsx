@@ -137,7 +137,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
     const step = method[methodIndex];
     if (!step) return [];
     const recipeIngredients = recipe.ingredients ?? [];
-    const stepRefs = (step as { ingredientRefs?: string[] }).ingredientRefs;
+    const stepRefs = step.ingredientRefs;
     if (stepRefs && stepRefs.length > 0) {
       const refSet = new Set(stepRefs);
       return recipeIngredients.filter((ing) => {
@@ -145,16 +145,8 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
         return id && refSet.has(id);
       });
     }
-    const stepIngredientIds = step.ingredientIds;
-    if (
-      stepIngredientIds &&
-      stepIngredientIds.length > 0 &&
-      recipe.ingredients?.length
-    ) {
-      const idSet = new Set(stepIngredientIds);
-      return recipe.ingredients.filter(
-        (ing) => ing.ingredientId && idSet.has(ing.ingredientId),
-      );
+    if (step.ingredientRefsSource === "user") {
+      return [];
     }
     return getRecipeIngredientsForStep(
       { title: step.title, description: step.description ?? null },

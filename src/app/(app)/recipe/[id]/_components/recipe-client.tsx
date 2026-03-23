@@ -117,8 +117,12 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
           title: step.title,
           description: step.description,
           image: step.image ? String(step.image) : undefined,
-          ingredientIds: step.ingredientIds ?? [],
-          ingredientRefs: (step as { ingredientRefs?: string[] }).ingredientRefs ?? [],
+          ingredientRefs: step.ingredientRefs ?? [],
+          ingredientRefsSource:
+            step.ingredientRefsSource === "user" ||
+            step.ingredientRefsSource === "auto"
+              ? step.ingredientRefsSource
+              : (step.ingredientRefs?.length ? "user" : "auto"),
         })),
         primaryProtein: recipeForEdit.primaryProtein,
         complexityTier: recipeForEdit.complexityTier,
@@ -148,12 +152,13 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
           title: step.title,
           description: step.description,
           image: step.image ? (step.image as Id<"_storage">) : undefined,
-          ingredientIds:
-            step.ingredientIds?.length
-              ? (step.ingredientIds as Id<"ingredients">[])
-              : undefined,
           ingredientRefs:
             step.ingredientRefs?.length ? step.ingredientRefs : undefined,
+          ingredientRefsSource:
+            step.ingredientRefsSource === "user" ||
+            step.ingredientRefsSource === "auto"
+              ? step.ingredientRefsSource
+              : undefined,
         })),
         primaryProtein: data.primaryProtein,
         complexityTier: data.complexityTier,

@@ -90,8 +90,12 @@ export default defineSchema({
           title: v.string(),
           description: v.optional(v.string()),
           image: v.optional(v.id("_storage")),
+          // Deprecated: legacy step-level canonical ids; strip via backfillMethodStepIngredientRefs, then remove from schema
           ingredientIds: v.optional(v.array(v.id("ingredients"))),
           ingredientRefs: v.optional(v.array(v.string())), // recipe.ingredients[].id
+          ingredientRefsSource: v.optional(
+            v.union(v.literal("auto"), v.literal("user")),
+          ),
         }),
       ),
     ),
@@ -135,7 +139,6 @@ export default defineSchema({
     displayName: v.optional(v.string()),
     foodGroup: v.optional(ingredientFoodGroupUnion),
     foodSubGroup: v.optional(ingredientFoodSubGroupUnion),
-    isCustom: v.optional(v.boolean()), //TO BE REMOVED AFTER MIGRATION
     externalId: v.optional(v.string()), // e.g. FOOD00001 for sync/upsert from seed
     aliases: v.optional(v.array(v.string())), // optional; for manual synonym lookup
   }).index("by_externalId", ["externalId"]),
