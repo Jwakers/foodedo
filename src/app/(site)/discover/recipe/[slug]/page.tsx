@@ -6,13 +6,14 @@ import { api } from "convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { DiscoverRecipeView } from "./_components/discover-recipe-view";
 
 interface DiscoverRecipePageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function fetchDiscoverRecipe(slug: string) {
+const fetchDiscoverRecipe = cache(async (slug: string) => {
   const recipe = await fetchQuery(api.recipes.getSystemRecipeBySlug, {
     slug,
   });
@@ -21,7 +22,7 @@ async function fetchDiscoverRecipe(slug: string) {
     return null;
   }
   return { ...recipe, publicSlug };
-}
+});
 
 function buildDiscoverMetadata(
   recipe: NonNullable<Awaited<ReturnType<typeof fetchDiscoverRecipe>>>,

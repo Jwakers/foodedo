@@ -71,7 +71,7 @@ function DiscoverRecipeCard({
 export function DiscoverRecipeGrid({ recipes }: { recipes: RecipeListItem[] }) {
   const withSlug = recipes.filter(
     (r): r is RecipeListItem & { publicSlug: string } =>
-      typeof r.publicSlug === "string" && r.publicSlug.length > 0,
+      typeof r.publicSlug === "string" && r.publicSlug.trim().length > 0,
   );
 
   if (withSlug.length === 0) {
