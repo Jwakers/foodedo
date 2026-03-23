@@ -1,12 +1,16 @@
 import { APP_NAME } from "@/app/constants";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import type { Metadata } from "next";
 
+const betaCanonical = `${getSiteBaseUrl()}/beta`;
+
 export const metadata: Metadata = {
-  alternates: { canonical: `${getSiteBaseUrl()}/beta` },
+  alternates: { canonical: betaCanonical },
   title: "Beta",
   description: `Join the ${APP_NAME} beta. Help shape family meal planning with your feedback. Build a repeatable meal planning rhythm for your household.`,
   openGraph: {
+    ...openGraphSiteAndUrl(betaCanonical),
     title: `${APP_NAME} Beta`,
     description: `Join the ${APP_NAME} beta. Help shape family meal planning with your feedback. Build a repeatable meal planning rhythm for your household.`,
   },

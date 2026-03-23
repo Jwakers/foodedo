@@ -1,4 +1,6 @@
 import { APP_NAME } from "@/app/constants";
+import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { api } from "convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
@@ -24,16 +26,19 @@ export async function generateMetadata({
     };
   }
 
+  const inviteCanonical = `${getSiteBaseUrl()}/invite/${token}`;
+
   const metadata = {
     title: "Join Household",
     description: `You've been invited to join a household on ${APP_NAME}. Share and discover recipes together!`,
     robots: { index: false, follow: true },
+    alternates: { canonical: inviteCanonical },
     openGraph: {
+      ...openGraphSiteAndUrl(inviteCanonical),
       title: "Join Household",
       description:
         "You've been invited to join a household. Share and discover recipes together!",
       type: "website",
-      siteName: APP_NAME,
       images: ["/og-image.png"],
     },
     twitter: {

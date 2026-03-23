@@ -34,6 +34,8 @@ export const ROUTES = {
   discoverRecipe: (id: string) => `/discover/recipe/${id}`,
   CHALKBOARD: "/dashboard/chalkboard",
   SUPPORT: "/dashboard/support",
+  /** Public FAQ (indexable, JSON-LD). Prefer for marketing links. */
+  FAQ: "/faq",
   SUPPORT_FAQ: "/dashboard/support/faq",
   SUPPORT_HOW_TO: "/dashboard/support/how-to-use",
   CONTACT: "/dashboard/support/contact",

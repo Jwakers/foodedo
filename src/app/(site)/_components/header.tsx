@@ -148,7 +148,7 @@ export function Header() {
                       Contact Us
                     </Link>
                     <Link
-                      href={ROUTES.SUPPORT_FAQ}
+                      href={ROUTES.FAQ}
                       className="block text-foreground hover:text-primary transition-colors"
                       onClick={() => {
                         setMenuOpen(false);

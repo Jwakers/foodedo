@@ -2,6 +2,7 @@ import { APP_NAME, ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { client } from "@/sanity/client";
 import { urlFor } from "@/sanity/image";
 import type { PostListItem } from "@/sanity/types";
@@ -24,12 +25,15 @@ const POSTS_QUERY = `*[
 
 const REVALIDATE_SECONDS = 30;
 
+const blogCanonical = `${getSiteBaseUrl()}${ROUTES.BLOG}`;
+
 export const metadata: Metadata = {
-  alternates: { canonical: `${getSiteBaseUrl()}${ROUTES.BLOG}` },
+  alternates: { canonical: blogCanonical },
   title: `Blog | ${APP_NAME}`,
   description:
     "Articles and tips for family meal planning, recipes, and making the most of your kitchen.",
   openGraph: {
+    ...openGraphSiteAndUrl(blogCanonical),
     title: `Blog | ${APP_NAME}`,
     description:
       "Articles and tips for family meal planning, recipes, and making the most of your kitchen.",

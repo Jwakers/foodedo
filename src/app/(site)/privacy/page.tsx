@@ -1,16 +1,20 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const privacyCanonical = `${getSiteBaseUrl()}${ROUTES.PRIVACY}`;
+
 export const metadata: Metadata = {
-  alternates: { canonical: `${getSiteBaseUrl()}${ROUTES.PRIVACY}` },
+  alternates: { canonical: privacyCanonical },
   title: "Privacy Policy",
   description: `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
   openGraph: {
+    ...openGraphSiteAndUrl(privacyCanonical),
     title: `Privacy Policy | ${APP_NAME}`,
     description: `Learn how ${APP_NAME} collects, uses, and protects your personal information.`,
   },

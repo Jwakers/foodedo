@@ -37,6 +37,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@sanity/client": "^7.17.0",
     "@sanity/image-url": "^2.0.3",
+    "@vercel/speed-insights": "^2.0.0",
     "ai": "^6.0.0",
     "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1",

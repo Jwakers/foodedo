@@ -29,9 +29,11 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { faqSections } from "./faq/page";
+import { FAQ_SECTIONS_DATA } from "@/lib/faq-content";
 
-const featuredFAQs = faqSections.flatMap((section) => section.questions[0]);
+const featuredFAQs = FAQ_SECTIONS_DATA.flatMap(
+  (section) => section.questions[0],
+);
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;
 
 export default function SupportPage() {

@@ -1,14 +1,18 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import type { Metadata } from "next";
 import DiscoverRecipesClient from "./_components/discover-recipes-client";
 
+const discoverCanonical = `${getSiteBaseUrl()}${ROUTES.DISCOVER}`;
+
 export const metadata: Metadata = {
-  alternates: { canonical: `${getSiteBaseUrl()}${ROUTES.DISCOVER}` },
+  alternates: { canonical: discoverCanonical },
   title: "Discover Recipes",
   description:
     "Browse our curated recipes. Discover dinner ideas for your family.",
   openGraph: {
+    ...openGraphSiteAndUrl(discoverCanonical),
     title: `Discover Recipes | ${APP_NAME}`,
     description:
       "Browse our curated recipes. Discover dinner ideas for your family.",
