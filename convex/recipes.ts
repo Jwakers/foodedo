@@ -303,6 +303,32 @@ export const getSystemRecipes = query({
 });
 
 /**
+ * Public discover URLs for sitemap.xml only: `publicSlug` + `updatedAt`.
+ * Does not call storage (no image URLs) and returns a small payload vs `getSystemRecipes`.
+ */
+export const getSystemRecipeSitemapEntries = query({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    return recipes
+      .filter(
+        (r): r is Doc<"recipes"> & { publicSlug: string } =>
+          typeof r.publicSlug === "string" && r.publicSlug.length > 0,
+      )
+      .map((r) => ({ publicSlug: r.publicSlug, updatedAt: r.updatedAt }))
+      .sort((a, b) =>
+        a.publicSlug.localeCompare(b.publicSlug, undefined, {
+          sensitivity: "base",
+        }),
+      );
+  },
+});
+
+/**
  * Get up to N recipes from the user's pool (system + user + household) for weekly plan generation.
  * No intelligent selection—deterministic order by _id, take first `limit`. Used by "Generate My Week".
  */
