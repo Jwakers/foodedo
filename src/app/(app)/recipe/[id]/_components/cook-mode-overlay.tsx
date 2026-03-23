@@ -145,6 +145,9 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
         return id && refSet.has(id);
       });
     }
+    if (step.ingredientRefsSource === "user") {
+      return [];
+    }
     return getRecipeIngredientsForStep(
       { title: step.title, description: step.description ?? null },
       recipeIngredientLines,

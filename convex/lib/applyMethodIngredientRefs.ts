@@ -65,12 +65,12 @@ function effectiveSource(step: MethodStepIn, prev: PrevStep | undefined): "auto"
   if (step.ingredientRefsSource === "user" || step.ingredientRefsSource === "auto") {
     return step.ingredientRefsSource;
   }
+  if ((step.ingredientRefs?.length ?? 0) > 0) {
+    return "user";
+  }
   const pSource = prev?.ingredientRefsSource;
   if (pSource === "user" || pSource === "auto") {
     return pSource;
-  }
-  if ((prev?.ingredientRefs?.length ?? 0) > 0) {
-    return "user";
   }
   return "auto";
 }
@@ -93,7 +93,10 @@ export function finalizeMethodStepsForSave(
     const source = effectiveSource(step, prev);
 
     if (source === "user") {
-      const rawRefs = step.ingredientRefs ?? prev?.ingredientRefs ?? [];
+      const rawRefs =
+        step.ingredientRefs !== undefined
+          ? step.ingredientRefs
+          : (prev?.ingredientRefs ?? []);
       const refs = rawRefs.filter((r) => validRefs.has(r));
       return {
         title: step.title,

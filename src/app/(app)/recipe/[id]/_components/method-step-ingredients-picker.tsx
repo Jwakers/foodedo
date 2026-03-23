@@ -58,10 +58,11 @@ export function MethodStepIngredientsPicker({
   };
 
   const resetToAutoSuggested = () => {
+    const suggestedSynced = suggestedRefs.filter((id) => availableIds.has(id));
     form.setValue(`method.${stepIndex}.ingredientRefsSource`, "auto", {
       shouldDirty: true,
     });
-    form.setValue(`method.${stepIndex}.ingredientRefs`, [], {
+    form.setValue(`method.${stepIndex}.ingredientRefs`, suggestedSynced, {
       shouldDirty: true,
     });
   };

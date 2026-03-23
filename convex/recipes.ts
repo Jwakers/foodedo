@@ -641,7 +641,9 @@ export const updateRecipe = mutation({
     }
 
     let ingredients = recipe.ingredients;
+    let ingredientsUpdated = false;
     if (args.ingredients?.length) {
+      ingredientsUpdated = true;
       const allIngredients = await ctx.db.query("ingredients").collect();
       const usedIds = new Set<string>();
       ingredients = args.ingredients.map((ing) => {
@@ -660,7 +662,12 @@ export const updateRecipe = mutation({
     }
 
     let methodToPersist: Doc<"recipes">["method"] | undefined;
-    if (args.method) {
+    const shouldFinalizeMethod =
+      args.method !== undefined ||
+      (ingredientsUpdated && (recipe.method?.length ?? 0) > 0);
+
+    if (shouldFinalizeMethod) {
+      const inputSteps = args.method ?? recipe.method ?? [];
       const ingList = ingredients ?? [];
       const validRefs = new Set(
         ingList.map((ing) => ing.id).filter((id): id is string => !!id),
@@ -668,7 +675,7 @@ export const updateRecipe = mutation({
       const lines = recipeLinesForMatcher(ingList);
       const canonMap = await buildCanonicalIngredientDocsMap(ctx, ingList);
       methodToPersist = finalizeMethodStepsForSave(
-        args.method,
+        inputSteps,
         lines,
         canonMap,
         recipe.method,

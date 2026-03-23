@@ -1211,18 +1211,24 @@ export const backfillMethodStepIngredientRefs = internalMutation({
         ctx,
         recipe.ingredients,
       );
+      const validLineIds = new Set(
+        lines.map((l) => l.id).filter((id): id is string => !!id),
+      );
       const nextMethod = (recipe.method ?? []).map((step) => {
         const legacyIds = (step as { ingredientIds?: Id<"ingredients">[] })
           .ingredientIds;
         const existingRefs = step.ingredientRefs ?? [];
         if (existingRefs.length > 0) {
-          return {
-            title: step.title,
-            description: step.description,
-            image: step.image,
-            ingredientRefs: existingRefs,
-            ingredientRefsSource: "user" as const,
-          };
+          const filteredRefs = existingRefs.filter((r) => validLineIds.has(r));
+          if (filteredRefs.length > 0) {
+            return {
+              title: step.title,
+              description: step.description,
+              image: step.image,
+              ingredientRefs: filteredRefs,
+              ingredientRefsSource: "user" as const,
+            };
+          }
         }
         if (legacyIds?.length) {
           const lineIds: string[] = [];
