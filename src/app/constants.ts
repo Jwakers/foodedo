@@ -30,8 +30,8 @@ export const ROUTES = {
   DISCOVER: "/discover",
   /** Public discover recipe (SEO-friendly). Use for links from Discover page. */
   DISCOVER_RECIPE: "/discover/recipe",
-  /** URL for a specific discover recipe (use with recipe id). */
-  discoverRecipe: (id: string) => `/discover/recipe/${id}`,
+  /** URL for a specific discover recipe (use with `publicSlug`). */
+  discoverRecipe: (publicSlug: string) => `/discover/recipe/${publicSlug}`,
   CHALKBOARD: "/dashboard/chalkboard",
   SUPPORT: "/dashboard/support",
   /** Public FAQ (indexable, JSON-LD). Prefer for marketing links. */

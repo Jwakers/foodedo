@@ -8,14 +8,18 @@ import { cn, titleCase } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
-function DiscoverRecipeCard({ recipe }: { recipe: RecipeListItem }) {
+function DiscoverRecipeCard({
+  recipe,
+}: {
+  recipe: RecipeListItem & { publicSlug: string };
+}) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";
 
   return (
-    <Link href={ROUTES.discoverRecipe(recipe._id)}>
+    <Link href={ROUTES.discoverRecipe(recipe.publicSlug)}>
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 pt-0">
         <div className="aspect-4/3 bg-linear-to-br from-primary/20 to-primary/5 relative overflow-hidden">
           {recipe.image && (
@@ -65,7 +69,12 @@ function DiscoverRecipeCard({ recipe }: { recipe: RecipeListItem }) {
 }
 
 export function DiscoverRecipeGrid({ recipes }: { recipes: RecipeListItem[] }) {
-  if (recipes.length === 0) {
+  const withSlug = recipes.filter(
+    (r): r is RecipeListItem & { publicSlug: string } =>
+      typeof r.publicSlug === "string" && r.publicSlug.length > 0,
+  );
+
+  if (withSlug.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <p className="text-center text-muted-foreground py-12">
@@ -78,7 +87,7 @@ export function DiscoverRecipeGrid({ recipes }: { recipes: RecipeListItem[] }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {recipes.map((recipe) => (
+        {withSlug.map((recipe) => (
           <DiscoverRecipeCard key={recipe._id} recipe={recipe} />
         ))}
       </div>

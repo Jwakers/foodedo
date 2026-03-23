@@ -15,4 +15,6 @@ export type RecipeListItem = {
   primaryProtein?: string | null;
   complexityTier?: string | null;
   totalTimeMinutes?: number | null;
+  /** Public discover URL segment (system recipes). */
+  publicSlug?: string | null;
 };

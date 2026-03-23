@@ -76,12 +76,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let recipeEntries: MetadataRoute.Sitemap = [];
   try {
     const systemRecipes = await fetchQuery(api.recipes.getSystemRecipes);
-    recipeEntries = (systemRecipes ?? []).map((recipe) => ({
-      url: `${baseUrl}${ROUTES.discoverRecipe(recipe._id)}`,
-      lastModified: recipe.updatedAt ? new Date(recipe.updatedAt) : new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    }));
+    recipeEntries = (systemRecipes ?? [])
+      .filter(
+        (recipe): recipe is typeof recipe & { publicSlug: string } =>
+          typeof recipe.publicSlug === "string" && recipe.publicSlug.length > 0,
+      )
+      .map((recipe) => ({
+        url: `${baseUrl}${ROUTES.discoverRecipe(recipe.publicSlug)}`,
+        lastModified: recipe.updatedAt ? new Date(recipe.updatedAt) : new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      }));
   } catch (e) {
     console.warn("Failed to fetch dynamic URLs from Convex", e);
     // Omit recipe URLs on failure

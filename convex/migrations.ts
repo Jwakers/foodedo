@@ -29,6 +29,10 @@ import { INGREDIENT_FOOD_GROUPS } from "./lib/ingredientFoodGroups";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import ingredientsSeedData from "./ingredients-seed.json";
 import ingredientsSeedManualData from "./ingredients-seed-manual.json";
+import {
+  allocateUniquePublicSlugs,
+  nextUniqueSystemRecipePublicSlug,
+} from "./lib/recipePublicSlug";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
 /**
@@ -436,7 +440,7 @@ export const removeMealPlanCreatedAtField = internalMutation({
 /**
  * Migration to patch or create system recipes from convex/lib/system-recipes.ts.
  * - If a recipe with the same _id exists: replace its ingredients and method (image unchanged).
- * - If it does not exist: insert a new recipe with all fields except image.
+ * - If it does not exist: insert a new recipe with all fields except image (includes a unique `publicSlug`).
  * Run: npx convex run migrations:patchSystemRecipesFromFile
  */
 export const patchSystemRecipesFromFile = internalMutation({
@@ -473,12 +477,17 @@ export const patchSystemRecipesFromFile = internalMutation({
         });
         patched++;
       } else {
+        const publicSlug = await nextUniqueSystemRecipePublicSlug(ctx, {
+          title: r.title,
+          seedSlug: r.publicSlug,
+        });
         const doc = {
           title: r.title,
           prepTime: r.prepTime,
           serves: r.serves,
           category: r.category as RecipeCategory,
           updatedAt: r.updatedAt ?? now,
+          publicSlug,
           ...(r.description != null &&
             r.description !== "" && { description: r.description }),
           ...(r.cookTime != null && { cookTime: r.cookTime }),
@@ -509,6 +518,60 @@ export const patchSystemRecipesFromFile = internalMutation({
       totalInFile: SYSTEM_RECIPES.length,
       patched,
       inserted,
+    };
+  },
+});
+
+/**
+ * Assigns unique `publicSlug` on every system recipe for `/discover/recipe/...` only.
+ * Reads **current DB** `title` and optional `publicSlug` override from [`convex/lib/systemRecipes.ts`](./lib/systemRecipes.ts)
+ * when the recipe `_id` matches an entry there. Patches **only** `publicSlug` (no ingredients/method/title).
+ * Safe to re-run when slug rules or seed overrides change.
+ * Run: `npx convex run migrations:assignSystemRecipePublicSlugs`
+ */
+export const assignSystemRecipePublicSlugs = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const seedById = new Map(
+      SYSTEM_RECIPES.map((r) => [r._id, r] as const),
+    );
+
+    const systemRecipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    systemRecipes.sort((a, b) => a._id.localeCompare(b._id));
+
+    const allocationItems = systemRecipes.map((doc) => {
+      const seed = seedById.get(doc._id);
+      return {
+        id: doc._id,
+        title: doc.title,
+        seedSlug: seed?.publicSlug,
+        existingSlug: doc.publicSlug,
+      };
+    });
+
+    const slugById = allocateUniquePublicSlugs(allocationItems);
+
+    let updated = 0;
+    for (const doc of systemRecipes) {
+      const next = slugById.get(doc._id);
+      if (!next) {
+        throw new Error(`Missing slug allocation for recipe ${doc._id}`);
+      }
+      if (doc.publicSlug !== next) {
+        await ctx.db.patch(doc._id, { publicSlug: next });
+        updated += 1;
+      }
+    }
+
+    return {
+      message: `publicSlug assign complete: ${updated} recipe(s) updated, ${systemRecipes.length - updated} unchanged`,
+      totalSystemRecipes: systemRecipes.length,
+      updated,
+      unchanged: systemRecipes.length - updated,
     };
   },
 });
