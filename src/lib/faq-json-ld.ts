@@ -6,7 +6,7 @@
 import type { FaqSectionData } from "@/lib/faq-content";
 
 export function buildFaqPageJsonLd(
-  sections: FaqSectionData[],
+  sections: ReadonlyArray<FaqSectionData>,
   pageUrl: string,
 ): Record<string, unknown> {
   const mainEntity = sections.flatMap((section) =>

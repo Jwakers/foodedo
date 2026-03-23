@@ -31,8 +31,8 @@ import { usePathname } from "next/navigation";
 
 import { FAQ_SECTIONS_DATA } from "@/lib/faq-content";
 
-const featuredFAQs = FAQ_SECTIONS_DATA.flatMap(
-  (section) => section.questions[0],
+const featuredFAQs = FAQ_SECTIONS_DATA.flatMap((section) =>
+  section.questions.length > 0 ? [section.questions[0]] : [],
 );
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;
 

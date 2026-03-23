@@ -1,9 +1,9 @@
-import { APP_NAME } from "@/app/constants";
+import { APP_NAME, ROUTES } from "@/app/constants";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import type { Metadata } from "next";
 
-const betaCanonical = `${getSiteBaseUrl()}/beta`;
+const betaCanonical = `${getSiteBaseUrl()}${ROUTES.BETA}`;
 
 export const metadata: Metadata = {
   alternates: { canonical: betaCanonical },

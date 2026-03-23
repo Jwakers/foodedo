@@ -20,6 +20,11 @@ type FaqSectionsPanelProps = {
   backLabel: string;
 };
 
+const DEFAULT_SECTION_ACCENT = {
+  Icon: HelpCircle,
+  color: "bg-primary/10 text-primary",
+};
+
 export function FaqSectionsPanel({ backHref, backLabel }: FaqSectionsPanelProps) {
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -44,9 +49,13 @@ export function FaqSectionsPanel({ backHref, backLabel }: FaqSectionsPanelProps)
 
       <div className="space-y-6">
         {FAQ_SECTIONS_DATA.map((section, sectionIndex) => {
-          const accent = FAQ_SECTION_ACCENTS[sectionIndex];
-          if (!accent) return null;
-          const { Icon, color } = accent;
+          const fromAccents = FAQ_SECTION_ACCENTS[sectionIndex];
+          if (!fromAccents) {
+            console.warn(
+              `[FAQ] Missing FAQ_SECTION_ACCENTS entry for index ${sectionIndex} ("${section.title}"). Using default accent.`,
+            );
+          }
+          const { Icon, color } = fromAccents ?? DEFAULT_SECTION_ACCENT;
           return (
             <Card key={section.title}>
               <CardHeader>

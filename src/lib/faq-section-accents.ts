@@ -9,6 +9,8 @@ import {
   Wrench,
 } from "lucide-react";
 
+import { FAQ_SECTIONS_DATA } from "./faq-content";
+
 /** Visual accents per section — order must match `FAQ_SECTIONS_DATA` in `faq-content.ts`. */
 export const FAQ_SECTION_ACCENTS: { Icon: LucideIcon; color: string }[] = [
   {
@@ -53,3 +55,9 @@ export const FAQ_SECTION_ACCENTS: { Icon: LucideIcon; color: string }[] = [
       "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400",
   },
 ];
+
+if (FAQ_SECTION_ACCENTS.length !== FAQ_SECTIONS_DATA.length) {
+  throw new Error(
+    `FAQ_SECTION_ACCENTS length (${FAQ_SECTION_ACCENTS.length}) must match FAQ_SECTIONS_DATA length (${FAQ_SECTIONS_DATA.length}). Update both files so section order and count stay in sync.`,
+  );
+}

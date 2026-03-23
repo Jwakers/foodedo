@@ -66,10 +66,8 @@ export async function generateMetadata({
 
   return {
     title: "Recipe",
-    ...(canonicalUrl && {
-      alternates: { canonical: canonicalUrl },
-      openGraph: openGraphSiteAndUrl(canonicalUrl),
-    }),
+    alternates: { canonical: canonicalUrl },
+    openGraph: openGraphSiteAndUrl(canonicalUrl),
   };
 }
 

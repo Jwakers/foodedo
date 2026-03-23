@@ -1,14 +1,17 @@
 import { APP_NAME } from "@/app/constants";
 
-export type FaqQuestion = { question: string; answer: string };
+export type FaqQuestion = Readonly<{
+  readonly question: string;
+  readonly answer: string;
+}>;
 
-export type FaqSectionData = {
-  title: string;
-  questions: FaqQuestion[];
-};
+export type FaqSectionData = Readonly<{
+  readonly title: string;
+  readonly questions: ReadonlyArray<FaqQuestion>;
+}>;
 
 /** Single source of truth for FAQ copy (public `/faq` + in-app support FAQ). */
-export const FAQ_SECTIONS_DATA: FaqSectionData[] = [
+export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
   {
     title: "Getting Started",
     questions: [
