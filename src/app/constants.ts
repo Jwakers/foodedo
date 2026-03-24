@@ -56,6 +56,13 @@ export const ROUTES = {
   ADMIN_RECIPE_ENHANCE: "/dashboard/admin/recipe-enhance",
 } as const;
 
+/** Recipe page: search param that opens cook mode on load (`?cook=1`). */
+export const RECIPE_COOK_MODE_PARAM = "cook";
+
+export function recipeUrlWithCookMode(recipeId: string): string {
+  return `${ROUTES.RECIPE}/${recipeId}?${RECIPE_COOK_MODE_PARAM}=1`;
+}
+
 export const CATEGORY_COLORS: Record<
   (typeof RECIPE_CATEGORIES)[number],
   string
