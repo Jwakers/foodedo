@@ -51,7 +51,7 @@
 
 - [ ] Photographing recipes is slow — speed up processing, improve loading indicators, add copy that images take longer.
 - [ ] Notify users when recipe processing has finished so they can leave the page without losing the recipe.
-- [ ] Sticky save header when editing a recipe: add safe area inset (mobile).
+- [ ] A sticky save header when editing a recipe: add safe area inset (mobile).
 - [ ] Import recipe: controls to switch between URL, text, and photo modes.
 - [ ] Sources like The Wicked Cookbook: pro tips not carried into converted recipes — add recipe notes (or equivalent).
 - [ ] Restore or add share for recipes (PWA/Web Share API or fallback).
@@ -64,7 +64,7 @@
 
 ### User feedback – Import experience (post-import UX)
 
-Feedback: Import feels reliable and the edit page is clear, but the biggest opportunity is what happens _after_ import. Users want to feel confident hitting Save without having to guess what to check. The moment after import should feel rewarding, not neutral.
+Feedback: Import feels reliable, and the edit page is clear, but the biggest opportunity is what happens _after_ import. Users want to feel confident hitting Save without having to guess what to check. The moment after import should feel rewarding, not neutral.
 
 - [ ] **Post-import guidance**: On the import confirmation/edit screen, highlight which fields usually matter most to review (e.g. servings, total time, category).
 - [ ] **Post-import emotional payoff**: Reinforce that the user saved time and added something valuable (e.g. light celebration, “ready to cook later” messaging).
@@ -241,12 +241,12 @@ _Shipped: PWA plugin, manual text import, install hints._ Open:
 
 #### Content and SEO
 
-\_Shipped: Blog, recipe SEO, admin content tools.
+- [ ] Blog, recipe SEO, admin content tools.
 
 #### Advanced AI
 
 - [ ] Cook with what you have, advanced meal planning, recommendations.
-      \_Shipped: Photograph cookbooks → saved recipes.
+  — Shipped: Photograph cookbooks → saved recipes.
 
 #### Integrations
 
