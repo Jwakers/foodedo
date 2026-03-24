@@ -74,7 +74,7 @@ export default function ShoppingList({
   const [selectedHouseholdIds, setSelectedHouseholdIds] = useState<
     Set<Id<"households">>
   >(new Set());
-  /** Draft: pantry lines to keep when confirming; default none (excluded from the trip). */
+  /** Draft UI only: which pantry staple lines are included in the trip (not stored on documents). */
   const [pantryIncludedIds, setPantryIncludedIds] = useState<
     Set<Id<"shoppingListItems">>
   >(new Set());
@@ -161,6 +161,7 @@ export default function ShoppingList({
     pantry.sort(cmp);
     return { mainShoppingItems: main, pantryStapleItems: pantry };
   }, [shoppingList.items, ingredientsMap]);
+
   const ingredientsByCategory = useMemo(() => {
     const cmp = (a: ShoppingListItem, b: ShoppingListItem) =>
       getDisplayName(a).localeCompare(getDisplayName(b), undefined, {

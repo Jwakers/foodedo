@@ -1082,6 +1082,41 @@ export const unfinaliseShoppingList = mutation({
 });
 
 /**
+ * Normalised names still represented on shopping lines (row text + canonical ingredient names).
+ * Used so we only remove chalkboard rows that still have a matching line on the finalised trip.
+ */
+async function normalizedNameKeysForListLines(
+  ctx: MutationCtx,
+  rows: Doc<"shoppingListItems">[],
+): Promise<Set<string>> {
+  const keys = new Set<string>();
+  const ingIds = [
+    ...new Set(
+      rows
+        .map((r) => r.ingredientId)
+        .filter((id): id is Id<"ingredients"> => id != null),
+    ),
+  ];
+  const ingDocs = await Promise.all(ingIds.map((id) => ctx.db.get(id)));
+  const ingById = new Map(
+    ingIds.map((id, i) => [id, ingDocs[i]] as const),
+  );
+
+  for (const row of rows) {
+    const fromName = normaliseNameForGrouping(row.name);
+    if (fromName) keys.add(fromName);
+    const ing = row.ingredientId ? ingById.get(row.ingredientId) : undefined;
+    if (ing) {
+      const kn = normaliseNameForGrouping(ing.name ?? "");
+      const kd = normaliseNameForGrouping(ing.displayName ?? "");
+      if (kn) keys.add(kn);
+      if (kd) keys.add(kd);
+    }
+  }
+  return keys;
+}
+
+/**
  * Shared core: draft → active, subscription check, chalkboard cleanup.
  * Caller must ensure `list` is current and still `draft`.
  */
@@ -1099,6 +1134,12 @@ async function executeFinaliseDraftShoppingList(
   if (list.status !== "draft") {
     throw new ConvexError("Shopping list is already finalized");
   }
+
+  const remainingRows = await ctx.db
+    .query("shoppingListItems")
+    .withIndex("by_shopping_list", (q) => q.eq("shoppingListId", list._id))
+    .collect();
+  const lineKeys = await normalizedNameKeysForListLines(ctx, remainingRows);
 
   const creator = await ctx.db.get(list.userId);
   const subscription = creator
@@ -1129,13 +1170,18 @@ async function executeFinaliseDraftShoppingList(
 
   for (const chalkboardItemId of list.chalkboardItemIds) {
     try {
-      const item = await ctx.db.get(chalkboardItemId);
-      if (!item) continue;
+      const cb = await ctx.db.get(chalkboardItemId);
+      if (!cb) continue;
+
+      const cbKey = normaliseNameForGrouping(cb.text);
+      if (!cbKey || !lineKeys.has(cbKey)) {
+        continue;
+      }
 
       const canDelete =
-        item.householdId === undefined
-          ? item.addedBy === actingUser._id
-          : await isHouseholdMember(ctx, actingUser._id, item.householdId);
+        cb.householdId === undefined
+          ? cb.addedBy === actingUser._id
+          : await isHouseholdMember(ctx, actingUser._id, cb.householdId);
       if (!canDelete) continue;
 
       await ctx.db.delete(chalkboardItemId);
