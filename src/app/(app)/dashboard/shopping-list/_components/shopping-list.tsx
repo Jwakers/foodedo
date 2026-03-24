@@ -142,8 +142,7 @@ export default function ShoppingList({
   };
   const { mainShoppingItems, pantryStapleItems } = useMemo(() => {
     const staple = (item: ShoppingListItem) =>
-      isPantryStaple(getDisplayName(item)) ||
-      isPantryStaple(item.name ?? "");
+      isPantryStaple(getDisplayName(item)) || isPantryStaple(item.name ?? "");
     const main: ShoppingListItem[] = [];
     const pantry: ShoppingListItem[] = [];
     for (const item of shoppingList.items) {
@@ -207,16 +206,13 @@ export default function ShoppingList({
   useEffect(() => {
     if (!isFinalised && prevFinalisedRef.current === true && pantryIdsKey) {
       setPantryIncludedIds(
-        new Set(
-          pantryIdsKey.split(",") as Id<"shoppingListItems">[],
-        ),
+        new Set(pantryIdsKey.split(",") as Id<"shoppingListItems">[]),
       );
     }
     prevFinalisedRef.current = isFinalised;
   }, [isFinalised, pantryIdsKey]);
 
-  const draftTripItemCount =
-    mainShoppingItems.length + pantryIncludedIds.size;
+  const draftTripItemCount = mainShoppingItems.length + pantryIncludedIds.size;
 
   // Get chalkboard data
   const households = useQuery(api.households.getUserHouseholds);
@@ -325,9 +321,9 @@ export default function ShoppingList({
       (i) => !pantryIncludedIds.has(i._id),
     );
     try {
-      for (const item of toRemove) {
-        await removeItem({ itemId: item._id });
-      }
+      await Promise.all(
+        toRemove.map((item) => removeItem({ itemId: item._id })),
+      );
       await Promise.resolve(onConfirm());
     } catch (error) {
       console.error("Failed to confirm shopping list:", error);
@@ -536,7 +532,9 @@ export default function ShoppingList({
             ) : null}
           </div>
 
-          <p className="text-sm mt-8">Total items: {shoppingList.items.length}</p>
+          <p className="text-sm mt-8">
+            Total items: {shoppingList.items.length}
+          </p>
         </div>
       </div>
 
@@ -619,7 +617,7 @@ export default function ShoppingList({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <div className="size-2 rounded-full bg-primary mt-2 shrink-0" />
                     <div>
                       <p className="font-medium">Use in the app</p>
                       <p className="text-muted-foreground">
@@ -629,7 +627,7 @@ export default function ShoppingList({
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <div className="size-2 rounded-full bg-primary mt-2 shrink-0" />
                     <div>
                       <p className="font-medium">Print it out</p>
                       <p className="text-muted-foreground">
@@ -639,7 +637,7 @@ export default function ShoppingList({
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <div className="size-2 rounded-full bg-primary mt-2 shrink-0" />
                     <div>
                       <p className="font-medium">Share as text</p>
                       <p className="text-muted-foreground">
@@ -695,6 +693,9 @@ export default function ShoppingList({
                         variant="secondary"
                         size="sm"
                         onClick={handlePantryAddAll}
+                        disabled={
+                          pantryIncludedIds.size === pantryStapleItems.length
+                        }
                       >
                         Add all
                       </Button>
@@ -774,8 +775,8 @@ export default function ShoppingList({
               draftTripItemCount === 0 && (
                 <div className="text-center py-6 rounded-lg border border-dashed bg-muted/20">
                   <p className="text-sm text-muted-foreground px-4">
-                    Nothing selected for this shop yet. Add items from the
-                    list above or check pantry staples below.
+                    Nothing selected for this shop yet. Add items from the list
+                    or pantry staples above.
                   </p>
                 </div>
               )}
@@ -1079,8 +1080,7 @@ function ShoppingListScreenItemRow({
                     unit: item.unit,
                   },
                 ].filter(
-                  (e) =>
-                    e.amount != null || (e.unit != null && e.unit !== ""),
+                  (e) => e.amount != null || (e.unit != null && e.unit !== ""),
                 );
           if (entries.length === 0) return null;
           if (entries.length > 1) {
