@@ -1,6 +1,6 @@
 "use client";
 
-import { ROUTES } from "@/app/constants";
+import { RECIPE_COOK_MODE_PARAM, ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,8 +28,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { CookModeOverlay } from "./cook-mode-overlay";
@@ -52,12 +52,42 @@ export type Recipe = FunctionReturnType<typeof api.recipes.getRecipe>;
 
 export function RecipeClient({ recipeId }: RecipeClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const cookParamConsumed = useRef(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCookModeOpen, setIsCookModeOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<Recipe | null>(null);
 
   const recipe = useQuery(api.recipes.getRecipe, { recipeId });
+
+  useEffect(() => {
+    cookParamConsumed.current = false;
+  }, [recipeId]);
+
+  useEffect(() => {
+    const raw = searchParams.get(RECIPE_COOK_MODE_PARAM);
+    if (raw === null || raw === "" || raw === "0" || raw === "false") return;
+    if (cookParamConsumed.current) return;
+    if (recipe === undefined || recipe === null) return;
+
+    cookParamConsumed.current = true;
+
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete(RECIPE_COOK_MODE_PARAM);
+    const qs = next.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+
+    if (!recipe.method?.length) {
+      toast.info("Cook mode needs method steps", {
+        description: "Add steps to the method section on this recipe to cook along.",
+      });
+      return;
+    }
+
+    setIsCookModeOpen(true);
+  }, [pathname, recipe, recipeId, router, searchParams]);
   const recipeForEdit = useQuery(api.recipes.getRecipeForEdit, { recipeId });
   const updateRecipeMutation = useMutation(api.recipes.updateRecipe);
   const deleteRecipeMutation = useMutation(api.recipes.deleteRecipe);

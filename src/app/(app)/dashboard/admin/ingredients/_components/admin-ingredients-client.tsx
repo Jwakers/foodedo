@@ -205,6 +205,10 @@ export function AdminIngredientsClient() {
     }
     setIsSubmitting(true);
     try {
+      const parsedAliases = form.aliases
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
       if (editingId) {
         await updateMutation({
           id: editingId,
@@ -213,12 +217,9 @@ export function AdminIngredientsClient() {
           foodGroup: form.foodGroup.trim() || null,
           foodSubGroup: form.foodSubGroup.trim() || null,
           externalId: form.externalId.trim() || null,
-          aliases: form.aliases
-            ? form.aliases
-                .split(/[\n,]+/)
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : undefined,
+          // Always send aliases when editing so clearing the textarea removes all aliases
+          // (empty string is falsy; we must not omit the field).
+          aliases: parsedAliases,
         });
       } else {
         await createMutation({
@@ -227,12 +228,7 @@ export function AdminIngredientsClient() {
           foodGroup: form.foodGroup.trim() || undefined,
           foodSubGroup: form.foodSubGroup.trim() || undefined,
           externalId: form.externalId.trim() || undefined,
-          aliases: form.aliases
-            ? form.aliases
-                .split(/[\n,]+/)
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : undefined,
+          aliases: parsedAliases.length > 0 ? parsedAliases : undefined,
         });
       }
       setDialogOpen(false);

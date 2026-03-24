@@ -32,10 +32,14 @@ Ingredients convenience infra:
 - [x] Fix shopping list bug: sticky "Generate" and "Confirm" buttons are unclickable when sticky.
 - [x] Urgent: shopping list from last night's meal plan was not shared with Amber automatically.
 - [x] Clean up ingredient code – do not skip this step; much of the new code may be removable once the production seed is complete.
+- [x] Pantry item logic appears to be gone from the Shopping list UI, I am seeing olive oil in ingredients
+- [x] Add all chalkboard items is missing in UI when creating a shopping list for the meal plan page
+- [ ] Olive oil in the herbs and spices category???
+- [ ] Add all items from my phone notes, clear said notes and organise and trim readme
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
 - [ ] Move all support documentation to public URLs
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
-- [ ] Try out [User Finder](https://usersfinder.com/).
+- [ ] Launch on product hunt (market as Hello fresh without the food delivery)
 - [ ] Set up notifications (what and when), add user-controllable settings, and note in agents.md to consider notifications when new relevant features are added.
 
 ### User feedback – Import experience (post-import UX)

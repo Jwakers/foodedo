@@ -1082,6 +1082,166 @@ export const unfinaliseShoppingList = mutation({
 });
 
 /**
+ * Normalised names still represented on shopping lines (row text + canonical ingredient names).
+ * Used so we only remove chalkboard rows that still have a matching line on the finalised trip.
+ */
+async function normalizedNameKeysForListLines(
+  ctx: MutationCtx,
+  rows: Doc<"shoppingListItems">[],
+): Promise<Set<string>> {
+  const keys = new Set<string>();
+  const ingIds = [
+    ...new Set(
+      rows
+        .map((r) => r.ingredientId)
+        .filter((id): id is Id<"ingredients"> => id != null),
+    ),
+  ];
+  const ingDocs = await Promise.all(ingIds.map((id) => ctx.db.get(id)));
+  const ingById = new Map(
+    ingIds.map((id, i) => [id, ingDocs[i]] as const),
+  );
+
+  for (const row of rows) {
+    const fromName = normaliseNameForGrouping(row.name);
+    if (fromName) keys.add(fromName);
+    const ing = row.ingredientId ? ingById.get(row.ingredientId) : undefined;
+    if (ing) {
+      const kn = normaliseNameForGrouping(ing.name ?? "");
+      const kd = normaliseNameForGrouping(ing.displayName ?? "");
+      if (kn) keys.add(kn);
+      if (kd) keys.add(kd);
+    }
+  }
+  return keys;
+}
+
+/**
+ * Shared core: draft → active, subscription check, chalkboard cleanup.
+ * Caller must ensure `list` is current and still `draft`.
+ */
+async function executeFinaliseDraftShoppingList(
+  ctx: MutationCtx,
+  list: Doc<"shoppingLists">,
+  actingUser: Doc<"users">,
+): Promise<void> {
+  if (!canModifyShoppingList(actingUser._id, list)) {
+    throw new ConvexError(
+      "Only the list owner can finalize this shopping list",
+    );
+  }
+
+  if (list.status !== "draft") {
+    throw new ConvexError("Shopping list is already finalized");
+  }
+
+  const remainingRows = await ctx.db
+    .query("shoppingListItems")
+    .withIndex("by_shopping_list", (q) => q.eq("shoppingListId", list._id))
+    .collect();
+  const lineKeys = await normalizedNameKeysForListLines(ctx, remainingRows);
+
+  const creator = await ctx.db.get(list.userId);
+  const subscription = creator
+    ? await getUserSubscription(creator, ctx)
+    : { maxActiveShoppingLists: -1 };
+  const activeLists = await ctx.db
+    .query("shoppingLists")
+    .withIndex("by_user_and_status", (q) =>
+      q.eq("userId", list.userId).eq("status", "active"),
+    )
+    .collect();
+
+  if (
+    subscription.maxActiveShoppingLists !== -1 &&
+    activeLists.length >= subscription.maxActiveShoppingLists
+  ) {
+    throw new ConvexError(
+      `The list owner has reached their limit of ${subscription.maxActiveShoppingLists} active shopping lists. Complete an existing list before finalizing this one.`,
+    );
+  }
+
+  const now = Date.now();
+
+  await ctx.db.patch(list._id, {
+    status: "active",
+    finalisedAt: now,
+  });
+
+  for (const chalkboardItemId of list.chalkboardItemIds) {
+    try {
+      const cb = await ctx.db.get(chalkboardItemId);
+      if (!cb) continue;
+
+      const cbKey = normaliseNameForGrouping(cb.text);
+      if (!cbKey || !lineKeys.has(cbKey)) {
+        continue;
+      }
+
+      const canDelete =
+        cb.householdId === undefined
+          ? cb.addedBy === actingUser._id
+          : await isHouseholdMember(ctx, actingUser._id, cb.householdId);
+      if (!canDelete) continue;
+
+      await ctx.db.delete(chalkboardItemId);
+    } catch (error) {
+      console.error("Failed to delete chalkboard item:", error);
+    }
+  }
+}
+
+/**
+ * Atomically remove draft list lines then finalise the list (single mutation).
+ * Use for pantry trim + confirm so removals and finalisation cannot partially apply or double-apply.
+ */
+export const trimDraftItemsAndFinaliseShoppingList = mutation({
+  args: {
+    listId: v.id("shoppingLists"),
+    itemIdsToRemove: v.array(v.id("shoppingListItems")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const list = await ctx.db.get(args.listId);
+    if (!list) {
+      throw new ConvexError("Shopping list not found");
+    }
+
+    if (!canModifyShoppingList(user._id, list)) {
+      throw new ConvexError(
+        "Only the list owner can finalize this shopping list",
+      );
+    }
+
+    if (list.status !== "draft") {
+      throw new ConvexError("Shopping list is already finalized");
+    }
+
+    const uniqueRemove = [...new Set(args.itemIdsToRemove)];
+    for (const itemId of uniqueRemove) {
+      const row = await ctx.db.get(itemId);
+      if (!row) {
+        throw new ConvexError("Shopping list item not found");
+      }
+      if (row.shoppingListId !== args.listId) {
+        throw new ConvexError("Item does not belong to this shopping list");
+      }
+      await ctx.db.delete(itemId);
+    }
+
+    const listAfterTrim = await ctx.db.get(args.listId);
+    if (!listAfterTrim) {
+      throw new ConvexError("Shopping list not found");
+    }
+
+    await executeFinaliseDraftShoppingList(ctx, listAfterTrim, user);
+
+    return { success: true };
+  },
+});
+
+/**
  * Finalize a draft shopping list, checking the active list limit (creator's limit)
  */
 export const finaliseShoppingList = mutation({
@@ -1096,63 +1256,7 @@ export const finaliseShoppingList = mutation({
       throw new ConvexError("Shopping list not found");
     }
 
-    if (!canModifyShoppingList(user._id, list)) {
-      throw new ConvexError(
-        "Only the list owner can finalize this shopping list"
-      );
-    }
-
-    if (list.status !== "draft") {
-      throw new ConvexError("Shopping list is already finalized");
-    }
-
-    // Check active list limit for the list creator (subscription is per creator)
-    const creator = await ctx.db.get(list.userId);
-    const subscription = creator
-      ? await getUserSubscription(creator, ctx)
-      : { maxActiveShoppingLists: -1 };
-    const activeLists = await ctx.db
-      .query("shoppingLists")
-      .withIndex("by_user_and_status", (q) =>
-        q.eq("userId", list.userId).eq("status", "active")
-      )
-      .collect();
-
-    if (
-      subscription.maxActiveShoppingLists !== -1 &&
-      activeLists.length >= subscription.maxActiveShoppingLists
-    ) {
-      throw new ConvexError(
-        `The list owner has reached their limit of ${subscription.maxActiveShoppingLists} active shopping lists. Complete an existing list before finalizing this one.`
-      );
-    }
-
-    const now = Date.now();
-
-    // Mark list as active
-    await ctx.db.patch(args.listId, {
-      status: "active",
-      finalisedAt: now,
-    });
-
-    // Delete chalkboard items
-    for (const chalkboardItemId of list.chalkboardItemIds) {
-      try {
-        const item = await ctx.db.get(chalkboardItemId);
-        if (!item) continue;
-
-        const canDelete =
-          item.householdId === undefined
-            ? item.addedBy === user._id
-            : await isHouseholdMember(ctx, user._id, item.householdId);
-        if (!canDelete) continue;
-
-        await ctx.db.delete(chalkboardItemId);
-      } catch (error) {
-        // Item might have been deleted already, continue
-        console.error("Failed to delete chalkboard item:", error);
-      }
-    }
+    await executeFinaliseDraftShoppingList(ctx, list, user);
 
     return { success: true };
   },

@@ -35,6 +35,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { TodaysMealSpotlight } from "./todays-meal-spotlight";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;
@@ -553,6 +554,7 @@ export default function DashboardClient() {
   return (
     <div className="w-full min-w-0 overflow-x-hidden container mx-auto px-4 py-6 max-w-7xl box-border">
       <HeroSection />
+      <TodaysMealSpotlight />
       <MealPlanOverviewSection />
       <HouseholdsSection />
 

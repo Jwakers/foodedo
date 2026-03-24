@@ -6,6 +6,7 @@ import { Id } from "convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { RecipeBackButton } from "./_components/recipe-back-button";
 import { RecipeClient } from "./_components/recipe-client";
 
@@ -79,7 +80,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8">
         <RecipeBackButton />
-        <RecipeClient recipeId={recipeId} />
+        <Suspense fallback={null}>
+          <RecipeClient recipeId={recipeId} />
+        </Suspense>
       </div>
     </div>
   );

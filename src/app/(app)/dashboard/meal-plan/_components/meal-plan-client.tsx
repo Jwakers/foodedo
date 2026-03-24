@@ -827,7 +827,38 @@ export default function MealPlanClient() {
               )}
               {chalkboardItemsForGenerate.length > 0 && (
                 <div className="space-y-2 py-2">
-                  <Label>Include chalkboard items</Label>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <Label className="shrink-0">Include chalkboard items</Label>
+                    <div className="flex flex-wrap gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          setSelectedChalkboardIds(
+                            new Set(
+                              chalkboardItemsForGenerate.map((i) => i.id),
+                            ),
+                          )
+                        }
+                        disabled={
+                          selectedChalkboardIds.size ===
+                          chalkboardItemsForGenerate.length
+                        }
+                      >
+                        Add all
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedChalkboardIds(new Set())}
+                        disabled={selectedChalkboardIds.size === 0}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
                   <div className="max-h-40 overflow-y-auto space-y-2 border rounded-md p-2">
                     {chalkboardItemsForGenerate.map((item) => (
                       <label

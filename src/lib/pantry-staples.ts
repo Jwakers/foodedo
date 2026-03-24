@@ -11,7 +11,7 @@ export const PANTRY_STAPLE_NAMES = new Set([
   "table salt",
   "sea salt",
   "black pepper",
-  "pepper",
+  "pepper (spice)",
   "white pepper",
   // Oils
   "olive oil",
@@ -35,7 +35,8 @@ export const PANTRY_STAPLE_NAMES = new Set([
   // Condiments & liquids
   "vinegar",
   "white vinegar",
-  "soy sauce",
+  // Other
+  "water",
 ]);
 
 export function isPantryStaple(name: string): boolean {
