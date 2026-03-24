@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import type { FunctionReturnType } from "convex/server";
 import {
   ArrowLeft,
@@ -77,12 +78,16 @@ export default function ShoppingList({
   const [pantryIncludedIds, setPantryIncludedIds] = useState<
     Set<Id<"shoppingListItems">>
   >(new Set());
+  const [isConfirming, setIsConfirming] = useState(false);
 
   // Mutations
   const toggleItemChecked = useMutation(api.shoppingLists.toggleItemChecked);
   const updateItemAmount = useMutation(api.shoppingLists.updateItemAmount);
   const removeItem = useMutation(api.shoppingLists.removeItem);
   const addChalkboardItems = useMutation(api.shoppingLists.addChalkboardItems);
+  const trimDraftItemsAndFinaliseShoppingList = useMutation(
+    api.shoppingLists.trimDraftItemsAndFinaliseShoppingList,
+  );
 
   const isFinalised = shoppingList.status === "active";
   const ingredientIds = useMemo(
@@ -142,7 +147,7 @@ export default function ShoppingList({
   };
   const { mainShoppingItems, pantryStapleItems } = useMemo(() => {
     const staple = (item: ShoppingListItem) =>
-      isPantryStaple(getDisplayName(item)) || isPantryStaple(item.name ?? "");
+      isPantryStaple(getCanonicalKey(item));
     const main: ShoppingListItem[] = [];
     const pantry: ShoppingListItem[] = [];
     for (const item of shoppingList.items) {
@@ -317,21 +322,28 @@ export default function ShoppingList({
   };
 
   const handleConfirmWithPantryTrim = async () => {
+    if (isConfirming) return;
     const toRemove = pantryStapleItems.filter(
       (i) => !pantryIncludedIds.has(i._id),
     );
+    setIsConfirming(true);
     try {
-      await Promise.all(
-        toRemove.map((item) => removeItem({ itemId: item._id })),
-      );
+      await trimDraftItemsAndFinaliseShoppingList({
+        listId: shoppingList._id,
+        itemIdsToRemove: toRemove.map((item) => item._id),
+      });
       await Promise.resolve(onConfirm());
     } catch (error) {
       console.error("Failed to confirm shopping list:", error);
-      toast.error(
-        error instanceof Error
+      const message =
+        error instanceof ConvexError
           ? error.message
-          : "Failed to confirm shopping list",
-      );
+          : error instanceof Error
+            ? error.message
+            : "Failed to confirm shopping list";
+      toast.error(message);
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -817,10 +829,10 @@ export default function ShoppingList({
                 <Button
                   className="flex-1"
                   onClick={handleConfirmWithPantryTrim}
-                  disabled={draftTripItemCount === 0}
+                  disabled={draftTripItemCount === 0 || isConfirming}
                 >
                   <Check className="size-4 mr-2" />
-                  Confirm Shopping List
+                  {isConfirming ? "Confirming…" : "Confirm Shopping List"}
                 </Button>
               </div>
             )}

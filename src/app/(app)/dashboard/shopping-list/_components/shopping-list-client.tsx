@@ -160,9 +160,6 @@ export default function ShoppingListClient() {
 
   // Mutations
   const createShoppingList = useMutation(api.shoppingLists.createShoppingList);
-  const finaliseShoppingList = useMutation(
-    api.shoppingLists.finaliseShoppingList,
-  );
   const completeShoppingList = useMutation(
     api.shoppingLists.completeShoppingList,
   );
@@ -251,22 +248,15 @@ export default function ShoppingListClient() {
       return;
     }
 
-    // Finalise the shopping list (this will delete chalkboard items)
-    try {
-      await finaliseShoppingList({ listId: displayList._id });
-
-      if (selectedChalkboardItems.size > 0) {
-        toast.success(
-          `Shopping list confirmed! ${selectedChalkboardItems.size} chalkboard item${
-            selectedChalkboardItems.size > 1 ? "s" : ""
-          } cleared.`,
-        );
-      } else {
-        toast.success("Shopping list confirmed!");
-      }
-    } catch (error) {
-      console.error("Failed to finalise shopping list:", error);
-      toast.error("Failed to confirm shopping list");
+    // Draft lists: finalisation (and optional pantry trim) runs inside ShoppingList.
+    if (selectedChalkboardItems.size > 0) {
+      toast.success(
+        `Shopping list confirmed! ${selectedChalkboardItems.size} chalkboard item${
+          selectedChalkboardItems.size > 1 ? "s" : ""
+        } cleared.`,
+      );
+    } else {
+      toast.success("Shopping list confirmed!");
     }
   };
 
