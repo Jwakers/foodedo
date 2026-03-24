@@ -14,13 +14,14 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import useShare from "@/lib/hooks/use-share";
+import { isPantryStaple } from "@/lib/pantry-staples";
 import {
   AISLE_ORDER,
   getAisleForFoodGroupAndSubGroup,
 } from "@/lib/shopping-list-aisles";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { Id } from "convex/_generated/dataModel";
+import type { Doc, Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
@@ -34,12 +35,14 @@ import {
   ShoppingCart,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type ShoppingList = NonNullable<
   FunctionReturnType<typeof api.shoppingLists.getActiveShoppingList>
 >;
+
+type ShoppingListItem = ShoppingList["items"][number];
 
 function namesEqual(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -47,7 +50,7 @@ function namesEqual(a: string, b: string): boolean {
 
 interface ShoppingListProps {
   shoppingList: ShoppingList;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   onBack: () => void;
   onDone: () => void;
   onEdit: () => void;
@@ -69,6 +72,10 @@ export default function ShoppingList({
   const [includePersonal, setIncludePersonal] = useState(true);
   const [selectedHouseholdIds, setSelectedHouseholdIds] = useState<
     Set<Id<"households">>
+  >(new Set());
+  /** Draft: pantry lines to keep when confirming; default none (excluded from the trip). */
+  const [pantryIncludedIds, setPantryIncludedIds] = useState<
+    Set<Id<"shoppingListItems">>
   >(new Set());
 
   // Mutations
@@ -133,18 +140,33 @@ export default function ShoppingList({
       .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
       .filter(Boolean);
   };
-  const allIngredients = useMemo(
-    () =>
-      [...shoppingList.items].sort((a, b) =>
-        getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
-          sensitivity: "base",
-        }),
-      ),
-    [shoppingList.items, ingredientsMap],
-  );
+  const { mainShoppingItems, pantryStapleItems } = useMemo(() => {
+    const staple = (item: ShoppingListItem) =>
+      isPantryStaple(getDisplayName(item)) ||
+      isPantryStaple(item.name ?? "");
+    const main: ShoppingListItem[] = [];
+    const pantry: ShoppingListItem[] = [];
+    for (const item of shoppingList.items) {
+      (staple(item) ? pantry : main).push(item);
+    }
+    const cmp = (a: ShoppingListItem, b: ShoppingListItem) =>
+      getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
+        sensitivity: "base",
+      });
+    main.sort(cmp);
+    pantry.sort(cmp);
+    return { mainShoppingItems: main, pantryStapleItems: pantry };
+  }, [shoppingList.items, ingredientsMap]);
   const ingredientsByCategory = useMemo(() => {
-    const groups = new Map<string, (typeof shoppingList.items)[number][]>();
-    for (const item of allIngredients) {
+    const cmp = (a: ShoppingListItem, b: ShoppingListItem) =>
+      getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
+        sensitivity: "base",
+      });
+    const source = isFinalised
+      ? [...shoppingList.items].sort(cmp)
+      : mainShoppingItems;
+    const groups = new Map<string, ShoppingListItem[]>();
+    for (const item of source) {
       const cat = getCategory(item);
       if (!groups.has(cat)) groups.set(cat, []);
       groups.get(cat)!.push(item);
@@ -160,7 +182,41 @@ export default function ShoppingList({
       category: cat,
       items: groups.get(cat)!,
     }));
-  }, [allIngredients, ingredientsMap]);
+  }, [isFinalised, mainShoppingItems, shoppingList.items, ingredientsMap]);
+
+  const pantryIdsKey = useMemo(
+    () => pantryStapleItems.map((i) => i._id).join(","),
+    [pantryStapleItems],
+  );
+  useEffect(() => {
+    const validIds = new Set(
+      pantryIdsKey
+        ? (pantryIdsKey.split(",") as Id<"shoppingListItems">[])
+        : [],
+    );
+    setPantryIncludedIds((prev) => {
+      const next = new Set<Id<"shoppingListItems">>();
+      for (const id of prev) {
+        if (validIds.has(id)) next.add(id);
+      }
+      return next;
+    });
+  }, [pantryIdsKey]);
+
+  const prevFinalisedRef = useRef(isFinalised);
+  useEffect(() => {
+    if (!isFinalised && prevFinalisedRef.current === true && pantryIdsKey) {
+      setPantryIncludedIds(
+        new Set(
+          pantryIdsKey.split(",") as Id<"shoppingListItems">[],
+        ),
+      );
+    }
+    prevFinalisedRef.current = isFinalised;
+  }, [isFinalised, pantryIdsKey]);
+
+  const draftTripItemCount =
+    mainShoppingItems.length + pantryIncludedIds.size;
 
   // Get chalkboard data
   const households = useQuery(api.households.getUserHouseholds);
@@ -200,7 +256,7 @@ export default function ShoppingList({
     if (personalChalkboard) {
       count += personalChalkboard.filter(
         (item) =>
-          !allIngredients.some((ing) =>
+          !shoppingList.items.some((ing) =>
             namesEqual(getCanonicalKey(ing), item.text),
           ),
       ).length;
@@ -211,7 +267,7 @@ export default function ShoppingList({
       Object.values(allHouseholdChalkboards).forEach((items) => {
         count += items.filter(
           (item) =>
-            !allIngredients.some((ing) =>
+            !shoppingList.items.some((ing) =>
               namesEqual(getCanonicalKey(ing), item.text),
             ),
         ).length;
@@ -256,6 +312,33 @@ export default function ShoppingList({
     }
   };
 
+  const handlePantryAddAll = () => {
+    setPantryIncludedIds(new Set(pantryStapleItems.map((i) => i._id)));
+  };
+
+  const handlePantryClearSelection = () => {
+    setPantryIncludedIds(new Set());
+  };
+
+  const handleConfirmWithPantryTrim = async () => {
+    const toRemove = pantryStapleItems.filter(
+      (i) => !pantryIncludedIds.has(i._id),
+    );
+    try {
+      for (const item of toRemove) {
+        await removeItem({ itemId: item._id });
+      }
+      await Promise.resolve(onConfirm());
+    } catch (error) {
+      console.error("Failed to confirm shopping list:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to confirm shopping list",
+      );
+    }
+  };
+
   const handleAddFromChalkboard = async () => {
     const itemsToAdd: Array<{
       chalkboardItemId: Id<"chalkboardItems">;
@@ -270,7 +353,7 @@ export default function ShoppingList({
     ) {
       personalChalkboard.forEach((item) => {
         // Only add if not already in shopping list
-        const alreadyAdded = allIngredients.some((ing) =>
+        const alreadyAdded = shoppingList.items.some((ing) =>
           namesEqual(getCanonicalKey(ing), item.text),
         );
         if (!alreadyAdded) {
@@ -289,7 +372,7 @@ export default function ShoppingList({
         if (householdItems && householdItems.length > 0) {
           householdItems.forEach((item) => {
             // Only add if not already in shopping list
-            const alreadyAdded = allIngredients.some((ing) =>
+            const alreadyAdded = shoppingList.items.some((ing) =>
               namesEqual(getCanonicalKey(ing), item.text),
             );
             if (!alreadyAdded) {
@@ -340,19 +423,20 @@ export default function ShoppingList({
   };
 
   const handleShare = async () => {
+    const formatShareLine = (item: ShoppingListItem) => {
+      const checked = item.checked ? "✓ " : "";
+      const amtLines = getAmountLines(item);
+      const amtStr = amtLines.length > 0 ? amtLines.join(", ") + " " : "";
+      const showOriginalInDev =
+        isDev && item.ingredientId && ingredientsMap?.[item.ingredientId];
+      const nameStr =
+        getDisplayName(item) +
+        (showOriginalInDev ? ` (${getOriginalRecipeName(item)})` : "");
+      return `${checked}• ${amtStr}${nameStr}`;
+    };
     const lines = ingredientsByCategory.flatMap(({ category, items }) => [
       category,
-      ...items.map((item) => {
-        const checked = item.checked ? "✓ " : "";
-        const amtLines = getAmountLines(item);
-        const amtStr = amtLines.length > 0 ? amtLines.join(", ") + " " : "";
-        const showOriginalInDev =
-          isDev && item.ingredientId && ingredientsMap?.[item.ingredientId];
-        const nameStr =
-          getDisplayName(item) +
-          (showOriginalInDev ? ` (${getOriginalRecipeName(item)})` : "");
-        return `${checked}• ${amtStr}${nameStr}`;
-      }),
+      ...items.map((item) => formatShareLine(item)),
       "",
     ]);
     const listText = `Shopping List - ${new Date().toLocaleDateString()}\n\n${lines.join("\n")}`;
@@ -412,9 +496,47 @@ export default function ShoppingList({
                 </div>
               </div>
             ))}
+            {!isFinalised && pantryStapleItems.length > 0 ? (
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Pantry staples
+                </h2>
+                <div className="space-y-1">
+                  {pantryStapleItems.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-start gap-3 py-2 border-b"
+                    >
+                      <div className="size-5 border-2 rounded shrink-0 mt-0.5">
+                        {item.checked && (
+                          <div className="size-full flex items-center justify-center">
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <span className={cn(item.checked && "line-through")}>
+                          {getDisplayName(item)}
+                          {isDev &&
+                            item.ingredientId &&
+                            ingredientsMap?.[item.ingredientId] && (
+                              <> ({getOriginalRecipeName(item)})</>
+                            )}
+                        </span>
+                        {getAmountLines(item).length > 0 && (
+                          <span className="ml-2">
+                            {getAmountLines(item).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
 
-          <p className="text-sm mt-8">Total items: {allIngredients.length}</p>
+          <p className="text-sm mt-8">Total items: {shoppingList.items.length}</p>
         </div>
       </div>
 
@@ -453,7 +575,9 @@ export default function ShoppingList({
                 </h3>
               </div>
               <Badge variant="outline" className="text-sm">
-                {allIngredients.length} items
+                {isFinalised
+                  ? `${shoppingList.items.length} items`
+                  : `${draftTripItemCount} for this shop`}
               </Badge>
             </div>
 
@@ -536,164 +660,125 @@ export default function ShoppingList({
                   </h4>
                   <div className="space-y-2">
                     {items.map((item) => (
-                      <div
+                      <ShoppingListScreenItemRow
                         key={item._id}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                          isFinalised && item.checked
-                            ? "bg-muted/50 opacity-60"
-                            : "hover:bg-muted/30 hover:border-primary/30",
-                        )}
-                      >
-                        {/* Checkbox (only in finalized state) */}
-                        {isFinalised && (
-                          <Checkbox
-                            checked={item.checked}
-                            onCheckedChange={() => handleCheckItem(item._id)}
-                            className="size-5"
-                          />
-                        )}
-
-                        {/* Item Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <p
-                              className={cn(
-                                "font-medium capitalize",
-                                isFinalised && item.checked && "line-through",
-                              )}
-                            >
-                              {getDisplayName(item)}
-                              {isDev &&
-                                item.ingredientId &&
-                                ingredientsMap?.[item.ingredientId] && (
-                                  <span className="text-muted-foreground font-normal">
-                                    {" "}
-                                    ({getOriginalRecipeName(item)})
-                                  </span>
-                                )}
-                            </p>
-                          </div>
-
-                          {/* Amount Display/Controls */}
-                          {(() => {
-                            const entries =
-                              item.amountEntries &&
-                              item.amountEntries.length > 0
-                                ? item.amountEntries
-                                : [
-                                    {
-                                      amount: item.amount,
-                                      unit: item.unit,
-                                    },
-                                  ].filter(
-                                    (e) =>
-                                      e.amount != null ||
-                                      (e.unit != null && e.unit !== ""),
-                                  );
-                            if (entries.length === 0) return null;
-                            // Multiple uses: list each on its own line
-                            if (entries.length > 1) {
-                              return (
-                                <div className="space-y-0.5">
-                                  {entries.map((entry, i) => (
-                                    <p
-                                      key={i}
-                                      className="text-sm text-muted-foreground capitalize"
-                                    >
-                                      {entry.amount ?? ""} {entry.unit ?? ""}
-                                    </p>
-                                  ))}
-                                </div>
-                              );
-                            }
-                            // Single use: editable when draft + numeric
-                            const single = entries[0]!;
-                            if (isFinalised) {
-                              return (
-                                <p className="text-sm text-muted-foreground capitalize">
-                                  {single.amount ?? ""} {single.unit ?? ""}
-                                </p>
-                              );
-                            }
-                            const isNumeric =
-                              typeof single.amount === "number" &&
-                              !isNaN(single.amount);
-                            return (
-                              <div className="flex items-center gap-1.5">
-                                {isNumeric ? (
-                                  <>
-                                    <button
-                                      onClick={() =>
-                                        handleAmountChange(
-                                          item._id,
-                                          (single.amount as number) - 1,
-                                        )
-                                      }
-                                      className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
-                                      aria-label="Decrease amount"
-                                    >
-                                      <Minus className="size-3.5 text-muted-foreground" />
-                                    </button>
-                                    <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
-                                      {single.amount}
-                                    </span>
-                                    <button
-                                      onClick={() =>
-                                        handleAmountChange(
-                                          item._id,
-                                          (single.amount as number) + 1,
-                                        )
-                                      }
-                                      className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
-                                      aria-label="Increase amount"
-                                    >
-                                      <Plus className="size-3.5 text-muted-foreground" />
-                                    </button>
-                                  </>
-                                ) : (
-                                  <span className="text-sm text-muted-foreground">
-                                    {single.amount}
-                                  </span>
-                                )}
-                                {single.unit && (
-                                  <span className="text-sm text-muted-foreground ml-0.5">
-                                    {single.unit}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </div>
-
-                        {/* Remove Button (only in editing state) */}
-                        {!isFinalised && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleRemoveItem(item._id)}
-                          >
-                            <X className="size-4" />
-                            <span className="sr-only">
-                              Remove {getDisplayName(item)}
-                            </span>
-                          </Button>
-                        )}
-                      </div>
+                        item={item}
+                        isFinalised={isFinalised}
+                        isDev={isDev}
+                        ingredientsMap={ingredientsMap}
+                        getDisplayName={getDisplayName}
+                        getOriginalRecipeName={getOriginalRecipeName}
+                        getAmountLines={getAmountLines}
+                        onAmountChange={handleAmountChange}
+                        onRemove={handleRemoveItem}
+                        onToggleChecked={handleCheckItem}
+                      />
                     ))}
                   </div>
                 </div>
               ))}
+              {!isFinalised && pantryStapleItems.length > 0 ? (
+                <div className="border-t border-border pt-6 space-y-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                        Pantry staples
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Unchecked items are removed when you confirm. Check what
+                        you need, or use Add all.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={handlePantryAddAll}
+                      >
+                        Add all
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePantryClearSelection}
+                        disabled={pantryIncludedIds.size === 0}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {pantryStapleItems.map((item) => {
+                      const amtSummary = getAmountLines(item).join(" · ");
+                      const includedDraft = pantryIncludedIds.has(item._id);
+                      return (
+                        <label
+                          key={item._id}
+                          className={cn(
+                            "flex items-start gap-2 rounded-lg border p-3 cursor-pointer transition-colors",
+                            includedDraft
+                              ? "border-primary/45 bg-primary/5"
+                              : "border-dashed border-border/80 bg-muted/20 hover:bg-muted/35",
+                          )}
+                        >
+                          <Checkbox
+                            checked={includedDraft}
+                            onCheckedChange={(v) => {
+                              setPantryIncludedIds((prev) => {
+                                const next = new Set(prev);
+                                if (v === true) next.add(item._id);
+                                else next.delete(item._id);
+                                return next;
+                              });
+                            }}
+                            className="size-4 mt-0.5 shrink-0"
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="text-sm font-medium block leading-snug capitalize">
+                              {getDisplayName(item)}
+                              {isDev &&
+                                item.ingredientId &&
+                                ingredientsMap?.[item.ingredientId] && (
+                                  <span className="text-muted-foreground font-normal normal-case">
+                                    {" "}
+                                    ({getOriginalRecipeName(item)})
+                                  </span>
+                                )}
+                            </span>
+                            {amtSummary ? (
+                              <span className="text-xs text-muted-foreground mt-1 block">
+                                {amtSummary}
+                              </span>
+                            ) : null}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            {allIngredients.length === 0 && (
+            {shoppingList.items.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
                   All items removed. Go back to select recipes again.
                 </p>
               </div>
             )}
+
+            {!isFinalised &&
+              shoppingList.items.length > 0 &&
+              draftTripItemCount === 0 && (
+                <div className="text-center py-6 rounded-lg border border-dashed bg-muted/20">
+                  <p className="text-sm text-muted-foreground px-4">
+                    Nothing selected for this shop yet. Add items from the
+                    list above or check pantry staples below.
+                  </p>
+                </div>
+              )}
 
             <Separator className="my-6" />
 
@@ -730,8 +815,8 @@ export default function ShoppingList({
                 </Button>
                 <Button
                   className="flex-1"
-                  onClick={onConfirm}
-                  disabled={allIngredients.length === 0}
+                  onClick={handleConfirmWithPantryTrim}
+                  disabled={draftTripItemCount === 0}
                 >
                   <Check className="size-4 mr-2" />
                   Confirm Shopping List
@@ -774,7 +859,7 @@ export default function ShoppingList({
                   {(() => {
                     const availableItems = personalChalkboard?.filter(
                       (item) =>
-                        !allIngredients.some((ing) =>
+                        !shoppingList.items.some((ing) =>
                           namesEqual(getCanonicalKey(ing), item.text),
                         ),
                     );
@@ -793,7 +878,7 @@ export default function ShoppingList({
                   !personalChalkboard ||
                   personalChalkboard.filter(
                     (item) =>
-                      !allIngredients.some((ing) =>
+                      !shoppingList.items.some((ing) =>
                         namesEqual(getCanonicalKey(ing), item.text),
                       ),
                   ).length === 0
@@ -814,7 +899,7 @@ export default function ShoppingList({
                       allHouseholdChalkboards?.[household._id] || [];
                     const availableItems = householdItems.filter(
                       (item) =>
-                        !allIngredients.some((ing) =>
+                        !shoppingList.items.some((ing) =>
                           namesEqual(getCanonicalKey(ing), item.text),
                         ),
                     );
@@ -861,7 +946,7 @@ export default function ShoppingList({
               if (includePersonal && personalChalkboard) {
                 personalChalkboard.forEach((item) => {
                   if (
-                    !allIngredients.some((ing) =>
+                    !shoppingList.items.some((ing) =>
                       namesEqual(getCanonicalKey(ing), item.text),
                     )
                   ) {
@@ -876,7 +961,7 @@ export default function ShoppingList({
                     allHouseholdChalkboards?.[householdId] || [];
                   householdItems?.forEach((item) => {
                     if (
-                      !allIngredients.some((ing) =>
+                      !shoppingList.items.some((ing) =>
                         namesEqual(getCanonicalKey(ing), item.text),
                       )
                     ) {
@@ -921,5 +1006,161 @@ export default function ShoppingList({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function ShoppingListScreenItemRow({
+  item,
+  isFinalised,
+  isDev,
+  ingredientsMap,
+  getDisplayName,
+  getOriginalRecipeName,
+  getAmountLines,
+  onAmountChange,
+  onRemove,
+  onToggleChecked,
+}: {
+  item: ShoppingListItem;
+  isFinalised: boolean;
+  isDev: boolean;
+  ingredientsMap: Record<Id<"ingredients">, Doc<"ingredients">> | undefined;
+  getDisplayName: (item: ShoppingListItem) => string;
+  getOriginalRecipeName: (item: ShoppingListItem) => string;
+  getAmountLines: (item: ShoppingListItem) => string[];
+  onAmountChange: (itemId: Id<"shoppingListItems">, newAmount: number) => void;
+  onRemove: (itemId: Id<"shoppingListItems">) => void;
+  onToggleChecked: (itemId: Id<"shoppingListItems">) => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-lg border transition-all",
+        isFinalised && item.checked
+          ? "bg-muted/50 opacity-60"
+          : "hover:bg-muted/30 hover:border-primary/30",
+      )}
+    >
+      {isFinalised && (
+        <Checkbox
+          checked={item.checked}
+          onCheckedChange={() => onToggleChecked(item._id)}
+          className="size-5"
+        />
+      )}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <p
+            className={cn(
+              "font-medium capitalize",
+              isFinalised && item.checked && "line-through",
+            )}
+          >
+            {getDisplayName(item)}
+            {isDev &&
+              item.ingredientId &&
+              ingredientsMap?.[item.ingredientId] && (
+                <span className="text-muted-foreground font-normal">
+                  {" "}
+                  ({getOriginalRecipeName(item)})
+                </span>
+              )}
+          </p>
+        </div>
+
+        {(() => {
+          const entries =
+            item.amountEntries && item.amountEntries.length > 0
+              ? item.amountEntries
+              : [
+                  {
+                    amount: item.amount,
+                    unit: item.unit,
+                  },
+                ].filter(
+                  (e) =>
+                    e.amount != null || (e.unit != null && e.unit !== ""),
+                );
+          if (entries.length === 0) return null;
+          if (entries.length > 1) {
+            return (
+              <div className="space-y-0.5">
+                {entries.map((entry, i) => (
+                  <p
+                    key={i}
+                    className="text-sm text-muted-foreground capitalize"
+                  >
+                    {entry.amount ?? ""} {entry.unit ?? ""}
+                  </p>
+                ))}
+              </div>
+            );
+          }
+          const single = entries[0]!;
+          if (isFinalised) {
+            return (
+              <p className="text-sm text-muted-foreground capitalize">
+                {single.amount ?? ""} {single.unit ?? ""}
+              </p>
+            );
+          }
+          const isNumeric =
+            typeof single.amount === "number" && !isNaN(single.amount);
+          return (
+            <div className="flex items-center gap-1.5">
+              {isNumeric ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onAmountChange(item._id, (single.amount as number) - 1)
+                    }
+                    className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
+                    aria-label="Decrease amount"
+                  >
+                    <Minus className="size-3.5 text-muted-foreground" />
+                  </button>
+                  <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
+                    {single.amount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onAmountChange(item._id, (single.amount as number) + 1)
+                    }
+                    className="flex items-center justify-center size-6 rounded hover:bg-muted transition-colors"
+                    aria-label="Increase amount"
+                  >
+                    <Plus className="size-3.5 text-muted-foreground" />
+                  </button>
+                </>
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  {single.amount}
+                </span>
+              )}
+              {single.unit && (
+                <span className="text-sm text-muted-foreground ml-0.5">
+                  {single.unit}
+                </span>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+
+      {!isFinalised && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={() => onRemove(item._id)}
+        >
+          <X className="size-4" />
+          <span className="sr-only">Remove {getDisplayName(item)}</span>
+        </Button>
+      )}
+    </div>
   );
 }
