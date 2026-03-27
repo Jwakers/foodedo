@@ -189,6 +189,8 @@ export function RecipeEnhanceClient() {
         recipeId: selectedRecipeId,
         title: recipe.title,
         description: recipe.description ?? undefined,
+        prepTime: recipe.prepTime ?? 0,
+        cookTime: recipe.cookTime ?? null,
         ingredients: ingredientsForAction,
         method: methodForAction,
         prompt: prompt.trim(),
@@ -196,6 +198,8 @@ export function RecipeEnhanceClient() {
       if (result.success) {
         setEnhanced({
           description: result.description,
+          prepTime: result.prepTime,
+          cookTime: result.cookTime,
           ingredients: result.ingredients,
           method: result.method,
         });
@@ -293,6 +297,8 @@ export function RecipeEnhanceClient() {
       await updateRecipe({
         recipeId: selectedRecipeId,
         description: enhanced.description,
+        prepTime: enhanced.prepTime,
+        cookTime: enhanced.cookTime,
         ingredients: mergedIngredients,
         method: mergedMethod,
       });
@@ -456,7 +462,7 @@ export function RecipeEnhanceClient() {
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Pick a recipe, describe how you want it improved, then generate and
-            apply enhanced description, ingredients, and method. You can
+            apply enhanced description, timing, ingredients, and method. You can
             regenerate the saved recipe image separately.
           </p>
         </CardHeader>
@@ -720,6 +726,14 @@ export function RecipeEnhanceClient() {
                 </h3>
                 <div className="rounded-md border p-3">
                   <p className="mb-2 text-xs font-medium text-muted-foreground">
+                    Timing
+                  </p>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    Prep {recipe.prepTime ?? 0} min · Cook{" "}
+                    {recipe.cookTime ?? 0} min · Total{" "}
+                    {(recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)} min
+                  </p>
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">
                     Description
                   </p>
                   <p className="mb-3 text-sm text-muted-foreground">
@@ -764,6 +778,13 @@ export function RecipeEnhanceClient() {
                 <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
                   {enhanced ? (
                     <>
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">
+                        Timing
+                      </p>
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        Prep {enhanced.prepTime} min · Cook {enhanced.cookTime}{" "}
+                        min · Total {enhanced.prepTime + enhanced.cookTime} min
+                      </p>
                       <p className="mb-2 text-xs font-medium text-muted-foreground">
                         Description
                       </p>

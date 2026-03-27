@@ -15,6 +15,8 @@ const EnhanceRecipeInputSchema = z.object({
   recipeId: z.string(),
   title: z.string(),
   description: z.string().optional().nullable(),
+  prepTime: z.number().int().min(0),
+  cookTime: z.number().int().min(0).optional().nullable(),
   ingredients: z.array(
     z.object({
       name: z.string(),
@@ -34,6 +36,8 @@ const EnhanceRecipeInputSchema = z.object({
 
 const EnhanceRecipeOutputSchema = z.object({
   description: z.string().nullable(),
+  prepTime: z.number().int().min(0),
+  cookTime: z.number().int().min(0),
   ingredients: z.array(
     z.object({
       name: z
@@ -64,6 +68,8 @@ type RecipeMethodStep = NonNullable<Doc<"recipes">["method"]>[number];
 /** Success payload: uses undefined/null to work with Convex updateRecipe. */
 export type EnhancedRecipePayload = {
   description: string | null;
+  prepTime: number;
+  cookTime: number;
   ingredients: StructuredIngredient[];
   method: RecipeMethodStep[];
 };
@@ -81,7 +87,15 @@ export async function enhanceRecipeWithAI(
     return { success: false, error: "Invalid input. Please provide a recipe and enhancement prompt." };
   }
 
-  const { title, description: currentDescription, ingredients, method, prompt } = parsed.data;
+  const {
+    title,
+    description: currentDescription,
+    prepTime: currentPrepTime,
+    cookTime: currentCookTime,
+    ingredients,
+    method,
+    prompt,
+  } = parsed.data;
 
   const unitsString = generateUnitsString();
   const preparationsString = generatePreparationsString();
@@ -103,7 +117,9 @@ export async function enhanceRecipeWithAI(
           .join("\n\n")
       : "(none)";
 
-  const systemPrompt = `You are an expert recipe editor. Your task is to improve a recipe's description, ingredients list, and method based on the user's feedback.
+  const currentCookForPrompt = currentCookTime ?? 0;
+
+  const systemPrompt = `You are an expert recipe editor. Your task is to improve a recipe's description, ingredients list, method, and timing estimates based on the user's feedback.
 
 RULES:
 - Preserve the recipe's intent and all existing information unless the user asks to change it.
@@ -112,12 +128,13 @@ RULES:
 - The recipe description is a short summary or intro (1-3 sentences). Update it if the user's feedback implies it should be clearer or more accurate.
 - For ingredients: use only the allowed units and preparations below. If an ingredient has no unit or preparation, omit those fields.
 - For method steps: each step has a short title (3-5 words) and a longer description. Keep steps clear and in order.
+- Timing: return "prepTime" and "cookTime" as whole minutes (non-negative integers). Prep is hands-on prep; cook is active cooking or baking time. If the recipe has no separate cook phase, use 0 for cookTime. Adjust these when the method or description implies different durations; otherwise keep the current values.
 
 ${unitsString}
 
 ${preparationsString}
 
-Return a JSON object with exactly three keys: "description" (string, the improved recipe description; use null if the recipe had no description and none is needed), "ingredients" (array of objects with name, amount, unit, preparation), and "method" (array of objects with title, description). Use null for optional fields when not applicable.`;
+Return a JSON object with these keys: "description" (string, the improved recipe description; use null if the recipe had no description and none is needed), "prepTime" (integer minutes), "cookTime" (integer minutes; use 0 if none), "ingredients" (array of objects with name, amount, unit, preparation), and "method" (array of objects with title, description). Use null for optional fields when not applicable.`;
 
   try {
     const result = await generateText({
@@ -128,6 +145,9 @@ Return a JSON object with exactly three keys: "description" (string, the improve
 CURRENT DESCRIPTION:
 ${currentDescription?.trim() || "(none)"}
 
+CURRENT TIMING (minutes):
+Prep: ${currentPrepTime}, Cook: ${currentCookForPrompt}, Total: ${currentPrepTime + currentCookForPrompt}
+
 CURRENT INGREDIENTS:
 ${ingredientsText}
 
@@ -137,7 +157,7 @@ ${methodText}
 ENHANCEMENT REQUEST:
 ${prompt}
 
-Return the improved description, ingredients, and method as JSON.`,
+Return the improved description, prepTime, cookTime, ingredients, and method as JSON.`,
       output: Output.object({
         schema: EnhanceRecipeOutputSchema,
         name: "enhanced_recipe",
@@ -193,9 +213,14 @@ Return the improved description, ingredients, and method as JSON.`,
           ? String(raw.description).trim()
           : null;
 
+    const prepTime = Math.max(0, Math.round(raw.prepTime));
+    const cookTime = Math.max(0, Math.round(raw.cookTime));
+
     return {
       success: true,
       description,
+      prepTime,
+      cookTime,
       ingredients: filteredIngredients.map((ing) => ({
         name: ing.name,
         ...(ing.amount != null && { amount: ing.amount }),
