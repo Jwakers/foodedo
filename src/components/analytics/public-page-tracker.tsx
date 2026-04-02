@@ -14,9 +14,10 @@ function PublicPageTrackerInner({ event, props }: PublicPageTrackerProps) {
   const pathname = usePathname();
 
   useEffect(() => {
+    const { page_path: _ignored, ...rest } = props ?? {};
     trackEvent(event, {
+      ...rest,
       page_path: pathname,
-      ...props,
     });
   }, [event, pathname, props]);
 
@@ -27,7 +28,11 @@ function propsEqual(
   a: AnalyticsProps | undefined,
   b: AnalyticsProps | undefined,
 ): boolean {
-  return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
+  try {
+    return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
+  } catch {
+    return false;
+  }
 }
 
 export const PublicPageTracker = memo(

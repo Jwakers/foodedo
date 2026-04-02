@@ -273,7 +273,9 @@ export default function MealPlanClient() {
         mealPlanId: currentPlan._id,
         householdId: shareHouseholdId,
       });
-      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD);
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD, {
+        household_id: shareHouseholdId,
+      });
       setShowShareDialog(false);
       setShareHouseholdId("");
       toast.success("Meal plan shared with household");
@@ -949,6 +951,9 @@ export default function MealPlanClient() {
                         });
                         trackEvent(
                           ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD,
+                          {
+                            household_id: households[0]._id,
+                          },
                         );
                         setShowShareDialog(false);
                         toast.success("Meal plan shared with household");

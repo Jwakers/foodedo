@@ -353,17 +353,27 @@ TSX
 
 PostHog AI
 
-```jsx
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN, {
-  // ... your configuration
-  fetch_options: {
-    cache: 'force-cache', // Use Next.js cache
-    next_options: {       // Passed to the `next` option for `fetch`
-      revalidate: 60,     // Cache for 60 seconds
-      tags: ['posthog'],  // Can be used with Next.js `revalidateTag` function
-    },
-  }
-})
+```ts
+import { PostHog } from 'posthog-node';
+
+// On the server, use posthog-node (not posthog.init). Pass a custom `fetch` so
+// PostHog’s requests participate in Next.js fetch caching the same way
+// posthog-js `fetch_options` / `next_options` would on the client.
+const client = new PostHog(
+  process.env.POSTHOG_PROJECT_API_KEY ?? process.env.NEXT_PUBLIC_POSTHOG_TOKEN!,
+  {
+    host: process.env.POSTHOG_HOST ?? process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    fetch: (url, options) =>
+      fetch(url, {
+        ...options,
+        cache: 'force-cache',
+        next: {
+          revalidate: 60,
+          tags: ['posthog'],
+        },
+      }),
+  },
+);
 ```
 
 ## Configuring a reverse proxy to PostHog

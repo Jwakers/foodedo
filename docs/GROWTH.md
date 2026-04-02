@@ -38,7 +38,7 @@ Every week, same day if possible:
 Core events currently used for this phase:
 
 - `landing_viewed` — public landing page viewed (`intent_topic` included on intent pages).
-- `cta_clicked` — major call-to-action clicked.
+- `cta_clicked` — major call-to-action clicked. **Recommended:** always set **`cta_type`** (string) so funnels and breakdowns stay consistent — e.g. `signup`, `learn_more`, `try_demo`, `contact`, `install`. Use the same vocabulary everywhere you emit this event.
 - `support_page_viewed` — public support hub visited.
 - `support_how_to_viewed` — public how-to page (`/support/how-to-use`).
 - `faq_viewed` — FAQ page viewed.
@@ -54,6 +54,7 @@ Core events currently used for this phase:
 Shared properties attached where available:
 
 - `page_path`
+- `cta_type` (on `cta_clicked` and anywhere CTAs are tracked — string; see `cta_clicked` above)
 - `intent_topic`
 - `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`
 - `referrer_domain`
@@ -67,7 +68,7 @@ Create these insights/dashboard cards:
    - Breakdown: `page_path`, `utm_source`
    - Filter: `utm_medium` includes `organic` when present
 2. **Landing -> signup funnel**
-   - Steps: `landing_viewed` -> `cta_clicked` (where `cta_type` contains `signup`) -> `signup_started` -> `signup_completed`
+   - Steps: `landing_viewed` → `cta_clicked` (filter: `cta_type` = `signup` or contains `signup`, depending on your naming) → `signup_started` → `signup_completed`
 3. **Install intent**
    - Ratio: `install_prompt_outcome(outcome=accepted)` / `install_prompt_shown`
 4. **Early drop-off proxy**

@@ -160,7 +160,7 @@ You'll notice that one of the parameters in the `identify` method is a `properti
 
 This enables you to set [person properties](/docs/product-analytics/person-properties.md).
 
-Whenever possible, we recommend passing in all person properties you have available each time you call identify, as this ensures their person profile on PostHog is up to date.
+Whenever possible, we recommend passing in all person properties you have available each time you call identify, as this ensures their person profile on PostHog is up-to-date.
 
 Person properties can also be set by adding a `$set` property to an event `capture` call.
 
