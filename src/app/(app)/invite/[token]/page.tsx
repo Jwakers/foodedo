@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useMutation, useQuery } from "convex/react";
 import { AlertCircle, CheckCircle, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { use, useRef, useState } from "react";
 import { toast } from "sonner";
 import InviteCard from "./invite-card";
@@ -60,6 +61,9 @@ export default function InvitePage({ params }: InvitePageProps) {
     setError(null);
     try {
       const result = await acceptInvitation({ token });
+      posthog.capture("household_invitation_accepted", {
+        household_id: result.householdId,
+      });
       setAcceptedHouseholdId(result.householdId);
       toast.success("Invitation accepted! Welcome to the household!");
     } catch (error: unknown) {

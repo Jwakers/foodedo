@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -43,6 +44,7 @@ export function CreateHouseholdDialog({
 
     try {
       const result = await createHousehold({ name: name.trim() });
+      posthog.capture("household_created");
       toast.success("Household created successfully!");
       onOpenChange(false);
       setName("");

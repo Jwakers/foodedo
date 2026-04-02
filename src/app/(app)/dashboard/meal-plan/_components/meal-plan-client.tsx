@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
@@ -158,6 +159,9 @@ export default function MealPlanClient() {
             }
           : {};
       await generateWeeklyPlan(payload);
+      posthog.capture("meal_plan_generated", {
+        shared_with_household: households.length > 1,
+      });
       toast.success("Your week is ready!");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate plan");
@@ -171,6 +175,7 @@ export default function MealPlanClient() {
     setIsGenerating(true);
     try {
       await regenerateWeeklyPlan({ previousPlanId: currentPlan._id });
+      posthog.capture("meal_plan_regenerated");
       toast.success("Week regenerated. Locked meals kept.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to regenerate");
@@ -240,6 +245,10 @@ export default function MealPlanClient() {
         mealPlanId: currentPlan._id,
         chalkboardItemIds: Array.from(selectedChalkboardIds),
       });
+      posthog.capture("shopping_list_generated", {
+        meal_count: currentPlan.entries?.length ?? 0,
+        chalkboard_items_included: selectedChalkboardIds.size,
+      });
       setShowGenerateDialog(false);
       setSelectedChalkboardIds(new Set());
       toast.success("Shopping list created from meal plan");
@@ -263,6 +272,7 @@ export default function MealPlanClient() {
         mealPlanId: currentPlan._id,
         householdId: shareHouseholdId,
       });
+      posthog.capture("meal_plan_shared_with_household");
       setShowShareDialog(false);
       setShareHouseholdId("");
       toast.success("Meal plan shared with household");
@@ -298,6 +308,9 @@ export default function MealPlanClient() {
     setIsFinalising(true);
     try {
       await finaliseMealPlan({ mealPlanId: currentPlan._id });
+      posthog.capture("meal_plan_finalised", {
+        meal_count: currentPlan.entries?.length ?? 0,
+      });
       setShowFinaliseDialog(false);
       toast.success("Plan saved. You can still move meals between days.");
     } catch (e) {
@@ -933,6 +946,7 @@ export default function MealPlanClient() {
                           mealPlanId: currentPlan._id,
                           householdId: households[0]._id,
                         });
+                        posthog.capture("meal_plan_shared_with_household");
                         setShowShareDialog(false);
                         toast.success("Meal plan shared with household");
                       } catch (e) {
