@@ -1,5 +1,7 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { Button } from "@/components/ui/button";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import {
   Card,
   CardContent,
@@ -37,6 +39,7 @@ export const metadata: Metadata = {
 export default function PublicSupportHubPage() {
   return (
     <div className="container mx-auto px-4 py-10 md:py-14 max-w-4xl">
+      <PublicPageTracker event={ANALYTICS_EVENTS.SUPPORT_PAGE_VIEWED} />
       <h1 className="text-4xl font-bold tracking-tight mb-3">Help & Support</h1>
       <p className="text-lg text-muted-foreground mb-10 max-w-2xl">
         Everything here is public and search-friendly. Logged-in users can also

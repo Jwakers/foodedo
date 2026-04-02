@@ -15,6 +15,13 @@
 
 - **`AI_GATEWAY_API_KEY`** – (Server-only.) Required for AI SDK `generateImage()` calls (used by the “Blog images” admin tool to generate hero images). Get a key from Vercel AI Gateway.
 
+### PostHog analytics (organic growth)
+
+- **`NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`** – PostHog project token for browser capture.
+- **`NEXT_PUBLIC_POSTHOG_HOST`** – PostHog host (EU example: `https://eu.i.posthog.com`).
+- **`POSTHOG_PROJECT_API_KEY`** – (Server-only, optional fallback.) Preferred server key for backend event capture.
+- **`POSTHOG_HOST`** – (Server-only, optional fallback.) Preferred server host for backend captures.
+
 ---
 
 ## Next steps & backlog

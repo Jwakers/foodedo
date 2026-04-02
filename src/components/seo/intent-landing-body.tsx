@@ -23,6 +23,7 @@ export function IntentLandingBody({
           {intent.intro}
         </p>
         <IntentLandingActions
+          intentTopic={intent.path}
           secondaryHref={secondaryHref}
           secondaryLabel={secondaryLabel}
           showInstall
@@ -71,6 +72,7 @@ export function IntentLandingBody({
           Ready to try it? Create a free account or browse recipes first.
         </p>
         <IntentLandingActions
+          intentTopic={intent.path}
           secondaryHref={secondaryHref}
           secondaryLabel={secondaryLabel}
           showInstall={false}

@@ -1,7 +1,9 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { FaqSectionsPanel } from "@/components/faq/faq-sections-panel";
 import { FAQ_SECTIONS_DATA } from "@/lib/faq-content";
 import { buildFaqPageJsonLd } from "@/lib/faq-json-ld";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
@@ -32,6 +34,7 @@ export default function PublicFaqPage() {
 
   return (
     <>
+      <PublicPageTracker event={ANALYTICS_EVENTS.FAQ_VIEWED} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd }}

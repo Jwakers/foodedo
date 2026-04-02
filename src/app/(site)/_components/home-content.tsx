@@ -1,9 +1,12 @@
 "use client";
 
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import InstallPrompt from "@/components/installation-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { cn } from "@/lib/utils";
 import { SignUpButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
@@ -29,6 +32,7 @@ const CTA_BUTTON_CLASSES =
 export default function HomeContent() {
   return (
     <div className="flex flex-col">
+      <PublicPageTracker event={ANALYTICS_EVENTS.LANDING_VIEWED} props={{ intent_topic: "home" }} />
       {/* Hero Section — split layout: copy on solid background, image as featured visual */}
       <section className="relative min-h-[85vh] flex flex-col lg:flex-row lg:min-h-[90vh]">
         {/* Left: copy on readable background */}
@@ -84,6 +88,15 @@ export default function HomeContent() {
                   <Button
                     size="lg"
                     className={CTA_BUTTON_CLASSES}
+                    onClick={() => {
+                      trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
+                        cta_type: "home_hero_signup",
+                        intent_topic: "home",
+                      });
+                      trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+                        source_surface: "home_hero",
+                      });
+                    }}
                   >
                     Try for free
                     <ArrowRight className="ml-2 size-5" />
@@ -93,6 +106,12 @@ export default function HomeContent() {
               <a
                 href="#how-it-plans"
                 className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 sm:py-2"
+                onClick={() => {
+                  trackEvent(ANALYTICS_EVENTS.SECONDARY_ACTION_TAKEN, {
+                    action_name: "scroll_how_it_works",
+                    source_surface: "home_hero",
+                  });
+                }}
               >
                 See how it works
               </a>
@@ -357,7 +376,19 @@ export default function HomeContent() {
               </Authenticated>
               <Unauthenticated>
                 <SignUpButton mode="modal">
-                  <Button size="lg" className="text-lg px-8">
+                  <Button
+                    size="lg"
+                    className="text-lg px-8"
+                    onClick={() => {
+                      trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
+                        cta_type: "home_footer_signup",
+                        intent_topic: "home",
+                      });
+                      trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+                        source_surface: "home_footer",
+                      });
+                    }}
+                  >
                     Try for free
                     <ArrowRight className="ml-2 size-5" />
                   </Button>

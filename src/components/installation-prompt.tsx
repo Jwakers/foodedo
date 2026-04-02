@@ -1,6 +1,8 @@
 "use client";
 
 import { APP_NAME } from "@/app/constants";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { cn } from "@/lib/utils";
 import { Check, Download, Share, Smartphone } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -56,17 +58,36 @@ export default function InstallPrompt() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isStandalone) return;
+    trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_SHOWN, {
+      install_context: isIOS ? "ios" : "non_ios",
+      has_deferred_prompt: Boolean(deferredPrompt),
+    });
+  }, [deferredPrompt, isIOS, isStandalone]);
+
   const handleInstallClick = async () => {
+    trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_CLICKED, {
+      install_context: isIOS ? "ios" : "non_ios",
+      has_deferred_prompt: Boolean(deferredPrompt),
+    });
+
     if (deferredPrompt) {
       try {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === "accepted") {
+          trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_OUTCOME, {
+            outcome: "accepted",
+          });
           toast.success("App installed successfully", {
             description: `${APP_NAME} has been added to your home screen. Enjoy the app experience!`,
           });
         } else {
+          trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_OUTCOME, {
+            outcome: "dismissed",
+          });
           toast.info("Installation cancelled", {
             description:
               "You can install the app anytime using the browser menu.",
@@ -81,6 +102,9 @@ export default function InstallPrompt() {
         setDeferredPrompt(null);
       }
     } else {
+      trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_OUTCOME, {
+        outcome: "manual_fallback",
+      });
       // Fallback for when beforeinstallprompt is not available
       toast.info("Manual installation required", {
         description:

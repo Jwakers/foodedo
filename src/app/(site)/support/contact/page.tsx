@@ -1,6 +1,8 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { PublicContactActions } from "@/app/(site)/support/contact/public-contact-actions";
 import { auth } from "@clerk/nextjs/server";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
@@ -36,6 +38,7 @@ export default async function PublicContactPage() {
 
   return (
     <div className="container mx-auto px-4 py-10 md:py-14 max-w-2xl">
+      <PublicPageTracker event={ANALYTICS_EVENTS.SUPPORT_PAGE_VIEWED} />
       <h1 className="text-4xl font-bold tracking-tight mb-4">Contact us</h1>
       <p className="text-muted-foreground mb-8">
         We read every message. For account-specific issues, the in-app contact
