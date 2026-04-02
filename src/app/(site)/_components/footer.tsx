@@ -40,6 +40,30 @@ export function Footer() {
                   Pricing
                 </Link>
               </li>
+              <li>
+                <Link
+                  href={ROUTES.FAMILY_MEAL_PLANNING}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Family meal planning
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.RECIPE_TO_SHOPPING_LIST}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Recipe to shopping list
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.HOUSEHOLD_MEAL_PLANNING}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Household planning
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -49,7 +73,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href={ROUTES.SUPPORT}
+                  href={ROUTES.PUBLIC_SUPPORT}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Help & Support
@@ -57,7 +81,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={ROUTES.CONTACT}
+                  href={ROUTES.PUBLIC_SUPPORT_CONTACT}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact Us
@@ -73,7 +97,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={ROUTES.SUPPORT_HOW_TO}
+                  href={ROUTES.PUBLIC_SUPPORT_HOW_TO}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   How to Use

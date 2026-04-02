@@ -27,3 +27,25 @@ export function buildFaqPageJsonLd(
     mainEntity,
   };
 }
+
+/** FAQPage JSON-LD from a flat list of Q&A pairs (e.g. intent landing pages). */
+export function buildFaqJsonLdFromPairs(
+  pairs: ReadonlyArray<{ question: string; answer: string }>,
+  pageUrl: string,
+): Record<string, unknown> {
+  const mainEntity = pairs.map((q) => ({
+    "@type": "Question",
+    name: q.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: q.answer,
+    },
+  }));
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    url: pageUrl,
+    mainEntity,
+  };
+}

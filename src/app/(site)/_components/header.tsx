@@ -130,7 +130,7 @@ export function Header() {
                   </h3>
                   <div className="flex flex-col space-y-3">
                     <Link
-                      href={ROUTES.SUPPORT}
+                      href={ROUTES.PUBLIC_SUPPORT}
                       className="block text-foreground hover:text-primary transition-colors"
                       onClick={() => {
                         setMenuOpen(false);
@@ -139,7 +139,7 @@ export function Header() {
                       Help & Support
                     </Link>
                     <Link
-                      href={ROUTES.CONTACT}
+                      href={ROUTES.PUBLIC_SUPPORT_CONTACT}
                       className="block text-foreground hover:text-primary transition-colors"
                       onClick={() => {
                         setMenuOpen(false);
@@ -157,7 +157,7 @@ export function Header() {
                       FAQ
                     </Link>
                     <Link
-                      href={ROUTES.SUPPORT_HOW_TO}
+                      href={ROUTES.PUBLIC_SUPPORT_HOW_TO}
                       className="block text-foreground hover:text-primary transition-colors"
                       onClick={() => {
                         setMenuOpen(false);

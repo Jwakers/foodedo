@@ -1,4 +1,4 @@
-import { APP_NAME } from "@/app/constants";
+import { APP_NAME, ROUTES } from "@/app/constants";
 import { ThemeProvider } from "@/components/theme-provider";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
@@ -301,7 +301,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(lexendSans.variable, "antialiased")}>
-        <ClerkProvider>
+        <ClerkProvider
+          // Ensure auth completions from modals/pages land in-app.
+          signInFallbackRedirectUrl={ROUTES.DASHBOARD}
+          signUpFallbackRedirectUrl={ROUTES.DASHBOARD}
+          signInForceRedirectUrl={ROUTES.DASHBOARD}
+          signUpForceRedirectUrl={ROUTES.DASHBOARD}
+        >
           <ConvexClientProvider>
             <ThemeProvider
               attribute="class"

@@ -241,7 +241,7 @@ export default function PrivacyPage() {
                 If you have questions about this Privacy Policy or our privacy
                 practices, please contact us through our{" "}
                 <Link
-                  href={ROUTES.CONTACT}
+                  href={ROUTES.PUBLIC_SUPPORT_CONTACT}
                   className="text-primary hover:underline"
                 >
                   support form

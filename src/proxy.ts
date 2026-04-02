@@ -1,9 +1,13 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isPublicRoute = createRouteMatcher([
-  "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/faq",
+  "/support(.*)",
+  "/family-meal-planning",
+  "/recipe-to-shopping-list",
+  "/household-meal-planning",
   "/privacy",
   "/terms",
   "/pricing",
@@ -17,7 +21,12 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) await auth.protect();
+  // Keep homepage public, but avoid broad matcher patterns accidentally
+  // treating all routes as public.
+  const isHomepage = req.nextUrl.pathname === "/";
+  if (!isHomepage && !isPublicRoute(req)) {
+    await auth.protect();
+  }
 });
 
 export const config = {
