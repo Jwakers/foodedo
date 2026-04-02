@@ -6,7 +6,7 @@ const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
 /** True when Sanity is configured (projectId set). Callers can branch on this to skip fetches when disabled. */
 export const isSanityConfigured = Boolean(projectId);
 
-if (!projectId && process.env.NODE_ENV === "production") {
+if (!projectId && process.env.NODE_ENV === "production" && typeof window !== "undefined") {
   throw new Error(
     "NEXT_PUBLIC_SANITY_PROJECT_ID is required when running in production.",
   );

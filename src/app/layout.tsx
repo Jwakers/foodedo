@@ -302,11 +302,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn(lexendSans.variable, "antialiased")}>
         <ClerkProvider
-          // Ensure auth completions from modals/pages land in-app.
+          // Fallback to dashboard if no redirect_url param or per-component URL is set.
           signInFallbackRedirectUrl={ROUTES.DASHBOARD}
           signUpFallbackRedirectUrl={ROUTES.DASHBOARD}
-          signInForceRedirectUrl={ROUTES.DASHBOARD}
-          signUpForceRedirectUrl={ROUTES.DASHBOARD}
         >
           <ConvexClientProvider>
             <ThemeProvider

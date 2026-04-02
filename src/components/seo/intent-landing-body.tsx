@@ -30,8 +30,8 @@ export function IntentLandingBody({
       </header>
 
       <div className="prose prose-neutral dark:prose-invert max-w-none space-y-10">
-        {intent.sections.map((section) => (
-          <section key={section.heading}>
+        {intent.sections.map((section, index) => (
+          <section key={`section-${index}`}>
             <h2 className="text-2xl font-semibold text-foreground mb-3">
               {section.heading}
             </h2>
@@ -53,8 +53,8 @@ export function IntentLandingBody({
           Questions & answers
         </h2>
         <dl className="space-y-6">
-          {intent.faq.map((item) => (
-            <div key={item.question}>
+          {intent.faq.map((item, index) => (
+            <div key={`faq-${index}`}>
               <dt className={cn("font-semibold text-foreground text-base")}>
                 {item.question}
               </dt>
