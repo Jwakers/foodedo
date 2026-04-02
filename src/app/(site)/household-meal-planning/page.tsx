@@ -1,6 +1,7 @@
 import { ROUTES } from "@/app/constants";
 import { IntentLandingBody } from "@/components/seo/intent-landing-body";
 import { buildFaqJsonLdFromPairs } from "@/lib/faq-json-ld";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { INTENT_HOUSEHOLD_MEAL_PLANNING } from "@/lib/seo-intent-data";
 import { buildIntentPageMetadata } from "@/lib/seo-intent-metadata";
@@ -16,7 +17,7 @@ export default function HouseholdMealPlanningPage() {
     INTENT_HOUSEHOLD_MEAL_PLANNING.faq,
     pageUrl,
   );
-  const safeJsonLd = JSON.stringify(faqJsonLd).replace(/</g, "\\u003c");
+  const safeJsonLd = serializeJsonLd(faqJsonLd);
 
   return (
     <>

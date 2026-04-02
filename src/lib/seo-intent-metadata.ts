@@ -8,6 +8,13 @@ export function buildIntentPageMetadata(
   intent: IntentPageDefinition,
 ): Metadata {
   const canonicalUrl = `${getSiteBaseUrl()}${intent.path}`;
+  const defaultKeywords = [
+    APP_NAME,
+    "meal planning",
+    "family meals",
+    "shopping list",
+    "recipes",
+  ];
 
   return {
     /** Root layout applies `%s | ${APP_NAME}` — keep titles concise here. */
@@ -26,12 +33,6 @@ export function buildIntentPageMetadata(
       title: intent.metaTitle,
       description: intent.metaDescription,
     },
-    keywords: [
-      APP_NAME,
-      "meal planning",
-      "family meals",
-      "shopping list",
-      "recipes",
-    ],
+    keywords: intent.keywords ?? defaultKeywords,
   };
 }

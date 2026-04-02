@@ -11,6 +11,7 @@ import {
   PUBLIC_HOW_TO_SECTIONS,
 } from "@/lib/public-how-to-content";
 import { buildFaqJsonLdFromPairs } from "@/lib/faq-json-ld";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
@@ -38,11 +39,8 @@ export const metadata: Metadata = {
 };
 
 export default function PublicHowToUsePage() {
-  const faqJsonLd = buildFaqJsonLdFromPairs(
-    [...PUBLIC_HOW_TO_FAQ],
-    canonicalUrl,
-  );
-  const safeJsonLd = JSON.stringify(faqJsonLd).replace(/</g, "\\u003c");
+  const faqJsonLd = buildFaqJsonLdFromPairs(PUBLIC_HOW_TO_FAQ, canonicalUrl);
+  const safeJsonLd = serializeJsonLd(faqJsonLd);
 
   return (
     <div className="container mx-auto px-4 py-10 md:py-14 max-w-3xl">

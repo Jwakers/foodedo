@@ -3,7 +3,6 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import InstallPrompt from "@/components/installation-prompt";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { SignUpButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { ArrowRight } from "lucide-react";
@@ -33,7 +32,7 @@ export function IntentLandingActions({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
         <Authenticated>
-          <Button asChild size="lg" className={cn(CTA_CLASSES)}>
+          <Button asChild size="lg" className={CTA_CLASSES}>
             <Link href={ROUTES.DASHBOARD}>
               Open {APP_NAME}
               <ArrowRight className="ml-2 size-5" />

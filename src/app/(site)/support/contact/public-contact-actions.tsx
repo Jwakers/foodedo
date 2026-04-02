@@ -17,7 +17,9 @@ export function PublicContactActions() {
         </Button>
       </SignUpButton>
       <Button variant="ghost" asChild className="w-full sm:w-auto">
-        <Link href={ROUTES.CONTACT}>Open in-app contact (if signed in)</Link>
+        <Link href={ROUTES.CONTACT}>
+          Open in-app contact (requires sign-in)
+        </Link>
       </Button>
     </div>
   );

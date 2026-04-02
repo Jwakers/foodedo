@@ -12,6 +12,7 @@ export type IntentPageDefinition = {
   path: string;
   metaTitle: string;
   metaDescription: string;
+  keywords?: string[];
   h1: string;
   intro: string;
   sections: ReadonlyArray<{ heading: string; body: string }>;
