@@ -4,13 +4,14 @@ import type { AnalyticsEventName, AnalyticsProps } from "@/lib/analytics/events"
 import { getAttributionProps } from "@/lib/analytics/attribution";
 import posthog from "posthog-js";
 
+/**
+ * posthog-js queues captures before init completes; no internal __loaded checks.
+ */
 export function trackEvent(
   event: AnalyticsEventName,
   props: AnalyticsProps = {},
 ): void {
   if (typeof window === "undefined") return;
-  // posthog-js may not be initialized in environments without keys.
-  if (!posthog.__loaded) return;
 
   const mergedProps: AnalyticsProps = {
     ...getAttributionProps(),

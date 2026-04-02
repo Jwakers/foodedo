@@ -53,4 +53,3 @@ certificates
 # Generated recipe data (not committed)
 /scripts/generated-recipes/
 /scripts/generated-recipe-images/
-.env.local

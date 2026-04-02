@@ -22,6 +22,10 @@
 - **`POSTHOG_PROJECT_API_KEY`** – (Server-only, optional fallback.) Preferred server key for backend event capture.
 - **`POSTHOG_HOST`** – (Server-only, optional fallback.) Preferred server host for backend captures.
 
+### pnpm (optional)
+
+The repo does not commit a machine-specific `store-dir`. To use a custom pnpm store (e.g. on CI or to share a cache), set `store-dir` in your user config (`~/.npmrc`) or in an untracked `.npmrc.local` — keep paths with user home directories out of version control.
+
 ---
 
 ## Next steps & backlog

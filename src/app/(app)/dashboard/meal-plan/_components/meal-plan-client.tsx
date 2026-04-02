@@ -52,9 +52,10 @@ import {
   UserMinus,
   Users,
 } from "lucide-react";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
@@ -159,7 +160,7 @@ export default function MealPlanClient() {
             }
           : {};
       await generateWeeklyPlan(payload);
-      posthog.capture("meal_plan_generated", {
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATED, {
         shared_with_household: households.length > 1,
       });
       toast.success("Your week is ready!");
@@ -175,7 +176,7 @@ export default function MealPlanClient() {
     setIsGenerating(true);
     try {
       await regenerateWeeklyPlan({ previousPlanId: currentPlan._id });
-      posthog.capture("meal_plan_regenerated");
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_REGENERATED);
       toast.success("Week regenerated. Locked meals kept.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to regenerate");
@@ -245,7 +246,7 @@ export default function MealPlanClient() {
         mealPlanId: currentPlan._id,
         chalkboardItemIds: Array.from(selectedChalkboardIds),
       });
-      posthog.capture("shopping_list_generated", {
+      trackEvent(ANALYTICS_EVENTS.SHOPPING_LIST_GENERATED, {
         meal_count: currentPlan.entries?.length ?? 0,
         chalkboard_items_included: selectedChalkboardIds.size,
       });
@@ -272,7 +273,7 @@ export default function MealPlanClient() {
         mealPlanId: currentPlan._id,
         householdId: shareHouseholdId,
       });
-      posthog.capture("meal_plan_shared_with_household");
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD);
       setShowShareDialog(false);
       setShareHouseholdId("");
       toast.success("Meal plan shared with household");
@@ -308,7 +309,7 @@ export default function MealPlanClient() {
     setIsFinalising(true);
     try {
       await finaliseMealPlan({ mealPlanId: currentPlan._id });
-      posthog.capture("meal_plan_finalised", {
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_FINALISED, {
         meal_count: currentPlan.entries?.length ?? 0,
       });
       setShowFinaliseDialog(false);
@@ -946,7 +947,9 @@ export default function MealPlanClient() {
                           mealPlanId: currentPlan._id,
                           householdId: households[0]._id,
                         });
-                        posthog.capture("meal_plan_shared_with_household");
+                        trackEvent(
+                          ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD,
+                        );
                         setShowShareDialog(false);
                         toast.success("Meal plan shared with household");
                       } catch (e) {

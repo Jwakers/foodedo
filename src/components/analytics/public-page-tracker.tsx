@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type { AnalyticsEventName, AnalyticsProps } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
@@ -10,7 +10,7 @@ type PublicPageTrackerProps = {
   props?: AnalyticsProps;
 };
 
-export function PublicPageTracker({ event, props }: PublicPageTrackerProps) {
+function PublicPageTrackerInner({ event, props }: PublicPageTrackerProps) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -22,3 +22,16 @@ export function PublicPageTracker({ event, props }: PublicPageTrackerProps) {
 
   return null;
 }
+
+function propsEqual(
+  a: AnalyticsProps | undefined,
+  b: AnalyticsProps | undefined,
+): boolean {
+  return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
+}
+
+export const PublicPageTracker = memo(
+  PublicPageTrackerInner,
+  (prev, next) =>
+    prev.event === next.event && propsEqual(prev.props, next.props),
+);

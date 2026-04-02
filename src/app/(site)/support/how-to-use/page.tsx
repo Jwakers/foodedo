@@ -46,7 +46,7 @@ export default function PublicHowToUsePage() {
 
   return (
     <div className="container mx-auto px-4 py-10 md:py-14 max-w-3xl">
-      <PublicPageTracker event={ANALYTICS_EVENTS.SUPPORT_PAGE_VIEWED} />
+      <PublicPageTracker event={ANALYTICS_EVENTS.SUPPORT_HOW_TO_VIEWED} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd }}

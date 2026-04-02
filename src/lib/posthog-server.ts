@@ -22,12 +22,6 @@ export function getPostHogClient() {
   return posthogClient;
 }
 
-export async function shutdownPostHog() {
-  if (posthogClient) {
-    await posthogClient.shutdown();
-  }
-}
-
 export async function captureServerEvent(
   distinctId: string,
   event: AnalyticsEventName,
@@ -41,6 +35,5 @@ export async function captureServerEvent(
     event,
     properties,
   });
-  await client.shutdown();
-  posthogClient = null;
+  await client.flush();
 }

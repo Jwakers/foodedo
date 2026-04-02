@@ -53,7 +53,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Project structure
 
-```
+```text
 src/
 ├── app/
 │   ├── api/
@@ -238,26 +238,28 @@ export async function POST(request: Request) {
     users.set(username, user);
   }
 
-  // Capture server-side login event
   const posthog = getPostHogClient();
-  posthog.capture({
-    distinctId: username,
-    event: 'server_login',
-    properties: {
-      username: username,
-      isNewUser: isNewUser,
-      source: 'api'
-    }
-  });
+  if (posthog) {
+    posthog.capture({
+      distinctId: username,
+      event: 'server_login',
+      properties: {
+        username: username,
+        isNewUser: isNewUser,
+        source: 'api'
+      }
+    });
 
-  // Identify user on server side
-  posthog.identify({
-    distinctId: username,
-    properties: {
-      username: username,
-      createdAt: isNewUser ? new Date().toISOString() : undefined
-    }
-  });
+    posthog.identify({
+      distinctId: username,
+      properties: {
+        username: username,
+        createdAt: isNewUser ? new Date().toISOString() : undefined
+      }
+    });
+
+    await posthog.flush();
+  }
 
   return NextResponse.json({ success: true, user });
 }
@@ -270,7 +272,7 @@ export async function POST(request: Request) {
 ```tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
@@ -280,9 +282,13 @@ export default function BurritoPage() {
   const router = useRouter();
   const [hasConsidered, setHasConsidered] = useState(false);
 
-  // Redirect to home if not logged in
+  useEffect(() => {
+    if (!user) {
+      router.push('/');
+    }
+  }, [user, router]);
+
   if (!user) {
-    router.push('/');
     return null;
   }
 
@@ -681,24 +687,35 @@ import { PostHog } from 'posthog-node';
 let posthogClient: PostHog | null = null;
 
 export function getPostHogClient() {
+  const posthogKey =
+    process.env.POSTHOG_PROJECT_API_KEY ??
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+  const posthogHost =
+    process.env.POSTHOG_HOST ?? process.env.NEXT_PUBLIC_POSTHOG_HOST;
+
+  if (!posthogKey || !posthogHost) return null;
+
   if (!posthogClient) {
-    posthogClient = new PostHog(
-      process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!,
-      { 
-        host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-        flushAt: 1,
-        flushInterval: 0
-      }
-    );
-    posthogClient.debug(true);
+    posthogClient = new PostHog(posthogKey, {
+      host: posthogHost,
+      flushAt: 1,
+      flushInterval: 0,
+    });
   }
   return posthogClient;
 }
 
-export async function shutdownPostHog() {
-  if (posthogClient) {
-    await posthogClient.shutdown();
-  }
+/** Flush after capture so events leave the process; do not shutdown the shared client (avoids races under concurrency). */
+export async function captureServerEvent(
+  distinctId: string,
+  event: string,
+  properties: Record<string, unknown> = {},
+) {
+  const client = getPostHogClient();
+  if (!client) return;
+
+  client.capture({ distinctId, event, properties });
+  await client.flush();
 }
 ```
 

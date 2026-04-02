@@ -4,10 +4,11 @@ import { api } from "@/../convex/_generated/api";
 import { ROUTES } from "@/app/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { useMutation, useQuery } from "convex/react";
 import { AlertCircle, CheckCircle, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
-import posthog from "posthog-js";
 import { use, useRef, useState } from "react";
 import { toast } from "sonner";
 import InviteCard from "./invite-card";
@@ -61,7 +62,7 @@ export default function InvitePage({ params }: InvitePageProps) {
     setError(null);
     try {
       const result = await acceptInvitation({ token });
-      posthog.capture("household_invitation_accepted", {
+      trackEvent(ANALYTICS_EVENTS.HOUSEHOLD_INVITATION_ACCEPTED, {
         household_id: result.householdId,
       });
       setAcceptedHouseholdId(result.householdId);

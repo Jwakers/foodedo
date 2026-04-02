@@ -368,7 +368,7 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN, {
 
 ## Configuring a reverse proxy to PostHog
 
-To improve the reliability of client-side tracking and make requests less likely to be intercepted by tracking blockers, you can setup a reverse proxy in Next.js. Read more about deploying a reverse proxy using [Next.js rewrites](/docs/advanced/proxy/nextjs.md), [Next.js middleware](/docs/advanced/proxy/nextjs-middleware.md), and [Vercel rewrites](/docs/advanced/proxy/vercel.md).
+To improve the reliability of client-side tracking and make requests less likely to be intercepted by tracking blockers, you can set up a reverse proxy in Next.js. Read more about deploying a reverse proxy using [Next.js rewrites](/docs/advanced/proxy/nextjs.md), [Next.js middleware](/docs/advanced/proxy/nextjs-middleware.md), and [Vercel rewrites](/docs/advanced/proxy/vercel.md).
 
 ## Further reading
 

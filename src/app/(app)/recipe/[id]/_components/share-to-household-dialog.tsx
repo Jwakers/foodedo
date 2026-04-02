@@ -16,8 +16,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { useMutation, useQuery } from "convex/react";
 import { Check, Users } from "lucide-react";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import Link from "next/link";
-import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -60,13 +61,20 @@ export function ShareToHouseholdDialog({
       if (isChecked) {
         // Share recipe to household
         await shareRecipe({ recipeId, householdId });
-        posthog.capture("recipe_shared_to_household", {
+        trackEvent(ANALYTICS_EVENTS.RECIPE_SHARED_TO_HOUSEHOLD, {
           recipe_title: recipeTitle,
+          household_id: householdId,
+          recipe_id: recipeId,
         });
         toast.success("Recipe shared to household");
       } else {
         // Unshare recipe from household
         await unshareRecipe({ recipeId, householdId });
+        trackEvent(ANALYTICS_EVENTS.RECIPE_UNSHARED_FROM_HOUSEHOLD, {
+          recipe_title: recipeTitle,
+          household_id: householdId,
+          recipe_id: recipeId,
+        });
         toast.success("Recipe removed from household");
       }
     } catch (error: unknown) {

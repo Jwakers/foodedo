@@ -6,6 +6,8 @@ const STORAGE_KEY = "foodedo_analytics_attribution_v1";
 
 type StoredAttribution = Omit<SharedAttributionProps, "page_path" | "intent_topic">;
 
+let cachedAttribution: StoredAttribution | null = null;
+
 function getReferrerDomain(referrer: string): string | undefined {
   if (!referrer) return undefined;
   try {
@@ -29,6 +31,8 @@ function readStoredAttribution(): StoredAttribution {
 
 export function persistAttributionFromUrl(): StoredAttribution {
   if (typeof window === "undefined") return {};
+  if (cachedAttribution) return cachedAttribution;
+
   const url = new URL(window.location.href);
   const stored = readStoredAttribution();
   const next: StoredAttribution = {
@@ -40,12 +44,14 @@ export function persistAttributionFromUrl(): StoredAttribution {
     referrer_domain: stored.referrer_domain ?? getReferrerDomain(document.referrer),
   };
 
+  cachedAttribution = next;
+
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
     // Ignore storage errors and continue without persistence.
   }
-  return next;
+  return cachedAttribution;
 }
 
 export function getAttributionProps(): StoredAttribution {

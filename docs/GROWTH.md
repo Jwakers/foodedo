@@ -39,16 +39,17 @@ Core events currently used for this phase:
 
 - `landing_viewed` — public landing page viewed (`intent_topic` included on intent pages).
 - `cta_clicked` — major call-to-action clicked.
-- `support_page_viewed` — public support surfaces visited.
+- `support_page_viewed` — public support hub visited.
+- `support_how_to_viewed` — public how-to page (`/support/how-to-use`).
 - `faq_viewed` — FAQ page viewed.
 - `discover_viewed` — Discover page viewed.
 - `secondary_action_taken` — non-primary intent actions (e.g., learn-more style actions).
 - `signup_started` — user initiated sign-up from tracked CTAs.
 - `signup_completed` — first authenticated app load for a user (proxy for completion).
 - `signin_completed` — first authenticated app load per session.
-- `install_prompt_shown` — install prompt rendered.
+- `install_prompt_shown` — install prompt rendered (once per session); includes `install_context` and `has_deferred_prompt`.
 - `install_prompt_clicked` — install CTA clicked.
-- `install_prompt_outcome` — install result (`accepted`, `dismissed`, `manual_fallback`).
+- `install_prompt_outcome` — install result (`accepted`, `dismissed`, `manual_fallback`); includes `install_context` (`ios` / `non_ios`) and `has_deferred_prompt` for segmentation.
 
 Shared properties attached where available:
 
