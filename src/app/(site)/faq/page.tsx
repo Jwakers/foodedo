@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: faqCanonical },
   title: `FAQ | ${APP_NAME}`,
   description: `Answers to common questions about ${APP_NAME}: recipes, meal planning, shopping lists, households, and more.`,
+  robots: { index: true, follow: true },
   openGraph: {
     ...openGraphSiteAndUrl(faqCanonical),
     title: `FAQ | ${APP_NAME}`,

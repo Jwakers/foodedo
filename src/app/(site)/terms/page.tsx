@@ -296,7 +296,7 @@ export default function TermsPage() {
                 If you have questions about these Terms of Service, please
                 contact us through our{" "}
                 <Link
-                  href={ROUTES.CONTACT}
+                  href={ROUTES.PUBLIC_SUPPORT_CONTACT}
                   className="text-primary hover:underline"
                 >
                   support form

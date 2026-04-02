@@ -21,7 +21,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function SignUpPage() {
+/**
+ * Optional catch-all enables Clerk path callbacks (e.g. /sign-up/sso-callback)
+ * while still serving the same sign-up UI on /sign-up.
+ */
+export default function SignUpCatchAllPage() {
   return (
     <div className="lg:grid lg:grid-cols-2 min-h-screen">
       {/* Left Side - Image/Illustration */}

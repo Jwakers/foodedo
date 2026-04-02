@@ -21,7 +21,7 @@
 
 ### Strategic / growth
 
-- [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority.
+- [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority. **Execution checklist + scoreboard:** [`docs/GROWTH.md`](docs/GROWTH.md).
 - [ ] Move all support documentation to public URLs.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Launch on Product Hunt (market as HelloFresh without the food delivery).

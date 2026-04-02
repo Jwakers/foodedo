@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:secure": "next dev --experimental-https",
     "build:production": "npx convex deploy --cmd 'pnpm build'",
-    "build": "next build --turbopack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "generate-recipes": "tsx scripts/generate-recipes.ts",

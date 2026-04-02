@@ -28,6 +28,14 @@ export const ROUTES = {
     `/dashboard/shopping-list?listId=${listId}`,
   HOUSEHOLDS: "/dashboard/households",
   DISCOVER: "/discover",
+  /** Public SEO intent landing pages (indexable). @see docs/GROWTH.md */
+  FAMILY_MEAL_PLANNING: "/family-meal-planning",
+  RECIPE_TO_SHOPPING_LIST: "/recipe-to-shopping-list",
+  HOUSEHOLD_MEAL_PLANNING: "/household-meal-planning",
+  /** Public help hub and docs (crawlable; no login required). */
+  PUBLIC_SUPPORT: "/support",
+  PUBLIC_SUPPORT_HOW_TO: "/support/how-to-use",
+  PUBLIC_SUPPORT_CONTACT: "/support/contact",
   /** Public discover recipe (SEO-friendly). Use for links from Discover page. */
   DISCOVER_RECIPE: "/discover/recipe",
   /** URL for a specific discover recipe (use with `publicSlug`). */

@@ -44,6 +44,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.75,
     },
     {
+      url: `${baseUrl}${ROUTES.PRICING}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}${ROUTES.PUBLIC_SUPPORT}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.72,
+    },
+    {
+      url: `${baseUrl}${ROUTES.PUBLIC_SUPPORT_HOW_TO}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}${ROUTES.PUBLIC_SUPPORT_CONTACT}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.55,
+    },
+    {
+      url: `${baseUrl}${ROUTES.FAMILY_MEAL_PLANNING}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.88,
+    },
+    {
+      url: `${baseUrl}${ROUTES.RECIPE_TO_SHOPPING_LIST}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.88,
+    },
+    {
+      url: `${baseUrl}${ROUTES.HOUSEHOLD_MEAL_PLANNING}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.88,
+    },
+    {
       url: `${baseUrl}${ROUTES.PRIVACY}`,
       lastModified: new Date(),
       changeFrequency: "monthly",
