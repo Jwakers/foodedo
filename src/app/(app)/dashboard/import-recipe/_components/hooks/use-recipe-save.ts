@@ -3,6 +3,7 @@ import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { RECIPE_CREATION_SOURCES } from "convex/lib/constants";
 import { useMutation } from "convex/react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
@@ -167,6 +168,12 @@ export function useRecipeSave() {
             "Your recipe has been saved but may require some manual editing to complete it",
         });
       }
+
+      posthog.capture("recipe_imported", {
+        creation_source: creationSource,
+        recipe_category: validatedRecipe.category,
+        has_image: !!validatedRecipe.imageUrl,
+      });
 
       setSavedRecipeId(recipeId);
       setIsSaved(true);

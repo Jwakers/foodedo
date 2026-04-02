@@ -45,6 +45,7 @@ import { ArrowLeft, ArrowRight, Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
+import posthog from "posthog-js";
 import { toast } from "sonner";
 import { RecipeImageField } from "./recipe-image-field";
 
@@ -248,6 +249,11 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
           });
         }
       }
+
+      posthog.capture("recipe_created", {
+        recipe_category: values.category,
+        has_image: values.image instanceof File,
+      });
 
       if (closeDrawer) closeDrawer();
       toast.success("Recipe saved successfully");

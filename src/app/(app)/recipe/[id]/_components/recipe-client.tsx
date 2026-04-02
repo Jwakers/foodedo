@@ -31,6 +31,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import posthog from "posthog-js";
 import { toast } from "sonner";
 import { CookModeOverlay } from "./cook-mode-overlay";
 import { DeleteRecipeDialog } from "./delete-recipe-dialog";
@@ -212,6 +213,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
 
     try {
       await deleteRecipeMutation({ recipeId: recipeToDelete._id });
+      posthog.capture("recipe_deleted", {
+        recipe_category: recipeToDelete?.category,
+      });
       router.replace(ROUTES.MY_RECIPES);
       toast.success("Recipe deleted successfully");
     } catch (error) {

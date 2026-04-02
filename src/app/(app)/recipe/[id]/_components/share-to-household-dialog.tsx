@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { useMutation, useQuery } from "convex/react";
 import { Check, Users } from "lucide-react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -59,6 +60,9 @@ export function ShareToHouseholdDialog({
       if (isChecked) {
         // Share recipe to household
         await shareRecipe({ recipeId, householdId });
+        posthog.capture("recipe_shared_to_household", {
+          recipe_title: recipeTitle,
+        });
         toast.success("Recipe shared to household");
       } else {
         // Unshare recipe from household
