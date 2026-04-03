@@ -7,13 +7,13 @@ export function HowItPlansSection() {
     {
       title: "Generate",
       description:
-        "One tap fills your week from your recipes. Set the end date, then let the planner do the rest.",
+        "One tap plans your entire week from your recipes. Set the end date — the planner fills the rest.",
       icon: CalendarPlus,
     },
     {
       title: "Balance",
       description:
-        "Protein spread, cuisine variety, and a mix of easy and involved meals. The system applies the rules so the week doesn't feel samey or overwhelming.",
+        "Balanced meals, no repetition, no overthinking: easy nights and proper cooks in the mix, with variety baked in.",
       icon: Scale,
     },
     {

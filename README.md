@@ -33,15 +33,58 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [ ] As a super user, I need the ability to directly edit system recipes
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 - [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, its all just vegetables on a table
+- [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
 
 ### Strategic / growth
 
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority. **Execution checklist + scoreboard:** [`docs/GROWTH.md`](docs/GROWTH.md).
-- [ ] Move all support documentation to public URLs.
+- Ordered beta outreach checklist: see **Beta visibility & user acquisition** (end of this file).
+- [x] Move all support documentation to public URLs.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
-- [ ] Launch on Product Hunt (market as HelloFresh without the food delivery).
-- [ ] Set up notifications (what and when), add user-controllable settings, and note in `AGENTS.md` to consider notifications when new relevant features are added.
-- [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
+- [ ] Launch on Product Hunt after initial traction (market as HelloFresh without the food delivery; ordering in **Beta visibility & user acquisition**).
+
+---
+
+## Beta visibility & user acquisition
+
+- Prioritise **feedback over raw traffic**.
+- Prefer **small, relevant communities** over broad platforms.
+
+### High-intent beta platforms
+
+- [ ] Submit to BetaList (paid fast-track)
+- [ ] Submit to FirstUsers.tech
+- [ ] Submit to BetaPage
+
+### Reddit
+
+_Angle: looking for ~20 testers / feedback._
+
+- [ ] Post in r/MealPrepSunday
+- [ ] Post in r/EatCheapAndHealthy
+- [ ] Post in r/loseit
+
+### Niche communities
+
+- [ ] Join and post in relevant Facebook groups (meal planning, family meals, UK food)
+- [ ] Join and post in relevant Discords (fitness, productivity)
+- [ ] Optional: pay for pinned posts where it fits
+
+### Founder / feedback communities
+
+- [ ] Post on Indie Hackers
+- [ ] Post on Hacker News (Show HN)
+
+### Small newsletter sponsorships
+
+- [ ] Find meal-prep newsletters for a small placement
+- [ ] Find fitness / habit newsletters for a small placement
+- [ ] Run 1–2 small placements
+
+### Defer until later
+
+- [ ] Product Hunt launch (after traction)
+- [ ] Paid ads (after messaging is validated)
 
 ### Urgent / high-priority bugs
 

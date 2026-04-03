@@ -68,7 +68,7 @@ Create these insights/dashboard cards:
    - Breakdown: `page_path`, `utm_source`
    - Filter: `utm_medium` includes `organic` when present
 2. **Landing -> signup funnel**
-   - Steps: `landing_viewed` → `cta_clicked` (filter: `cta_type` = `signup` or contains `signup`, depending on your naming) → `signup_started` → `signup_completed`
+   - Steps: `landing_viewed` → `cta_clicked` (filter: `cta_type` contains `signup` or `join_beta`) → `signup_started` → `signup_completed`
 3. **Install intent**
    - Ratio: `install_prompt_outcome(outcome=accepted)` / `install_prompt_shown`
 4. **Early drop-off proxy**

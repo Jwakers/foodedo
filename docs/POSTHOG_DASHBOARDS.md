@@ -15,7 +15,7 @@ Use this as the exact checklist to configure dashboards in PostHog for the curre
 - Insight type: Funnel
 - Steps:
   1. `landing_viewed`
-  2. `cta_clicked` with `cta_type` containing `signup`
+  2. `cta_clicked` with `cta_type` containing `signup` or `join_beta`
   3. `signup_started`
   4. `signup_completed`
 - Breakdown: `intent_topic` or `page_path`

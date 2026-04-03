@@ -45,19 +45,27 @@ export default function HomeContent() {
               )}
             >
               <Sparkles className="size-4 mr-2" />
-              Now in Beta — Free to use
+              Open beta — free · we want your feedback
             </Badge>
 
             <div className="space-y-6">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]">
-                <span className="text-foreground">No more Sunday night</span>
+                <span className="text-foreground">Your personalised week of meals,</span>
                 <br />
-                <span className="text-primary">meal-planning scramble.</span>
+                <span className="text-primary">in one tap.</span>
               </h1>
 
               <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                We build your week so you don&apos;t have to. One tap, balanced
-                variety — then tweak as you like.
+                Sign up in seconds, then one click for a balanced week of dinners.
+                Free while we&apos;re in beta — your
+                feedback shapes what we ship.{" "}
+                <Link
+                  href={ROUTES.BETA}
+                  className="text-primary hover:text-primary/80 underline underline-offset-2"
+                >
+                  Learn more about the beta
+                </Link>
+                .
               </p>
 
               <div className="flex justify-center lg:justify-start gap-1.5 pt-1" aria-hidden>
@@ -70,7 +78,7 @@ export default function HomeContent() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+            <div className="flex flex-col gap-3 justify-center lg:justify-start items-stretch sm:items-center sm:flex-row sm:flex-wrap">
               <Authenticated>
                 <Button
                   asChild
@@ -78,7 +86,7 @@ export default function HomeContent() {
                   className={CTA_BUTTON_CLASSES}
                 >
                   <Link href={ROUTES.DASHBOARD}>
-                    Try for free
+                    Go to dashboard
                     <ArrowRight className="ml-2 size-5" />
                   </Link>
                 </Button>
@@ -90,7 +98,7 @@ export default function HomeContent() {
                     className={CTA_BUTTON_CLASSES}
                     onClick={() => {
                       trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
-                        cta_type: "home_hero_signup",
+                        cta_type: "home_hero_join_beta",
                         intent_topic: "home",
                       });
                       trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
@@ -98,14 +106,14 @@ export default function HomeContent() {
                       });
                     }}
                   >
-                    Try for free
+                    Join the beta (free)
                     <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>
               </Unauthenticated>
               <a
                 href="#how-it-plans"
-                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 sm:py-2"
+                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 sm:py-3 order-last sm:order-0 text-center sm:text-left"
                 onClick={() => {
                   trackEvent(ANALYTICS_EVENTS.SECONDARY_ACTION_TAKEN, {
                     action_name: "scroll_how_it_works",
@@ -117,15 +125,15 @@ export default function HomeContent() {
               </a>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 text-sm text-muted-foreground pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-6 text-sm text-muted-foreground pt-2">
               <div className="flex items-center gap-2">
                 <CheckCircle className="size-4 text-primary shrink-0" />
                 <span>No credit card required</span>
               </div>
               <div className="hidden sm:block size-1 bg-muted-foreground/30 rounded-full" />
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-center sm:text-left">
                 <CheckCircle className="size-4 text-primary shrink-0" />
-                <span>Start planning today</span>
+                <span>Open to everyone — tell us what to improve</span>
               </div>
             </div>
           </div>
@@ -156,25 +164,6 @@ export default function HomeContent() {
       <div className="container mt-4">
         <InstallPrompt />
       </div>
-
-      {/* Beta callout */}
-      <section className="container mx-auto px-4 my-8">
-        <div className="rounded-lg border border-primary/20 bg-primary/5 p-6 text-center max-w-2xl mx-auto">
-          <h2 className="font-semibold text-foreground mb-2">
-            We&apos;re in beta
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Every feature is free while we build. Your feedback shapes what we
-            do next.{" "}
-            <Link
-              href={ROUTES.BETA}
-              className="text-primary hover:text-primary/80 underline underline-offset-2"
-            >
-              Learn more about the beta
-            </Link>
-          </p>
-        </div>
-      </section>
 
       <HowItPlansSection />
       <BalanceVarietySection />
@@ -359,17 +348,21 @@ export default function HomeContent() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Try for free
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              Get early access
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              No credit card required.
+            <p className="text-lg text-muted-foreground mb-2">
+              No credit card. Sign up in seconds, then one click for a full week
+              on your meal plan.
+            </p>
+            <p className="text-sm text-muted-foreground mb-8">
+              Free while we&apos;re in beta — we read every bit of feedback.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Authenticated>
                 <Button asChild size="lg" className="text-lg px-8">
                   <Link href={ROUTES.DASHBOARD}>
-                    Go to Dashboard
+                    Go to dashboard
                     <ArrowRight className="ml-2 size-5" />
                   </Link>
                 </Button>
@@ -381,7 +374,7 @@ export default function HomeContent() {
                     className="text-lg px-8"
                     onClick={() => {
                       trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
-                        cta_type: "home_footer_signup",
+                        cta_type: "home_footer_join_beta",
                         intent_topic: "home",
                       });
                       trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
@@ -389,7 +382,7 @@ export default function HomeContent() {
                       });
                     }}
                   >
-                    Try for free
+                    Join the beta (free)
                     <ArrowRight className="ml-2 size-5" />
                   </Button>
                 </SignUpButton>

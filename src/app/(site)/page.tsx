@@ -6,8 +6,8 @@ import HomeContent from "./_components/home-content";
 
 const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.HOME}`;
 
-const homeTitle = `${APP_NAME} — Family Meal Planning App & Weekly Planner`;
-const homeDescription = `Plan balanced weekly meals for your household, collaborate on one plan, and turn recipes into a smart shopping list. Less stress, less food waste — start free.`;
+const homeTitle = `${APP_NAME} — Family Meal Planning App & Weekly Planner (Open Beta)`;
+const homeDescription = `Open beta family meal planning: personalised weekly plans in one tap from your recipes — balanced, list & sharing. Free, no card. Feedback welcome.`;
 
 export const metadata: Metadata = {
   title: {
