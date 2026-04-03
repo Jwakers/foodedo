@@ -56,7 +56,7 @@ import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
 import { MealPlanCard } from "./meal-plan-card";
@@ -106,6 +106,8 @@ export default function MealPlanClient() {
   const [shareHouseholdId, setShareHouseholdId] = useState<
     Id<"households"> | ""
   >("");
+  const [isSharing, setIsSharing] = useState(false);
+  const shareInFlightRef = useRef(false);
   const [showDeletePlanDialog, setShowDeletePlanDialog] = useState(false);
   const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
     useState(false);
@@ -266,23 +268,43 @@ export default function MealPlanClient() {
     router,
   ]);
 
-  const handleShare = useCallback(async () => {
-    if (!currentPlan || !shareHouseholdId) return;
-    try {
-      await shareMealPlanWithHousehold({
-        mealPlanId: currentPlan._id,
-        householdId: shareHouseholdId,
-      });
+  const performShareWithHousehold = useCallback(
+    async (
+      mealPlanId: Id<"mealPlans">,
+      householdId: Id<"households">,
+    ): Promise<void> => {
+      await shareMealPlanWithHousehold({ mealPlanId, householdId });
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD, {
-        household_id: shareHouseholdId,
+        household_id: householdId,
       });
       setShowShareDialog(false);
       setShareHouseholdId("");
       toast.success("Meal plan shared with household");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to share");
-    }
-  }, [currentPlan, shareHouseholdId, shareMealPlanWithHousehold]);
+    },
+    [shareMealPlanWithHousehold],
+  );
+
+  const runMealPlanShare = useCallback(
+    async (householdId: Id<"households">) => {
+      if (!currentPlan || isSharing || shareInFlightRef.current) return;
+      shareInFlightRef.current = true;
+      setIsSharing(true);
+      try {
+        await performShareWithHousehold(currentPlan._id, householdId);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to share");
+      } finally {
+        shareInFlightRef.current = false;
+        setIsSharing(false);
+      }
+    },
+    [currentPlan, isSharing, performShareWithHousehold],
+  );
+
+  const handleShare = useCallback(async () => {
+    if (!shareHouseholdId) return;
+    await runMealPlanShare(shareHouseholdId);
+  }, [shareHouseholdId, runMealPlanShare]);
 
   const handleUnshare = useCallback(async () => {
     if (!currentPlan) return;
@@ -942,26 +964,10 @@ export default function MealPlanClient() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={async () => {
-                      if (!currentPlan || !households[0]) return;
-                      try {
-                        await shareMealPlanWithHousehold({
-                          mealPlanId: currentPlan._id,
-                          householdId: households[0]._id,
-                        });
-                        trackEvent(
-                          ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD,
-                          {
-                            household_id: households[0]._id,
-                          },
-                        );
-                        setShowShareDialog(false);
-                        toast.success("Meal plan shared with household");
-                      } catch (e) {
-                        toast.error(
-                          e instanceof Error ? e.message : "Failed to share",
-                        );
-                      }
+                    disabled={isSharing}
+                    onClick={() => {
+                      if (!households[0]) return;
+                      void runMealPlanShare(households[0]._id);
                     }}
                   >
                     Share
@@ -997,7 +1003,10 @@ export default function MealPlanClient() {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleShare} disabled={!shareHouseholdId}>
+                  <Button
+                    onClick={() => void handleShare()}
+                    disabled={!shareHouseholdId || isSharing}
+                  >
                     Share
                   </Button>
                 </DialogFooter>
