@@ -6708,4 +6708,111 @@ export const SYSTEM_RECIPES: SystemRecipeSeed[] = [
     totalTimeMinutes: 35,
     updatedAt: 1771364698940,
   },
+  {
+    _creationTime: 1772000000000,
+    _id: "j97m9n2k8crispyporkwraps83ho7qxa",
+    category: "dinner",
+    complexityTier: "simple",
+    cookTime: 15,
+    cuisine: ["chinese", "vietnamese"],
+    description:
+      "Shallow-fried pork with a light crisp crust, cool cucumber, quick carrot and daikon pickle, plenty of cabbage, fresh herbs, and a hoisin–sesame mayo in soft tortillas. Cold crispy pork strips from another meal work brilliantly if you have them.",
+    ingredients: [
+      { amount: 500, name: "pork loin", unit: "g" },
+      { amount: 45, name: "soy sauce", unit: "ml" },
+      { amount: 2, name: "sherry", unit: "tbsp" },
+      { amount: 1, name: "sugar", unit: "tbsp" },
+      { amount: 5, name: "cornflour", unit: "tbsp" },
+      { amount: 100, name: "vegetable or sunflower oil", unit: "ml" },
+      {
+        amount: 1,
+        name: "carrot",
+        preparation: "julienned",
+        unit: "whole",
+      },
+      {
+        amount: 150,
+        name: "daikon radish",
+        preparation: "julienned",
+        unit: "g",
+      },
+      { amount: 80, name: "rice wine vinegar", unit: "ml" },
+      {
+        amount: 220,
+        name: "cabbage",
+        preparation: "shredded",
+        unit: "g",
+      },
+      {
+        amount: 1,
+        name: "cucumber",
+        preparation: "julienned",
+        unit: "whole",
+      },
+      { amount: 4, name: "hoisin sauce", unit: "tbsp" },
+      { amount: 4, name: "mayonnaise", unit: "tbsp" },
+      { amount: 1, name: "sesame oil", unit: "tbsp" },
+      {
+        amount: 1,
+        name: "fresh coriander",
+        preparation: "roughly chopped",
+        unit: "bunch",
+      },
+      {
+        amount: 15,
+        name: "mint",
+        preparation: "roughly chopped",
+        unit: "g",
+      },
+      {
+        amount: 50,
+        name: "peanuts",
+        preparation: "crushed",
+        unit: "g",
+      },
+      { amount: 4, name: "tortillas", unit: "piece" },
+    ],
+    isGeneratorEligible: true,
+    method: [
+      {
+        description:
+          "Slice the pork loin into finger-length strips about 1 cm thick—more edges mean more crunch. Toss with 30 ml soy sauce, the sherry, 1 tsp sugar, and 1 tbsp cornflour until evenly coated. Rest 15 minutes at room temperature (or up to 30 minutes in the fridge).",
+        title: "Marinate the pork",
+      },
+      {
+        description:
+          "Toss the julienned carrot and daikon with 60 ml rice wine vinegar, 2 tsp sugar (from your measured tbsp), and a pinch of salt. Massage lightly and set aside—by the time you fry, it will be a quick pickle.",
+        title: "Quick-pickle the vegetables",
+      },
+      {
+        description:
+          "In a small bowl, whisk the hoisin sauce, mayonnaise, the remaining 15 ml soy sauce, the remaining 20 ml rice wine vinegar, and about 1 tsp sesame oil until smooth and pourable—tangy enough to balance the hoisin.",
+        title: "Make the hoisin sesame mayo",
+      },
+      {
+        description:
+          "Pat the pork dry on kitchen paper. Toss with the remaining cornflour so each strip has a light, even dusting—tap off excess. Heat the vegetable oil in a large frying pan over medium-high until shimmering. Fry the pork in batches without crowding, 2–3 minutes per side, until golden and crisp and cooked through. Drain on kitchen paper and season with a little salt.",
+        title: "Shallow-fry the pork",
+      },
+      {
+        description:
+          "Warm the tortillas in a dry pan or microwave until pliable. Spread a spoonful of hoisin mayo on each, then layer cabbage, cucumber, pickled carrot and daikon, crispy pork, coriander, mint, and crushed peanuts. Roll tightly, slice in half if you like, and serve straight away.",
+        title: "Assemble the wraps",
+      },
+    ],
+    nutrition: {
+      calories: 560,
+      carbohydrates: 38,
+      fat: 28,
+      protein: 42,
+    },
+    prepTime: 20,
+    primaryProtein: "pork",
+    publicSlug: "crispy-pork-hoisin-sesame-wraps",
+    serves: 4,
+    source: "system",
+    title: "Crispy pork wraps with hoisin sesame sauce",
+    totalTimeMinutes: 35,
+    updatedAt: 1772000000001,
+  },
 ];

@@ -22,7 +22,7 @@ export function ExampleWeekSection() {
             id="example-week-heading"
             className="text-3xl font-bold mb-4"
           >
-            One plan. Seven days.
+            One plan. Your week.
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             Generated from your recipes. Yours to tweak.
