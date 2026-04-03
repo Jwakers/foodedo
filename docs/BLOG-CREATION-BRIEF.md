@@ -57,33 +57,33 @@ Ensure every post has a unique slug, a compelling excerpt, and a main image so m
 
 **Exhaustive list of public URLs** (safe to use in blog content; do not require sign-in; most are indexable — except `/sign-in`, which has `robots: { index: false }`):
 
-| Path | Use when |
-|------|----------|
-| `/` | Homepage; “Foodedo”, “our site”, “get started”. |
-| `/sign-in` | Sign in, log in, returning users. (Not indexable.) |
-| `/sign-up` | Sign up, create account, try Foodedo, get started. |
-| `/pricing` | Plans, pricing, upgrade, cost. |
-| `/privacy` | Privacy policy, data, how we use information. |
-| `/terms` | Terms of service, terms and conditions. |
-| `/beta` | Beta programme, early access, “we’re in beta”. |
-| `/blog` | Blog index; “our blog”, “more articles”, “tips”. |
-| `/blog/{slug}` | Link to another post; use the post’s slug (e.g. `/blog/how-to-start-meal-planning`). |
-| `/discover` | Discover recipes, browse recipes, public recipe gallery. |
-| `/discover/recipe/{slug}` | A specific public (system) recipe; use the recipe’s `publicSlug` (kebab-case, e.g. `/discover/recipe/beef-stroganoff`). |
+| Path                    | Use when                                                                                                                                                               |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                     | Homepage; “Foodedo”, “our site”, “get started”.                                                                                                                        |
+| `/sign-in`              | Sign in, log in, returning users. (Not indexable.)                                                                                                                     |
+| `/sign-up`              | Sign up, create account, try Foodedo, get started.                                                                                                                     |
+| `/pricing`              | Plans, pricing, upgrade, cost.                                                                                                                                         |
+| `/privacy`              | Privacy policy, data, how we use information.                                                                                                                          |
+| `/terms`                | Terms of service, terms and conditions.                                                                                                                                |
+| `/beta`                 | Beta programme, early access, “we’re in beta”.                                                                                                                         |
+| `/blog`                 | Blog index; “our blog”, “more articles”, “tips”.                                                                                                                       |
+| `/blog/{slug}`          | Link to another post; use the post’s slug (e.g. `/blog/how-to-start-meal-planning`).                                                                                   |
+| `/discover`             | Discover recipes, browse recipes, public recipe gallery.                                                                                                               |
+| `/discover/recipe/{ID}` | A specific public (system) recipe; use the recipe’s Convex document ID for `{ID}` (e.g. `/discover/recipe/abc123xyz`). Only use when linking to a known system recipe. |
 
 **App / dashboard URLs** (signed-in users go straight there; others are redirected to sign-up — use these in blog copy when the CTA is product-led):
 
-| Path | Use when |
-|------|----------|
-| `/dashboard` | Dashboard, “your Foodedo”, home after sign-in. |
-| `/dashboard/meal-plan` | Weekly meal plan, plan your week. |
-| `/dashboard/my-recipes` | My recipes, recipe library, saved recipes. |
-| `/dashboard/shopping-list` | Shopping list, build your list. |
-| `/dashboard/chalkboard` | Chalkboard, pantry list, “need by end of week”. |
-| `/dashboard/import-recipe` | Import a recipe, add from URL. |
-| `/dashboard/create-recipe` | Create recipe, add recipe from scratch. |
-| `/dashboard/households` | Households, sharing, invite family. |
-| `/recipe/{id}` | A specific recipe (user or app context); use the recipe’s Convex document ID for `{id}`. |
+| Path                       | Use when                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| `/dashboard`               | Dashboard, “your Foodedo”, home after sign-in.                                           |
+| `/dashboard/meal-plan`     | Weekly meal plan, plan your week.                                                        |
+| `/dashboard/my-recipes`    | My recipes, recipe library, saved recipes.                                               |
+| `/dashboard/shopping-list` | Shopping list, build your list.                                                          |
+| `/dashboard/chalkboard`    | Chalkboard, pantry list, “need by end of week”.                                          |
+| `/dashboard/import-recipe` | Import a recipe, add from URL.                                                           |
+| `/dashboard/create-recipe` | Create recipe, add recipe from scratch.                                                  |
+| `/dashboard/households`    | Households, sharing, invite family.                                                      |
+| `/recipe/{id}`             | A specific recipe (user or app context); use the recipe’s Convex document ID for `{id}`. |
 
 **Dashboard and app URLs in blog copy:** You may and are encouraged to link to dashboard and app-only paths (e.g. `/dashboard/meal-plan`, `/dashboard/my-recipes`, `/recipe/{id}`) in blog copy. If the reader is not signed in, these links will redirect them to the sign-up page, which supports conversion. Use them when the CTA is clearly product-led (e.g. “Build your [weekly meal plan](/dashboard/meal-plan)” or “Add it to [My recipes](/dashboard/my-recipes)”).
 
@@ -175,4 +175,4 @@ When an AI or agent is drafting or structuring a blog post using this brief:
 
 ---
 
-*This brief is the single source of truth for blog structure and SEO/AEO when creating or editing Foodedo blog content. When in doubt, prioritise clarity for both humans and answer engines, and correctness of the product name and positioning.*
+_This brief is the single source of truth for blog structure and SEO/AEO when creating or editing Foodedo blog content. When in doubt, prioritise clarity for both humans and answer engines, and correctness of the product name and positioning._

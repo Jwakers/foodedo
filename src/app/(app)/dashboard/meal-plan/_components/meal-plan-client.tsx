@@ -272,10 +272,12 @@ export default function MealPlanClient() {
     async (
       mealPlanId: Id<"mealPlans">,
       householdId: Id<"households">,
+      mealCount: number,
     ): Promise<void> => {
       await shareMealPlanWithHousehold({ mealPlanId, householdId });
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD, {
         household_id: householdId,
+        meal_count: mealCount,
       });
       setShowShareDialog(false);
       setShareHouseholdId("");
@@ -290,7 +292,11 @@ export default function MealPlanClient() {
       shareInFlightRef.current = true;
       setIsSharing(true);
       try {
-        await performShareWithHousehold(currentPlan._id, householdId);
+        await performShareWithHousehold(
+          currentPlan._id,
+          householdId,
+          currentPlan.entries?.length ?? 0,
+        );
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Failed to share");
       } finally {
