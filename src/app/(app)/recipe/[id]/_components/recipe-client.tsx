@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Form } from "@/components/ui/form";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import {
   recipeEditSchema,
   type RecipeEditFormData,
@@ -29,8 +31,6 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
-import { trackEvent } from "@/lib/analytics/posthog-client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -85,7 +85,8 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
 
     if (!recipe.method?.length) {
       toast.info("Cook mode needs method steps", {
-        description: "Add steps to the method section on this recipe to cook along.",
+        description:
+          "Add steps to the method section on this recipe to cook along.",
       });
       return;
     }
@@ -156,7 +157,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
             step.ingredientRefsSource === "user" ||
             step.ingredientRefsSource === "auto"
               ? step.ingredientRefsSource
-              : (step.ingredientRefs?.length ? "user" : "auto"),
+              : step.ingredientRefs?.length
+                ? "user"
+                : "auto",
         })),
         primaryProtein: recipeForEdit.primaryProtein,
         complexityTier: recipeForEdit.complexityTier,
@@ -186,8 +189,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
           title: step.title,
           description: step.description,
           image: step.image ? (step.image as Id<"_storage">) : undefined,
-          ingredientRefs:
-            step.ingredientRefs?.length ? step.ingredientRefs : undefined,
+          ingredientRefs: step.ingredientRefs?.length
+            ? step.ingredientRefs
+            : undefined,
           ingredientRefsSource:
             step.ingredientRefsSource === "user" ||
             step.ingredientRefsSource === "auto"
@@ -229,93 +233,93 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
 
   return (
     <>
-        {recipe === undefined && <RecipeLoading />}
-        {recipe === null && <RecipeNotFound />}
-        {recipe !== undefined &&
-          recipe !== null &&
-          (() => {
-            const isRecipeOwner = recipe.isOwner === true;
-            const canSuperEditSystem =
-              recipe.source === "system" && user?.isSuperUser === true;
-            const canUseRecipeEditor = isRecipeOwner || canSuperEditSystem;
-            return (
-              <>
-                {!canUseRecipeEditor && recipe.ownerName && (
-                  <div className="mb-4 p-4 bg-muted rounded-lg border">
-                    <p className="text-sm text-muted-foreground">
-                      This recipe is shared with you by{" "}
-                      <strong>{recipe.ownerName}</strong>. You can view it but
-                      not edit it.
-                    </p>
-                  </div>
-                )}
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleSave)}
-                    className="relative"
-                  >
-                    <RecipeHeader
+      {recipe === undefined && <RecipeLoading />}
+      {recipe === null && <RecipeNotFound />}
+      {recipe !== undefined &&
+        recipe !== null &&
+        (() => {
+          const isRecipeOwner = recipe.isOwner === true;
+          const canSuperEditSystem =
+            recipe.source === "system" && user?.isSuperUser === true;
+          const canUseRecipeEditor = isRecipeOwner || canSuperEditSystem;
+          return (
+            <>
+              {!canUseRecipeEditor && recipe.ownerName && (
+                <div className="mb-4 p-4 bg-muted rounded-lg border">
+                  <p className="text-sm text-muted-foreground">
+                    This recipe is shared with you by{" "}
+                    <strong>{recipe.ownerName}</strong>. You can view it but not
+                    edit it.
+                  </p>
+                </div>
+              )}
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleSave)}
+                  className="relative"
+                >
+                  <RecipeHeader
+                    recipe={recipe}
+                    isEditMode={isEditMode}
+                    canEdit={canUseRecipeEditor}
+                    form={form}
+                  />
+
+                  <RecipeControls
+                    isEditMode={isEditMode}
+                    recipe={recipe}
+                    onToggleEditMode={handleToggleEditMode}
+                    onDelete={handleDelete}
+                    onStartCooking={() => setIsCookModeOpen(true)}
+                    isRecipeOwner={isRecipeOwner}
+                    canSuperEditSystem={canSuperEditSystem}
+                    isRecipeForEditLoaded={recipeForEdit !== undefined}
+                  />
+
+                  {isEditMode && (
+                    <EditableRecipeMeta recipe={recipe} form={form} />
+                  )}
+
+                  {!isEditMode && <NutritionSection recipe={recipe} />}
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <IngredientsSection
                       recipe={recipe}
                       isEditMode={isEditMode}
-                      canEdit={canUseRecipeEditor}
                       form={form}
                     />
-
-                    <RecipeControls
-                      isEditMode={isEditMode}
+                    <MethodSection
                       recipe={recipe}
-                      onToggleEditMode={handleToggleEditMode}
-                      onDelete={handleDelete}
-                      onStartCooking={() => setIsCookModeOpen(true)}
-                      isRecipeOwner={isRecipeOwner}
-                      canSuperEditSystem={canSuperEditSystem}
-                      isRecipeForEditLoaded={recipeForEdit !== undefined}
+                      isEditMode={isEditMode}
+                      form={form}
                     />
+                  </div>
 
-                    {isEditMode && (
-                      <EditableRecipeMeta recipe={recipe} form={form} />
-                    )}
-
-                    {!isEditMode && <NutritionSection recipe={recipe} />}
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <IngredientsSection
-                        recipe={recipe}
-                        isEditMode={isEditMode}
-                        form={form}
-                      />
-                      <MethodSection
-                        recipe={recipe}
-                        isEditMode={isEditMode}
-                        form={form}
-                      />
+                  {!isEditMode && recipe.originalUrl && (
+                    <div className="mt-6">
+                      <RecipeAttribution recipe={recipe} />
                     </div>
+                  )}
+                </form>
+              </Form>
 
-                    {!isEditMode && recipe.originalUrl && (
-                      <div className="mt-6">
-                        <RecipeAttribution recipe={recipe} />
-                      </div>
-                    )}
-                  </form>
-                </Form>
+              {/* Delete Confirmation Dialog */}
+              <DeleteRecipeDialog
+                recipe={recipeToDelete}
+                onClose={() => setRecipeToDelete(null)}
+                onConfirm={confirmDelete}
+              />
 
-                {/* Delete Confirmation Dialog */}
-                <DeleteRecipeDialog
-                  recipe={recipeToDelete}
-                  onClose={() => setRecipeToDelete(null)}
-                  onConfirm={confirmDelete}
+              {/* Cook mode overlay - portal to body for true full screen */}
+              {isCookModeOpen && (
+                <CookModeOverlay
+                  recipe={recipe}
+                  onClose={() => setIsCookModeOpen(false)}
                 />
-
-                {/* Cook mode overlay - portal to body for true full screen */}
-                {isCookModeOpen && (
-                  <CookModeOverlay
-                    recipe={recipe}
-                    onClose={() => setIsCookModeOpen(false)}
-                  />
-                )}
-              </>
-            );
-          })()}
+              )}
+            </>
+          );
+        })()}
     </>
   );
 }
@@ -429,9 +433,7 @@ function RecipeControls({
               variant="outline"
               onClick={onToggleEditMode}
               disabled={!isRecipeForEditLoaded}
-              className={cn(
-                "ml-auto gap-2 border-dashed font-mono text-xs text-muted-foreground",
-              )}
+              className="ml-auto gap-2 border-dashed font-mono text-xs text-muted-foreground"
               aria-label="Edit system recipe (super user)"
             >
               <Code2 className="size-4 shrink-0" aria-hidden />
