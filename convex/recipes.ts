@@ -193,8 +193,23 @@ export const getRecipeForEdit = query({
     const recipe = await ctx.db.get(args.recipeId);
     if (!recipe) return null;
 
-    // System recipes are not user-editable; return null without requiring auth
-    if (recipe.source === "system") return null;
+    if (recipe.source === "system") {
+      const user = await getCurrentUser(ctx);
+      if (user?.isSuperUser !== true) return null;
+      return {
+        title: recipe.title || "",
+        description: recipe.description || "",
+        prepTime: recipe.prepTime ?? 0,
+        cookTime: recipe.cookTime ?? undefined,
+        serves: recipe.serves ?? 1,
+        category: recipe.category,
+        ingredients: recipe.ingredients || [],
+        method: recipe.method || [],
+        primaryProtein: recipe.primaryProtein ?? undefined,
+        complexityTier: recipe.complexityTier ?? undefined,
+        cuisine: recipe.cuisine ?? [],
+      };
+    }
 
     const user = await getCurrentUser(ctx);
     if (!user) throw new ConvexError("User not found");

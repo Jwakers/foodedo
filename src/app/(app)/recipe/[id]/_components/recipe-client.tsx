@@ -21,6 +21,7 @@ import { useMutation, useQuery } from "convex/react";
 import { FunctionReturnType } from "convex/server";
 import {
   ChefHat,
+  Code2,
   Edit,
   MoreVertical,
   Save,
@@ -63,6 +64,7 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
   const [recipeToDelete, setRecipeToDelete] = useState<Recipe | null>(null);
 
   const recipe = useQuery(api.recipes.getRecipe, { recipeId });
+  const user = useQuery(api.users.current);
 
   useEffect(() => {
     cookParamConsumed.current = false;
@@ -232,10 +234,13 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
         {recipe !== undefined &&
           recipe !== null &&
           (() => {
-            const canEdit = recipe.isOwner !== false;
+            const isRecipeOwner = recipe.isOwner === true;
+            const canSuperEditSystem =
+              recipe.source === "system" && user?.isSuperUser === true;
+            const canUseRecipeEditor = isRecipeOwner || canSuperEditSystem;
             return (
               <>
-                {!canEdit && recipe.ownerName && (
+                {!canUseRecipeEditor && recipe.ownerName && (
                   <div className="mb-4 p-4 bg-muted rounded-lg border">
                     <p className="text-sm text-muted-foreground">
                       This recipe is shared with you by{" "}
@@ -252,7 +257,7 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
                     <RecipeHeader
                       recipe={recipe}
                       isEditMode={isEditMode}
-                      canEdit={canEdit}
+                      canEdit={canUseRecipeEditor}
                       form={form}
                     />
 
@@ -262,7 +267,8 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
                       onToggleEditMode={handleToggleEditMode}
                       onDelete={handleDelete}
                       onStartCooking={() => setIsCookModeOpen(true)}
-                      canEdit={canEdit}
+                      isRecipeOwner={isRecipeOwner}
+                      canSuperEditSystem={canSuperEditSystem}
                       isRecipeForEditLoaded={recipeForEdit !== undefined}
                     />
 
@@ -320,7 +326,8 @@ function RecipeControls({
   onDelete,
   recipe,
   onStartCooking,
-  canEdit,
+  isRecipeOwner,
+  canSuperEditSystem,
   isRecipeForEditLoaded,
 }: {
   isEditMode: boolean;
@@ -328,7 +335,8 @@ function RecipeControls({
   onToggleEditMode: () => void;
   onDelete: (recipe: NonNullable<Recipe>) => void;
   onStartCooking: () => void;
-  canEdit: boolean;
+  isRecipeOwner: boolean;
+  canSuperEditSystem: boolean;
   isRecipeForEditLoaded: boolean;
 }) {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -369,7 +377,7 @@ function RecipeControls({
               Start Cooking
             </Button>
           )}
-          {canEdit && (
+          {isRecipeOwner && (
             <Button
               type="button"
               size="lg"
@@ -381,7 +389,7 @@ function RecipeControls({
               Share with household
             </Button>
           )}
-          {canEdit && (
+          {isRecipeOwner && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="ml-auto">
                 <Button
@@ -414,10 +422,27 @@ function RecipeControls({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          {canSuperEditSystem && !isRecipeOwner && (
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              onClick={onToggleEditMode}
+              disabled={!isRecipeForEditLoaded}
+              className={cn(
+                "ml-auto gap-2 border-dashed font-mono text-xs text-muted-foreground",
+              )}
+              aria-label="Edit system recipe (super user)"
+            >
+              <Code2 className="size-4 shrink-0" aria-hidden />
+              Edit system recipe
+              {!isRecipeForEditLoaded && " (loading…)"}
+            </Button>
+          )}
         </>
       )}
       {/* Share to Household Dialog */}
-      {canEdit && (
+      {isRecipeOwner && (
         <ShareToHouseholdDialog
           recipeId={recipe._id}
           recipeTitle={recipe.title}

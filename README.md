@@ -30,6 +30,7 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
+- [ ] Review and plan improvements around the poor performance scores currently in Vercel.
 - [ ] As a super user, I need the ability to directly edit system recipes
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 - [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, its all just vegetables on a table
