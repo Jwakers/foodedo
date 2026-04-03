@@ -1,5 +1,7 @@
 import { ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { IntentLandingBody } from "@/components/seo/intent-landing-body";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { buildFaqJsonLdFromPairs } from "@/lib/faq-json-ld";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteBaseUrl } from "@/lib/site-url";
@@ -21,6 +23,10 @@ export default function FamilyMealPlanningPage() {
 
   return (
     <>
+      <PublicPageTracker
+        event={ANALYTICS_EVENTS.LANDING_VIEWED}
+        props={{ intent_topic: "family_meal_planning" }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd }}

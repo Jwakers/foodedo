@@ -1,4 +1,5 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -6,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import {
   PUBLIC_HOW_TO_FAQ,
   PUBLIC_HOW_TO_SECTIONS,
@@ -44,6 +46,7 @@ export default function PublicHowToUsePage() {
 
   return (
     <div className="container mx-auto px-4 py-10 md:py-14 max-w-3xl">
+      <PublicPageTracker event={ANALYTICS_EVENTS.SUPPORT_HOW_TO_VIEWED} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd }}

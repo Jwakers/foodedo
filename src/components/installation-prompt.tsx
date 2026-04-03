@@ -1,9 +1,11 @@
 "use client";
 
 import { APP_NAME } from "@/app/constants";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { cn } from "@/lib/utils";
 import { Check, Download, Share, Smartphone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 
@@ -19,6 +21,9 @@ export default function InstallPrompt() {
     prompt: () => Promise<void>;
     userChoice: Promise<{ outcome: string }>;
   } | null>(null);
+  const installShownSentRef = useRef(false);
+  const deferredPromptRef = useRef(deferredPrompt);
+  deferredPromptRef.current = deferredPrompt;
 
   useEffect(() => {
     const ua = navigator.userAgent;
@@ -56,17 +61,68 @@ export default function InstallPrompt() {
     };
   }, []);
 
+  const installContext = isIOS ? "ios" : "non_ios";
+  const hasDeferredPrompt = Boolean(deferredPrompt);
+
+  useEffect(() => {
+    if (isStandalone || installShownSentRef.current) return;
+
+    if (isIOS) {
+      trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_SHOWN, {
+        install_context: installContext,
+        has_deferred_prompt: false,
+      });
+      installShownSentRef.current = true;
+      return;
+    }
+
+    if (deferredPrompt) {
+      trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_SHOWN, {
+        install_context: installContext,
+        has_deferred_prompt: true,
+      });
+      installShownSentRef.current = true;
+      return;
+    }
+
+    const id = window.setTimeout(() => {
+      if (installShownSentRef.current) return;
+      if (deferredPromptRef.current) return;
+      trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_SHOWN, {
+        install_context: installContext,
+        has_deferred_prompt: false,
+      });
+      installShownSentRef.current = true;
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [deferredPrompt, installContext, isIOS, isStandalone]);
+
   const handleInstallClick = async () => {
+    trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_CLICKED, {
+      install_context: installContext,
+      has_deferred_prompt: hasDeferredPrompt,
+    });
+
     if (deferredPrompt) {
       try {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === "accepted") {
+          trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_OUTCOME, {
+            outcome: "accepted",
+            install_context: installContext,
+            has_deferred_prompt: hasDeferredPrompt,
+          });
           toast.success("App installed successfully", {
             description: `${APP_NAME} has been added to your home screen. Enjoy the app experience!`,
           });
         } else {
+          trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_OUTCOME, {
+            outcome: "dismissed",
+            install_context: installContext,
+            has_deferred_prompt: hasDeferredPrompt,
+          });
           toast.info("Installation cancelled", {
             description:
               "You can install the app anytime using the browser menu.",
@@ -81,6 +137,11 @@ export default function InstallPrompt() {
         setDeferredPrompt(null);
       }
     } else {
+      trackEvent(ANALYTICS_EVENTS.INSTALL_PROMPT_OUTCOME, {
+        outcome: "manual_fallback",
+        install_context: installContext,
+        has_deferred_prompt: false,
+      });
       // Fallback for when beforeinstallprompt is not available
       toast.info("Manual installation required", {
         description:

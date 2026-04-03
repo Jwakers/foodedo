@@ -42,6 +42,8 @@ import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Loader2, Plus, X } from "lucide-react";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
@@ -248,6 +250,11 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
           });
         }
       }
+
+      trackEvent(ANALYTICS_EVENTS.RECIPE_CREATED, {
+        recipe_category: values.category,
+        has_image: values.image instanceof File,
+      });
 
       if (closeDrawer) closeDrawer();
       toast.success("Recipe saved successfully");

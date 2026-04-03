@@ -28,6 +28,8 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -212,6 +214,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
 
     try {
       await deleteRecipeMutation({ recipeId: recipeToDelete._id });
+      trackEvent(ANALYTICS_EVENTS.RECIPE_DELETED, {
+        recipe_category: recipeToDelete.category,
+      });
       router.replace(ROUTES.MY_RECIPES);
       toast.success("Recipe deleted successfully");
     } catch (error) {

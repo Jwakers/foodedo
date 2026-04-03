@@ -16,6 +16,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useMutation, useQuery } from "convex/react";
 import { Check, Users } from "lucide-react";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -55,24 +57,43 @@ export function ShareToHouseholdDialog({
     // Add to pending state
     setIsPending(true);
 
+    let mutationSucceeded = false;
     try {
       if (isChecked) {
-        // Share recipe to household
         await shareRecipe({ recipeId, householdId });
         toast.success("Recipe shared to household");
       } else {
-        // Unshare recipe from household
         await unshareRecipe({ recipeId, householdId });
         toast.success("Recipe removed from household");
       }
+      mutationSucceeded = true;
     } catch (error: unknown) {
       console.error("Error updating recipe share:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to share recipe",
       );
     } finally {
-      // Remove from pending state
       setIsPending(false);
+    }
+
+    if (!mutationSucceeded) return;
+
+    try {
+      if (isChecked) {
+        trackEvent(ANALYTICS_EVENTS.RECIPE_SHARED_TO_HOUSEHOLD, {
+          recipe_title: recipeTitle,
+          household_id: householdId,
+          recipe_id: recipeId,
+        });
+      } else {
+        trackEvent(ANALYTICS_EVENTS.RECIPE_UNSHARED_FROM_HOUSEHOLD, {
+          recipe_title: recipeTitle,
+          household_id: householdId,
+          recipe_id: recipeId,
+        });
+      }
+    } catch (analyticsError: unknown) {
+      console.error("Recipe share analytics error:", analyticsError);
     }
   };
 

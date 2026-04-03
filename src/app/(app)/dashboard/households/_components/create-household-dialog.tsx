@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -43,6 +45,7 @@ export function CreateHouseholdDialog({
 
     try {
       const result = await createHousehold({ name: name.trim() });
+      trackEvent(ANALYTICS_EVENTS.HOUSEHOLD_CREATED);
       toast.success("Household created successfully!");
       onOpenChange(false);
       setName("");

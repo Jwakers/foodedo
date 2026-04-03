@@ -4,6 +4,8 @@ import { api } from "@/../convex/_generated/api";
 import { ROUTES } from "@/app/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { useMutation, useQuery } from "convex/react";
 import { AlertCircle, CheckCircle, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -60,6 +62,9 @@ export default function InvitePage({ params }: InvitePageProps) {
     setError(null);
     try {
       const result = await acceptInvitation({ token });
+      trackEvent(ANALYTICS_EVENTS.HOUSEHOLD_INVITATION_ACCEPTED, {
+        household_id: result.householdId,
+      });
       setAcceptedHouseholdId(result.householdId);
       toast.success("Invitation accepted! Welcome to the household!");
     } catch (error: unknown) {

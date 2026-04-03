@@ -52,9 +52,11 @@ import {
   UserMinus,
   Users,
 } from "lucide-react";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
 import { MealPlanCard } from "./meal-plan-card";
@@ -104,6 +106,8 @@ export default function MealPlanClient() {
   const [shareHouseholdId, setShareHouseholdId] = useState<
     Id<"households"> | ""
   >("");
+  const [isSharing, setIsSharing] = useState(false);
+  const shareInFlightRef = useRef(false);
   const [showDeletePlanDialog, setShowDeletePlanDialog] = useState(false);
   const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
     useState(false);
@@ -158,6 +162,9 @@ export default function MealPlanClient() {
             }
           : {};
       await generateWeeklyPlan(payload);
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATED, {
+        shared_with_household: households.length > 1,
+      });
       toast.success("Your week is ready!");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate plan");
@@ -171,6 +178,7 @@ export default function MealPlanClient() {
     setIsGenerating(true);
     try {
       await regenerateWeeklyPlan({ previousPlanId: currentPlan._id });
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_REGENERATED);
       toast.success("Week regenerated. Locked meals kept.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to regenerate");
@@ -240,6 +248,10 @@ export default function MealPlanClient() {
         mealPlanId: currentPlan._id,
         chalkboardItemIds: Array.from(selectedChalkboardIds),
       });
+      trackEvent(ANALYTICS_EVENTS.SHOPPING_LIST_GENERATED, {
+        meal_count: currentPlan.entries?.length ?? 0,
+        chalkboard_items_included: selectedChalkboardIds.size,
+      });
       setShowGenerateDialog(false);
       setSelectedChalkboardIds(new Set());
       toast.success("Shopping list created from meal plan");
@@ -256,20 +268,49 @@ export default function MealPlanClient() {
     router,
   ]);
 
-  const handleShare = useCallback(async () => {
-    if (!currentPlan || !shareHouseholdId) return;
-    try {
-      await shareMealPlanWithHousehold({
-        mealPlanId: currentPlan._id,
-        householdId: shareHouseholdId,
+  const performShareWithHousehold = useCallback(
+    async (
+      mealPlanId: Id<"mealPlans">,
+      householdId: Id<"households">,
+      mealCount: number,
+    ): Promise<void> => {
+      await shareMealPlanWithHousehold({ mealPlanId, householdId });
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_SHARED_WITH_HOUSEHOLD, {
+        household_id: householdId,
+        meal_count: mealCount,
       });
       setShowShareDialog(false);
       setShareHouseholdId("");
       toast.success("Meal plan shared with household");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to share");
-    }
-  }, [currentPlan, shareHouseholdId, shareMealPlanWithHousehold]);
+    },
+    [shareMealPlanWithHousehold],
+  );
+
+  const runMealPlanShare = useCallback(
+    async (householdId: Id<"households">) => {
+      if (!currentPlan || isSharing || shareInFlightRef.current) return;
+      shareInFlightRef.current = true;
+      setIsSharing(true);
+      try {
+        await performShareWithHousehold(
+          currentPlan._id,
+          householdId,
+          currentPlan.entries?.length ?? 0,
+        );
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to share");
+      } finally {
+        shareInFlightRef.current = false;
+        setIsSharing(false);
+      }
+    },
+    [currentPlan, isSharing, performShareWithHousehold],
+  );
+
+  const handleShare = useCallback(async () => {
+    if (!shareHouseholdId) return;
+    await runMealPlanShare(shareHouseholdId);
+  }, [shareHouseholdId, runMealPlanShare]);
 
   const handleUnshare = useCallback(async () => {
     if (!currentPlan) return;
@@ -298,6 +339,9 @@ export default function MealPlanClient() {
     setIsFinalising(true);
     try {
       await finaliseMealPlan({ mealPlanId: currentPlan._id });
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_FINALISED, {
+        meal_count: currentPlan.entries?.length ?? 0,
+      });
       setShowFinaliseDialog(false);
       toast.success("Plan saved. You can still move meals between days.");
     } catch (e) {
@@ -926,20 +970,10 @@ export default function MealPlanClient() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={async () => {
-                      if (!currentPlan || !households[0]) return;
-                      try {
-                        await shareMealPlanWithHousehold({
-                          mealPlanId: currentPlan._id,
-                          householdId: households[0]._id,
-                        });
-                        setShowShareDialog(false);
-                        toast.success("Meal plan shared with household");
-                      } catch (e) {
-                        toast.error(
-                          e instanceof Error ? e.message : "Failed to share",
-                        );
-                      }
+                    disabled={isSharing}
+                    onClick={() => {
+                      if (!households[0]) return;
+                      void runMealPlanShare(households[0]._id);
                     }}
                   >
                     Share
@@ -975,7 +1009,10 @@ export default function MealPlanClient() {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleShare} disabled={!shareHouseholdId}>
+                  <Button
+                    onClick={() => void handleShare()}
+                    disabled={!shareHouseholdId || isSharing}
+                  >
                     Share
                   </Button>
                 </DialogFooter>

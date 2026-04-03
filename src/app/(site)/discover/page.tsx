@@ -1,6 +1,8 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import type { Metadata } from "next";
 import DiscoverRecipesClient from "./_components/discover-recipes-client";
 
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 export default function DiscoverPage() {
   return (
     <>
+      <PublicPageTracker event={ANALYTICS_EVENTS.DISCOVER_VIEWED} />
       <div className="container mx-auto px-4 pt-8 pb-2">
         <h1 className="text-4xl font-bold text-foreground mb-2">Discover</h1>
         <p className="text-muted-foreground text-lg">

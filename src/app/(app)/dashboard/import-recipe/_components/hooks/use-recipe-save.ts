@@ -1,4 +1,8 @@
+"use client";
+
 import { fetchImageServerSide } from "@/app/(app)/actions/fetch-image";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { RECIPE_CREATION_SOURCES } from "convex/lib/constants";
@@ -167,6 +171,12 @@ export function useRecipeSave() {
             "Your recipe has been saved but may require some manual editing to complete it",
         });
       }
+
+      trackEvent(ANALYTICS_EVENTS.RECIPE_IMPORTED, {
+        creation_source: creationSource,
+        recipe_category: validatedRecipe.category,
+        has_image: !!validatedRecipe.imageUrl,
+      });
 
       setSavedRecipeId(recipeId);
       setIsSaved(true);
