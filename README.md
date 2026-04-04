@@ -30,11 +30,17 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
+- [ ] Production error when saving a shopping list from meal plan. Reason being is I could not edit a shopping list Amber created. That shopping list should have defaulted to household shared, even in draft state.
+- [ ] The meal plan algorithm does not seem to include my own recipes. These should be a priority in the system
+- [ ] Nice meal display on dashboard should always show what ever meal is next with text like “tomorrows meal” etc. the display is too good to not show something
 - [ ] Review and plan improvements around the poor performance scores currently in Vercel.
-- [ ] As a super user, I need the ability to directly edit system recipes
+- [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
+- [ ] Household items should be opt out by default. For example, when creating a new recipe it should share to all households automatically. The recipe UI needs to show if something is shared at a glance.
+- [ ] In the fried rice recipe eggs are showing in a step that only contains chicken
+- [ ] Check if FAQ still has a no index tag
+- [x] As a super user, I need the ability to directly edit system recipes
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 - [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, its all just vegetables on a table
-- [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
 
 ### Strategic / growth
 
