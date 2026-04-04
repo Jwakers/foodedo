@@ -201,9 +201,70 @@ export const SMOOTHING_FACTOR = 2;
 export const MAX_PRIMARY_PROTEIN_PER_WEEK = 2;
 /** Max times the same cuisine can appear in a generated week (diversification). */
 export const MAX_CUISINE_PER_WEEK = 2;
+/**
+ * Multiplier applied to selection weight for non–Discover (non-system) recipes so a user’s
+ * library is preferred over the system catalog when both are eligible.
+ */
+export const LIBRARY_MEAL_PLAN_WEIGHT_MULTIPLIER = 4;
 /** Upper bound for getRecipesForWeeklyPlan limit (pool size for client/weekly plan). */
 export const MAX_WEEKLY_PLAN_POOL_SIZE = 50;
 export const MAX_DAYS_IN_MEAL_PLAN = 7;
+
+/**
+ * Recipe categories the weekly meal plan generator may pick (centrepiece meals).
+ * Desserts, sides, snacks, appetizers, and drinks are never auto-selected.
+ */
+export const MEAL_PLAN_GENERATOR_CATEGORIES = [
+  "main",
+  "dinner",
+  "lunch",
+  "breakfast",
+] as const;
+
+export type MealPlanGeneratorCategory =
+  (typeof MEAL_PLAN_GENERATOR_CATEGORIES)[number];
+
+export function isRecipeCategoryUsedByMealPlanGenerator(
+  category: string | undefined | null,
+): boolean {
+  if (category == null || category === "") return false;
+  return (MEAL_PLAN_GENERATOR_CATEGORIES as readonly string[]).includes(
+    category,
+  );
+}
+
+type MealPlanPoolRecipeFields = {
+  category?: string | null;
+  excludeFromMealPlanGenerator?: boolean | null;
+  primaryProtein?: string | null;
+  complexityTier?: string | null;
+  isGeneratorEligible?: boolean | null;
+};
+
+/** True when primary protein + complexity are set, or legacy isGeneratorEligible flag. */
+export function recipeHasMealPlanGeneratorMetadata(
+  recipe: Pick<
+    MealPlanPoolRecipeFields,
+    "primaryProtein" | "complexityTier" | "isGeneratorEligible"
+  >,
+): boolean {
+  const hasMetadata =
+    recipe.primaryProtein != null &&
+    recipe.primaryProtein !== "" &&
+    recipe.complexityTier != null &&
+    recipe.complexityTier !== "";
+  return recipe.isGeneratorEligible === true || hasMetadata;
+}
+
+/** Same rules as meal plan buildPool: category, opt-out, and generator metadata. */
+export function recipeIsInMealPlanGeneratorPool(
+  recipe: MealPlanPoolRecipeFields,
+): boolean {
+  if (recipe.excludeFromMealPlanGenerator === true) return false;
+  if (!isRecipeCategoryUsedByMealPlanGenerator(recipe.category)) return false;
+  return recipeHasMealPlanGeneratorMetadata(recipe);
+}
+
 // TypeScript types
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];
 export type PreparationOption = (typeof PREPARATION_OPTIONS)[number];

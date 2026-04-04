@@ -622,6 +622,8 @@ export const setSystemRecipeImage = internalMutation({
 /**
  * Validate and set isGeneratorEligible on all recipes.
  * Eligibility matches buildPool (meal plan generator): true when primaryProtein and complexityTier are both set and non-empty, or when isGeneratorEligible was already true.
+ * Recipes with excludeFromMealPlanGenerator === true are still omitted from the pool by buildPool regardless of eligibility.
+ * buildPool also restricts by recipe category (only breakfast, lunch, dinner, main).
  * Run from the dashboard to backfill or correct isGeneratorEligible after bulk imports or schema changes.
  */
 export const validateRecipesGeneratorEligibility = internalMutation({

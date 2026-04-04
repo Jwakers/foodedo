@@ -13,6 +13,7 @@ import {
   clampEditorialBias,
   CUISINE_MAX_SELECTIONS,
   MAX_WEEKLY_PLAN_POOL_SIZE,
+  recipeIsInMealPlanGeneratorPool,
 } from "./lib/constants";
 import { RECIPE_PUBLIC_SLUG_PATTERN } from "./lib/recipePublicSlug";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
@@ -208,6 +209,8 @@ export const getRecipeForEdit = query({
         primaryProtein: recipe.primaryProtein ?? undefined,
         complexityTier: recipe.complexityTier ?? undefined,
         cuisine: recipe.cuisine ?? [],
+        excludeFromMealPlanGenerator:
+          recipe.excludeFromMealPlanGenerator === true,
       };
     }
 
@@ -236,6 +239,8 @@ export const getRecipeForEdit = query({
       primaryProtein: recipe.primaryProtein ?? undefined,
       complexityTier: recipe.complexityTier ?? undefined,
       cuisine: recipe.cuisine ?? [],
+      excludeFromMealPlanGenerator:
+        recipe.excludeFromMealPlanGenerator === true,
     };
   },
 });
@@ -390,45 +395,51 @@ export const getRecipesForWeeklyPlan = query({
       }
     }
 
-    // 4. Dedupe and sort deterministically
+    // 4. Dedupe and sort deterministically; collect up to `limit` recipes that match generator pool rules
     const allIds = [
       ...new Set([...systemIds, ...userIds, ...householdRecipeIds]),
     ].sort();
 
-    // 5. Take first `limit` and fetch full docs (with access check for household recipes)
-    const idsToFetch = allIds.slice(0, limit);
-    const recipeDocs = await Promise.all(
-      idsToFetch.map((id) => ctx.db.get(id)),
-    );
-    const withAccessAndUrl = await Promise.all(
-      recipeDocs.map(async (recipe, i) => {
-        if (!recipe) return null;
-        const recipeId = idsToFetch[i];
-        if (recipe.source !== "system" && recipe.userId !== user._id) {
-          const { canAccess } = await canAccessRecipe(ctx, user._id, recipeId);
-          if (!canAccess) return null;
-        }
-        const image = recipe.image
-          ? await ctx.storage.getUrl(recipe.image)
-          : null;
-        const totalMin =
-          recipe.totalTimeMinutes ??
-          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-        return {
-          _id: recipe._id,
-          title: recipe.title,
-          image,
-          prepTime: recipe.prepTime ?? 0,
-          cookTime: recipe.cookTime,
-          totalTimeMinutes: totalMin > 0 ? totalMin : undefined,
-          nutrition: recipe.nutrition,
-          category: recipe.category,
-        };
-      }),
-    );
-    const results = withAccessAndUrl.filter(
-      (r): r is NonNullable<typeof r> => r != null,
-    );
+    type PoolRow = {
+      _id: Id<"recipes">;
+      title: string;
+      image: string | null;
+      prepTime: number;
+      cookTime?: number | null;
+      totalTimeMinutes?: number;
+      nutrition: Doc<"recipes">["nutrition"];
+      category: Doc<"recipes">["category"];
+    };
+
+    const results: PoolRow[] = [];
+
+    for (const recipeId of allIds) {
+      if (results.length >= limit) break;
+      const recipe = await ctx.db.get(recipeId);
+      if (!recipe) continue;
+      if (recipe.source !== "system" && recipe.userId !== user._id) {
+        const { canAccess } = await canAccessRecipe(ctx, user._id, recipeId);
+        if (!canAccess) continue;
+      }
+      if (!recipeIsInMealPlanGeneratorPool(recipe)) continue;
+
+      const image = recipe.image
+        ? await ctx.storage.getUrl(recipe.image)
+        : null;
+      const totalMin =
+        recipe.totalTimeMinutes ??
+        (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+      results.push({
+        _id: recipe._id,
+        title: recipe.title,
+        image,
+        prepTime: recipe.prepTime ?? 0,
+        cookTime: recipe.cookTime,
+        totalTimeMinutes: totalMin > 0 ? totalMin : undefined,
+        nutrition: recipe.nutrition,
+        category: recipe.category,
+      });
+    }
 
     return results;
   },
@@ -704,6 +715,7 @@ export const updateRecipe = mutation({
     primaryProtein: v.optional(v.union(primaryProteinUnion, v.null())),
     complexityTier: v.optional(v.union(complexityTierUnion, v.null())),
     cuisine: v.optional(v.array(cuisineUnion)),
+    excludeFromMealPlanGenerator: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -854,6 +866,9 @@ export const updateRecipe = mutation({
       cuisine: args.cuisine ?? recipe.cuisine,
       totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
       isGeneratorEligible: hasGeneratorMetadata,
+      ...(args.excludeFromMealPlanGenerator !== undefined && {
+        excludeFromMealPlanGenerator: args.excludeFromMealPlanGenerator,
+      }),
     });
   },
 });

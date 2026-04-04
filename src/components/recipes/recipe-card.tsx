@@ -3,12 +3,57 @@
 import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, titleCase } from "@/lib/utils";
+import { isRecipeCategoryUsedByMealPlanGenerator } from "convex/lib/constants";
 import type { RecipeListItem } from "./types";
-import { Check, Clock, Users, X } from "lucide-react";
+import { Ban, Check, Clock, Minus, Users, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
+
+/** Icon badge that opens a hint popover. Must sit in a pointer-events-auto island (card uses a link overlay). */
+function MealPlanBadgePopover({
+  className,
+  ariaLabel,
+  children,
+  body,
+}: {
+  className?: string;
+  ariaLabel: string;
+  children: ReactNode;
+  body: ReactNode;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            className,
+            "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
+          )}
+          aria-label={ariaLabel}
+        >
+          {children}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="z-60 w-72 text-sm"
+        side="left"
+        align="end"
+        sideOffset={8}
+      >
+        <div className="space-y-2 text-muted-foreground">{body}</div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 type RecipeCardProps = {
   recipe: RecipeListItem;
@@ -24,55 +69,131 @@ export function RecipeCard({
 }: RecipeCardProps) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
+  const categoryOkForPlanner =
+    isRecipeCategoryUsedByMealPlanGenerator(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";
 
+  /** In the generator pool sense: right category + metadata (matches listing / buildPool). */
+  const poolEligible =
+    categoryOkForPlanner && recipe.isGeneratorEligible === true;
+
+  const recipeHref = `${ROUTES.RECIPE}/${recipe._id}`;
+
   return (
-    <Link href={`${ROUTES.RECIPE}/${recipe._id}`}>
-      <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 pt-0">
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 pt-0">
+      <div className="relative">
+        <Link
+          href={recipeHref}
+          className="absolute inset-0 z-0 rounded-xl"
+          aria-label={`Open recipe: ${recipe.title}`}
+        />
+        <div className="relative z-10 flex flex-col gap-6 pointer-events-none">
         <div className="aspect-4/3 bg-linear-to-br from-primary/20 to-primary/5 relative overflow-hidden">
           {recipe.image && (
             <Image
               src={recipe.image}
-              alt={recipe.title}
+              alt=""
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1440px) 25vw, 450px"
               className="object-cover size-full"
               unoptimized={!optimizeImage}
             />
           )}
-          {/* Strong bottom gradient so title stays legible over any image */}
           <div
             className="absolute inset-0 bg-linear-to-t from-black/70 to-64% to-transparent"
             aria-hidden
           />
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            {showMealPlanBadge && recipe.isGeneratorEligible === true && (
-              <span
-                className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center shrink-0"
-                title="Included in meal plan generation"
-                aria-label="Included in meal plan generation"
-              >
-                <Check className="size-3.5" strokeWidth={3} />
+          <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-none">
+            {showMealPlanBadge && !categoryOkForPlanner && (
+              <span className="pointer-events-auto shrink-0">
+                <MealPlanBadgePopover
+                  className="size-5 rounded-full flex items-center justify-center border border-border/50 text-muted-foreground/45"
+                  ariaLabel="Category not used by weekly planner — tap for details"
+                  body={
+                    <p>
+                      This category isn’t used when the app builds a week for
+                      you (for example desserts or sides). You can still add
+                      this recipe to your plan manually.
+                    </p>
+                  }
+                >
+                  <Minus className="size-2.5" strokeWidth={2.5} aria-hidden />
+                </MealPlanBadgePopover>
               </span>
             )}
-            {showMealPlanBadge && recipe.isGeneratorEligible === false && (
-              <span
-                className="size-6 rounded-full flex items-center justify-center shrink-0 border border-dashed border-muted-foreground text-muted-foreground"
-                title="Not included in meal plan generation"
-                aria-label="Not included in meal plan generation"
-              >
-                <X className="size-3.5" strokeWidth={2.5} />
-              </span>
-            )}
+            {showMealPlanBadge &&
+              categoryOkForPlanner &&
+              recipe.isGeneratorEligible !== true && (
+                <span className="pointer-events-auto shrink-0">
+                  <MealPlanBadgePopover
+                    className="size-6 rounded-full flex items-center justify-center border border-dashed border-muted-foreground text-muted-foreground"
+                    ariaLabel="Not yet eligible for weekly planner — tap for details"
+                    body={
+                      <p>
+                        Your category works for auto-planning, but set{" "}
+                        <span className="font-medium text-foreground">
+                          primary protein
+                        </span>{" "}
+                        and{" "}
+                        <span className="font-medium text-foreground">
+                          complexity
+                        </span>{" "}
+                        on the recipe so the planner can include it.
+                      </p>
+                    }
+                  >
+                    <X className="size-3.5" strokeWidth={2.5} aria-hidden />
+                  </MealPlanBadgePopover>
+                </span>
+              )}
+            {showMealPlanBadge &&
+              poolEligible &&
+              recipe.excludeFromMealPlanGenerator === true && (
+                <span className="pointer-events-auto shrink-0">
+                  <MealPlanBadgePopover
+                    className="size-6 rounded-full flex items-center justify-center border border-amber-600/70 bg-amber-500/15 text-amber-700 dark:border-amber-500/60 dark:text-amber-400"
+                    ariaLabel="Opted out of weekly planner suggestions — tap for details"
+                    body={
+                      <p>
+                        You’ve turned off automatic suggestions for this recipe.
+                        You can change that anytime from the recipe page.
+                      </p>
+                    }
+                  >
+                    <Ban className="size-3.5" strokeWidth={2.5} aria-hidden />
+                  </MealPlanBadgePopover>
+                </span>
+              )}
+            {showMealPlanBadge &&
+              poolEligible &&
+              recipe.excludeFromMealPlanGenerator !== true && (
+                <span className="pointer-events-auto shrink-0">
+                  <MealPlanBadgePopover
+                    className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center"
+                    ariaLabel="Eligible for weekly planner — tap for details"
+                    body={
+                      <p>
+                        The weekly planner can suggest this recipe when you
+                        generate a week.
+                      </p>
+                    }
+                  >
+                    <Check className="size-3.5" strokeWidth={3} aria-hidden />
+                  </MealPlanBadgePopover>
+                </span>
+              )}
             <Badge
               variant="secondary"
-              className={cn(categoryColor, "border-0 font-medium")}
+              className={cn(
+                categoryColor,
+                "border-0 font-medium pointer-events-none",
+              )}
             >
               {categoryLabel}
             </Badge>
           </div>
-          <div className="absolute bottom-4 left-4 right-4">
+          <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
             <h3 className="text-xl font-bold text-white drop-shadow-lg line-clamp-2">
               {recipe.title}
             </h3>
@@ -106,8 +227,9 @@ export function RecipeCard({
             </div>
           </div>
         </CardContent>
-      </Card>
-    </Link>
+        </div>
+      </div>
+    </Card>
   );
 }
 
