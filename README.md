@@ -30,15 +30,15 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
-- [x] Production error when saving a shopping list from meal plan. Reason being is I could not edit a shopping list Amber created. That shopping list should have defaulted to household shared, even in draft state.
-- [x] The meal plan algorithm does not seem to include my own recipes. These should be a priority in the system
-- [x] Nice meal display on dashboard should always show what ever meal is next with text like “tomorrows meal” etc. the display is too good to not show something
+- [x] Meal-plan shopping lists default to household-shared in draft so collaborators can edit (e.g. shared household lists).
+- [x] Meal Plan generator prioritises the owner’s recipes in the suggestion pool.
+- [x] Dashboard meal spotlight surfaces the next planned meal with clear copy (e.g. tomorrow’s meal, weekday labels).
 - [ ] Review and plan improvements around the poor performance scores currently in Vercel.
 - [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
-- [ ] Household items should be opt out by default. For example, when creating a new recipe it should share to all households automatically. The recipe UI needs to show if something is shared at a glance.
-- [ ] In the fried rice recipe eggs are showing in a step that only contains chicken
-- [ ] Check if FAQ still has a no index tag
-- [x] As a super user, I need the ability to directly edit system recipes
+- [ ] New recipes: **opt-out by default** for household sharing—share to all linked households unless the user opts out; recipe UI should show shared state at a glance.
+- [ ] Fried rice recipe: eggs appear in a step that only mentions chicken (method / ingredient refs).
+- [ ] Confirm FAQ pages do not carry an unintended `noindex`.
+- [x] Super-users can edit system recipes in-app.
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 - [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, its all just vegetables on a table
 

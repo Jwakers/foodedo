@@ -10,7 +10,11 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, titleCase } from "@/lib/utils";
-import { isRecipeCategoryUsedByMealPlanGenerator } from "convex/lib/constants";
+import {
+  isRecipeCategoryUsedByMealPlanGenerator,
+  recipeHasMealPlanGeneratorMetadata,
+  recipeIsInMealPlanGeneratorPool,
+} from "convex/lib/constants";
 import type { RecipeListItem } from "./types";
 import { Ban, Check, Clock, Minus, Users, X } from "lucide-react";
 import Image from "next/image";
@@ -74,9 +78,8 @@ export function RecipeCard({
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";
 
-  /** In the generator pool sense: right category + metadata (matches listing / buildPool). */
-  const poolEligible =
-    categoryOkForPlanner && recipe.isGeneratorEligible === true;
+  /** Same predicate as weekly planner pool (category, opt-out, metadata / legacy flag). */
+  const poolEligible = recipeIsInMealPlanGeneratorPool(recipe);
 
   const recipeHref = `${ROUTES.RECIPE}/${recipe._id}`;
 
@@ -124,7 +127,7 @@ export function RecipeCard({
             )}
             {showMealPlanBadge &&
               categoryOkForPlanner &&
-              recipe.isGeneratorEligible !== true && (
+              !recipeHasMealPlanGeneratorMetadata(recipe) && (
                 <span className="pointer-events-auto shrink-0">
                   <MealPlanBadgePopover
                     className="size-6 rounded-full flex items-center justify-center border border-dashed border-muted-foreground text-muted-foreground"

@@ -16,7 +16,7 @@ import {
 } from "convex/lib/constants";
 import { useMutation } from "convex/react";
 import { Ban, CalendarCheck, CalendarX, Info, Minus } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Recipe } from "./recipe-client";
 
@@ -36,10 +36,16 @@ export function MealPlanEligibilitySection({
   const [pending, setPending] = useState(false);
 
   const excluded = recipe.excludeFromMealPlanGenerator === true;
+  const [included, setIncluded] = useState(!excluded);
+
+  useEffect(() => {
+    setIncluded(!excluded);
+  }, [excluded]);
   const categoryOk = isRecipeCategoryUsedByMealPlanGenerator(recipe.category);
   const hasGeneratorMeta = recipeHasMealPlanGeneratorMetadata(recipe);
 
   const handleIncludeChange = async (include: boolean) => {
+    setIncluded(include);
     setPending(true);
     try {
       await updateRecipe({
@@ -50,6 +56,7 @@ export function MealPlanEligibilitySection({
         include ? "Will be suggested in meal plans" : "Won’t be suggested",
       );
     } catch {
+      setIncluded(!include);
       toast.error("Couldn’t update setting.");
     } finally {
       setPending(false);
@@ -174,7 +181,7 @@ export function MealPlanEligibilitySection({
           </Label>
           <Switch
             id={switchId}
-            checked={!excluded}
+            checked={included}
             disabled={pending}
             onCheckedChange={handleIncludeChange}
             aria-label="Suggest this recipe in generated meal plans"

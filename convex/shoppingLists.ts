@@ -1215,10 +1215,13 @@ async function executeFinaliseDraftShoppingList(
         continue;
       }
 
+      // Items are tied to this list via `chalkboardItemIds`. Finaliser already passed
+      // `canModifyShoppingList` (owner or meal-plan/household collaborator). Remove
+      // matching rows regardless of `addedBy` so e.g. a collaborator can clear the
+      // owner's personal chalkboard lines attached to this draft.
       const canDelete =
-        cb.householdId === undefined
-          ? cb.addedBy === actingUser._id
-          : await isHouseholdMember(ctx, actingUser._id, cb.householdId);
+        cb.householdId === undefined ||
+        (await isHouseholdMember(ctx, actingUser._id, cb.householdId));
       if (!canDelete) continue;
 
       await ctx.db.delete(chalkboardItemId);

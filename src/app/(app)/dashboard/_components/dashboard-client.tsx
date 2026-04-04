@@ -185,15 +185,47 @@ function HeroSection() {
   } | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    setHeroDate({
-      label: now.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      }),
-      dateTime: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
-    });
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    function computeHeroDate(): {
+      label: string;
+      dateTime: string;
+    } {
+      const now = new Date();
+      return {
+        label: now.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }),
+        dateTime: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+      };
+    }
+
+    const msUntilNextLocalMidnight = () => {
+      const now = new Date();
+      const next = new Date(now);
+      next.setDate(next.getDate() + 1);
+      next.setHours(0, 0, 0, 0);
+      return Math.max(1, next.getTime() - now.getTime());
+    };
+
+    setHeroDate(computeHeroDate());
+
+    const scheduleNext = () => {
+      timeoutId = setTimeout(() => {
+        if (cancelled) return;
+        setHeroDate(computeHeroDate());
+        scheduleNext();
+      }, msUntilNextLocalMidnight());
+    };
+    scheduleNext();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, []);
 
   return (

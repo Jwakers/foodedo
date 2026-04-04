@@ -395,6 +395,19 @@ export const getRecipesForWeeklyPlan = query({
       }
     }
 
+    const recipeById = new Map<Id<"recipes">, Doc<"recipes">>();
+    for (const r of systemRecipes) recipeById.set(r._id, r);
+    for (const r of userRecipes) recipeById.set(r._id, r);
+    const householdOnlyIds = [...householdRecipeIds].filter(
+      (id) => !recipeById.has(id),
+    );
+    const householdRecipeDocs = await Promise.all(
+      householdOnlyIds.map((id) => ctx.db.get(id)),
+    );
+    for (const r of householdRecipeDocs) {
+      if (r) recipeById.set(r._id, r);
+    }
+
     // 4. Dedupe and sort deterministically; collect up to `limit` recipes that match generator pool rules
     const allIds = [
       ...new Set([...systemIds, ...userIds, ...householdRecipeIds]),
@@ -415,12 +428,8 @@ export const getRecipesForWeeklyPlan = query({
 
     for (const recipeId of allIds) {
       if (results.length >= limit) break;
-      const recipe = await ctx.db.get(recipeId);
+      const recipe = recipeById.get(recipeId);
       if (!recipe) continue;
-      if (recipe.source !== "system" && recipe.userId !== user._id) {
-        const { canAccess } = await canAccessRecipe(ctx, user._id, recipeId);
-        if (!canAccess) continue;
-      }
       if (!recipeIsInMealPlanGeneratorPool(recipe)) continue;
 
       const image = recipe.image

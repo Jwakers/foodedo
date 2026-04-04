@@ -1,7 +1,7 @@
 "use client";
 
 import { ROUTES, recipeUrlWithCookMode } from "@/app/constants";
-import { cn, startOfDayMs } from "@/lib/utils";
+import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -17,8 +17,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
 >;
@@ -28,7 +26,15 @@ type EntryWithRecipe = PlanEntry & {
 };
 
 function planDayMs(ms: number): number {
-  return startOfDayMs(ms);
+  return startOfLocalDayMs(ms);
+}
+
+/** Next local calendar day start after `localDayStartMs` (handles DST). */
+function addLocalCalendarDays(localDayStartMs: number, days: number): number {
+  const d = new Date(localDayStartMs);
+  d.setDate(d.getDate() + days);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
 }
 
 function pickFeaturedEntry(
@@ -57,7 +63,7 @@ type SpotlightResolved = {
 };
 
 function resolveSpotlight(plan: CurrentPlan | null): SpotlightResolved {
-  const todayMs = startOfDayMs(Date.now());
+  const todayMs = startOfLocalDayMs(Date.now());
 
   if (!plan?.entries?.length) {
     return {
@@ -120,10 +126,9 @@ function resolveSpotlight(plan: CurrentPlan | null): SpotlightResolved {
   };
 }
 
-function weekdayNameUtc(ms: number): string {
+function weekdayNameLocal(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, {
     weekday: "long",
-    timeZone: "UTC",
   });
 }
 
@@ -140,8 +145,8 @@ function primaryHeadline(
     if (label && /lunch/i.test(label)) return "Today at lunch";
     return "On the menu today";
   }
-  if (spotlightDayMs === todayMs + ONE_DAY_MS) return "Tomorrow";
-  return `${weekdayNameUtc(spotlightDayMs)}'s meal`;
+  if (spotlightDayMs === addLocalCalendarDays(todayMs, 1)) return "Tomorrow";
+  return `${weekdayNameLocal(spotlightDayMs)}'s meal`;
 }
 
 function alsoSectionLabel(
@@ -150,8 +155,8 @@ function alsoSectionLabel(
   todayMs: number,
 ): string {
   if (isSpotlightToday) return "Also today";
-  if (spotlightDayMs === todayMs + ONE_DAY_MS) return "Also tomorrow";
-  return `Also on ${weekdayNameUtc(spotlightDayMs)}`;
+  if (spotlightDayMs === addLocalCalendarDays(todayMs, 1)) return "Also tomorrow";
+  return `Also on ${weekdayNameLocal(spotlightDayMs)}`;
 }
 
 /** Subtle film grain as data-URI (SVG noise), low contrast */
