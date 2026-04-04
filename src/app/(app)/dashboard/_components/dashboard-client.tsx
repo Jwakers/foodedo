@@ -2,7 +2,6 @@
 
 import { getCannyBoardUrl } from "@/app/(app)/_components.tsx/canny-identify";
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { cn, startOfDayMs } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn, startOfDayMs } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -34,7 +34,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TodaysMealSpotlight } from "./todays-meal-spotlight";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
@@ -92,35 +92,9 @@ function MealPlanOverviewSection() {
     );
   }
 
+  /* No plan: TodaysMealSpotlight shows the primary CTA above — avoid duplicate card. */
   if (!currentPlan) {
-    return (
-      <Card className="mb-6 border-primary/20 bg-primary/5">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-primary/15 rounded-lg shrink-0">
-                <CalendarCheck className="size-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-foreground mb-1">
-                  Plan your week
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Add meals from your recipes and generate a shopping list in
-                  one place.
-                </p>
-              </div>
-            </div>
-            <Button asChild className="shrink-0">
-              <Link href={ROUTES.MEAL_PLAN}>
-                <CalendarCheck className="size-4 mr-2" />
-                Create meal plan
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const displayStart =
@@ -198,39 +172,55 @@ function MealPlanOverviewSection() {
 
 function HeroSection() {
   const { user } = useUser();
-  const firstName = user?.firstName || "there";
+  const firstName = user?.firstName?.trim();
+  const welcomeTitle =
+    firstName && firstName.length > 0
+      ? `Welcome back, ${firstName}`
+      : "Welcome back";
+
+  /** Client-only: avoids hydration mismatch (server default locale/time ≠ browser). */
+  const [heroDate, setHeroDate] = useState<{
+    label: string;
+    dateTime: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const now = new Date();
+    setHeroDate({
+      label: now.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }),
+      dateTime: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+    });
+  }, []);
 
   return (
-    <div className="relative overflow-hidden bg-linear-to-br from-primary/10 via-primary/5 to-background rounded-xl border border-primary/20 p-6 mb-6">
-      <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-      <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-
-      <div className="relative">
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          Welcome back, {firstName}!
+    <header className="mb-8 min-w-0">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          {welcomeTitle}
         </h1>
-        <p className="text-muted-foreground mb-4">
-          Check out your meal plan, recipes, or create a shopping list.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild className="shadow-md">
-            <Link href={ROUTES.MEAL_PLAN}>
-              <CalendarCheck className="size-4 mr-2" />
-              Meal plan
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={ROUTES.SHOPPING_LIST}>
-              <ShoppingCart className="size-4 mr-2" />
-              Shopping list
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={ROUTES.MY_RECIPES}>View My Recipes</Link>
-          </Button>
-        </div>
+        {heroDate ? (
+          <time
+            dateTime={heroDate.dateTime}
+            className="shrink-0 text-sm text-muted-foreground tabular-nums sm:text-right"
+          >
+            {heroDate.label}
+          </time>
+        ) : (
+          <span
+            className="shrink-0 inline-block h-5 min-w-[12rem] rounded-md bg-muted/50 animate-pulse sm:text-right"
+            aria-hidden
+          />
+        )}
       </div>
-    </div>
+      <div
+        className="mt-6 h-px w-full max-w-md bg-linear-to-r from-primary/40 via-primary/15 to-transparent"
+        aria-hidden
+      />
+    </header>
   );
 }
 
@@ -445,7 +435,7 @@ function FeedbackSection() {
   const cannyBoardUrl = baseCannyBoardUrl ? getCannyBoardUrl(pathname) : null;
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-accent/20 via-accent/10 to-background rounded-xl border border-accent/30 p-6 mb-6">
+    <div className="relative overflow-hidden bg-gradient-to-br from-accent/20 via-accent/10 to-background rounded-xl border border-accent/30 p-6">
       <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-accent/20 blur-2xl" />
       <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-accent/20 blur-2xl" />
 
@@ -556,9 +546,8 @@ export default function DashboardClient() {
       <HeroSection />
       <TodaysMealSpotlight />
       <MealPlanOverviewSection />
-      <HouseholdsSection />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Activity Feed */}
         <div className="lg:col-span-1 order-2 lg:order-1">
           <RecentActivitySection data={recentActivity} />
@@ -568,11 +557,9 @@ export default function DashboardClient() {
         <div className="lg:col-span-2 order-1 lg:order-2">
           <BentoGrid />
         </div>
-
-        <div className="order-3 lg:order-3 col-span-full">
-          <FeedbackSection />
-        </div>
       </div>
+      <HouseholdsSection />
+      <FeedbackSection />
     </div>
   );
 }

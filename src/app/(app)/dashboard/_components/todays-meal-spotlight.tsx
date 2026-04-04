@@ -5,10 +5,19 @@ import { cn, startOfDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { ArrowRight, ChefHat, Clock, Flame, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  ChefHat,
+  Clock,
+  Flame,
+  Sparkles,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
@@ -18,15 +27,8 @@ type EntryWithRecipe = PlanEntry & {
   recipe: NonNullable<PlanEntry["recipe"]>;
 };
 
-function todaysEntriesWithRecipes(
-  plan: CurrentPlan | null | undefined,
-): EntryWithRecipe[] {
-  if (!plan?.entries?.length) return [];
-  const today = startOfDayMs(Date.now());
-  return plan.entries.filter(
-    (e): e is EntryWithRecipe =>
-      e.date === today && e.recipe !== null && e.recipe !== undefined,
-  );
+function planDayMs(ms: number): number {
+  return startOfDayMs(ms);
 }
 
 function pickFeaturedEntry(
@@ -46,6 +48,112 @@ function pickFeaturedEntry(
   return [...entries].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))[0];
 }
 
+type SpotlightResolved = {
+  featured: EntryWithRecipe | null;
+  rest: EntryWithRecipe[];
+  spotlightDayMs: number | null;
+  isSpotlightToday: boolean;
+  todayMs: number;
+};
+
+function resolveSpotlight(plan: CurrentPlan | null): SpotlightResolved {
+  const todayMs = startOfDayMs(Date.now());
+
+  if (!plan?.entries?.length) {
+    return {
+      featured: null,
+      rest: [],
+      spotlightDayMs: null,
+      isSpotlightToday: true,
+      todayMs,
+    };
+  }
+
+  const withRecipes = plan.entries.filter(
+    (e): e is EntryWithRecipe =>
+      e.recipe !== null && e.recipe !== undefined,
+  );
+  const todayList = withRecipes.filter((e) => planDayMs(e.date) === todayMs);
+
+  let spotlightDayMs: number;
+  let list: EntryWithRecipe[];
+
+  if (todayList.length > 0) {
+    spotlightDayMs = todayMs;
+    list = todayList;
+  } else {
+    const futureDays = new Set<number>();
+    for (const e of withRecipes) {
+      const d = planDayMs(e.date);
+      if (d >= todayMs) futureDays.add(d);
+    }
+    if (futureDays.size === 0) {
+      return {
+        featured: null,
+        rest: [],
+        spotlightDayMs: null,
+        isSpotlightToday: true,
+        todayMs,
+      };
+    }
+    spotlightDayMs = Math.min(...futureDays);
+    list = withRecipes.filter((e) => planDayMs(e.date) === spotlightDayMs);
+  }
+
+  const featured = pickFeaturedEntry(list);
+  if (!featured) {
+    return {
+      featured: null,
+      rest: [],
+      spotlightDayMs,
+      isSpotlightToday: spotlightDayMs === todayMs,
+      todayMs,
+    };
+  }
+
+  return {
+    featured,
+    rest: list.filter((e) => e._id !== featured._id),
+    spotlightDayMs,
+    isSpotlightToday: spotlightDayMs === todayMs,
+    todayMs,
+  };
+}
+
+function weekdayNameUtc(ms: number): string {
+  return new Date(ms).toLocaleDateString(undefined, {
+    weekday: "long",
+    timeZone: "UTC",
+  });
+}
+
+function primaryHeadline(
+  isSpotlightToday: boolean,
+  spotlightDayMs: number,
+  todayMs: number,
+  mealLabel: string | undefined,
+): string {
+  if (isSpotlightToday) {
+    const label = mealLabel?.trim();
+    if (label && /dinner|supper|evening/i.test(label)) return "Tonight";
+    if (label && /breakfast|morning/i.test(label)) return "This morning";
+    if (label && /lunch/i.test(label)) return "Today at lunch";
+    return "On the menu today";
+  }
+  if (spotlightDayMs === todayMs + ONE_DAY_MS) return "Tomorrow";
+  return `${weekdayNameUtc(spotlightDayMs)}'s meal`;
+}
+
+function alsoSectionLabel(
+  isSpotlightToday: boolean,
+  spotlightDayMs: number,
+  todayMs: number,
+): string {
+  if (isSpotlightToday) return "Also today";
+  if (spotlightDayMs === todayMs + ONE_DAY_MS) return "Also tomorrow";
+  return `Also on ${weekdayNameUtc(spotlightDayMs)}`;
+}
+
 /** Subtle film grain as data-URI (SVG noise), low contrast */
 const grainOverlay =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E\")";
@@ -53,17 +161,10 @@ const grainOverlay =
 export function TodaysMealSpotlight() {
   const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);
 
-  const { featured, rest } = useMemo(() => {
-    const list = todaysEntriesWithRecipes(currentPlan ?? null);
-    const f = pickFeaturedEntry(list);
-    if (!f) {
-      return {
-        featured: null as EntryWithRecipe | null,
-        rest: [] as EntryWithRecipe[],
-      };
-    }
-    return { featured: f, rest: list.filter((e) => e._id !== f._id) };
-  }, [currentPlan]);
+  const { featured, rest, spotlightDayMs, isSpotlightToday, todayMs } = useMemo(
+    () => resolveSpotlight(currentPlan ?? null),
+    [currentPlan],
+  );
 
   if (currentPlan === undefined) {
     return (
@@ -74,7 +175,70 @@ export function TodaysMealSpotlight() {
     );
   }
 
-  if (!featured) return null;
+  if (currentPlan === null) {
+    return (
+      <article
+        className={cn(
+          "mb-6 overflow-hidden rounded-2xl border border-primary/25 bg-card text-left shadow-xl shadow-black/10 ring-1 ring-black/5 dark:ring-white/10",
+          "bg-linear-to-br from-primary/12 via-card to-card dark:from-primary/20",
+        )}
+      >
+        <div className="relative isolate px-6 py-10 sm:px-10 sm:py-12 md:px-12 md:py-14">
+          <div
+            className="pointer-events-none absolute inset-0 bg-size-[256px_256px] opacity-[0.08] mix-blend-overlay"
+            style={{ backgroundImage: grainOverlay }}
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-primary/20 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -bottom-20 -left-10 size-72 rounded-full bg-amber-400/10 blur-3xl dark:bg-amber-300/15"
+            aria-hidden
+          />
+
+          <div className="relative z-10 max-w-xl">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary",
+                )}
+              >
+                <Sparkles className="size-3.5" aria-hidden />
+                Meal planning
+              </span>
+            </div>
+            <h2 className="mb-3 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+              Your week starts with a plan
+            </h2>
+            <p className="mb-8 text-base leading-relaxed text-muted-foreground sm:text-lg">
+              Drop in recipes, see what&apos;s cooking day by day, and spin up a
+              shopping list in one go. When you&apos;re ready, we&apos;ll put your
+              next meal right here.
+            </p>
+            <Link
+              href={ROUTES.MEAL_PLAN}
+              className={cn(
+                "group/cta inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25",
+                "transition-all duration-300 hover:bg-primary/90 hover:shadow-primary/35",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              )}
+            >
+              <CalendarDays className="size-4 shrink-0" aria-hidden />
+              Create a meal plan
+              <ArrowRight
+                className="size-4 transition-transform duration-300 group-hover/cta:translate-x-1"
+                aria-hidden
+              />
+            </Link>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  if (!featured || spotlightDayMs === null) return null;
 
   const recipe = featured.recipe;
   const href = `${ROUTES.RECIPE}/${recipe._id}`;
@@ -82,16 +246,22 @@ export function TodaysMealSpotlight() {
   const totalMins =
     recipe.totalTimeMinutes ?? (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const label = featured.mealLabel?.trim();
-  const headline =
-    label && /dinner|supper|evening/i.test(label)
-      ? "Tonight"
-      : label && /breakfast|morning/i.test(label)
-        ? "This morning"
-        : label && /lunch/i.test(label)
-          ? "Today at lunch"
-          : "On the menu today";
+  const headline = primaryHeadline(
+    isSpotlightToday,
+    spotlightDayMs,
+    todayMs,
+    label,
+  );
+  const secondaryChip = isSpotlightToday
+    ? "From your meal plan"
+    : "Coming up";
 
   const hasMore = rest.length > 0;
+  const alsoLabel = alsoSectionLabel(
+    isSpotlightToday,
+    spotlightDayMs,
+    todayMs,
+  );
 
   return (
     <article
@@ -185,7 +355,7 @@ export function TodaysMealSpotlight() {
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/20 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm">
                 <Sparkles className="size-3.5 text-amber-200/90" aria-hidden />
-                From your meal plan
+                {secondaryChip}
               </span>
             </div>
 
@@ -263,7 +433,7 @@ export function TodaysMealSpotlight() {
             aria-hidden
           />
           <p className="mb-2.5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            Also today
+            {alsoLabel}
           </p>
           <div className="flex flex-wrap gap-2">
             {rest.map((e) => (
