@@ -21,6 +21,7 @@ import {
   COMPLEXITY_TIERS,
   CUISINES,
   CUISINE_MAX_SELECTIONS,
+  isRecipeCategoryUsedByMealPlanGenerator,
   PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
 } from "convex/lib/constants";
@@ -37,8 +38,16 @@ interface EditableRecipeMetaProps {
 export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
   const prepTime = form.watch("prepTime");
   const cookTime = form.watch("cookTime");
+  const category = form.watch("category");
+  const primaryProtein = form.watch("primaryProtein");
+  const complexityTier = form.watch("complexityTier");
   const totalTime =
     (prepTime ?? recipe.prepTime ?? 0) + (cookTime ?? recipe.cookTime ?? 0);
+  const categoryForPlanner = category ?? recipe.category;
+  const categoryOkForPlanner =
+    isRecipeCategoryUsedByMealPlanGenerator(categoryForPlanner);
+  const mealPlanMetaMissing =
+    primaryProtein == null || complexityTier == null;
 
   return (
     <Card className="mb-6">
@@ -152,6 +161,24 @@ export function EditableRecipeMeta({ recipe, form }: EditableRecipeMetaProps) {
           <p className="mb-3 text-sm font-medium text-muted-foreground">
             Meal planning (optional)
           </p>
+          {!categoryOkForPlanner && (
+            <p className="mb-3 text-xs text-muted-foreground leading-relaxed">
+              With category{" "}
+              <span className="font-medium text-foreground/80">
+                {titleCase(categoryForPlanner)}
+              </span>
+              , this recipe is never auto-picked. Only breakfast, lunch,
+              dinner, and mains are used for generated weeks.
+            </p>
+          )}
+          {categoryOkForPlanner && mealPlanMetaMissing && (
+            <p className="mb-3 text-xs text-muted-foreground leading-relaxed">
+              Set <span className="font-medium text-foreground/80">primary protein</span>{" "}
+              and <span className="font-medium text-foreground/80">complexity</span>{" "}
+              below so the weekly planner can suggest this recipe. Both are
+              required.
+            </p>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}

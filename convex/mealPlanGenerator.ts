@@ -10,9 +10,11 @@ import type { Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { canAccessRecipe } from "./households";
 import {
+  LIBRARY_MEAL_PLAN_WEIGHT_MULTIPLIER,
   MAX_CUISINE_PER_WEEK,
   MAX_PRIMARY_PROTEIN_PER_WEEK,
   RECENTLY_SUGGESTED_DAYS,
+  recipeIsInMealPlanGeneratorPool,
   SMOOTHING,
   SMOOTHING_FACTOR,
 } from "./lib/constants";
@@ -25,6 +27,8 @@ export type PoolRecipe = {
   complexityTier?: string | null;
   cuisine?: string[] | null;
   editorialBias?: number | null;
+  /** System (Discover) catalog recipes are not boosted; user and household recipes are. */
+  isSystem: boolean;
 };
 
 export type BehaviourStatsMap = Map<
@@ -46,6 +50,7 @@ export async function buildPool(
 
   const addIfEligible = (r: {
     _id: Id<"recipes">;
+    category?: string | null;
     primaryProtein?: string | null;
     complexityTier?: string | null;
     cuisine?: string[] | null;
@@ -53,15 +58,10 @@ export async function buildPool(
     isGeneratorEligible?: boolean | null;
     source?: string | null;
     userId?: Id<"users"> | null;
+    excludeFromMealPlanGenerator?: boolean | null;
   }) => {
     if (seenIds.has(r._id)) return;
-    // Spec 8: required metadata (MVP) or explicit isGeneratorEligible
-    const hasMetadata =
-      r.primaryProtein != null &&
-      r.primaryProtein !== "" &&
-      r.complexityTier != null &&
-      r.complexityTier !== "";
-    if (!r.isGeneratorEligible && !hasMetadata) return;
+    if (!recipeIsInMealPlanGeneratorPool(r)) return;
     seenIds.add(r._id);
     pool.push({
       _id: r._id,
@@ -69,6 +69,7 @@ export async function buildPool(
       complexityTier: r.complexityTier,
       cuisine: r.cuisine,
       editorialBias: r.editorialBias,
+      isSystem: r.source === "system",
     });
   };
 
@@ -221,7 +222,8 @@ export function weight(
     if (countByCuisine(alreadySelected, c) >= cuisineCap) return 0;
   }
 
-  return score * bias;
+  const libraryBoost = recipe.isSystem ? 1 : LIBRARY_MEAL_PLAN_WEIGHT_MULTIPLIER;
+  return score * bias * libraryBoost;
 }
 
 /**

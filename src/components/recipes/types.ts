@@ -12,6 +12,8 @@ export type RecipeListItem = {
   updatedAt?: number;
   _creationTime?: number;
   isGeneratorEligible?: boolean | null;
+  /** User opted out of the weekly meal plan generator for this recipe. */
+  excludeFromMealPlanGenerator?: boolean | null;
   primaryProtein?: string | null;
   complexityTier?: string | null;
   totalTimeMinutes?: number | null;

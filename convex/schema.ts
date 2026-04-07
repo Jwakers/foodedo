@@ -123,6 +123,8 @@ export default defineSchema({
     totalTimeMinutes: v.optional(v.number()),
     editorialBias: v.optional(v.number()), // (0, 2]; neutral = 1
     isGeneratorEligible: v.optional(v.boolean()),
+    /** When true, recipe is omitted from the weekly meal plan generator pool (default: included). */
+    excludeFromMealPlanGenerator: v.optional(v.boolean()),
     /** URL segment for public discover pages; unique among system recipes when set */
     publicSlug: v.optional(v.string()),
   })

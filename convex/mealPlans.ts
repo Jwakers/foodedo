@@ -486,6 +486,7 @@ export const regenerateWeeklyPlan = mutation({
             complexityTier: recipe.complexityTier,
             cuisine: recipe.cuisine,
             editorialBias: recipe.editorialBias,
+            isSystem: recipe.source === "system",
           });
       }
 

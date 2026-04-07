@@ -90,7 +90,7 @@ export function RecipeHeader({
           </div>
         )}
       </div>
-      <div className="mb-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
+      <div className="mb-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-8">
         {isEditMode ? (
           <div className="space-y-4 min-w-0 flex-1">
             <FormField
@@ -124,18 +124,20 @@ export function RecipeHeader({
             />
           </div>
         ) : (
-          <>
-            <div className="flex flex-col gap-2 min-w-0 flex-1">
-              <h1 className="md:text-4xl text-2xl font-bold">{recipe.title}</h1>
-              {recipe.description && (
-                <p className="md:text-lg text-sm max-w-2xl">
-                  {recipe.description}
-                </p>
-              )}
-            </div>
-            <MealPlanEligibilitySection recipe={recipe} />
-          </>
+          <div className="flex flex-col gap-2 min-w-0 flex-1">
+            <h1 className="md:text-4xl text-2xl font-bold">{recipe.title}</h1>
+            {recipe.description && (
+              <p className="md:text-lg text-sm max-w-2xl">
+                {recipe.description}
+              </p>
+            )}
+          </div>
         )}
+        <MealPlanEligibilitySection
+          recipe={recipe}
+          canManageMealPlanToggle={canEdit}
+          className="w-full md:w-auto md:max-w-50 md:shrink-0"
+        />
       </div>
       {/* Recipe Meta */}
       <div className="flex flex-wrap items-center gap-6 mb-6">

@@ -25,3 +25,10 @@ export function startOfDayMs(ms: number): number {
   d.setUTCHours(0, 0, 0, 0);
   return d.getTime();
 }
+
+/** Start of calendar day in the viewer's local timezone (ms since epoch). */
+export function startOfLocalDayMs(ms: number): number {
+  const d = new Date(ms);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}

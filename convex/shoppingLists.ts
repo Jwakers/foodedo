@@ -27,10 +27,14 @@ import {
 // QA / migration: older lists may lack householdId; household visibility for
 // recipe-created lists applies to new rows. Optional backfill: copy mealPlans.householdId
 // onto shoppingLists where mealPlanId is set and householdId is unset.
+//
+// Meal-plan lists (`mealPlanId`): users who pass canAccessShoppingList may also finalize,
+// complete, delete, and unfinalise (see canModifyShoppingList), not only the document owner.
 
 /**
  * User can access a shopping list if they own it, are in the list household (when shared),
  * or have access to its linked meal plan. `isPrivate` limits visibility to the owner only.
+ * For lists with `mealPlanId`, this is the same access bar used for full lifecycle actions.
  */
 export async function canAccessShoppingList(
   ctx: QueryCtx,
@@ -52,14 +56,31 @@ export async function canAccessShoppingList(
 }
 
 /**
- * User can modify or perform destructive actions on a shopping list only if they own it.
- * Use this for delete, finalise, complete, and unfinalise; use canAccessShoppingList for view/edit items.
+ * Full management (finalize, complete, delete, unfinalise) for lists without a meal plan: owner only.
+ * Lists created from a meal plan (`mealPlanId`) also allow any user who passes `canAccessShoppingList`
+ * (same bar as viewing/editing lines). Item-level mutations still use `canAccessShoppingList` directly.
  */
-function canModifyShoppingList(
+async function canModifyShoppingList(
+  ctx: QueryCtx | MutationCtx,
   userId: Id<"users">,
-  list: Doc<"shoppingLists">
-): boolean {
-  return list.userId === userId;
+  list: Doc<"shoppingLists">,
+): Promise<boolean> {
+  if (list.userId === userId) return true;
+  if (list.mealPlanId !== undefined) {
+    return await canAccessShoppingList(ctx, userId, list);
+  }
+  return false;
+}
+
+function manageDeniedMessage(
+  list: Doc<"shoppingLists">,
+  userId: Id<"users">,
+  ownerOnlyMessage: string,
+): string {
+  if (list.mealPlanId !== undefined && list.userId !== userId) {
+    return "You do not have access to this shopping list";
+  }
+  return ownerOnlyMessage;
 }
 
 /** Chalkboard rows the user may attach to a list (personal owner or household member). Preserves order, dedupes IDs. */
@@ -988,9 +1009,13 @@ export const completeShoppingList = mutation({
       throw new ConvexError("Shopping list not found");
     }
 
-    if (!canModifyShoppingList(user._id, list)) {
+    if (!(await canModifyShoppingList(ctx, user._id, list))) {
       throw new ConvexError(
-        "Only the list owner can complete this shopping list"
+        manageDeniedMessage(
+          list,
+          user._id,
+          "Only the list owner can complete this shopping list",
+        ),
       );
     }
 
@@ -1023,9 +1048,13 @@ export const deleteShoppingList = mutation({
       throw new ConvexError("Shopping list not found");
     }
 
-    if (!canModifyShoppingList(user._id, list)) {
+    if (!(await canModifyShoppingList(ctx, user._id, list))) {
       throw new ConvexError(
-        "Only the list owner can delete this shopping list"
+        manageDeniedMessage(
+          list,
+          user._id,
+          "Only the list owner can delete this shopping list",
+        ),
       );
     }
 
@@ -1061,9 +1090,13 @@ export const unfinaliseShoppingList = mutation({
       throw new ConvexError("Shopping list not found");
     }
 
-    if (!canModifyShoppingList(user._id, list)) {
+    if (!(await canModifyShoppingList(ctx, user._id, list))) {
       throw new ConvexError(
-        "Only the list owner can un-finalise this shopping list"
+        manageDeniedMessage(
+          list,
+          user._id,
+          "Only the list owner can un-finalise this shopping list",
+        ),
       );
     }
 
@@ -1125,9 +1158,13 @@ async function executeFinaliseDraftShoppingList(
   list: Doc<"shoppingLists">,
   actingUser: Doc<"users">,
 ): Promise<void> {
-  if (!canModifyShoppingList(actingUser._id, list)) {
+  if (!(await canModifyShoppingList(ctx, actingUser._id, list))) {
     throw new ConvexError(
-      "Only the list owner can finalize this shopping list",
+      manageDeniedMessage(
+        list,
+        actingUser._id,
+        "Only the list owner can finalize this shopping list",
+      ),
     );
   }
 
@@ -1178,10 +1215,13 @@ async function executeFinaliseDraftShoppingList(
         continue;
       }
 
+      // Items are tied to this list via `chalkboardItemIds`. Finaliser already passed
+      // `canModifyShoppingList` (owner or meal-plan/household collaborator). Remove
+      // matching rows regardless of `addedBy` so e.g. a collaborator can clear the
+      // owner's personal chalkboard lines attached to this draft.
       const canDelete =
-        cb.householdId === undefined
-          ? cb.addedBy === actingUser._id
-          : await isHouseholdMember(ctx, actingUser._id, cb.householdId);
+        cb.householdId === undefined ||
+        (await isHouseholdMember(ctx, actingUser._id, cb.householdId));
       if (!canDelete) continue;
 
       await ctx.db.delete(chalkboardItemId);
@@ -1208,9 +1248,13 @@ export const trimDraftItemsAndFinaliseShoppingList = mutation({
       throw new ConvexError("Shopping list not found");
     }
 
-    if (!canModifyShoppingList(user._id, list)) {
+    if (!(await canModifyShoppingList(ctx, user._id, list))) {
       throw new ConvexError(
-        "Only the list owner can finalize this shopping list",
+        manageDeniedMessage(
+          list,
+          user._id,
+          "Only the list owner can finalize this shopping list",
+        ),
       );
     }
 
