@@ -30,8 +30,8 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
-- [x] Meal-plan shopping lists default to household-shared in draft so collaborators can edit (e.g. shared household lists).
-- [x] Meal Plan generator prioritises the owner’s recipes in the suggestion pool.
+- [x] Meal Plan shopping lists default to household-shared in draft so collaborators can edit (e.g. shared household lists).
+- [x] Meal Plan Generator prioritises the owner’s recipes in the suggestion pool.
 - [x] Dashboard meal spotlight surfaces the next planned meal with clear copy (e.g. tomorrow’s meal, weekday labels).
 - [ ] Review and plan improvements around the poor performance scores currently in Vercel.
 - [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)

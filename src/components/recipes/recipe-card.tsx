@@ -80,6 +80,10 @@ export function RecipeCard({
 
   /** Same predicate as weekly planner pool (category, opt-out, metadata / legacy flag). */
   const poolEligible = recipeIsInMealPlanGeneratorPool(recipe);
+  const wouldBePoolEligible = recipeIsInMealPlanGeneratorPool({
+    ...recipe,
+    excludeFromMealPlanGenerator: false,
+  });
 
   const recipeHref = `${ROUTES.RECIPE}/${recipe._id}`;
 
@@ -151,8 +155,8 @@ export function RecipeCard({
                 </span>
               )}
             {showMealPlanBadge &&
-              poolEligible &&
-              recipe.excludeFromMealPlanGenerator === true && (
+              recipe.excludeFromMealPlanGenerator === true &&
+              wouldBePoolEligible && (
                 <span className="pointer-events-auto shrink-0">
                   <MealPlanBadgePopover
                     className="size-6 rounded-full flex items-center justify-center border border-amber-600/70 bg-amber-500/15 text-amber-700 dark:border-amber-500/60 dark:text-amber-400"
@@ -168,9 +172,7 @@ export function RecipeCard({
                   </MealPlanBadgePopover>
                 </span>
               )}
-            {showMealPlanBadge &&
-              poolEligible &&
-              recipe.excludeFromMealPlanGenerator !== true && (
+            {showMealPlanBadge && poolEligible && (
                 <span className="pointer-events-auto shrink-0">
                   <MealPlanBadgePopover
                     className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center"

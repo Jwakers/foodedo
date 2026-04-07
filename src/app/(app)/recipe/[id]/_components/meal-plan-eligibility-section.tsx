@@ -164,10 +164,10 @@ export function MealPlanEligibilitySection({
           className="text-[11px] leading-snug text-muted-foreground md:max-w-52 md:ml-auto"
           title={statusTitle}
         >
-          In Recipe details, set{" "}
+          To be eligible for meal plan generation, set{" "}
           <span className="text-foreground/85">primary protein</span> and{" "}
-          <span className="text-foreground/85">complexity</span>. To be eligible
-          for the meal plan generation.
+          <span className="text-foreground/85">complexity</span> in Recipe
+          details.
         </p>
       )}
 
