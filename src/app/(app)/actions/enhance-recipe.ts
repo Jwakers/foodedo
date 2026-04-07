@@ -74,6 +74,8 @@ export type EnhancedRecipePayload = {
   method: RecipeMethodStep[];
 };
 
+const RECIPE_ENHANCER_MODEL = "anthropic/claude-sonnet-4.6";
+
 export async function enhanceRecipeWithAI(
   rawInput: unknown,
 ): Promise<
@@ -122,12 +124,12 @@ export async function enhanceRecipeWithAI(
   const systemPrompt = `You are an expert recipe editor. Your task is to improve a recipe's description, ingredients list, method, and timing estimates based on the user's feedback.
 
 RULES:
-- Preserve the recipe's intent and all existing information unless the user asks to change it.
+- Preserve the recipe's intent and important details unless the user asks to change them.
 - Apply the user's enhancement prompt precisely (e.g. clarify timings, add notes, fix wording, add missing steps, improve the recipe description).
 - Keep the same structure: a short recipe description (if present), an ingredients list, and numbered method steps.
 - The recipe description is a short summary or intro (1-3 sentences). Update it if the user's feedback implies it should be clearer or more accurate.
-- For ingredients: use only the allowed units and preparations below. If an ingredient has no unit or preparation, omit those fields.
-- For method steps: each step has a short title (3-5 words) and a longer description. Keep steps clear and in order.
+- For ingredients: prefer the allowed units and preparations below. If none fit naturally, use null for unit/preparation rather than forcing an awkward value.
+- For method steps: each step should have a concise title and a clear description. Keep steps in order and easy to follow.
 - Timing: return "prepTime" and "cookTime" as whole minutes (non-negative integers). Prep is hands-on prep; cook is active cooking or baking time. If the recipe has no separate cook phase, use 0 for cookTime. Adjust these when the method or description implies different durations; otherwise keep the current values.
 
 ${unitsString}
@@ -138,7 +140,7 @@ Return a JSON object with these keys: "description" (string, the improved recipe
 
   try {
     const result = await generateText({
-      model: "openai/gpt-4o-mini",
+      model: RECIPE_ENHANCER_MODEL,
       system: systemPrompt,
       prompt: `Recipe: ${title}
 
