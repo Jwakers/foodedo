@@ -6,7 +6,7 @@ import { trackEvent } from "@/lib/analytics/posthog-client";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { RECIPE_CREATION_SOURCES } from "convex/lib/constants";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
@@ -19,6 +19,7 @@ import { type ParsedRecipeForDB } from "@/lib/types/recipe-parser";
 export type RecipeCreationSource = (typeof RECIPE_CREATION_SOURCES)[number];
 
 export function useRecipeSave() {
+  const households = useQuery(api.households.getUserHouseholds);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedRecipeId, setSavedRecipeId] = useState<Id<"recipes"> | null>(
@@ -141,6 +142,9 @@ export function useRecipeSave() {
         primaryProtein: validatedRecipe.primaryProtein ?? undefined,
         complexityTier: validatedRecipe.complexityTier ?? undefined,
         cuisine: validatedRecipe.cuisine,
+        ...(households !== undefined && households.length > 1
+          ? { householdId: households[0]!._id }
+          : {}),
       });
 
       if (mutationError) {

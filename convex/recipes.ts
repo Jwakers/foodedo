@@ -1,8 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
-import type { QueryCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
-import { canAccessRecipe } from "./households";
+import { canAccessRecipe, resolveDefaultHouseholdIdForSharing } from "./households";
 import { resolveIngredientIdFromList } from "./ingredients";
 import {
   buildCanonicalIngredientDocsMap,
@@ -31,6 +31,36 @@ import {
   getCurrentUserOrThrow,
   getUserSubscription,
 } from "./users";
+
+/** After creating a user recipe, link to household when the user has a resolvable default (or explicit) household. */
+async function shareNewRecipeToHouseholdIfApplicable(
+  ctx: MutationCtx,
+  ownerId: Id<"users">,
+  recipeId: Id<"recipes">,
+  explicitHouseholdId: Id<"households"> | undefined,
+): Promise<void> {
+  const hid = await resolveDefaultHouseholdIdForSharing(
+    ctx,
+    ownerId,
+    explicitHouseholdId,
+  );
+  if (hid === undefined) return;
+
+  const existing = await ctx.db
+    .query("householdRecipes")
+    .withIndex("by_household_and_recipe", (q) =>
+      q.eq("householdId", hid).eq("recipeId", recipeId),
+    )
+    .unique();
+  if (existing) return;
+
+  await ctx.db.insert("householdRecipes", {
+    householdId: hid,
+    recipeId,
+    sharedByUserId: ownerId,
+    sharedAt: Date.now(),
+  });
+}
 
 type MethodStepWithImage = {
   title: string;
@@ -494,8 +524,11 @@ export const getRecentActivity = query({
 });
 
 export const createEmptyRecipe = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    /** When omitted, uses the user's only household if they have exactly one; if they have several, pass one to share there. */
+    householdId: v.optional(v.id("households")),
+  },
+  handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
     const subscription = await getUserSubscription(user, ctx);
 
@@ -526,6 +559,13 @@ export const createEmptyRecipe = mutation({
       source: "user",
       updatedAt: Date.now(),
     });
+
+    await shareNewRecipeToHouseholdIfApplicable(
+      ctx,
+      user._id,
+      recipeId,
+      args.householdId,
+    );
 
     return { recipeId, error: null };
   },
@@ -569,6 +609,7 @@ export const createRecipe = mutation({
     primaryProtein: v.optional(primaryProteinUnion),
     complexityTier: v.optional(complexityTierUnion),
     cuisine: v.optional(v.array(cuisineUnion)),
+    householdId: v.optional(v.id("households")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -678,6 +719,13 @@ export const createRecipe = mutation({
     if (!recipe) throw new ConvexError("Recipe not found");
 
     const errors = _validateRecipe(recipe);
+
+    await shareNewRecipeToHouseholdIfApplicable(
+      ctx,
+      user._id,
+      recipeId,
+      args.householdId,
+    );
 
     return {
       recipeId,

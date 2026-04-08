@@ -11,6 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import useShare from "@/lib/hooks/use-share";
@@ -34,6 +41,7 @@ import {
   Printer,
   Share2,
   ShoppingCart,
+  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -51,6 +59,8 @@ function namesEqual(a: string, b: string): boolean {
 
 interface ShoppingListProps {
   shoppingList: ShoppingList;
+  /** For in-app sharing controls (owner only); distinct from chalkboard household query below. */
+  sharingHouseholds?: { _id: Id<"households">; name: string }[];
   onConfirm: () => void | Promise<void>;
   onBack: () => void;
   onDone: () => void;
@@ -62,6 +72,7 @@ interface ShoppingListProps {
 
 export default function ShoppingList({
   shoppingList,
+  sharingHouseholds = [],
   onConfirm,
   onDone,
   onBack,
@@ -88,8 +99,23 @@ export default function ShoppingList({
   const trimDraftItemsAndFinaliseShoppingList = useMutation(
     api.shoppingLists.trimDraftItemsAndFinaliseShoppingList,
   );
+  const updateShoppingListSharing = useMutation(
+    api.shoppingLists.updateShoppingListSharing,
+  );
 
   const isFinalised = shoppingList.status === "active";
+  const isOwner = shoppingList.isOwner === true;
+  /** Two-option UX: shared with a household, or only you (strict private in the app). */
+  const sharingVisibility = useMemo(() => {
+    if (shoppingList.householdId) return "household" as const;
+    return "private" as const;
+  }, [shoppingList.householdId]);
+  const [shareHouseholdId, setShareHouseholdId] = useState<
+    Id<"households"> | ""
+  >(() => shoppingList.householdId ?? "");
+  useEffect(() => {
+    setShareHouseholdId(shoppingList.householdId ?? "");
+  }, [shoppingList.householdId]);
   const ingredientIds = useMemo(
     () =>
       shoppingList.items
@@ -591,6 +617,117 @@ export default function ShoppingList({
                   : `${draftTripItemCount} for this shop`}
               </Badge>
             </div>
+
+            {isOwner ? (
+              <div className="mb-6 space-y-2 rounded-lg border border-border bg-muted/30 p-4">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Users className="size-4 shrink-0 text-muted-foreground" />
+                  Who can see this list in the app?
+                </div>
+                <Select
+                  value={sharingVisibility}
+                  onValueChange={async (v) => {
+                    const vis = v as "private" | "household";
+                    try {
+                      if (vis === "private") {
+                        await updateShoppingListSharing({
+                          listId: shoppingList._id,
+                          visibility: "private",
+                        });
+                        toast.success("Only you can open this list in the app");
+                      } else {
+                        const hid =
+                          sharingHouseholds.length > 1
+                            ? ((shareHouseholdId as Id<"households">) ||
+                                sharingHouseholds[0]!._id)
+                            : sharingHouseholds[0]?._id;
+                        if (!hid) {
+                          toast.error("Join a household to share this list");
+                          return;
+                        }
+                        await updateShoppingListSharing({
+                          listId: shoppingList._id,
+                          visibility: "household",
+                          ...(sharingHouseholds.length > 1
+                            ? { householdId: hid }
+                            : {}),
+                        });
+                        toast.success("List shared with your household");
+                      }
+                    } catch (err) {
+                      toast.error(
+                        err instanceof Error
+                          ? err.message
+                          : "Could not update sharing",
+                      );
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="private">Only me</SelectItem>
+                    <SelectItem
+                      value="household"
+                      disabled={sharingHouseholds.length === 0}
+                    >
+                      Household members
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {sharingVisibility === "household" &&
+                sharingHouseholds.length > 1 ? (
+                  <div className="space-y-1.5 pt-1">
+                    <Label
+                      htmlFor="list-share-household"
+                      className="text-xs text-muted-foreground"
+                    >
+                      Household
+                    </Label>
+                    <Select
+                      value={shareHouseholdId || sharingHouseholds[0]!._id}
+                      onValueChange={async (v) => {
+                        const hid = v as Id<"households">;
+                        setShareHouseholdId(hid);
+                        try {
+                          await updateShoppingListSharing({
+                            listId: shoppingList._id,
+                            visibility: "household",
+                            householdId: hid,
+                          });
+                          toast.success("Household updated");
+                        } catch (err) {
+                          toast.error(
+                            err instanceof Error
+                              ? err.message
+                              : "Could not update household",
+                          );
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="list-share-household" className="w-full max-w-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sharingHouseholds.map((h) => (
+                          <SelectItem key={h._id} value={h._id}>
+                            {h.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
+                {shoppingList.mealPlanId ? (
+                  <p className="text-xs text-muted-foreground pt-1">
+                    Linked to a meal plan: choose Only me if you don&apos;t want
+                    anyone else to open this list in the app (including via the
+                    plan).
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             {/* Chalkboard section for non-finalized lists */}
             {!isFinalised && availableChalkboardItemsCount > 0 && (

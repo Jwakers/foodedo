@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Households feature allows users to create groups and share their recipes with family and friends. This feature enables collaborative recipe management where users can belong to multiple households and view recipes shared by other household members.
+The Households feature allows users to create groups and share recipes, meal plans, shopping lists, and kitchen chalkboard notes with family and friends. Users can belong to multiple households.
+
+**Household-first defaults (where implemented):** meal plans and shopping lists created from recipes use `resolveDefaultHouseholdIdForSharing` in `convex/households.ts`—if the user belongs to exactly one household, new content is linked to it automatically; if they belong to several, the client passes an explicit `householdId` (usually defaulted in the UI). Owners can opt out with **Stop sharing** (meal plans), or by clearing household sharing / marking a list private (shopping lists). **Recipes** are inserted into `householdRecipes` on create when a single household applies (or an optional `householdId` is supplied); owners use **Unshare** to remove household access. **Chalkboard** uses two lanes (personal vs household); the UI defaults to the household tab, and items can be moved between lanes without retyping.
 
 ## Architecture
 
@@ -46,7 +48,10 @@ The feature uses four junction tables for scalability and efficient querying:
 
 - `convex/schema.ts` - Database schema definitions
 - `convex/households.ts` - All household-related queries and mutations
-- `convex/recipes.ts` - Updated to support household-shared recipes
+- `convex/recipes.ts` - Household-shared recipes; auto-share on create when applicable
+- `convex/mealPlans.ts` - Plans linked with `householdId` for member access
+- `convex/shoppingLists.ts` - Lists with optional `householdId` and `isPrivate`
+- `convex/chalkboard.ts` - Personal vs household chalkboard items
 - `convex/http.ts` - HTTP endpoint for invitation handling
 
 #### Permission Helpers
@@ -68,7 +73,10 @@ canAccessRecipe(ctx, userId, recipeId); // Check recipe access rights
 - `removeMember` - Remove member (owner only)
 - `leaveHousehold` - Leave household voluntarily
 - `shareRecipeToHousehold` - Share recipe to household
-- `unshareRecipeFromHousehold` - Unshare recipe
+- `unshareRecipeFromHousehold` - Unshare recipe (opt-out after auto-share or manual share)
+- `unshareMealPlan` / `shareMealPlanWithHousehold` - Meal plan visibility (`convex/mealPlans.ts`)
+- `updateShoppingListSharing` - Owner: strict private (`isPrivate`) or link to household (`convex/shoppingLists.ts`; the app uses two choices: Only me vs Household members)
+- `moveChalkboardItemScope` - Move item between personal and household (`convex/chalkboard.ts`)
 
 ### Frontend (Next.js)
 
@@ -111,11 +119,9 @@ Located in `src/app/(app)/dashboard/households/_components/`:
 
 ### Sharing Recipes
 
-1. Recipe owner opens recipe detail page
-2. Clicks "Share" button
-3. Selects households to share with
-4. System creates householdRecipes records
-5. Household members can now view recipe
+1. **Default:** When you create a recipe and belong to exactly one household, a `householdRecipes` row is created automatically. With multiple households, clients may pass `householdId` on supported create flows; otherwise the recipe stays private until shared manually.
+2. **Manual:** Recipe owner opens recipe detail page, clicks "Share", selects households; system creates `householdRecipes` records.
+3. **Opt-out:** Unshare from the recipe or household recipe list removes the link.
 
 ### Viewing Shared Recipes
 
@@ -124,6 +130,17 @@ Located in `src/app/(app)/dashboard/households/_components/`:
 3. Sees all recipes shared to household
 4. Can click to view recipe (read-only if not owner)
 5. Recipe page shows "Shared by [user]" attribution
+
+### Meal plans and shopping lists
+
+- New meal plans use `resolveDefaultHouseholdIdForSharing`; members of the linked household can view and generate shopping lists from the plan. Owners use **Stop sharing** to clear `householdId`.
+- Shopping lists created from recipes use the same helper; lists created from a meal plan inherit the plan’s `householdId`. `isPrivate: true` limits access to the owner. Owners can change sharing after create via **updateShoppingListSharing**.
+
+### Kitchen chalkboard
+
+- **Personal** items (`householdId` unset): visible only to the author in `getPersonalChalkboard`.
+- **Household** items: visible to all members of that household. The chalkboard UI defaults to the household tab when households exist.
+- **moveChalkboardItemScope** moves an existing item between personal and household without deleting it.
 
 ## Security & Permissions
 
@@ -162,9 +179,7 @@ Cascade deletions ensure data consistency:
 5. **Activity Feed** - Show recent recipe shares and member activity
 6. **Notifications** - Notify members when recipes are shared
 7. **Recipe Collections** - Create shared collections within households
-8. **Meal Planning** - Collaborative meal planning features
-9. **Shopping List Sharing** - Share shopping lists with household members
-10. **Household Settings** - Configure visibility, privacy settings
+8. **Household Settings** - Broader visibility defaults and per-household preferences
 
 ### Technical Improvements
 

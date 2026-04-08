@@ -2,7 +2,10 @@ import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { TEXT_LIMITS } from "./lib/constants";
-import { isHouseholdMember } from "./households";
+import {
+  isHouseholdMember,
+  resolveDefaultHouseholdIdForSharing,
+} from "./households";
 import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 const MAX_TEXT_LENGTH = TEXT_LIMITS.CHALKBOARD_MAX_LENGTH;
@@ -185,6 +188,45 @@ export const addHouseholdItem = mutation({
     });
 
     return { itemId };
+  },
+});
+
+/**
+ * Move an item between personal and household scope. Only the user who added the item may move it.
+ */
+export const moveChalkboardItemScope = mutation({
+  args: {
+    itemId: v.id("chalkboardItems"),
+    scope: v.union(v.literal("personal"), v.literal("household")),
+    householdId: v.optional(v.id("households")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const item = await ctx.db.get(args.itemId);
+    if (!item) {
+      throw new ConvexError("Item not found");
+    }
+    if (item.addedBy !== user._id) {
+      throw new ConvexError("You can only move items you added");
+    }
+
+    if (args.scope === "personal") {
+      await ctx.db.patch(args.itemId, { householdId: undefined });
+      return { success: true };
+    }
+
+    const hid = await resolveDefaultHouseholdIdForSharing(
+      ctx,
+      user._id,
+      args.householdId,
+    );
+    if (hid === undefined) {
+      throw new ConvexError(
+        "Choose a household or join a household to share this note",
+      );
+    }
+    await ctx.db.patch(args.itemId, { householdId: hid });
+    return { success: true };
   },
 });
 

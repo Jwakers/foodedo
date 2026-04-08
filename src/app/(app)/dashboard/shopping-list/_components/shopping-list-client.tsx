@@ -367,6 +367,7 @@ export default function ShoppingListClient() {
               )}
               <ShoppingList
                 shoppingList={displayList}
+                sharingHouseholds={households ?? []}
                 onConfirm={handleConfirm}
                 onDone={() => setShowDoneDialog(true)}
                 onBack={handleBack}

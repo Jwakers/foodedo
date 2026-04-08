@@ -369,7 +369,11 @@ export const getShoppingListById = query({
       .collect();
 
     const sortedItems = items.sort((a, b) => a.order - b.order);
-    return { ...list, items: sortedItems };
+    return {
+      ...list,
+      items: sortedItems,
+      isOwner: list.userId === user._id,
+    };
   },
 });
 
@@ -451,7 +455,65 @@ export const getActiveShoppingList = query({
     return {
       ...first,
       items: items.sort((a, b) => a.order - b.order),
+      isOwner: first.userId === user._id,
     };
+  },
+});
+
+/**
+ * Owner only: change in-app visibility — private (owner-only), remove household link, or share with a household.
+ */
+export const updateShoppingListSharing = mutation({
+  args: {
+    listId: v.id("shoppingLists"),
+    visibility: v.union(
+      v.literal("private"),
+      v.literal("owner_only"),
+      v.literal("household"),
+    ),
+    householdId: v.optional(v.id("households")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const list = await ctx.db.get(args.listId);
+    if (!list) {
+      throw new ConvexError("Shopping list not found");
+    }
+    if (list.userId !== user._id) {
+      throw new ConvexError("Only the list owner can change sharing settings");
+    }
+
+    if (args.visibility === "private") {
+      await ctx.db.patch(args.listId, {
+        isPrivate: true,
+        householdId: undefined,
+      });
+      return { success: true };
+    }
+
+    if (args.visibility === "owner_only") {
+      await ctx.db.patch(args.listId, {
+        isPrivate: undefined,
+        householdId: undefined,
+      });
+      return { success: true };
+    }
+
+    const hid = await resolveDefaultHouseholdIdForSharing(
+      ctx,
+      user._id,
+      args.householdId,
+    );
+    if (hid === undefined) {
+      throw new ConvexError(
+        "Choose a household or join a household to share this list",
+      );
+    }
+    await ctx.db.patch(args.listId, {
+      isPrivate: undefined,
+      householdId: hid,
+    });
+    return { success: true };
   },
 });
 
