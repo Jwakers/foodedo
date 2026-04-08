@@ -20,6 +20,7 @@ export const ANALYTICS_EVENTS = {
   HOUSEHOLD_CREATED: "household_created",
   HOUSEHOLD_INVITATION_ACCEPTED: "household_invitation_accepted",
   MEAL_PLAN_GENERATED: "meal_plan_generated",
+  MEAL_PLAN_BLANK_CREATED: "meal_plan_blank_created",
   MEAL_PLAN_REGENERATED: "meal_plan_regenerated",
   MEAL_PLAN_FINALISED: "meal_plan_finalised",
   MEAL_PLAN_SHARED_WITH_HOUSEHOLD: "meal_plan_shared_with_household",

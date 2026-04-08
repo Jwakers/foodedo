@@ -26,7 +26,7 @@ type DragEndEventArg = Parameters<
 >[0];
 
 type CurrentPlan = NonNullable<
-  FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
+  FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;

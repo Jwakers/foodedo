@@ -63,8 +63,15 @@ export function MealPlanEligibilitySection({
     }
   };
 
-  /** Opt-out only when the recipe can actually appear in the generator pool. */
-  const showToggle = canManageMealPlanToggle && categoryOk && hasGeneratorMeta;
+  /**
+   * Opt-out is only user-managed for non-system recipes that can appear
+   * in the generator pool.
+   */
+  const showToggle =
+    recipe.source !== "system" &&
+    canManageMealPlanToggle &&
+    categoryOk &&
+    hasGeneratorMeta;
 
   let icon: ReactNode;
   let statusLine: string;

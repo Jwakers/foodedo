@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, startOfDayMs } from "@/lib/utils";
+import { cn, startOfDayMs, startOfLocalDayMs } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -49,7 +49,9 @@ function formatDateShort(ms: number): string {
 }
 
 function MealPlanOverviewSection() {
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);
+  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
+    localDayStartMs: startOfLocalDayMs(Date.now()),
+  });
 
   // Group meals by date - must be called before early returns to follow Rules of Hooks
   const mealsByDate = useMemo(() => {
@@ -108,31 +110,53 @@ function MealPlanOverviewSection() {
       ? Math.max(...currentPlan.entries.map((e) => e.date))
       : startOfDayMs(Date.now()));
   const mealCount = currentPlan.entries?.length ?? 0;
+  const isDraft = currentPlan.isFinalised !== true;
+  const planHref = ROUTES.mealPlanWithId(currentPlan._id);
 
   return (
-    <Card className="mb-6 border-primary/20 bg-primary/5 overflow-hidden min-w-0">
+    <Card
+      className={cn(
+        "mb-6 overflow-hidden min-w-0",
+        isDraft
+          ? "border-amber-500/35 bg-amber-500/5"
+          : "border-primary/20 bg-primary/5",
+      )}
+    >
       <CardContent className="p-4 sm:p-6 min-w-0 overflow-hidden">
         <div className="flex flex-col gap-4 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="flex items-start gap-3 min-w-0 flex-1 overflow-hidden">
-              <div className="p-2 bg-primary/15 rounded-lg shrink-0">
-                <CalendarCheck className="size-6 text-primary" />
+              <div
+                className={cn(
+                  "p-2 rounded-lg shrink-0",
+                  isDraft ? "bg-amber-500/15" : "bg-primary/15",
+                )}
+              >
+                <CalendarCheck
+                  className={cn(
+                    "size-6",
+                    isDraft ? "text-amber-700 dark:text-amber-400" : "text-primary",
+                  )}
+                />
               </div>
               <div className="min-w-0 overflow-hidden">
                 <h2 className="text-lg font-semibold text-foreground mb-0.5 truncate">
-                  This week&apos;s meal plan
+                  {isDraft ? "Draft meal plan" : "This week’s meal plan"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   {formatDateShort(displayStart)} –{" "}
                   {formatDateShort(displayEnd)}
                   {" · "}
                   {mealCount} meal{mealCount !== 1 ? "s" : ""} planned
+                  {isDraft ? " · save to open recipes" : ""}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
               <Button asChild variant="default" size="sm" className="shrink-0">
-                <Link href={ROUTES.MEAL_PLAN}>View plan</Link>
+                <Link href={planHref}>
+                  {isDraft ? "Review plan" : "View plan"}
+                </Link>
               </Button>
             </div>
           </div>
