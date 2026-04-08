@@ -778,109 +778,6 @@ export const createShoppingListFromMealPlan = mutation({
 });
 
 /**
- * Update items in a draft shopping list
- */
-export const updateItems = mutation({
-  args: {
-    listId: v.id("shoppingLists"),
-    items: v.array(
-      v.object({
-        id: v.optional(v.id("shoppingListItems")), // Existing item ID
-        name: v.string(),
-        amount: v.union(v.number(), v.string(), v.null()),
-        unit: v.optional(v.string()),
-        preparation: v.optional(v.string()),
-        ingredientId: v.optional(v.id("ingredients")),
-        amountEntries: v.optional(
-          v.array(
-            v.object({
-              amount: v.union(v.number(), v.string(), v.null()),
-              unit: v.optional(v.string()),
-            })
-          )
-        ),
-        recipeIds: v.optional(v.array(v.id("recipes"))),
-      })
-    ),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    const list = await ctx.db.get(args.listId);
-    if (!list) {
-      throw new ConvexError("Shopping list not found");
-    }
-
-    const allowed = await canAccessShoppingList(ctx, user._id, list);
-    if (!allowed) {
-      throw new ConvexError("You do not have access to this shopping list");
-    }
-
-    if (list.status !== "draft") {
-      throw new ConvexError("Can only update items in draft mode");
-    }
-
-    // Get existing items
-    const existingItems = await ctx.db
-      .query("shoppingListItems")
-      .withIndex("by_shopping_list", (q) => q.eq("shoppingListId", args.listId))
-      .collect();
-
-    const existingIds = new Set(existingItems.map((item) => item._id));
-    const updatedIds = new Set(
-      args.items.map((item) => item.id).filter((id) => id !== undefined)
-    );
-
-    // Delete items that are no longer in the list
-    for (const item of existingItems) {
-      if (!updatedIds.has(item._id)) {
-        await ctx.db.delete(item._id);
-      }
-    }
-
-    // Update or create items
-    await Promise.all(
-      args.items.map((item, i) => {
-        const amountEntries =
-          item.amountEntries ?? (item.amount != null || item.unit
-            ? [{ amount: item.amount, unit: item.unit }]
-            : undefined);
-        if (item.id && existingIds.has(item.id)) {
-          // Update existing item
-          return ctx.db.patch(item.id, {
-            name: item.name,
-            amount: item.amount,
-            unit: item.unit,
-            preparation: item.preparation,
-            order: i,
-            ingredientId: item.ingredientId,
-            ...(amountEntries !== undefined && { amountEntries }),
-            ...(item.recipeIds !== undefined && { recipeIds: item.recipeIds }),
-          });
-        } else {
-          // Create new item
-          return ctx.db.insert("shoppingListItems", {
-            shoppingListId: args.listId,
-            name: item.name,
-            amount: item.amount,
-            unit: item.unit,
-            preparation: item.preparation,
-            checked: false,
-            order: i,
-            ingredientId: item.ingredientId,
-            ...(amountEntries !== undefined && { amountEntries }),
-            ...(item.recipeIds != null &&
-              item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
-          });
-        }
-      })
-    );
-
-    return { success: true };
-  },
-});
-
-/**
  * Toggle an item's checked status
  */
 export const toggleItemChecked = mutation({
@@ -1356,27 +1253,6 @@ export const trimDraftItemsAndFinaliseShoppingList = mutation({
     }
 
     await executeFinaliseDraftShoppingList(ctx, listAfterTrim, user);
-
-    return { success: true };
-  },
-});
-
-/**
- * Finalize a draft shopping list, checking the active list limit (creator's limit)
- */
-export const finaliseShoppingList = mutation({
-  args: {
-    listId: v.id("shoppingLists"),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    const list = await ctx.db.get(args.listId);
-    if (!list) {
-      throw new ConvexError("Shopping list not found");
-    }
-
-    await executeFinaliseDraftShoppingList(ctx, list, user);
 
     return { success: true };
   },

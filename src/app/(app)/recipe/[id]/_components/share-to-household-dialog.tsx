@@ -113,10 +113,15 @@ export function ShareToHouseholdDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share Recipe</DialogTitle>
+          <DialogTitle>Household access</DialogTitle>
           <DialogDescription>
-            Share &quot;{recipeTitle}&quot; with your households
+            If you belong to only one household, this recipe is usually shared
+            there automatically once it&apos;s saved as a complete recipe.
+            Otherwise, choose below. Uncheck a household to stop sharing there.
           </DialogDescription>
+          <p className="text-sm text-muted-foreground pt-1">
+            &quot;{recipeTitle}&quot;
+          </p>
         </DialogHeader>
 
         <div className="py-4">

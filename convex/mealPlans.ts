@@ -350,104 +350,9 @@ export const getActiveMealPlanSummaries = query({
   },
 });
 
-/**
- * Get list of user's meal plans (owned + shared) for "past plans" or duplicate-week.
- */
-export const getMealPlansForUser = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) return [];
-
-    const owned = await ctx.db
-      .query("mealPlans")
-      .withIndex("by_user_and_endDate", (q) => q.eq("userId", user._id))
-      .order("desc")
-      .collect();
-
-    const memberships = await ctx.db
-      .query("householdMembers")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-    const shared: Doc<"mealPlans">[] = [];
-    for (const m of memberships) {
-      const plans = await ctx.db
-        .query("mealPlans")
-        .withIndex("by_household_and_endDate", (q) =>
-          q.eq("householdId", m.householdId),
-        )
-        .order("desc")
-        .collect();
-      shared.push(...plans);
-    }
-
-    const seenIds = new Set<Id<"mealPlans">>();
-    const combined = [...owned, ...shared].filter((p) => {
-      if (seenIds.has(p._id)) return false;
-      seenIds.add(p._id);
-      return true;
-    });
-    combined.sort((a, b) => b.endDate - a.endDate);
-    return combined.slice(0, 20);
-  },
-});
-
 // ============================================================================
 // MUTATIONS
 // ============================================================================
-
-// QA / migration: meal plans created before default household sharing may still
-// have no householdId; share via shareMealPlanWithHousehold or backfill
-// householdId for rows where the owner has a single household.
-
-/**
- * Create a new meal plan. endDate defaults to MAX_DAYS_IN_MEAL_PLAN days from today if not provided.
- */
-export const createMealPlan = mutation({
-  args: {
-    endDate: v.optional(v.number()),
-    startDate: v.optional(v.number()),
-    isGenerated: v.optional(v.boolean()),
-    generatedAt: v.optional(v.number()),
-    generationSeed: v.optional(v.string()),
-    /** When omitted: shared if the user belongs to exactly one household; otherwise the plan is not shared until they use Share or pass this field. */
-    householdId: v.optional(v.id("households")),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
-    const now = Date.now();
-    const today = startOfDayMs(now);
-    const defaultEnd = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
-    const endDate = args.endDate ?? defaultEnd;
-    if (endDate < today) {
-      throw new ConvexError("End date must be today or in the future");
-    }
-    const startDate = args.startDate;
-    if (startDate !== undefined && startDate > endDate) {
-      throw new ConvexError(
-        "Start date must be on or before the plan end date",
-      );
-    }
-
-    const shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
-      ctx,
-      user._id,
-      args.householdId,
-    );
-
-    const planId = await ctx.db.insert("mealPlans", {
-      userId: user._id,
-      endDate,
-      startDate: args.startDate,
-      updatedAt: now,
-      isGenerated: args.isGenerated ?? false,
-      generatedAt: args.generatedAt,
-      generationSeed: args.generationSeed,
-      ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
-    });
-    return { planId };
-  },
-});
 
 /**
  * Generate a new weekly meal plan using the intelligent selection algorithm.
@@ -695,37 +600,6 @@ export const regenerateWeeklyPlan = mutation({
 
     await ctx.db.patch(newPlanId, { updatedAt: Date.now() });
     return { planId: newPlanId };
-  },
-});
-
-/**
- * Update a meal plan's end date. Owner only.
- */
-export const updateMealPlanEndDate = mutation({
-  args: {
-    mealPlanId: v.id("mealPlans"),
-    endDate: v.number(),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
-    const plan = await ctx.db.get(args.mealPlanId);
-    if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("You can only update your own meal plans");
-    }
-    const normalizedEnd = startOfDayMs(args.endDate);
-    const today = startOfDayMs(Date.now());
-    if (normalizedEnd < today) {
-      throw new ConvexError("End date must be today or in the future");
-    }
-    if (plan.startDate !== undefined && normalizedEnd < plan.startDate) {
-      throw new ConvexError("End date must be on or after the plan start date");
-    }
-    await ctx.db.patch(args.mealPlanId, {
-      endDate: normalizedEnd,
-      updatedAt: Date.now(),
-    });
-    return { success: true };
   },
 });
 

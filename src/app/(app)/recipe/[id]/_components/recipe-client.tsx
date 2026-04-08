@@ -28,6 +28,7 @@ import {
   MoreVertical,
   Save,
   Trash2,
+  UserRoundCheck,
   Users,
   X,
 } from "lucide-react";
@@ -324,6 +325,56 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
   );
 }
 
+function RecipeHouseholdAccessButton({
+  recipe,
+  onOpenDialog,
+}: {
+  recipe: NonNullable<Recipe>;
+  onOpenDialog: () => void;
+}) {
+  const householdsByRecipeId = useQuery(
+    api.households.getHouseholdsByRecipeId,
+    { recipeId: recipe._id },
+  );
+  const sharedCount = householdsByRecipeId?.length ?? 0;
+  const isLoading = householdsByRecipeId === undefined;
+
+  const label = isLoading
+    ? "Household access"
+    : sharedCount === 0
+      ? "Share with households"
+      : sharedCount === 1
+        ? "Shared with 1 household"
+        : `Shared with ${sharedCount} households`;
+
+  const ariaLabel = isLoading
+    ? "Loading household access for this recipe"
+    : sharedCount === 0
+      ? "Share this recipe with one or more households"
+      : "Manage which households can see this recipe";
+
+  const isShared = !isLoading && sharedCount >= 1;
+
+  return (
+    <Button
+      type="button"
+      size="lg"
+      variant={isShared ? "secondary" : "outline"}
+      onClick={onOpenDialog}
+      className={cn("gap-2", isLoading && "opacity-90")}
+      aria-busy={isLoading}
+      aria-label={ariaLabel}
+    >
+      {isShared ? (
+        <UserRoundCheck className="size-4 shrink-0" aria-hidden />
+      ) : (
+        <Users className="size-4 shrink-0" aria-hidden />
+      )}
+      {label}
+    </Button>
+  );
+}
+
 function RecipeControls({
   isEditMode,
   onToggleEditMode,
@@ -382,16 +433,10 @@ function RecipeControls({
             </Button>
           )}
           {isRecipeOwner && (
-            <Button
-              type="button"
-              size="lg"
-              variant="outline"
-              onClick={() => setIsShareDialogOpen(true)}
-              className="gap-2"
-            >
-              <Users className="size-4" />
-              Share with household
-            </Button>
+            <RecipeHouseholdAccessButton
+              recipe={recipe}
+              onOpenDialog={() => setIsShareDialogOpen(true)}
+            />
           )}
           {isRecipeOwner && (
             <DropdownMenu>
