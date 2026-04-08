@@ -1,13 +1,6 @@
 import type { Id } from "convex/_generated/dataModel";
 
-/** UTC calendar day YYYY-MM-DD (matches Convex meal plan boundaries). */
-export function utcDayKeyFromMs(ms: number): string {
-  const d = new Date(ms);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export type MealPlanSummaryForPick = {
   _id: Id<"mealPlans">;
@@ -19,31 +12,29 @@ export type MealPlanSummaryForPick = {
   entryMaxDate: number | null;
 };
 
-function planCoversLocalDateKey(
+/** Same overlap rule as Convex `planOverlapsLocalCalendarDay` (local day vs plan UTC span). */
+export function planOverlapsLocalCalendarDaySummary(
   summary: MealPlanSummaryForPick,
-  localDateKey: string,
+  localDayStartMs: number,
 ): boolean {
-  const startKey =
-    summary.startDate !== undefined
-      ? utcDayKeyFromMs(summary.startDate)
-      : summary.entryMinDate !== null
-        ? utcDayKeyFromMs(summary.entryMinDate)
-        : null;
-  const endKey = utcDayKeyFromMs(summary.endDate);
-  if (startKey === null) return false;
-  return localDateKey >= startKey && localDateKey <= endKey;
+  const planStart =
+    summary.startDate ?? summary.entryMinDate ?? summary.endDate;
+  const planEndExclusive = summary.endDate + ONE_DAY_MS;
+  const localEndExclusive = localDayStartMs + ONE_DAY_MS;
+  return localDayStartMs < planEndExclusive && localEndExclusive > planStart;
 }
 
 /** Mirrors Convex `pickPreferredPlanDoc` for URL defaults without an extra round trip. */
 export function pickPreferredMealPlanIdFromSummaries(
   summaries: MealPlanSummaryForPick[],
-  localDateKey: string | undefined,
+  localDayStartMs: number | undefined,
 ): Id<"mealPlans"> | null {
   if (summaries.length === 0) return null;
-  if (localDateKey) {
+  if (localDayStartMs !== undefined) {
     const finalisedCovering = summaries.filter(
       (s) =>
-        s.isFinalised === true && planCoversLocalDateKey(s, localDateKey),
+        s.isFinalised === true &&
+        planOverlapsLocalCalendarDaySummary(s, localDayStartMs),
     );
     if (finalisedCovering.length > 0) {
       finalisedCovering.sort(

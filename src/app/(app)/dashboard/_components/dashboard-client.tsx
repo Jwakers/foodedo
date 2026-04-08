@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, localCalendarDateKey, startOfDayMs } from "@/lib/utils";
+import { cn, startOfDayMs, startOfLocalDayMs } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -50,7 +50,7 @@ function formatDateShort(ms: number): string {
 
 function MealPlanOverviewSection() {
   const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDateKey: localCalendarDateKey(),
+    localDayStartMs: startOfLocalDayMs(Date.now()),
   });
 
   // Group meals by date - must be called before early returns to follow Rules of Hooks

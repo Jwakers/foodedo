@@ -1,7 +1,7 @@
 "use client";
 
 import { ROUTES, recipeUrlWithCookMode } from "@/app/constants";
-import { cn, localCalendarDateKey, startOfLocalDayMs } from "@/lib/utils";
+import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -165,7 +165,7 @@ const grainOverlay =
 
 export function TodaysMealSpotlight() {
   const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDateKey: localCalendarDateKey(),
+    localDayStartMs: startOfLocalDayMs(Date.now()),
   });
 
   const { featured, rest, spotlightDayMs, isSpotlightToday, todayMs } = useMemo(

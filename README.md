@@ -37,7 +37,7 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Enabled in meal plans toggle should never be visible for system recipe
 - [x] There is a small disconnect between creating a plan and saving a plan. I can see on the dashboard card draft items are included so this should show a different display if the plan is in draft. We also need to update the UX with a sticky button to prompt the user to save their plan.
 - [x] Need the ability to select previous weeks for meal plan and start dates. Start dates should be able to overlap, in which case you should be asked what meal plan you want to view
-- [x] All meal plans are generated. There is no secondary option to just pick all your meals
+- [x] Users can start a **blank weekly plan** (seven empty days) to pick every meal manually, in addition to AI-generated weeks
 - [ ] Review and plan improvements around the poor performance scores currently in Vercel.
 - [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
 - [ ] New recipes: **opt-out by default** for household sharing—share to all linked households unless the user opts out; recipe UI should show shared state at a glance.
@@ -45,7 +45,7 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [ ] Confirm FAQ pages do not carry an unintended `noindex`.
 - [x] Super-users can edit system recipes in-app.
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
-- [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, its all just vegetables on a table. Update the model for better blog writing.
+- [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, it's all just vegetables on a table. Update the model for better blog writing.
 
 ### Strategic / growth
 

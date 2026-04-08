@@ -40,7 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
 import { pickPreferredMealPlanIdFromSummaries } from "@/lib/meal-plan-preference";
-import { cn, localCalendarDateKey } from "@/lib/utils";
+import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -89,7 +89,11 @@ export default function MealPlanClient() {
   const searchParams = useSearchParams();
   const planParam = searchParams.get("plan");
 
-  const planSummaries = useQuery(api.mealPlans.getActiveMealPlanSummaries);
+  const localDayStartMs = startOfLocalDayMs(Date.now());
+
+  const planSummaries = useQuery(api.mealPlans.getActiveMealPlanSummaries, {
+    localDayStartMs,
+  });
 
   const resolvedPlanId = useMemo(() => {
     if (planSummaries === undefined) return undefined;
@@ -107,32 +111,34 @@ export default function MealPlanClient() {
     }
     return pickPreferredMealPlanIdFromSummaries(
       planSummaries,
-      localCalendarDateKey(),
+      localDayStartMs,
     );
-  }, [planSummaries, planParam]);
+  }, [planSummaries, planParam, localDayStartMs]);
 
   useEffect(() => {
     if (planSummaries === undefined) return;
-    if (planSummaries.length === 0 && planParam) {
-      router.replace(pathname, { scroll: false });
-    }
-  }, [planSummaries, planParam, pathname, router]);
 
-  useEffect(() => {
-    if (planSummaries === undefined || planSummaries.length === 0) return;
-    if (!resolvedPlanId) return;
-    if (planParam !== resolvedPlanId) {
-      router.replace(`${pathname}?plan=${encodeURIComponent(resolvedPlanId)}`, {
-        scroll: false,
-      });
+    if (planSummaries.length === 0) {
+      if (planParam) {
+        router.replace(pathname, { scroll: false });
+      }
+      return;
+    }
+
+    if (resolvedPlanId && planParam !== resolvedPlanId) {
+      router.replace(
+        `${pathname}?plan=${encodeURIComponent(resolvedPlanId)}`,
+        { scroll: false },
+      );
+    }
+
+    if (resolvedPlanId && typeof window !== "undefined") {
+      sessionStorage.setItem(
+        MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+        resolvedPlanId,
+      );
     }
   }, [planSummaries, planParam, resolvedPlanId, pathname, router]);
-
-  useEffect(() => {
-    if (resolvedPlanId && typeof window !== "undefined") {
-      sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
-    }
-  }, [resolvedPlanId]);
 
   const currentPlan = useQuery(
     api.mealPlans.getMealPlan,
@@ -679,6 +685,7 @@ export default function MealPlanClient() {
     );
   }
 
+  // Defensive: loading guards above usually prevent this; Convex can still return null for a stale ?plan= id before redirect runs.
   if (currentPlan === null || currentPlan === undefined) {
     return (
       <div className="container mx-auto px-4 py-8">

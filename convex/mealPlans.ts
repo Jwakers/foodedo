@@ -37,15 +37,6 @@ function startOfDayMs(ms: number): number {
   return d.getTime();
 }
 
-/** UTC calendar day as YYYY-MM-DD (matches stored plan start/end boundaries). */
-function utcDayKeyFromMs(ms: number): string {
-  const d = new Date(ms);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
 type PlanWithEntryStats = {
   plan: Doc<"mealPlans">;
   entryCount: number;
@@ -54,16 +45,51 @@ type PlanWithEntryStats = {
   isOwner: boolean;
 };
 
+/**
+ * Whether the user's local calendar day [localDayStartMs, +1 day) overlaps the
+ * plan window [planStart, planEndExclusive). Plan dates are UTC day starts;
+ * localDayStartMs is the client's startOfLocalDayMs(now).
+ */
+function planOverlapsLocalCalendarDay(
+  plan: Doc<"mealPlans">,
+  entryMinDate: number | null,
+  localDayStartMs: number,
+): boolean {
+  const planStart =
+    plan.startDate ?? entryMinDate ?? plan.endDate;
+  const planEndExclusive = plan.endDate + ONE_DAY_MS;
+  const localEndExclusive = localDayStartMs + ONE_DAY_MS;
+  return localDayStartMs < planEndExclusive && localEndExclusive > planStart;
+}
+
+/** Whether any part of the user's local "today" still falls inside the plan. */
+function planStillActiveForLocalDay(
+  plan: Doc<"mealPlans">,
+  localDayStartMs: number,
+): boolean {
+  const planStart = plan.startDate ?? plan.endDate;
+  const planEndExclusive = plan.endDate + ONE_DAY_MS;
+  const localEndExclusive = localDayStartMs + ONE_DAY_MS;
+  return localDayStartMs < planEndExclusive && localEndExclusive > planStart;
+}
+
 async function collectActivePlansForUser(
   ctx: QueryCtx,
   userId: Id<"users">,
+  localDayStartMs?: number,
 ): Promise<Doc<"mealPlans">[]> {
-  const today = startOfDayMs(Date.now());
+  const refLocalStart =
+    localDayStartMs !== undefined
+      ? localDayStartMs
+      : startOfDayMs(Date.now());
+  const indexGteEndDate = startOfDayMs(
+    refLocalStart - (MAX_DAYS_IN_MEAL_PLAN + 3) * ONE_DAY_MS,
+  );
 
   const ownedPlans = await ctx.db
     .query("mealPlans")
     .withIndex("by_user_and_endDate", (q) =>
-      q.eq("userId", userId).gte("endDate", today),
+      q.eq("userId", userId).gte("endDate", indexGteEndDate),
     )
     .order("desc")
     .collect();
@@ -78,8 +104,10 @@ async function collectActivePlansForUser(
   for (const householdId of householdIds) {
     const plans = await ctx.db
       .query("mealPlans")
-      .withIndex("by_household", (q) => q.eq("householdId", householdId))
-      .filter((q) => q.gte(q.field("endDate"), today))
+      .withIndex("by_household_and_endDate", (q) =>
+        q.eq("householdId", householdId).gte("endDate", indexGteEndDate),
+      )
+      .order("desc")
       .collect();
     sharedPlans.push(...plans);
   }
@@ -91,7 +119,11 @@ async function collectActivePlansForUser(
     return true;
   });
 
-  return allPlans.filter((p) => p.replacedByPlanId === undefined);
+  return allPlans.filter(
+    (p) =>
+      p.replacedByPlanId === undefined &&
+      planStillActiveForLocalDay(p, refLocalStart),
+  );
 }
 
 async function loadPlanSummariesWithEntryStats(
@@ -117,42 +149,19 @@ async function loadPlanSummariesWithEntryStats(
   return out;
 }
 
-function planCoversLocalDateKey(
-  plan: Doc<"mealPlans">,
-  entryMinDate: number | null,
-  entryMaxDate: number | null,
-  localDateKey: string,
-): boolean {
-  const startKey =
-    plan.startDate !== undefined
-      ? utcDayKeyFromMs(plan.startDate)
-      : entryMinDate !== null
-        ? utcDayKeyFromMs(entryMinDate)
-        : null;
-  const endKey =
-    plan.endDate !== undefined
-      ? utcDayKeyFromMs(plan.endDate)
-      : entryMaxDate !== null
-        ? utcDayKeyFromMs(entryMaxDate)
-        : null;
-  if (startKey === null || endKey === null) return false;
-  return localDateKey >= startKey && localDateKey <= endKey;
-}
-
 function pickPreferredPlanDoc(
   summaries: PlanWithEntryStats[],
-  localDateKey: string | undefined,
+  localDayStartMs: number | undefined,
 ): Doc<"mealPlans"> | null {
   if (summaries.length === 0) return null;
-  if (localDateKey) {
+  if (localDayStartMs !== undefined) {
     const finalisedCovering = summaries.filter(
       (s) =>
         s.plan.isFinalised === true &&
-        planCoversLocalDateKey(
+        planOverlapsLocalCalendarDay(
           s.plan,
           s.entryMinDate,
-          s.entryMaxDate,
-          localDateKey,
+          localDayStartMs,
         ),
     );
     if (finalisedCovering.length > 0) {
@@ -261,19 +270,24 @@ export const getMealPlan = query({
 
 /**
  * Get the user's "current" meal plan for dashboard / default UX: non-superseded
- * plans with endDate >= today. Prefers a finalised plan whose UTC date range
- * covers `localDateKey` (YYYY-MM-DD in the user's local calendar); otherwise the
- * most recently updated active plan.
+ * plans that still overlap the user's local calendar day. Prefers a finalised
+ * plan whose span overlaps `localDayStartMs` (client: startOfLocalDayMs(now));
+ * otherwise the most recently updated active plan.
  */
 export const getCurrentMealPlan = query({
   args: {
-    localDateKey: v.optional(v.string()),
+    /** Start of "today" in the viewer's local timezone (ms). */
+    localDayStartMs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const activePlans = await collectActivePlansForUser(ctx, user._id);
+    const activePlans = await collectActivePlansForUser(
+      ctx,
+      user._id,
+      args.localDayStartMs,
+    );
     if (activePlans.length === 0) return null;
 
     const summaries = await loadPlanSummariesWithEntryStats(
@@ -281,7 +295,7 @@ export const getCurrentMealPlan = query({
       activePlans,
       user._id,
     );
-    const current = pickPreferredPlanDoc(summaries, args.localDateKey);
+    const current = pickPreferredPlanDoc(summaries, args.localDayStartMs);
     if (!current) return null;
 
     const entries = await buildEntriesWithRecipes(ctx, current._id);
@@ -295,15 +309,21 @@ export const getCurrentMealPlan = query({
 });
 
 /**
- * Active meal plans (not superseded, endDate >= today) for picker UI.
+ * Active meal plans (not superseded, overlap viewer's local day) for picker UI.
  */
 export const getActiveMealPlanSummaries = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    localDayStartMs: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    const activePlans = await collectActivePlansForUser(ctx, user._id);
+    const activePlans = await collectActivePlansForUser(
+      ctx,
+      user._id,
+      args.localDayStartMs,
+    );
     if (activePlans.length === 0) return [];
 
     const summaries = await loadPlanSummariesWithEntryStats(
