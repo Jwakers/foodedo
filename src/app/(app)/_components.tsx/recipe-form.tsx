@@ -284,11 +284,10 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
     });
   };
 
-  // Create an empty recipe on mount
+  // Create an empty recipe on mount (no householdId — sharing is applied only after a complete create/import flow)
   useEffect(() => {
     if (recipeId || creatingRecipe.current) return;
     creatingRecipe.current = true;
-    // Create an empty recipe and then update as we go
     createEmptyRecipeMutation()
       .then(({ recipeId, error }) => {
         if (error) {

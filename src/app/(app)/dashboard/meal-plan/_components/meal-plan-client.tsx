@@ -272,10 +272,10 @@ export default function MealPlanClient() {
         sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
       }
       router.push(ROUTES.mealPlanWithId(planId));
-      toast.success("Empty week ready — add your meals.");
+      toast.success("Manual plan ready — add your meals.");
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "Failed to create empty week",
+        e instanceof Error ? e.message : "Failed to create manual plan",
       );
     } finally {
       setIsGenerating(false);
@@ -595,7 +595,7 @@ export default function MealPlanClient() {
                   disabled={isGenerating || households === undefined}
                 >
                   <CalendarPlus className="size-5 mr-2" />
-                  Choose my own meals
+                  Manual plan
                 </Button>
                 <Button
                   size="lg"
@@ -622,8 +622,8 @@ export default function MealPlanClient() {
                 you in seconds.
               </p>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                Prefer to pick every meal yourself? Start with seven empty days,
-                then fill them in.
+                Prefer to pick every meal yourself? Start a manual plan with
+                empty days, then fill them in.
               </p>
               {households && households.length > 1 ? (
                 <div className="w-full max-w-sm mx-auto mb-4 space-y-1.5 text-left">
@@ -656,7 +656,7 @@ export default function MealPlanClient() {
                   disabled={isGenerating || households === undefined}
                 >
                   <CalendarPlus className="size-5 mr-2" />
-                  Empty week
+                  Manual plan
                 </Button>
                 <Button
                   size="lg"
@@ -696,7 +696,12 @@ export default function MealPlanClient() {
 
   return (
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
-      <div className="relative w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border pb-20">
+      <div
+        className={cn(
+          "relative w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border",
+          !isFinalised && currentPlan.isOwner ? "pb-36" : "pb-20",
+        )}
+      >
         {/* Top bar: always show Generate meal plan so user can generate next week early */}
         {currentPlan.isOwner && (
           <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
@@ -736,7 +741,7 @@ export default function MealPlanClient() {
                 className="shrink-0"
               >
                 <CalendarPlus className="size-4" />
-                Empty week
+                Manual plan
               </Button>
               <Button
                 variant="outline"
@@ -820,26 +825,6 @@ export default function MealPlanClient() {
             )}
             {currentPlan.isOwner && (
               <>
-                {!isFinalised && (
-                  <div className="hidden sm:flex flex-wrap gap-2">
-                    <Button
-                      variant="default"
-                      onClick={() => setShowFinaliseDialog(true)}
-                      disabled={mealCount === 0}
-                    >
-                      <CheckCircle2 className="size-4" />
-                      Save plan
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleRegenerateWeek}
-                      disabled={isGenerating}
-                    >
-                      <Sparkles className="size-4" />
-                      Regenerate
-                    </Button>
-                  </div>
-                )}
                 {sharedHousehold ? (
                   <Button
                     type="button"
@@ -1244,7 +1229,7 @@ export default function MealPlanClient() {
           <div
             className={cn(
               "fixed bottom-0 inset-x-0 z-40 border-t bg-background/60 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.08)]",
-              "bottom-(--nav-height) py-3 px-4 sm:hidden",
+              "bottom-(--nav-height) py-3 px-4 sm:px-6 sm:py-4",
             )}
           >
             <p className="text-xs leading-snug text-muted-foreground mb-3 max-w-prose">

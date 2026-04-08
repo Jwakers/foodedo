@@ -15,6 +15,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +28,7 @@ import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import {
+  ArrowRightLeft,
   CircleQuestionMark,
   Clipboard,
   Home,
@@ -65,6 +72,10 @@ export default function ChalkboardClient() {
   const clearHouseholdChalkboard = useMutation(
     api.chalkboard.clearHouseholdChalkboard,
   );
+  const moveChalkboardItemScope = useMutation(
+    api.chalkboard.moveChalkboardItemScope,
+  );
+  const currentUser = useQuery(api.users.current);
 
   useEffect(() => {
     if (!households?.length || selectedHouseholdId !== null) return;
@@ -154,6 +165,35 @@ export default function ChalkboardClient() {
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to clear chalkboard",
+      );
+    }
+  };
+
+  const handleMoveToPersonal = async (itemId: Id<"chalkboardItems">) => {
+    try {
+      await moveChalkboardItemScope({ itemId, scope: "personal" });
+      toast.success("Moved to your personal chalkboard");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not move item",
+      );
+    }
+  };
+
+  const handleMoveToHousehold = async (
+    itemId: Id<"chalkboardItems">,
+    householdId?: Id<"households">,
+  ) => {
+    try {
+      await moveChalkboardItemScope({
+        itemId,
+        scope: "household",
+        ...(householdId !== undefined ? { householdId } : {}),
+      });
+      toast.success("Moved to household chalkboard");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not move item",
       );
     }
   };
@@ -303,8 +343,13 @@ export default function ChalkboardClient() {
 
                       {/* Items List */}
                       <ChalkboardItemsList
+                        listKind="household"
                         items={householdItems ?? []}
+                        viewerUserId={currentUser?._id}
+                        households={households ?? []}
                         onDelete={handleDeleteHouseholdItem}
+                        onMoveToPersonal={handleMoveToPersonal}
+                        onMoveToHousehold={handleMoveToHousehold}
                         emptyMessage="No items yet. Add your first item above!"
                       />
                     </CardContent>
@@ -365,8 +410,13 @@ export default function ChalkboardClient() {
 
                   {/* Items List */}
                   <ChalkboardItemsList
+                    listKind="personal"
                     items={personalItems ?? []}
+                    viewerUserId={currentUser?._id}
+                    households={households ?? []}
                     onDelete={handleDeletePersonalItem}
+                    onMoveToPersonal={handleMoveToPersonal}
+                    onMoveToHousehold={handleMoveToHousehold}
                     emptyMessage="No items yet. Add your first item above!"
                   />
                 </CardContent>
@@ -424,12 +474,25 @@ export default function ChalkboardClient() {
 }
 
 function ChalkboardItemsList({
+  listKind,
   items,
+  viewerUserId,
+  households,
   onDelete,
+  onMoveToPersonal,
+  onMoveToHousehold,
   emptyMessage,
 }: {
+  listKind: "personal" | "household";
   items: ChalkboardItem[];
+  viewerUserId: Id<"users"> | undefined;
+  households: { _id: Id<"households">; name: string }[];
   onDelete: (itemId: Id<"chalkboardItems">) => void;
+  onMoveToPersonal: (itemId: Id<"chalkboardItems">) => void;
+  onMoveToHousehold: (
+    itemId: Id<"chalkboardItems">,
+    householdId?: Id<"households">,
+  ) => void;
   emptyMessage: string;
 }) {
   if (items.length === 0) {
@@ -445,29 +508,88 @@ function ChalkboardItemsList({
 
   return (
     <div className="space-y-2">
-      {items.map((item) => (
-        <div
-          key={item._id}
-          className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors"
-        >
-          <div className="flex-1 min-w-0">
-            <p className="font-medium">{item.text}</p>
-            <p className="text-xs text-muted-foreground">
-              Added by {item.addedByName} •{" "}
-              {new Date(item._creationTime).toLocaleDateString()}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-            onClick={() => onDelete(item._id)}
+      {items.map((item) => {
+        const canMove = viewerUserId !== undefined && item.addedBy === viewerUserId;
+        return (
+          <div
+            key={item._id}
+            className="flex items-center justify-between gap-2 p-3 rounded-lg border hover:bg-muted/30 transition-colors"
           >
-            <Trash2 className="size-4" />
-            <span className="sr-only">Delete item</span>
-          </Button>
-        </div>
-      ))}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium">{item.text}</p>
+              <p className="text-xs text-muted-foreground">
+                Added by {item.addedByName} •{" "}
+                {new Date(item._creationTime).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex items-center shrink-0 gap-0.5">
+              {canMove && listKind === "household" ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground"
+                  onClick={() => onMoveToPersonal(item._id)}
+                  title="Move to personal"
+                >
+                  <ArrowRightLeft className="size-4" />
+                  <span className="sr-only">Move to personal</span>
+                </Button>
+              ) : null}
+              {canMove &&
+              listKind === "personal" &&
+              households.length > 0 ? (
+                households.length === 1 ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground"
+                    onClick={() =>
+                      onMoveToHousehold(item._id, households[0]!._id)
+                    }
+                    title="Move to household"
+                  >
+                    <ArrowRightLeft className="size-4" />
+                    <span className="sr-only">Move to household</span>
+                  </Button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-muted-foreground"
+                        title="Move to household"
+                      >
+                        <ArrowRightLeft className="size-4" />
+                        <span className="sr-only">Move to household</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {households.map((h) => (
+                        <DropdownMenuItem
+                          key={h._id}
+                          onClick={() => onMoveToHousehold(item._id, h._id)}
+                        >
+                          {h.name}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              ) : null}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                onClick={() => onDelete(item._id)}
+              >
+                <Trash2 className="size-4" />
+                <span className="sr-only">Delete item</span>
+              </Button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

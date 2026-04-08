@@ -11,6 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import useShare from "@/lib/hooks/use-share";
@@ -34,6 +41,7 @@ import {
   Printer,
   Share2,
   ShoppingCart,
+  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -51,6 +59,8 @@ function namesEqual(a: string, b: string): boolean {
 
 interface ShoppingListProps {
   shoppingList: ShoppingList;
+  /** For in-app sharing controls (owner only); distinct from chalkboard household query below. */
+  sharingHouseholds?: { _id: Id<"households">; name: string }[];
   onConfirm: () => void | Promise<void>;
   onBack: () => void;
   onDone: () => void;
@@ -62,6 +72,7 @@ interface ShoppingListProps {
 
 export default function ShoppingList({
   shoppingList,
+  sharingHouseholds = [],
   onConfirm,
   onDone,
   onBack,
@@ -88,8 +99,31 @@ export default function ShoppingList({
   const trimDraftItemsAndFinaliseShoppingList = useMutation(
     api.shoppingLists.trimDraftItemsAndFinaliseShoppingList,
   );
+  const updateShoppingListSharing = useMutation(
+    api.shoppingLists.updateShoppingListSharing,
+  );
 
   const isFinalised = shoppingList.status === "active";
+  const isOwner = shoppingList.isOwner === true;
+  /** Authoritative value from server (Convex subscription). */
+  const authoritativeSharingValue = useMemo(() => {
+    if (shoppingList.householdId) {
+      return `household:${shoppingList.householdId}`;
+    }
+    if (shoppingList.isPrivate === true) return "private";
+    return "owner_only";
+  }, [shoppingList.householdId, shoppingList.isPrivate]);
+
+  const [pendingSharingValue, setPendingSharingValue] = useState<string | null>(
+    null,
+  );
+  const [sharingMutationPending, setSharingMutationPending] = useState(false);
+
+  useEffect(() => {
+    setPendingSharingValue(null);
+  }, [authoritativeSharingValue, shoppingList._id]);
+
+  const sharingSelectValue = pendingSharingValue ?? authoritativeSharingValue;
   const ingredientIds = useMemo(
     () =>
       shoppingList.items
@@ -591,6 +625,91 @@ export default function ShoppingList({
                   : `${draftTripItemCount} for this shop`}
               </Badge>
             </div>
+
+            {isOwner ? (
+              <div className="mb-6 space-y-2 rounded-lg border border-border bg-muted/30 p-4">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Users className="size-4 shrink-0 text-muted-foreground" />
+                  Who can see this list in the app?
+                </div>
+                <Select
+                  value={sharingSelectValue}
+                  onValueChange={async (v) => {
+                    setPendingSharingValue(v);
+                    setSharingMutationPending(true);
+                    try {
+                      if (v === "private") {
+                        await updateShoppingListSharing({
+                          listId: shoppingList._id,
+                          visibility: "private",
+                        });
+                        toast.success("Only you can open this list in the app");
+                        return;
+                      }
+                      if (v === "owner_only") {
+                        await updateShoppingListSharing({
+                          listId: shoppingList._id,
+                          visibility: "owner_only",
+                        });
+                        toast.success("Household sharing removed from this list");
+                        return;
+                      }
+                      const prefix = "household:";
+                      if (!v.startsWith(prefix)) return;
+                      const hid = v.slice(prefix.length) as Id<"households">;
+                      await updateShoppingListSharing({
+                        listId: shoppingList._id,
+                        visibility: "household",
+                        householdId: hid,
+                      });
+                      toast.success("List shared with your household");
+                    } catch (err) {
+                      setPendingSharingValue(null);
+                      toast.error(
+                        err instanceof Error
+                          ? err.message
+                          : "Could not update sharing",
+                      );
+                    } finally {
+                      setSharingMutationPending(false);
+                    }
+                  }}
+                  disabled={sharingMutationPending}
+                >
+                  <SelectTrigger
+                    className="w-full max-w-md"
+                    disabled={sharingMutationPending}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      value="private"
+                      disabled={shoppingList.mealPlanId !== undefined}
+                    >
+                      Only me
+                    </SelectItem>
+                    <SelectItem value="owner_only">
+                      Not shared via household
+                    </SelectItem>
+                    {sharingHouseholds.map((h) => (
+                      <SelectItem key={h._id} value={`household:${h._id}`}>
+                        Household: {h.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {shoppingList.mealPlanId ? (
+                  <p className="text-xs text-muted-foreground pt-1">
+                    Linked to a meal plan: &quot;Only me&quot; isn&apos;t
+                    available (the link must stay meaningful for the plan).
+                    Use &quot;Not shared via household&quot; to stop household
+                    visibility; people who can open the plan may still see this
+                    list.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             {/* Chalkboard section for non-finalized lists */}
             {!isFinalised && availableChalkboardItemsCount > 0 && (

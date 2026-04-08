@@ -63,7 +63,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "What is meal planning?",
         answer:
-          "Meal planning lets you plan meals for a week (or any date range) and save them as your plan. You can generate a full week in one tap, or create a plan manually and add meals by day. Generate a shopping list from the plan, and optionally share the plan with your household so others can view it and generate their own list.",
+          "Meal planning lets you plan meals for a week (or any date range) and save them as your plan. You can generate a full week in one tap, or create a plan manually and add meals by day. Generate a shopping list from the plan. If you belong to a household, new plans are usually linked to that household automatically so members can view the plan and generate their own list; use 'Stop sharing' on the plan if you want it private.",
       },
       {
         question: "How do I create a meal plan manually?",
@@ -98,7 +98,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "Can I share my meal plan with my household?",
         answer:
-          "Yes. As the plan owner, tap 'Share with household' on the meal plan page and select a household. Members can view the plan and generate their own shopping list from it. Tap 'Stop sharing' to remove the link.",
+          "Yes. If you belong to exactly one household, new plans are linked to it automatically when you generate or start a manual plan. If you belong to several households, you choose which one when you generate. To move an already shared plan to a different household, tap 'Stop sharing' first, then use 'Share with household' and pick the other household. 'Stop sharing' also makes the plan visible only to you again until you share it once more.",
       },
     ],
   },
@@ -113,7 +113,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "How do I share my shopping list with others?",
         answer:
-          "Once you have finalised a shopping list there are sharing options such as message, print or save to notes. You can use the app to see your list and check off items as you shop.",
+          "Household members can open draft and active lists you create when the list is linked to your household (this happens automatically if you have one household, or you pick a named household in the sharing control when you have several). On the list screen you can choose Only me, Not shared via household, or a specific household. Only me is not available for lists linked to a meal plan; use Not shared via household to drop household visibility while the plan link remains. Once you have finalised a list there are also sharing options such as message, print or save to notes.",
       },
     ],
   },
@@ -133,7 +133,12 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "Can I be part of multiple households?",
         answer:
-          "You can be part of multiple households. This is useful if you live with multiple people or have family members that you want to share recipes and shopping lists with.",
+          "You can be part of multiple households. This is useful if you live with multiple people or have family members that you want to share recipes and shopping lists with. When you have more than one household, the app asks which household to use for new meal plans, shopping lists, and recipe sharing where it matters.",
+      },
+      {
+        question: "Are my recipes shared with my household automatically?",
+        answer:
+          "When you finish creating or importing a complete recipe, it is shared with your household if you belong to exactly one household. With several households, the recipe stays unshared until you share it from the recipe page. Draft recipes you build in the form are not shared until the saved recipe passes validation. You can stop sharing from the recipe page or household at any time.",
       },
       {
         question: "How do I invite others to my household?",
@@ -153,7 +158,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "How do I use the Kitchen Chalkboard?",
         answer:
-          "Simply go to 'Kitchen Chalkboard' from the main menu and start typing your notes. Your notes are automatically saved and will be visible to other household members if you're part of a household.",
+          "Go to 'Kitchen Chalkboard' from the main menu. Use the Household tab to add notes everyone in that household can see, or the Personal tab for notes only you can see. Items are saved when you add them. You can move a note between personal and household from the chalkboard if you change your mind.",
       },
     ],
   },

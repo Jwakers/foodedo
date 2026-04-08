@@ -1,8 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
-import type { QueryCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
-import { canAccessRecipe } from "./households";
+import { canAccessRecipe, resolveDefaultHouseholdIdForSharing } from "./households";
 import { resolveIngredientIdFromList } from "./ingredients";
 import {
   buildCanonicalIngredientDocsMap,
@@ -31,6 +31,36 @@ import {
   getCurrentUserOrThrow,
   getUserSubscription,
 } from "./users";
+
+/** After creating a user recipe, link to household when the user has a resolvable default (or explicit) household. */
+async function shareNewRecipeToHouseholdIfApplicable(
+  ctx: MutationCtx,
+  ownerId: Id<"users">,
+  recipeId: Id<"recipes">,
+  explicitHouseholdId: Id<"households"> | undefined,
+): Promise<void> {
+  const hid = await resolveDefaultHouseholdIdForSharing(
+    ctx,
+    ownerId,
+    explicitHouseholdId,
+  );
+  if (hid === undefined) return;
+
+  const existing = await ctx.db
+    .query("householdRecipes")
+    .withIndex("by_household_and_recipe", (q) =>
+      q.eq("householdId", hid).eq("recipeId", recipeId),
+    )
+    .unique();
+  if (existing) return;
+
+  await ctx.db.insert("householdRecipes", {
+    householdId: hid,
+    recipeId,
+    sharedByUserId: ownerId,
+    sharedAt: Date.now(),
+  });
+}
 
 type MethodStepWithImage = {
   title: string;
@@ -569,6 +599,7 @@ export const createRecipe = mutation({
     primaryProtein: v.optional(primaryProteinUnion),
     complexityTier: v.optional(complexityTierUnion),
     cuisine: v.optional(v.array(cuisineUnion)),
+    householdId: v.optional(v.id("households")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -679,6 +710,15 @@ export const createRecipe = mutation({
 
     const errors = _validateRecipe(recipe);
 
+    if (errors.length === 0) {
+      await shareNewRecipeToHouseholdIfApplicable(
+        ctx,
+        user._id,
+        recipeId,
+        args.householdId,
+      );
+    }
+
     return {
       recipeId,
       validationErrors: errors.length > 0 ? errors : null,
@@ -740,6 +780,8 @@ export const updateRecipe = mutation({
         "Unauthorised - only the recipe owner or a super user can edit it",
       );
     }
+
+    const wasRecipeValid = _validateRecipe(recipe).length === 0;
 
     let ingredients = recipe.ingredients;
     let ingredientsUpdated = false;
@@ -879,6 +921,25 @@ export const updateRecipe = mutation({
         excludeFromMealPlanGenerator: args.excludeFromMealPlanGenerator,
       }),
     });
+
+    const updated = await ctx.db.get(args.recipeId);
+    if (!updated) {
+      throw new ConvexError("Recipe not found after update");
+    }
+    const nowRecipeValid = _validateRecipe(updated).length === 0;
+    if (
+      isOwner &&
+      !wasRecipeValid &&
+      nowRecipeValid &&
+      updated.source === "user"
+    ) {
+      await shareNewRecipeToHouseholdIfApplicable(
+        ctx,
+        user._id,
+        args.recipeId,
+        undefined,
+      );
+    }
   },
 });
 

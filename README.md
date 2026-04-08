@@ -38,8 +38,9 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] There is a small disconnect between creating a plan and saving a plan. I can see on the dashboard card draft items are included so this should show a different display if the plan is in draft. We also need to update the UX with a sticky button to prompt the user to save their plan.
 - [x] Need the ability to select previous weeks for meal plan and start dates. Start dates should be able to overlap, in which case you should be asked what meal plan you want to view
 - [x] Users can start a **blank weekly plan** (seven empty days) to pick every meal manually, in addition to AI-generated weeks
-- [ ] Fried rice recipe: eggs appear in a step that only mentions chicken (method / ingredient refs).
+- [x] Fried rice recipe: eggs appear in a step that only mentions chicken (method / ingredient refs).
 - [ ] Review and plan improvements around the poor performance scores currently in Vercel.
+- [ ] Scan codebase for all unused convex functions and migrations and purge
 - [ ] New recipes: **opt-out by default** for household sharing—share to all linked households unless the user opts out; recipe UI should show shared state at a glance.
 - [ ] Confirm FAQ pages do not carry an unintended `noindex`.
 - [x] Super-users can edit system recipes in-app.

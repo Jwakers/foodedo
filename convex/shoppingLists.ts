@@ -331,6 +331,7 @@ export const getAccessibleShoppingLists = query({
       for (const list of lists) {
         if (seen.has(list._id)) continue;
         if (list.status !== "draft" && list.status !== "active") continue;
+        if (!(await canAccessShoppingList(ctx, user._id, list))) continue;
         seen.add(list._id);
         linkedLists.push(list);
       }
@@ -369,7 +370,11 @@ export const getShoppingListById = query({
       .collect();
 
     const sortedItems = items.sort((a, b) => a.order - b.order);
-    return { ...list, items: sortedItems };
+    return {
+      ...list,
+      items: sortedItems,
+      isOwner: list.userId === user._id,
+    };
   },
 });
 
@@ -392,7 +397,14 @@ export const getShoppingListsByMealPlan = query({
       .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
       .collect();
 
-    return lists.filter((l) => l.status === "draft" || l.status === "active");
+    const out: Doc<"shoppingLists">[] = [];
+    for (const l of lists) {
+      if (l.status !== "draft" && l.status !== "active") continue;
+      if (await canAccessShoppingList(ctx, user._id, l)) {
+        out.push(l);
+      }
+    }
+    return out;
   },
 });
 
@@ -427,6 +439,7 @@ export const getActiveShoppingList = query({
       for (const list of lists) {
         if (seen.has(list._id)) continue;
         if (list.status !== "draft" && list.status !== "active") continue;
+        if (!(await canAccessShoppingList(ctx, user._id, list))) continue;
         seen.add(list._id);
         linkedLists.push(list);
       }
@@ -451,7 +464,70 @@ export const getActiveShoppingList = query({
     return {
       ...first,
       items: items.sort((a, b) => a.order - b.order),
+      isOwner: first.userId === user._id,
     };
+  },
+});
+
+/**
+ * Owner only: change in-app visibility — private (owner-only), remove household link, or share with a household.
+ */
+export const updateShoppingListSharing = mutation({
+  args: {
+    listId: v.id("shoppingLists"),
+    visibility: v.union(
+      v.literal("private"),
+      v.literal("owner_only"),
+      v.literal("household"),
+    ),
+    householdId: v.optional(v.id("households")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const list = await ctx.db.get(args.listId);
+    if (!list) {
+      throw new ConvexError("Shopping list not found");
+    }
+    if (list.userId !== user._id) {
+      throw new ConvexError("Only the list owner can change sharing settings");
+    }
+
+    if (args.visibility === "private") {
+      if (list.mealPlanId !== undefined) {
+        throw new ConvexError(
+          "This list is linked to a meal plan and cannot be made private while that link exists. Choose 'Not shared via household' to drop household visibility instead.",
+        );
+      }
+      await ctx.db.patch(args.listId, {
+        isPrivate: true,
+        householdId: undefined,
+      });
+      return { success: true };
+    }
+
+    if (args.visibility === "owner_only") {
+      await ctx.db.patch(args.listId, {
+        isPrivate: undefined,
+        householdId: undefined,
+      });
+      return { success: true };
+    }
+
+    const hid = await resolveDefaultHouseholdIdForSharing(
+      ctx,
+      user._id,
+      args.householdId,
+    );
+    if (hid === undefined) {
+      throw new ConvexError(
+        "Choose a household or join a household to share this list",
+      );
+    }
+    await ctx.db.patch(args.listId, {
+      isPrivate: undefined,
+      householdId: hid,
+    });
+    return { success: true };
   },
 });
 
