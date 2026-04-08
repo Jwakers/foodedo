@@ -22,8 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import type { FunctionReturnType } from "convex/server";
 import { useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { ChefHat, Clock, Search, Users } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
@@ -187,7 +187,7 @@ export function MealPlanRecipePickerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] max-w-lg flex-col p-0">
+      <DialogContent className="flex max-h-dvh max-w-lg flex-col p-0">
         <DialogHeader className="shrink-0 px-6 pt-6">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
