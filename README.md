@@ -35,9 +35,9 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Dashboard meal spotlight surfaces the next planned meal with clear copy (e.g. tomorrow’s meal, weekday labels).
 - [x] Add manual recipe to meal plan dialog needs safe area inset on close button
 - [x] Enabled in meal plans toggle should never be visible for system recipe
-- [ ] There is a small disconnect between creating a plan and saving a plan. I can see on the dashboard card draft items are included so this should show a different display if the plan is in draft. We also need to update the UX with a sticky button to prompt the user to save their plan.
-- [ ] Need the ability to select previous weeks for meal plan and start dates. Start dates should be able to overlap, in which case you should be asked what meal plan you want to view
-- [ ] All meal plans are generated. There is no secondary option to just pick all your meals
+- [x] There is a small disconnect between creating a plan and saving a plan. I can see on the dashboard card draft items are included so this should show a different display if the plan is in draft. We also need to update the UX with a sticky button to prompt the user to save their plan.
+- [x] Need the ability to select previous weeks for meal plan and start dates. Start dates should be able to overlap, in which case you should be asked what meal plan you want to view
+- [x] All meal plans are generated. There is no secondary option to just pick all your meals
 - [ ] Review and plan improvements around the poor performance scores currently in Vercel.
 - [ ] Olive oil in the herbs and spices category??? (ingredient catalog / grouping)
 - [ ] New recipes: **opt-out by default** for household sharing—share to all linked households unless the user opts out; recipe UI should show shared state at a glance.

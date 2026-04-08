@@ -507,6 +507,40 @@ export const generateWeeklyPlan = mutation({
 });
 
 /**
+ * Create a weekly meal plan with no entries: same date window and household
+ * sharing as generateWeeklyPlan, for users who want to pick every meal manually.
+ */
+export const createBlankWeeklyPlan = mutation({
+  args: {
+    /** When omitted: shared if the user belongs to exactly one household; otherwise the new plan is private until they share or pass this field. */
+    householdId: v.optional(v.id("households")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const now = Date.now();
+    const startDate = startOfDayMs(now);
+    const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
+
+    const shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
+      ctx,
+      user._id,
+      args.householdId,
+    );
+
+    const planId = await ctx.db.insert("mealPlans", {
+      userId: user._id,
+      endDate,
+      startDate,
+      updatedAt: now,
+      isGenerated: false,
+      ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
+    });
+
+    return { planId };
+  },
+});
+
+/**
  * Regenerate week: create new plan, copy locked entries (no suggestedCount bump), fill rest with algorithm. Spec 6.2 Option B.
  */
 export const regenerateWeeklyPlan = mutation({

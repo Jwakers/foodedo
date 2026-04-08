@@ -47,6 +47,7 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
   ArrowRight,
+  CalendarPlus,
   CheckCircle2,
   Home,
   MoreVertical,
@@ -153,6 +154,7 @@ export default function MealPlanClient() {
   );
 
   const generateWeeklyPlan = useMutation(api.mealPlans.generateWeeklyPlan);
+  const createBlankWeeklyPlan = useMutation(api.mealPlans.createBlankWeeklyPlan);
   const regenerateWeeklyPlan = useMutation(api.mealPlans.regenerateWeeklyPlan);
   const removeEntry = useMutation(api.mealPlans.removeEntry);
   const updateEntry = useMutation(api.mealPlans.updateEntry);
@@ -245,6 +247,44 @@ export default function MealPlanClient() {
       setIsGenerating(false);
     }
   }, [generateWeeklyPlan, generateWeekHouseholdId, households, router]);
+
+  const handleBlankWeek = useCallback(async () => {
+    if (households === undefined) {
+      toast.info("Loading households…");
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const payload =
+        households.length > 1
+          ? {
+              householdId:
+                (generateWeekHouseholdId as Id<"households">) ||
+                households[0]!._id,
+            }
+          : {};
+      const { planId } = await createBlankWeeklyPlan(payload);
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_BLANK_CREATED, {
+        shared_with_household: households.length > 1,
+      });
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
+      }
+      router.push(ROUTES.mealPlanWithId(planId));
+      toast.success("Empty week ready — add your meals.");
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Failed to create empty week",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    createBlankWeeklyPlan,
+    generateWeekHouseholdId,
+    households,
+    router,
+  ]);
 
   const handleRegenerateWeek = useCallback(async () => {
     if (!currentPlan) return;
@@ -550,15 +590,27 @@ export default function MealPlanClient() {
                   </Select>
                 </div>
               ) : null}
-              <Button
-                size="lg"
-                className="shrink-0 w-full sm:w-auto"
-                onClick={handleGenerateWeek}
-                disabled={isGenerating || households === undefined}
-              >
-                <Sparkles className="size-5 mr-2" />
-                Generate My Week
-              </Button>
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full shrink-0 sm:w-auto"
+                  onClick={handleBlankWeek}
+                  disabled={isGenerating || households === undefined}
+                >
+                  <CalendarPlus className="size-5 mr-2" />
+                  Choose my own meals
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-full shrink-0 sm:w-auto"
+                  onClick={handleGenerateWeek}
+                  disabled={isGenerating || households === undefined}
+                >
+                  <Sparkles className="size-5 mr-2" />
+                  Generate My Week
+                </Button>
+              </div>
             </div>
           </div>
           <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
@@ -569,9 +621,13 @@ export default function MealPlanClient() {
               <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
                 Ready to eat better?
               </h2>
-              <p className="text-muted-foreground mb-6 max-w-sm">
+              <p className="text-muted-foreground mb-3 max-w-sm mx-auto">
                 Our intelligent system creates a balanced, delicious plan for
                 you in seconds.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+                Prefer to pick every meal yourself? Start with seven empty
+                days, then fill them in.
               </p>
               {households && households.length > 1 ? (
                 <div className="w-full max-w-sm mx-auto mb-4 space-y-1.5 text-left">
@@ -595,14 +651,27 @@ export default function MealPlanClient() {
                   </Select>
                 </div>
               ) : null}
-              <Button
-                size="lg"
-                onClick={handleGenerateWeek}
-                disabled={isGenerating || households === undefined}
-              >
-                Start Planning
-                <ArrowRight className="size-5 ml-2" />
-              </Button>
+              <div className="flex w-full max-w-sm mx-auto flex-col gap-2 sm:flex-row sm:justify-center">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:flex-1"
+                  onClick={handleBlankWeek}
+                  disabled={isGenerating || households === undefined}
+                >
+                  <CalendarPlus className="size-5 mr-2" />
+                  Empty week
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-full sm:flex-1"
+                  onClick={handleGenerateWeek}
+                  disabled={isGenerating || households === undefined}
+                >
+                  Start Planning
+                  <ArrowRight className="size-5 ml-2" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -661,16 +730,28 @@ export default function MealPlanClient() {
                 </Select>
               </div>
             ) : null}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGenerateWeek}
-              disabled={isGenerating || households === undefined}
-              className="shrink-0"
-            >
-              <Sparkles className="size-4" />
-              Generate next plan
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBlankWeek}
+                disabled={isGenerating || households === undefined}
+                className="shrink-0"
+              >
+                <CalendarPlus className="size-4" />
+                Empty week
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateWeek}
+                disabled={isGenerating || households === undefined}
+                className="shrink-0"
+              >
+                <Sparkles className="size-4" />
+                Generate next plan
+              </Button>
+            </div>
           </div>
         )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6 min-w-0">
