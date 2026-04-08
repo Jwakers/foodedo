@@ -37,6 +37,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackEvent } from "@/lib/analytics/posthog-client";
+import { pickPreferredMealPlanIdFromSummaries } from "@/lib/meal-plan-preference";
+import { cn, localCalendarDateKey } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -52,10 +56,8 @@ import {
   UserMinus,
   Users,
 } from "lucide-react";
-import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
-import { trackEvent } from "@/lib/analytics/posthog-client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
@@ -63,13 +65,80 @@ import { MealPlanCard } from "./meal-plan-card";
 import { MealPlanDayView } from "./meal-plan-day-view";
 import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
+const MEAL_PLAN_LAST_VIEWED_STORAGE_KEY = "foodedo_meal_plan_last_viewed_id";
+
 type CurrentPlan = NonNullable<
-  FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
+  FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
+
+function formatPlanRangeShort(start: number | undefined, end: number): string {
+  const fmt = (ms: number) =>
+    new Date(ms).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+  if (start !== undefined) return `${fmt(start)} – ${fmt(end)}`;
+  return fmt(end);
+}
 
 export default function MealPlanClient() {
   const router = useRouter();
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan");
+
+  const planSummaries = useQuery(api.mealPlans.getActiveMealPlanSummaries);
+
+  const resolvedPlanId = useMemo(() => {
+    if (planSummaries === undefined) return undefined;
+    if (planSummaries.length === 0) return null;
+
+    const validIds = new Set(planSummaries.map((s) => s._id));
+    if (planParam && validIds.has(planParam as Id<"mealPlans">)) {
+      return planParam as Id<"mealPlans">;
+    }
+    if (typeof window !== "undefined") {
+      const last = sessionStorage.getItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY);
+      if (last && validIds.has(last as Id<"mealPlans">)) {
+        return last as Id<"mealPlans">;
+      }
+    }
+    return pickPreferredMealPlanIdFromSummaries(
+      planSummaries,
+      localCalendarDateKey(),
+    );
+  }, [planSummaries, planParam]);
+
+  useEffect(() => {
+    if (planSummaries === undefined) return;
+    if (planSummaries.length === 0 && planParam) {
+      router.replace(pathname, { scroll: false });
+    }
+  }, [planSummaries, planParam, pathname, router]);
+
+  useEffect(() => {
+    if (planSummaries === undefined || planSummaries.length === 0) return;
+    if (!resolvedPlanId) return;
+    if (planParam !== resolvedPlanId) {
+      router.replace(`${pathname}?plan=${encodeURIComponent(resolvedPlanId)}`, {
+        scroll: false,
+      });
+    }
+  }, [planSummaries, planParam, resolvedPlanId, pathname, router]);
+
+  useEffect(() => {
+    if (resolvedPlanId && typeof window !== "undefined") {
+      sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
+    }
+  }, [resolvedPlanId]);
+
+  const currentPlan = useQuery(
+    api.mealPlans.getMealPlan,
+    resolvedPlanId !== undefined && resolvedPlanId !== null
+      ? { mealPlanId: resolvedPlanId }
+      : "skip",
+  );
   const poolRecipes = useQuery(api.recipes.getRecipesForWeeklyPlan, {
     limit: 50,
   });
@@ -161,31 +230,41 @@ export default function MealPlanClient() {
                 households[0]!._id,
             }
           : {};
-      await generateWeeklyPlan(payload);
+      const { planId } = await generateWeeklyPlan(payload);
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATED, {
         shared_with_household: households.length > 1,
       });
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
+      }
+      router.push(ROUTES.mealPlanWithId(planId));
       toast.success("Your week is ready!");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate plan");
     } finally {
       setIsGenerating(false);
     }
-  }, [generateWeeklyPlan, generateWeekHouseholdId, households]);
+  }, [generateWeeklyPlan, generateWeekHouseholdId, households, router]);
 
   const handleRegenerateWeek = useCallback(async () => {
     if (!currentPlan) return;
     setIsGenerating(true);
     try {
-      await regenerateWeeklyPlan({ previousPlanId: currentPlan._id });
+      const { planId } = await regenerateWeeklyPlan({
+        previousPlanId: currentPlan._id,
+      });
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_REGENERATED);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
+      }
+      router.push(ROUTES.mealPlanWithId(planId));
       toast.success("Week regenerated. Locked meals kept.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to regenerate");
     } finally {
       setIsGenerating(false);
     }
-  }, [currentPlan, regenerateWeeklyPlan]);
+  }, [currentPlan, regenerateWeeklyPlan, router]);
 
   const handleLockToggle = useCallback(
     async (entry: CurrentPlan["entries"][number]) => {
@@ -329,10 +408,11 @@ export default function MealPlanClient() {
       await deleteMealPlan({ mealPlanId: currentPlan._id });
       setShowDeletePlanDialog(false);
       toast.success("Meal plan deleted");
+      router.replace(ROUTES.MEAL_PLAN, { scroll: false });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to delete plan");
     }
-  }, [currentPlan, deleteMealPlan]);
+  }, [currentPlan, deleteMealPlan, router]);
 
   const handleFinalisePlan = useCallback(async () => {
     if (!currentPlan) return;
@@ -410,7 +490,21 @@ export default function MealPlanClient() {
     return list;
   }, [personalChalkboard, householdChalkboards, households]);
 
-  if (currentPlan === undefined) {
+  useEffect(() => {
+    if (!resolvedPlanId || currentPlan === undefined) return;
+    if (currentPlan === null) {
+      router.replace(ROUTES.MEAL_PLAN, { scroll: false });
+    }
+  }, [resolvedPlanId, currentPlan, router]);
+
+  const isPlanListLoading =
+    planSummaries === undefined || resolvedPlanId === undefined;
+  const isPlanDetailLoading =
+    resolvedPlanId !== null &&
+    resolvedPlanId !== undefined &&
+    currentPlan === undefined;
+
+  if (isPlanListLoading || isPlanDetailLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="h-10 w-64 mb-4" />
@@ -420,7 +514,7 @@ export default function MealPlanClient() {
     );
   }
 
-  if (!currentPlan) {
+  if (planSummaries.length === 0) {
     return (
       <div className="bg-background w-full min-w-0 overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
@@ -516,6 +610,15 @@ export default function MealPlanClient() {
     );
   }
 
+  if (currentPlan === null || currentPlan === undefined) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-10 w-64 mb-4" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
   const mealCount = currentPlan.entries?.length ?? 0;
   const sharedHousehold = currentPlan.householdId
     ? households?.find((h) => h._id === currentPlan.householdId)
@@ -527,7 +630,7 @@ export default function MealPlanClient() {
 
   return (
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
-      <div className="w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border">
+      <div className="relative w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border pb-20">
         {/* Top bar: always show Generate meal plan so user can generate next week early */}
         {currentPlan.isOwner && (
           <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
@@ -566,7 +669,7 @@ export default function MealPlanClient() {
               className="shrink-0"
             >
               <Sparkles className="size-4" />
-              Generate next week
+              Generate next plan
             </Button>
           </div>
         )}
@@ -580,6 +683,44 @@ export default function MealPlanClient() {
                 ? "Drag meals to change which day they fall on."
                 : "Review your week. Lock what you love, swap what you don't."}
             </p>
+            {planSummaries.length > 1 ? (
+              <div className="mt-3 max-w-md space-y-1.5">
+                <Label
+                  htmlFor="meal-plan-picker"
+                  className="text-xs text-muted-foreground"
+                >
+                  Switch plan
+                </Label>
+                <Select
+                  value={currentPlan._id}
+                  onValueChange={(id) => {
+                    if (typeof window !== "undefined") {
+                      sessionStorage.setItem(
+                        MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+                        id,
+                      );
+                    }
+                    router.push(ROUTES.mealPlanWithId(id));
+                  }}
+                >
+                  <SelectTrigger
+                    id="meal-plan-picker"
+                    size="sm"
+                    className="w-full sm:w-72"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {planSummaries.map((s) => (
+                      <SelectItem key={s._id} value={s._id}>
+                        {formatPlanRangeShort(s.startDate, s.endDate)}
+                        {s.isFinalised ? " · Saved" : " · Draft"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-2 items-center min-w-0 shrink-0">
             {hasList && firstListId ? (
@@ -602,7 +743,7 @@ export default function MealPlanClient() {
             {currentPlan.isOwner && (
               <>
                 {!isFinalised && (
-                  <>
+                  <div className="hidden sm:flex flex-wrap gap-2">
                     <Button
                       variant="default"
                       onClick={() => setShowFinaliseDialog(true)}
@@ -619,7 +760,7 @@ export default function MealPlanClient() {
                       <Sparkles className="size-4" />
                       Regenerate
                     </Button>
-                  </>
+                  </div>
                 )}
                 {sharedHousehold ? (
                   <Button
@@ -1020,6 +1161,44 @@ export default function MealPlanClient() {
             )}
           </DialogContent>
         </Dialog>
+
+        {!isFinalised && currentPlan.isOwner && (
+          <div
+            className={cn(
+              "fixed bottom-0 inset-x-0 z-40 border-t bg-background/60 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.08)]",
+              "bottom-(--nav-height) py-3 px-4 sm:hidden",
+            )}
+          >
+            <p className="text-xs leading-snug text-muted-foreground mb-3 max-w-prose">
+              Save your plan to open recipes from this week. After saving you
+              can still move meals between days.
+            </p>
+            <div className="flex items-stretch justify-between gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="min-h-12 flex-1 shrink"
+                onClick={handleRegenerateWeek}
+                disabled={isGenerating}
+              >
+                <Sparkles className="size-5 shrink-0" />
+                Regenerate
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="lg"
+                className="min-h-12 flex-1 shrink"
+                onClick={() => setShowFinaliseDialog(true)}
+                disabled={mealCount === 0}
+              >
+                <CheckCircle2 className="size-5 shrink-0" />
+                Save plan
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

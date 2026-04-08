@@ -22,6 +22,9 @@ export const ROUTES = {
   IMPORT_RECIPE: "/dashboard/import-recipe",
   CREATE_RECIPE: "/dashboard/create-recipe",
   MEAL_PLAN: "/dashboard/meal-plan",
+  /** Meal plan screen with a specific plan selected */
+  mealPlanWithId: (planId: string) =>
+    `/dashboard/meal-plan?plan=${encodeURIComponent(planId)}`,
   SHOPPING_LIST: "/dashboard/shopping-list",
   /** URL for a specific shopping list (use with query param listId) */
   shoppingListWithId: (listId: string) =>

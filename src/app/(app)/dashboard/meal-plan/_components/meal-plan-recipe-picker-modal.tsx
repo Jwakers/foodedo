@@ -33,7 +33,7 @@ import { useMemo, useState } from "react";
 // -----------------------------------------------------------------------------
 
 type CurrentPlan = NonNullable<
-  FunctionReturnType<typeof api.mealPlans.getCurrentMealPlan>
+  FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
 type UserRecipe = FunctionReturnType<
   typeof api.recipes.getAllUserRecipes

@@ -37,6 +37,179 @@ function startOfDayMs(ms: number): number {
   return d.getTime();
 }
 
+/** UTC calendar day as YYYY-MM-DD (matches stored plan start/end boundaries). */
+function utcDayKeyFromMs(ms: number): string {
+  const d = new Date(ms);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+type PlanWithEntryStats = {
+  plan: Doc<"mealPlans">;
+  entryCount: number;
+  entryMinDate: number | null;
+  entryMaxDate: number | null;
+  isOwner: boolean;
+};
+
+async function collectActivePlansForUser(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+): Promise<Doc<"mealPlans">[]> {
+  const today = startOfDayMs(Date.now());
+
+  const ownedPlans = await ctx.db
+    .query("mealPlans")
+    .withIndex("by_user_and_endDate", (q) =>
+      q.eq("userId", userId).gte("endDate", today),
+    )
+    .order("desc")
+    .collect();
+
+  const memberships = await ctx.db
+    .query("householdMembers")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  const householdIds = memberships.map((m) => m.householdId);
+
+  const sharedPlans: Doc<"mealPlans">[] = [];
+  for (const householdId of householdIds) {
+    const plans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_household", (q) => q.eq("householdId", householdId))
+      .filter((q) => q.gte(q.field("endDate"), today))
+      .collect();
+    sharedPlans.push(...plans);
+  }
+
+  const seenIds = new Set<Id<"mealPlans">>();
+  const allPlans = [...ownedPlans, ...sharedPlans].filter((p) => {
+    if (seenIds.has(p._id)) return false;
+    seenIds.add(p._id);
+    return true;
+  });
+
+  return allPlans.filter((p) => p.replacedByPlanId === undefined);
+}
+
+async function loadPlanSummariesWithEntryStats(
+  ctx: QueryCtx,
+  plans: Doc<"mealPlans">[],
+  userId: Id<"users">,
+): Promise<PlanWithEntryStats[]> {
+  const out: PlanWithEntryStats[] = [];
+  for (const p of plans) {
+    const entries = await ctx.db
+      .query("mealPlanEntries")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", p._id))
+      .collect();
+    const dates = entries.map((e) => e.date);
+    out.push({
+      plan: p,
+      entryCount: entries.length,
+      entryMinDate: dates.length > 0 ? Math.min(...dates) : null,
+      entryMaxDate: dates.length > 0 ? Math.max(...dates) : null,
+      isOwner: p.userId === userId,
+    });
+  }
+  return out;
+}
+
+function planCoversLocalDateKey(
+  plan: Doc<"mealPlans">,
+  entryMinDate: number | null,
+  entryMaxDate: number | null,
+  localDateKey: string,
+): boolean {
+  const startKey =
+    plan.startDate !== undefined
+      ? utcDayKeyFromMs(plan.startDate)
+      : entryMinDate !== null
+        ? utcDayKeyFromMs(entryMinDate)
+        : null;
+  const endKey =
+    plan.endDate !== undefined
+      ? utcDayKeyFromMs(plan.endDate)
+      : entryMaxDate !== null
+        ? utcDayKeyFromMs(entryMaxDate)
+        : null;
+  if (startKey === null || endKey === null) return false;
+  return localDateKey >= startKey && localDateKey <= endKey;
+}
+
+function pickPreferredPlanDoc(
+  summaries: PlanWithEntryStats[],
+  localDateKey: string | undefined,
+): Doc<"mealPlans"> | null {
+  if (summaries.length === 0) return null;
+  if (localDateKey) {
+    const finalisedCovering = summaries.filter(
+      (s) =>
+        s.plan.isFinalised === true &&
+        planCoversLocalDateKey(
+          s.plan,
+          s.entryMinDate,
+          s.entryMaxDate,
+          localDateKey,
+        ),
+    );
+    if (finalisedCovering.length > 0) {
+      finalisedCovering.sort(
+        (a, b) => (b.plan.updatedAt ?? 0) - (a.plan.updatedAt ?? 0),
+      );
+      return finalisedCovering[0]!.plan;
+    }
+  }
+  const sorted = [...summaries].sort(
+    (a, b) => (b.plan.updatedAt ?? 0) - (a.plan.updatedAt ?? 0),
+  );
+  return sorted[0]!.plan;
+}
+
+async function buildEntriesWithRecipes(
+  ctx: QueryCtx,
+  mealPlanId: Id<"mealPlans">,
+) {
+  const entries = await ctx.db
+    .query("mealPlanEntries")
+    .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", mealPlanId))
+    .collect();
+
+  const entriesWithRecipes = await Promise.all(
+    entries.map(async (entry) => {
+      const recipe = await ctx.db.get(entry.recipeId);
+      if (!recipe) return { ...entry, recipe: null };
+      const image = recipe.image
+        ? await ctx.storage.getUrl(recipe.image)
+        : null;
+      const totalTimeMinutes =
+        recipe.totalTimeMinutes ??
+        (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+      return {
+        ...entry,
+        recipe: {
+          _id: recipe._id,
+          title: recipe.title,
+          image,
+          ingredients: recipe.ingredients,
+          prepTime: recipe.prepTime ?? 0,
+          cookTime: recipe.cookTime,
+          totalTimeMinutes,
+          nutrition: recipe.nutrition,
+          category: recipe.category,
+          primaryProtein: recipe.primaryProtein,
+        },
+      };
+    }),
+  );
+
+  return entriesWithRecipes.sort(
+    (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
+  );
+}
+
 export async function canAccessMealPlan(
   ctx: QueryCtx,
   userId: Id<"users">,
@@ -76,144 +249,84 @@ export const getMealPlan = query({
     const allowed = await canAccessMealPlan(ctx, user._id, plan);
     if (!allowed) return null;
 
-    const entries = await ctx.db
-      .query("mealPlanEntries")
-      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
-      .collect();
-
-    const entriesWithRecipes = await Promise.all(
-      entries.map(async (entry) => {
-        const recipe = await ctx.db.get(entry.recipeId);
-        if (!recipe) return { ...entry, recipe: null };
-        const image = recipe.image
-          ? await ctx.storage.getUrl(recipe.image)
-          : null;
-        const totalTimeMinutes =
-          recipe.totalTimeMinutes ??
-          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-        return {
-          ...entry,
-          recipe: {
-            _id: recipe._id,
-            title: recipe.title,
-            image,
-            ingredients: recipe.ingredients,
-            prepTime: recipe.prepTime ?? 0,
-            cookTime: recipe.cookTime,
-            totalTimeMinutes,
-            nutrition: recipe.nutrition,
-            category: recipe.category,
-            primaryProtein: recipe.primaryProtein,
-          },
-        };
-      }),
-    );
+    const entries = await buildEntriesWithRecipes(ctx, args.mealPlanId);
 
     return {
       ...plan,
-      entries: entriesWithRecipes.sort(
-        (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
-      ),
+      entries,
       isOwner: plan.userId === user._id,
     };
   },
 });
 
 /**
- * Get the user's "current" meal plan: one where endDate >= today, most recent, that user owns or that is shared with a household they're in.
+ * Get the user's "current" meal plan for dashboard / default UX: non-superseded
+ * plans with endDate >= today. Prefers a finalised plan whose UTC date range
+ * covers `localDateKey` (YYYY-MM-DD in the user's local calendar); otherwise the
+ * most recently updated active plan.
  */
 export const getCurrentMealPlan = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    localDateKey: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const today = startOfDayMs(Date.now());
+    const activePlans = await collectActivePlansForUser(ctx, user._id);
+    if (activePlans.length === 0) return null;
 
-    // Plans owned by user with endDate >= today
-    const ownedPlans = await ctx.db
-      .query("mealPlans")
-      .withIndex("by_user_and_endDate", (q) =>
-        q.eq("userId", user._id).gte("endDate", today),
-      )
-      .order("desc")
-      .collect();
-
-    // Plans shared with user's households
-    const memberships = await ctx.db
-      .query("householdMembers")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-    const householdIds = memberships.map((m) => m.householdId);
-
-    const sharedPlans: Doc<"mealPlans">[] = [];
-    for (const householdId of householdIds) {
-      const plans = await ctx.db
-        .query("mealPlans")
-        .withIndex("by_household", (q) => q.eq("householdId", householdId))
-        .filter((q) => q.gte(q.field("endDate"), today))
-        .collect();
-      sharedPlans.push(...plans);
-    }
-
-    // Combine, dedupe, and exclude superseded plans (Spec 6.2: active plan has replacedByPlanId undefined)
-    const seenIds = new Set<Id<"mealPlans">>();
-    const allPlans = [...ownedPlans, ...sharedPlans].filter((p) => {
-      if (seenIds.has(p._id)) return false;
-      seenIds.add(p._id);
-      return true;
-    });
-    // Only plans that have not been replaced by a newer regeneration
-    const activePlans = allPlans.filter(
-      (p) => p.replacedByPlanId === undefined,
+    const summaries = await loadPlanSummariesWithEntryStats(
+      ctx,
+      activePlans,
+      user._id,
     );
-    activePlans.sort(
-      (a, b) =>
-        b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
-    );
-    const current = activePlans[0] ?? null;
+    const current = pickPreferredPlanDoc(summaries, args.localDateKey);
     if (!current) return null;
 
-    const entries = await ctx.db
-      .query("mealPlanEntries")
-      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", current._id))
-      .collect();
-
-    const entriesWithRecipes = await Promise.all(
-      entries.map(async (entry) => {
-        const recipe = await ctx.db.get(entry.recipeId);
-        if (!recipe) return { ...entry, recipe: null };
-        const image = recipe.image
-          ? await ctx.storage.getUrl(recipe.image)
-          : null;
-        const totalTimeMinutes =
-          recipe.totalTimeMinutes ??
-          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-        return {
-          ...entry,
-          recipe: {
-            _id: recipe._id,
-            title: recipe.title,
-            image,
-            ingredients: recipe.ingredients,
-            prepTime: recipe.prepTime ?? 0,
-            cookTime: recipe.cookTime,
-            totalTimeMinutes,
-            nutrition: recipe.nutrition,
-            category: recipe.category,
-            primaryProtein: recipe.primaryProtein,
-          },
-        };
-      }),
-    );
+    const entries = await buildEntriesWithRecipes(ctx, current._id);
 
     return {
       ...current,
-      entries: entriesWithRecipes.sort(
-        (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
-      ),
+      entries,
       isOwner: current.userId === user._id,
     };
+  },
+});
+
+/**
+ * Active meal plans (not superseded, endDate >= today) for picker UI.
+ */
+export const getActiveMealPlanSummaries = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const activePlans = await collectActivePlansForUser(ctx, user._id);
+    if (activePlans.length === 0) return [];
+
+    const summaries = await loadPlanSummariesWithEntryStats(
+      ctx,
+      activePlans,
+      user._id,
+    );
+    summaries.sort(
+      (a, b) => (b.plan.updatedAt ?? 0) - (a.plan.updatedAt ?? 0),
+    );
+
+    return summaries.map((s) => ({
+      _id: s.plan._id,
+      startDate: s.plan.startDate,
+      endDate: s.plan.endDate,
+      isFinalised: s.plan.isFinalised === true,
+      updatedAt: s.plan.updatedAt,
+      isOwner: s.isOwner,
+      householdId: s.plan.householdId,
+      entryCount: s.entryCount,
+      entryMinDate: s.entryMinDate,
+      entryMaxDate: s.entryMaxDate,
+    }));
   },
 });
 

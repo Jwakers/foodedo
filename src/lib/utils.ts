@@ -32,3 +32,12 @@ export function startOfLocalDayMs(ms: number): number {
   d.setHours(0, 0, 0, 0);
   return d.getTime();
 }
+
+/** Local calendar date as YYYY-MM-DD (user timezone). For meal plan "today" preference on the server. */
+export function localCalendarDateKey(ms: number = Date.now()): string {
+  const d = new Date(ms);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}

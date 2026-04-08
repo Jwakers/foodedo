@@ -1,7 +1,7 @@
 "use client";
 
 import { ROUTES, recipeUrlWithCookMode } from "@/app/constants";
-import { cn, startOfLocalDayMs } from "@/lib/utils";
+import { cn, localCalendarDateKey, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -164,7 +164,9 @@ const grainOverlay =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E\")";
 
 export function TodaysMealSpotlight() {
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan);
+  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
+    localDateKey: localCalendarDateKey(),
+  });
 
   const { featured, rest, spotlightDayMs, isSpotlightToday, todayMs } = useMemo(
     () => resolveSpotlight(currentPlan ?? null),
@@ -239,6 +241,124 @@ export function TodaysMealSpotlight() {
             </Link>
           </div>
         </div>
+      </article>
+    );
+  }
+
+  if (currentPlan.isFinalised !== true) {
+    const planHref = ROUTES.mealPlanWithId(currentPlan._id);
+    const headline =
+      featured && spotlightDayMs !== null
+        ? primaryHeadline(
+            isSpotlightToday,
+            spotlightDayMs,
+            todayMs,
+            featured.mealLabel?.trim(),
+          )
+        : "Meal plan in draft";
+    const secondaryChip =
+      featured && spotlightDayMs !== null
+        ? isSpotlightToday
+          ? "Draft · not saved yet"
+          : "Draft · coming up"
+        : "Draft · not saved yet";
+
+    return (
+      <article
+        className={cn(
+          "mb-6 overflow-hidden rounded-2xl border border-amber-500/35 bg-card text-left shadow-xl shadow-black/10 ring-1 ring-amber-500/15 dark:ring-amber-400/20",
+        )}
+      >
+        <div
+          className={cn(
+            "relative isolate grid min-h-[min(85vw,18rem)] w-full overflow-hidden sm:min-h-80",
+            rest.length > 0 ? "rounded-t-2xl" : "rounded-2xl",
+          )}
+        >
+          <div className="col-start-1 row-start-1 relative min-h-0 size-full overflow-hidden bg-muted">
+            {featured?.recipe?.image ? (
+              <Image
+                src={featured.recipe.image}
+                alt=""
+                fill
+                className="object-cover opacity-90"
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                priority
+                unoptimized
+              />
+            ) : (
+              <div
+                className="absolute inset-0 bg-linear-to-br from-amber-500/25 via-muted to-muted"
+                aria-hidden
+              />
+            )}
+          </div>
+          <div
+            className="pointer-events-none col-start-1 row-start-1 bg-linear-to-t from-black via-black/60 to-black/30"
+            aria-hidden
+          />
+          <div className="relative z-10 col-start-1 row-start-1 flex flex-col justify-end p-6 pb-8 sm:p-8 sm:pb-10 md:p-10 md:pb-12">
+            <div className="max-w-4xl">
+              <div className="mb-4 flex flex-wrap items-center gap-2 sm:mb-5">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-amber-100">
+                  <Flame className="size-3.5 text-amber-200" aria-hidden />
+                  {headline}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
+                  <Sparkles className="size-3.5 text-amber-200/90" aria-hidden />
+                  {secondaryChip}
+                </span>
+              </div>
+              <h2 className="mb-3 text-3xl font-extrabold leading-tight tracking-tight text-white drop-shadow-lg sm:text-4xl md:text-5xl">
+                {featured?.recipe?.title ?? "Save your plan to unlock recipes"}
+              </h2>
+              <p className="mb-5 max-w-xl text-sm leading-relaxed text-white/85 sm:text-base">
+                Your week is lined up, but this plan isn&apos;t saved yet—so we
+                can&apos;t open recipes from here. Save on the meal plan page to
+                cook along and browse each dish.
+              </p>
+              <Link
+                href={planHref}
+                className={cn(
+                  "group/cta inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-6 py-3 text-sm font-bold text-white backdrop-blur-md",
+                  "shadow-lg shadow-black/30 ring-1 ring-white/15 transition-all duration-300",
+                  "hover:border-primary/50 hover:bg-primary/90 hover:text-primary-foreground",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+                )}
+              >
+                Review and save plan
+                <ArrowRight
+                  className="size-4 transition-transform duration-300 group-hover/cta:translate-x-1"
+                  aria-hidden
+                />
+              </Link>
+            </div>
+          </div>
+        </div>
+        {rest.length > 0 ? (
+          <div className="relative isolate rounded-b-2xl border-t border-border/80 bg-card px-5 py-4 sm:px-6">
+            <p className="mb-2.5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              {spotlightDayMs !== null
+                ? alsoSectionLabel(
+                    isSpotlightToday,
+                    spotlightDayMs,
+                    todayMs,
+                  )
+                : "Also in this draft"}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {rest.map((e) => (
+                <span
+                  key={e._id}
+                  className="rounded-full border border-border bg-muted/80 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground"
+                >
+                  {e.mealLabel ? `${e.mealLabel}: ` : null}
+                  {e.recipe?.title ?? "Meal"}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </article>
     );
   }
