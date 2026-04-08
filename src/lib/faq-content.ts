@@ -98,7 +98,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "Can I share my meal plan with my household?",
         answer:
-          "Yes. If you belong to exactly one household, new plans are linked to it automatically when you generate or start an empty week. If you belong to several households, you choose which one when you generate. As the owner you can still use 'Share with household' to pick a different household, and 'Stop sharing' to make the plan visible only to you again.",
+          "Yes. If you belong to exactly one household, new plans are linked to it automatically when you generate or start a manual plan. If you belong to several households, you choose which one when you generate. To move an already shared plan to a different household, tap 'Stop sharing' first, then use 'Share with household' and pick the other household. 'Stop sharing' also makes the plan visible only to you again until you share it once more.",
       },
     ],
   },

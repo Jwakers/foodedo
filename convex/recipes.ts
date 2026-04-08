@@ -781,6 +781,8 @@ export const updateRecipe = mutation({
       );
     }
 
+    const wasRecipeValid = _validateRecipe(recipe).length === 0;
+
     let ingredients = recipe.ingredients;
     let ingredientsUpdated = false;
     if (args.ingredients?.length) {
@@ -919,6 +921,25 @@ export const updateRecipe = mutation({
         excludeFromMealPlanGenerator: args.excludeFromMealPlanGenerator,
       }),
     });
+
+    const updated = await ctx.db.get(args.recipeId);
+    if (!updated) {
+      throw new ConvexError("Recipe not found after update");
+    }
+    const nowRecipeValid = _validateRecipe(updated).length === 0;
+    if (
+      isOwner &&
+      !wasRecipeValid &&
+      nowRecipeValid &&
+      updated.source === "user"
+    ) {
+      await shareNewRecipeToHouseholdIfApplicable(
+        ctx,
+        user._id,
+        args.recipeId,
+        undefined,
+      );
+    }
   },
 });
 

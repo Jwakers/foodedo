@@ -105,14 +105,25 @@ export default function ShoppingList({
 
   const isFinalised = shoppingList.status === "active";
   const isOwner = shoppingList.isOwner === true;
-  /** Single-select value: explicit household id, strict private, or owner-only (no household link, not private). */
-  const sharingSelectValue = useMemo(() => {
+  /** Authoritative value from server (Convex subscription). */
+  const authoritativeSharingValue = useMemo(() => {
     if (shoppingList.householdId) {
-      return `household:${shoppingList.householdId}` as const;
+      return `household:${shoppingList.householdId}`;
     }
-    if (shoppingList.isPrivate === true) return "private" as const;
-    return "owner_only" as const;
+    if (shoppingList.isPrivate === true) return "private";
+    return "owner_only";
   }, [shoppingList.householdId, shoppingList.isPrivate]);
+
+  const [pendingSharingValue, setPendingSharingValue] = useState<string | null>(
+    null,
+  );
+  const [sharingMutationPending, setSharingMutationPending] = useState(false);
+
+  useEffect(() => {
+    setPendingSharingValue(null);
+  }, [authoritativeSharingValue, shoppingList._id]);
+
+  const sharingSelectValue = pendingSharingValue ?? authoritativeSharingValue;
   const ingredientIds = useMemo(
     () =>
       shoppingList.items
@@ -624,6 +635,8 @@ export default function ShoppingList({
                 <Select
                   value={sharingSelectValue}
                   onValueChange={async (v) => {
+                    setPendingSharingValue(v);
+                    setSharingMutationPending(true);
                     try {
                       if (v === "private") {
                         await updateShoppingListSharing({
@@ -651,15 +664,22 @@ export default function ShoppingList({
                       });
                       toast.success("List shared with your household");
                     } catch (err) {
+                      setPendingSharingValue(null);
                       toast.error(
                         err instanceof Error
                           ? err.message
                           : "Could not update sharing",
                       );
+                    } finally {
+                      setSharingMutationPending(false);
                     }
                   }}
+                  disabled={sharingMutationPending}
                 >
-                  <SelectTrigger className="w-full max-w-md">
+                  <SelectTrigger
+                    className="w-full max-w-md"
+                    disabled={sharingMutationPending}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
