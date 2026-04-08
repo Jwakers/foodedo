@@ -50,9 +50,22 @@ const STOP_WORDS = new Set([
 const MIN_TOKEN_LENGTH = 3;
 
 /**
+ * Size / pack-style adjectives: still match inside full phrases ("large eggs") but not as
+ * standalone tokens — otherwise "large" hits cookware ("large frying pan").
+ */
+const STANDALONE_MATCH_DENYLIST = new Set([
+  "extra",
+  "large",
+  "medium",
+  "mini",
+  "small",
+]);
+
+/**
  * Extract significant single-word tokens from a phrase for partial matching.
  * e.g. "cremini mushrooms" -> ["cremini", "mushrooms"]; "red onion" -> ["red", "onion"].
  * Used so steps like "sliced onion" or "add the mushrooms" still match the ingredient line.
+ * (Standalone size words are filtered out when these tokens are merged in `collectPhrasesForLine`.)
  */
 function extractSignificantTokens(phrase: string): string[] {
   const normalised = normaliseTextForIngredientMatch(phrase);
@@ -305,10 +318,12 @@ function collectPhrasesForLine(
   }
 
   // Add significant single-word tokens so "red onion" matches "sliced onion" and
-  // "cremini mushrooms" matches "mushrooms"
+  // "cremini mushrooms" matches "mushrooms". Skip size adjectives as standalone tokens
+  // (they false-positive on equipment: large pan, small bowl).
   const seenPhrases = new Set(out.map((p) => normaliseTextForIngredientMatch(p)));
   for (const p of out) {
     for (const token of extractSignificantTokens(p)) {
+      if (STANDALONE_MATCH_DENYLIST.has(token)) continue;
       if (!seenPhrases.has(token)) {
         seenPhrases.add(token);
         out.push(token);

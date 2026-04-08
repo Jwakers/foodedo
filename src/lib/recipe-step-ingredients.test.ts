@@ -164,6 +164,49 @@ function runTests(): boolean {
     assert.deepEqual(idx, [0]);
   });
 
+  test("size adjective token: large eggs does not match large frying pan", () => {
+    const lines: RecipeIngredientLine[] = [
+      { name: "large eggs", amount: 2 },
+      { name: "vegetable oil", amount: 2, unit: "tbsp" },
+    ];
+    const idx = getRecipeIngredientIndicesForStep(
+      {
+        title: "Sear",
+        description:
+          "To a wok, or a large frying pan, heat the oil until shimmering. Add the chicken.",
+      },
+      lines,
+      undefined,
+    );
+    assert.deepEqual(idx, [1]);
+  });
+
+  test("full phrase large eggs still matches when step mentions it", () => {
+    const lines: RecipeIngredientLine[] = [{ name: "large eggs", amount: 2 }];
+    const idx = getRecipeIngredientIndicesForStep(
+      { title: "Mix", description: "Beat the large eggs until frothy." },
+      lines,
+      undefined,
+    );
+    assert.deepEqual(idx, [0]);
+  });
+
+  test("ambiguous chicken token: step says chicken only -> no line matched", () => {
+    const lines: RecipeIngredientLine[] = [
+      { name: "boneless skinless chicken thighs" },
+      { name: "chicken stock", amount: 500, unit: "ml" },
+    ];
+    const idx = getRecipeIngredientIndicesForStep(
+      {
+        title: "Brown",
+        description: "Add the chicken and sear until golden.",
+      },
+      lines,
+      undefined,
+    );
+    assert.deepEqual(idx, []);
+  });
+
   test("highlight spans map to original text (punctuation)", () => {
     const lines: RecipeIngredientLine[] = [{ name: "garlic" }];
     const spans = getIngredientHighlightSpansInText(
