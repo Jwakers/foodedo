@@ -109,10 +109,7 @@ export default function MealPlanClient() {
         return last as Id<"mealPlans">;
       }
     }
-    return pickPreferredMealPlanIdFromSummaries(
-      planSummaries,
-      localDayStartMs,
-    );
+    return pickPreferredMealPlanIdFromSummaries(planSummaries, localDayStartMs);
   }, [planSummaries, planParam, localDayStartMs]);
 
   useEffect(() => {
@@ -126,17 +123,13 @@ export default function MealPlanClient() {
     }
 
     if (resolvedPlanId && planParam !== resolvedPlanId) {
-      router.replace(
-        `${pathname}?plan=${encodeURIComponent(resolvedPlanId)}`,
-        { scroll: false },
-      );
+      router.replace(`${pathname}?plan=${encodeURIComponent(resolvedPlanId)}`, {
+        scroll: false,
+      });
     }
 
     if (resolvedPlanId && typeof window !== "undefined") {
-      sessionStorage.setItem(
-        MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
-        resolvedPlanId,
-      );
+      sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
     }
   }, [planSummaries, planParam, resolvedPlanId, pathname, router]);
 
@@ -160,7 +153,9 @@ export default function MealPlanClient() {
   );
 
   const generateWeeklyPlan = useMutation(api.mealPlans.generateWeeklyPlan);
-  const createBlankWeeklyPlan = useMutation(api.mealPlans.createBlankWeeklyPlan);
+  const createBlankWeeklyPlan = useMutation(
+    api.mealPlans.createBlankWeeklyPlan,
+  );
   const regenerateWeeklyPlan = useMutation(api.mealPlans.regenerateWeeklyPlan);
   const removeEntry = useMutation(api.mealPlans.removeEntry);
   const updateEntry = useMutation(api.mealPlans.updateEntry);
@@ -285,12 +280,7 @@ export default function MealPlanClient() {
     } finally {
       setIsGenerating(false);
     }
-  }, [
-    createBlankWeeklyPlan,
-    generateWeekHouseholdId,
-    households,
-    router,
-  ]);
+  }, [createBlankWeeklyPlan, generateWeekHouseholdId, households, router]);
 
   const handleRegenerateWeek = useCallback(async () => {
     if (!currentPlan) return;
@@ -538,10 +528,10 @@ export default function MealPlanClient() {
 
   useEffect(() => {
     if (!resolvedPlanId || currentPlan === undefined) return;
-    if (currentPlan === null) {
+    if (currentPlan === null && planParam) {
       router.replace(ROUTES.MEAL_PLAN, { scroll: false });
     }
-  }, [resolvedPlanId, currentPlan, router]);
+  }, [resolvedPlanId, currentPlan, router, planParam]);
 
   const isPlanListLoading =
     planSummaries === undefined || resolvedPlanId === undefined;
@@ -632,8 +622,8 @@ export default function MealPlanClient() {
                 you in seconds.
               </p>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                Prefer to pick every meal yourself? Start with seven empty
-                days, then fill them in.
+                Prefer to pick every meal yourself? Start with seven empty days,
+                then fill them in.
               </p>
               {households && households.length > 1 ? (
                 <div className="w-full max-w-sm mx-auto mb-4 space-y-1.5 text-left">

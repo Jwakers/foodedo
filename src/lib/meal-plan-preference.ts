@@ -7,7 +7,7 @@ export type MealPlanSummaryForPick = {
   startDate?: number;
   endDate: number;
   isFinalised: boolean;
-  updatedAt: number;
+  updatedAt?: number;
   entryMinDate: number | null;
   entryMaxDate: number | null;
 };
@@ -37,9 +37,7 @@ export function pickPreferredMealPlanIdFromSummaries(
         planOverlapsLocalCalendarDaySummary(s, localDayStartMs),
     );
     if (finalisedCovering.length > 0) {
-      finalisedCovering.sort(
-        (a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
-      );
+      finalisedCovering.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
       return finalisedCovering[0]!._id;
     }
   }
