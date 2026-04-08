@@ -524,11 +524,8 @@ export const getRecentActivity = query({
 });
 
 export const createEmptyRecipe = mutation({
-  args: {
-    /** When omitted, uses the user's only household if they have exactly one; if they have several, pass one to share there. */
-    householdId: v.optional(v.id("households")),
-  },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
     const user = await getCurrentUserOrThrow(ctx);
     const subscription = await getUserSubscription(user, ctx);
 
@@ -559,13 +556,6 @@ export const createEmptyRecipe = mutation({
       source: "user",
       updatedAt: Date.now(),
     });
-
-    await shareNewRecipeToHouseholdIfApplicable(
-      ctx,
-      user._id,
-      recipeId,
-      args.householdId,
-    );
 
     return { recipeId, error: null };
   },
@@ -720,12 +710,14 @@ export const createRecipe = mutation({
 
     const errors = _validateRecipe(recipe);
 
-    await shareNewRecipeToHouseholdIfApplicable(
-      ctx,
-      user._id,
-      recipeId,
-      args.householdId,
-    );
+    if (errors.length === 0) {
+      await shareNewRecipeToHouseholdIfApplicable(
+        ctx,
+        user._id,
+        recipeId,
+        args.householdId,
+      );
+    }
 
     return {
       recipeId,

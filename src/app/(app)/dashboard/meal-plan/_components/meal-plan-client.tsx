@@ -272,10 +272,10 @@ export default function MealPlanClient() {
         sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
       }
       router.push(ROUTES.mealPlanWithId(planId));
-      toast.success("Empty week ready — add your meals.");
+      toast.success("Manual plan ready — add your meals.");
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "Failed to create empty week",
+        e instanceof Error ? e.message : "Failed to create manual plan",
       );
     } finally {
       setIsGenerating(false);
@@ -595,7 +595,7 @@ export default function MealPlanClient() {
                   disabled={isGenerating || households === undefined}
                 >
                   <CalendarPlus className="size-5 mr-2" />
-                  Choose my own meals
+                  Manual plan
                 </Button>
                 <Button
                   size="lg"
@@ -622,8 +622,8 @@ export default function MealPlanClient() {
                 you in seconds.
               </p>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                Prefer to pick every meal yourself? Start with seven empty days,
-                then fill them in.
+                Prefer to pick every meal yourself? Start a manual plan with
+                empty days, then fill them in.
               </p>
               {households && households.length > 1 ? (
                 <div className="w-full max-w-sm mx-auto mb-4 space-y-1.5 text-left">

@@ -331,6 +331,7 @@ export const getAccessibleShoppingLists = query({
       for (const list of lists) {
         if (seen.has(list._id)) continue;
         if (list.status !== "draft" && list.status !== "active") continue;
+        if (!(await canAccessShoppingList(ctx, user._id, list))) continue;
         seen.add(list._id);
         linkedLists.push(list);
       }
@@ -396,7 +397,14 @@ export const getShoppingListsByMealPlan = query({
       .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
       .collect();
 
-    return lists.filter((l) => l.status === "draft" || l.status === "active");
+    const out: Doc<"shoppingLists">[] = [];
+    for (const l of lists) {
+      if (l.status !== "draft" && l.status !== "active") continue;
+      if (await canAccessShoppingList(ctx, user._id, l)) {
+        out.push(l);
+      }
+    }
+    return out;
   },
 });
 
@@ -431,6 +439,7 @@ export const getActiveShoppingList = query({
       for (const list of lists) {
         if (seen.has(list._id)) continue;
         if (list.status !== "draft" && list.status !== "active") continue;
+        if (!(await canAccessShoppingList(ctx, user._id, list))) continue;
         seen.add(list._id);
         linkedLists.push(list);
       }
@@ -484,6 +493,11 @@ export const updateShoppingListSharing = mutation({
     }
 
     if (args.visibility === "private") {
+      if (list.mealPlanId !== undefined) {
+        throw new ConvexError(
+          "This list is linked to a meal plan and cannot be made private while that link exists. Choose 'Not shared via household' to drop household visibility instead.",
+        );
+      }
       await ctx.db.patch(args.listId, {
         isPrivate: true,
         householdId: undefined,

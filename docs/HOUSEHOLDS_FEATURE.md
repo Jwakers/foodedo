@@ -75,7 +75,7 @@ canAccessRecipe(ctx, userId, recipeId); // Check recipe access rights
 - `shareRecipeToHousehold` - Share recipe to household
 - `unshareRecipeFromHousehold` - Unshare recipe (opt-out after auto-share or manual share)
 - `unshareMealPlan` / `shareMealPlanWithHousehold` - Meal plan visibility (`convex/mealPlans.ts`)
-- `updateShoppingListSharing` - Owner: strict private (`isPrivate`) or link to household (`convex/shoppingLists.ts`; the app uses two choices: Only me vs Household members)
+- `updateShoppingListSharing` - Owner: `private`, `owner_only`, or `household` + optional `householdId` (`convex/shoppingLists.ts`). The app uses a single control: Only me (disabled when `mealPlanId` is set), Not shared via household, or a per-household row for each membership.
 - `moveChalkboardItemScope` - Move item between personal and household (`convex/chalkboard.ts`)
 
 ### Frontend (Next.js)
@@ -119,7 +119,7 @@ Located in `src/app/(app)/dashboard/households/_components/`:
 
 ### Sharing Recipes
 
-1. **Default:** When you create a recipe and belong to exactly one household, a `householdRecipes` row is created automatically. With multiple households, clients may pass `householdId` on supported create flows; otherwise the recipe stays private until shared manually.
+1. **Default:** Completing `createRecipe` with no validation errors auto-shares via `householdRecipes` when you belong to exactly one household (or when `householdId` is passed). Empty draft rows from `createEmptyRecipe` are not auto-shared until the recipe is finished and saved through the full create flow.
 2. **Manual:** Recipe owner opens recipe detail page, clicks "Share", selects households; system creates `householdRecipes` records.
 3. **Opt-out:** Unshare from the recipe or household recipe list removes the link.
 

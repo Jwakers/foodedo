@@ -105,17 +105,14 @@ export default function ShoppingList({
 
   const isFinalised = shoppingList.status === "active";
   const isOwner = shoppingList.isOwner === true;
-  /** Two-option UX: shared with a household, or only you (strict private in the app). */
-  const sharingVisibility = useMemo(() => {
-    if (shoppingList.householdId) return "household" as const;
-    return "private" as const;
-  }, [shoppingList.householdId]);
-  const [shareHouseholdId, setShareHouseholdId] = useState<
-    Id<"households"> | ""
-  >(() => shoppingList.householdId ?? "");
-  useEffect(() => {
-    setShareHouseholdId(shoppingList.householdId ?? "");
-  }, [shoppingList.householdId]);
+  /** Single-select value: explicit household id, strict private, or owner-only (no household link, not private). */
+  const sharingSelectValue = useMemo(() => {
+    if (shoppingList.householdId) {
+      return `household:${shoppingList.householdId}` as const;
+    }
+    if (shoppingList.isPrivate === true) return "private" as const;
+    return "owner_only" as const;
+  }, [shoppingList.householdId, shoppingList.isPrivate]);
   const ingredientIds = useMemo(
     () =>
       shoppingList.items
@@ -625,35 +622,34 @@ export default function ShoppingList({
                   Who can see this list in the app?
                 </div>
                 <Select
-                  value={sharingVisibility}
+                  value={sharingSelectValue}
                   onValueChange={async (v) => {
-                    const vis = v as "private" | "household";
                     try {
-                      if (vis === "private") {
+                      if (v === "private") {
                         await updateShoppingListSharing({
                           listId: shoppingList._id,
                           visibility: "private",
                         });
                         toast.success("Only you can open this list in the app");
-                      } else {
-                        const hid =
-                          sharingHouseholds.length > 1
-                            ? ((shareHouseholdId as Id<"households">) ||
-                                sharingHouseholds[0]!._id)
-                            : sharingHouseholds[0]?._id;
-                        if (!hid) {
-                          toast.error("Join a household to share this list");
-                          return;
-                        }
+                        return;
+                      }
+                      if (v === "owner_only") {
                         await updateShoppingListSharing({
                           listId: shoppingList._id,
-                          visibility: "household",
-                          ...(sharingHouseholds.length > 1
-                            ? { householdId: hid }
-                            : {}),
+                          visibility: "owner_only",
                         });
-                        toast.success("List shared with your household");
+                        toast.success("Household sharing removed from this list");
+                        return;
                       }
+                      const prefix = "household:";
+                      if (!v.startsWith(prefix)) return;
+                      const hid = v.slice(prefix.length) as Id<"households">;
+                      await updateShoppingListSharing({
+                        listId: shoppingList._id,
+                        visibility: "household",
+                        householdId: hid,
+                      });
+                      toast.success("List shared with your household");
                     } catch (err) {
                       toast.error(
                         err instanceof Error
@@ -667,63 +663,29 @@ export default function ShoppingList({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="private">Only me</SelectItem>
                     <SelectItem
-                      value="household"
-                      disabled={sharingHouseholds.length === 0}
+                      value="private"
+                      disabled={shoppingList.mealPlanId !== undefined}
                     >
-                      Household members
+                      Only me
                     </SelectItem>
+                    <SelectItem value="owner_only">
+                      Not shared via household
+                    </SelectItem>
+                    {sharingHouseholds.map((h) => (
+                      <SelectItem key={h._id} value={`household:${h._id}`}>
+                        Household: {h.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                {sharingVisibility === "household" &&
-                sharingHouseholds.length > 1 ? (
-                  <div className="space-y-1.5 pt-1">
-                    <Label
-                      htmlFor="list-share-household"
-                      className="text-xs text-muted-foreground"
-                    >
-                      Household
-                    </Label>
-                    <Select
-                      value={shareHouseholdId || sharingHouseholds[0]!._id}
-                      onValueChange={async (v) => {
-                        const hid = v as Id<"households">;
-                        setShareHouseholdId(hid);
-                        try {
-                          await updateShoppingListSharing({
-                            listId: shoppingList._id,
-                            visibility: "household",
-                            householdId: hid,
-                          });
-                          toast.success("Household updated");
-                        } catch (err) {
-                          toast.error(
-                            err instanceof Error
-                              ? err.message
-                              : "Could not update household",
-                          );
-                        }
-                      }}
-                    >
-                      <SelectTrigger id="list-share-household" className="w-full max-w-md">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sharingHouseholds.map((h) => (
-                          <SelectItem key={h._id} value={h._id}>
-                            {h.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ) : null}
                 {shoppingList.mealPlanId ? (
                   <p className="text-xs text-muted-foreground pt-1">
-                    Linked to a meal plan: choose Only me if you don&apos;t want
-                    anyone else to open this list in the app (including via the
-                    plan).
+                    Linked to a meal plan: &quot;Only me&quot; isn&apos;t
+                    available (the link must stay meaningful for the plan).
+                    Use &quot;Not shared via household&quot; to stop household
+                    visibility; people who can open the plan may still see this
+                    list.
                   </p>
                 ) : null}
               </div>

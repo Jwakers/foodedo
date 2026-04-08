@@ -113,7 +113,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "How do I share my shopping list with others?",
         answer:
-          "Household members can open draft and active lists you create when the list is linked to your household (this happens automatically if you have one household, or you pick a household when you have several). On the list screen, choose Household members or Only me. Only me means nobody else can open that list in the app, including via a linked meal plan. Once you have finalised a list there are also sharing options such as message, print or save to notes.",
+          "Household members can open draft and active lists you create when the list is linked to your household (this happens automatically if you have one household, or you pick a named household in the sharing control when you have several). On the list screen you can choose Only me, Not shared via household, or a specific household. Only me is not available for lists linked to a meal plan; use Not shared via household to drop household visibility while the plan link remains. Once you have finalised a list there are also sharing options such as message, print or save to notes.",
       },
     ],
   },
@@ -138,7 +138,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "Are my recipes shared with my household automatically?",
         answer:
-          "New recipes you create are shared with your household when you belong to exactly one household, or you can pass a specific household when creating from flows that support it. You can stop sharing from the recipe page or household at any time. Recipes stay private until shared if you are not in a household or we cannot pick a single household.",
+          "When you finish creating or importing a complete recipe, it is shared with your household if you belong to exactly one household. With several households, the recipe stays unshared until you share it from the recipe page. Draft recipes you build in the form are not shared until the saved recipe passes validation. You can stop sharing from the recipe page or household at any time.",
       },
       {
         question: "How do I invite others to my household?",

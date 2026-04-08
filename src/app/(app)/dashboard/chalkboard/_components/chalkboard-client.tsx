@@ -527,7 +527,7 @@ function ChalkboardItemsList({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground"
+                  className="size-8 text-muted-foreground"
                   onClick={() => onMoveToPersonal(item._id)}
                   title="Move to personal"
                 >
@@ -542,7 +542,7 @@ function ChalkboardItemsList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground"
+                    className="size-8 text-muted-foreground"
                     onClick={() =>
                       onMoveToHousehold(item._id, households[0]!._id)
                     }
@@ -557,7 +557,7 @@ function ChalkboardItemsList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground"
+                        className="size-8 text-muted-foreground"
                         title="Move to household"
                       >
                         <ArrowRightLeft className="size-4" />
@@ -580,7 +580,7 @@ function ChalkboardItemsList({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
                 onClick={() => onDelete(item._id)}
               >
                 <Trash2 className="size-4" />

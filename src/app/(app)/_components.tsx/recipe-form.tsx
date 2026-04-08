@@ -38,7 +38,7 @@ import {
   PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
 } from "convex/lib/constants";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Loader2, Plus, X } from "lucide-react";
@@ -67,7 +67,6 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
   const isSavedRef = useRef(false);
 
   const createEmptyRecipeMutation = useMutation(api.recipes.createEmptyRecipe);
-  const households = useQuery(api.households.getUserHouseholds);
   const updateRecipeMutation = useMutation(api.recipes.updateRecipe);
   const generateUploadUrl = useMutation(api.recipes.generateUploadUrl);
   const updateRecipeImageAndDeleteOld = useMutation(
@@ -285,16 +284,11 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
     });
   };
 
-  // Create an empty recipe on mount (wait for household list so multi-household sharing can default)
+  // Create an empty recipe on mount (no householdId — sharing is applied only after a complete create/import flow)
   useEffect(() => {
     if (recipeId || creatingRecipe.current) return;
-    if (households === undefined) return;
     creatingRecipe.current = true;
-    const householdId =
-      households.length > 1 ? households[0]!._id : undefined;
-    createEmptyRecipeMutation(
-      householdId !== undefined ? { householdId } : {},
-    )
+    createEmptyRecipeMutation()
       .then(({ recipeId, error }) => {
         if (error) {
           toast.error(error);
@@ -315,7 +309,7 @@ export function RecipeForm({ closeDrawer }: RecipeFormProps) {
       .finally(() => {
         creatingRecipe.current = false;
       });
-  }, [closeDrawer, createEmptyRecipeMutation, households, recipeId, router]);
+  }, [closeDrawer, createEmptyRecipeMutation, recipeId, router]);
 
   useEffect(() => {
     // Update the recipe at each step (but not on review step - user should manually save)
