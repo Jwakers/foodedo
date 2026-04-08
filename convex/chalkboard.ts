@@ -344,48 +344,6 @@ export const clearHouseholdChalkboard = mutation({
   },
 });
 
-/**
- * Delete specific chalkboard items by IDs (used when combining with shopping list)
- */
-export const deleteItemsByIds = mutation({
-  args: {
-    itemIds: v.array(v.id("chalkboardItems")),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    let deletedCount = 0;
-
-    for (const itemId of args.itemIds) {
-      const item = await ctx.db.get(itemId);
-      if (!item) continue;
-
-      // For personal items, only the owner can delete
-      // For household items, any member can delete when combining with shopping list
-      if (item.householdId === undefined) {
-        if (item.addedBy !== user._id) {
-          continue; // Skip items user doesn't own
-        }
-      } else {
-        // Check household membership
-        const isMember = await isHouseholdMember(
-          ctx,
-          user._id,
-          item.householdId
-        );
-        if (!isMember) {
-          continue; // Skip items from households user isn't in
-        }
-      }
-
-      await ctx.db.delete(itemId);
-      deletedCount++;
-    }
-
-    return { deletedCount };
-  },
-});
-
 // ============================================================================
 // HELPERS
 // ============================================================================
