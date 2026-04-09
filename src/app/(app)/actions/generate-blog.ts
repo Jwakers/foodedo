@@ -355,17 +355,16 @@ export async function generateBlogDraft(rawInput: unknown): Promise<
     return { success: false, error: "Please provide guidance." };
   }
 
-  const [brief, existing] = await Promise.all([
-    loadBlogBrief(),
-    fetchExistingTitlesAndSlugs(),
-  ]);
-  const exclusions = buildExclusions(existing);
-
-  const system = buildSystemPrompt({ brief, existing, input });
-
-  let result;
   try {
-    result = await generateText({
+    const [brief, existing] = await Promise.all([
+      loadBlogBrief(),
+      fetchExistingTitlesAndSlugs(),
+    ]);
+    const exclusions = buildExclusions(existing);
+
+    const system = buildSystemPrompt({ brief, existing, input });
+
+    const result = await generateText({
       model: getBlogAiModel(),
       system,
       prompt:
@@ -378,45 +377,45 @@ export async function generateBlogDraft(rawInput: unknown): Promise<
       }),
       temperature: getBlogAiTemperature(),
     });
+
+    const validation = GenerateBlogResultSchema.safeParse(result.output);
+    if (!validation.success) {
+      return { success: false, error: "AI returned invalid blog draft data." };
+    }
+
+    const draft = validation.data;
+
+    // Enforce uniqueness (exact match only).
+    const titleKey = normaliseKey(draft.title);
+    const slugKey = normaliseKey(draft.slug);
+    if (exclusions.titles.has(titleKey)) {
+      return { success: false, error: "Generated title that already exists in Sanity." };
+    }
+    if (exclusions.slugs.has(slugKey)) {
+      return { success: false, error: "Generated slug that already exists in Sanity." };
+    }
+
+    const markdownWithLinks = injectInternalLinksIntoMarkdown({
+      markdownBody: draft.markdownBody,
+      suggestedInternalLinks: draft.suggestedInternalLinks,
+    });
+    const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
+
+    const warnings: string[] = [];
+    warnings.push(...excerptWarnings(draft.excerpt));
+    if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
+      warnings.push("Slug is not strict kebab-case.");
+    }
+
+    return {
+      success: true,
+      data: { ...draft, markdownBody },
+      warnings: warnings.filter(Boolean),
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, error: message };
   }
-
-  const validation = GenerateBlogResultSchema.safeParse(result.output);
-  if (!validation.success) {
-    return { success: false, error: "AI returned invalid blog draft data." };
-  }
-
-  const draft = validation.data;
-
-  // Enforce uniqueness (exact match only).
-  const titleKey = normaliseKey(draft.title);
-  const slugKey = normaliseKey(draft.slug);
-  if (exclusions.titles.has(titleKey)) {
-    return { success: false, error: "Generated title that already exists in Sanity." };
-  }
-  if (exclusions.slugs.has(slugKey)) {
-    return { success: false, error: "Generated slug that already exists in Sanity." };
-  }
-
-  const markdownWithLinks = injectInternalLinksIntoMarkdown({
-    markdownBody: draft.markdownBody,
-    suggestedInternalLinks: draft.suggestedInternalLinks,
-  });
-  const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
-
-  const warnings: string[] = [];
-  warnings.push(...excerptWarnings(draft.excerpt));
-  if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
-    warnings.push("Slug is not strict kebab-case.");
-  }
-
-  return {
-    success: true,
-    data: { ...draft, markdownBody },
-    warnings: warnings.filter(Boolean),
-  };
 }
 
 function buildSystemPromptForResubmit(args: {
@@ -481,33 +480,32 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
     return { success: false, error: "Additional prompt is empty." };
   }
 
-  const [brief, existing] = await Promise.all([
-    loadBlogBrief(),
-    (async () => {
-      const rows = await fetchExistingTitlesAndSlugsWithIds();
-      const rowsExcludingCurrent = excludeSanityId
-        ? rows.filter((r) => {
-            const draftId = excludeSanityId.startsWith("drafts.")
-              ? excludeSanityId
-              : `drafts.${excludeSanityId}`;
-            return r._id !== excludeSanityId && r._id !== draftId;
-          })
-        : rows;
-      return rowsExcludingCurrent.map(({ title, slug }) => ({ title, slug }));
-    })(),
-  ]);
-  const exclusions = buildExclusions(existing);
-
-  const system = buildSystemPromptForResubmit({
-    brief,
-    existing,
-    current,
-    additionalPrompt: trimmedAdditionalPrompt,
-  });
-
-  let result;
   try {
-    result = await generateText({
+    const [brief, existing] = await Promise.all([
+      loadBlogBrief(),
+      (async () => {
+        const rows = await fetchExistingTitlesAndSlugsWithIds();
+        const rowsExcludingCurrent = excludeSanityId
+          ? rows.filter((r) => {
+              const draftId = excludeSanityId.startsWith("drafts.")
+                ? excludeSanityId
+                : `drafts.${excludeSanityId}`;
+              return r._id !== excludeSanityId && r._id !== draftId;
+            })
+          : rows;
+        return rowsExcludingCurrent.map(({ title, slug }) => ({ title, slug }));
+      })(),
+    ]);
+    const exclusions = buildExclusions(existing);
+
+    const system = buildSystemPromptForResubmit({
+      brief,
+      existing,
+      current,
+      additionalPrompt: trimmedAdditionalPrompt,
+    });
+
+    const result = await generateText({
       model: getBlogAiModel(),
       system,
       prompt: "Update the draft according to USER CHANGES. Return JSON only.",
@@ -517,49 +515,49 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
       }),
       temperature: getBlogAiTemperature(),
     });
+
+    const validation = GenerateBlogResultSchema.safeParse(result.output);
+    if (!validation.success) {
+      return { success: false, error: "AI returned invalid blog draft data." };
+    }
+
+    const draft = validation.data;
+
+    const titleKey = normaliseKey(draft.title);
+    const slugKey = normaliseKey(draft.slug);
+    if (exclusions.titles.has(titleKey)) {
+      return {
+        success: false,
+        error: "Resubmission generated a title that already exists in Sanity.",
+      };
+    }
+    if (exclusions.slugs.has(slugKey)) {
+      return {
+        success: false,
+        error: "Resubmission generated a slug that already exists in Sanity.",
+      };
+    }
+
+    const markdownWithLinks = injectInternalLinksIntoMarkdown({
+      markdownBody: draft.markdownBody,
+      suggestedInternalLinks: draft.suggestedInternalLinks,
+    });
+    const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
+
+    const warnings: string[] = [];
+    warnings.push(...excerptWarnings(draft.excerpt));
+    if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
+      warnings.push("Slug is not strict kebab-case.");
+    }
+
+    return {
+      success: true,
+      data: { ...draft, markdownBody },
+      warnings: warnings.filter(Boolean),
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, error: message };
   }
-
-  const validation = GenerateBlogResultSchema.safeParse(result.output);
-  if (!validation.success) {
-    return { success: false, error: "AI returned invalid blog draft data." };
-  }
-
-  const draft = validation.data;
-
-  const titleKey = normaliseKey(draft.title);
-  const slugKey = normaliseKey(draft.slug);
-  if (exclusions.titles.has(titleKey)) {
-    return {
-      success: false,
-      error: "Resubmission generated a title that already exists in Sanity.",
-    };
-  }
-  if (exclusions.slugs.has(slugKey)) {
-    return {
-      success: false,
-      error: "Resubmission generated a slug that already exists in Sanity.",
-    };
-  }
-
-  const markdownWithLinks = injectInternalLinksIntoMarkdown({
-    markdownBody: draft.markdownBody,
-    suggestedInternalLinks: draft.suggestedInternalLinks,
-  });
-  const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
-
-  const warnings: string[] = [];
-  warnings.push(...excerptWarnings(draft.excerpt));
-  if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
-    warnings.push("Slug is not strict kebab-case.");
-  }
-
-  return {
-    success: true,
-    data: { ...draft, markdownBody },
-    warnings: warnings.filter(Boolean),
-  };
 }
 

@@ -36,26 +36,13 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
-- [x] Meal Plan shopping lists default to household-shared in draft so collaborators can edit (e.g. shared household lists).
-- [x] Meal Plan Generator prioritises the owner’s recipes in the suggestion pool.
-- [x] Dashboard meal spotlight surfaces the next planned meal with clear copy (e.g. tomorrow’s meal, weekday labels).
-- [x] Add manual recipe to meal plan dialog needs safe area inset on close button
-- [x] Enabled in meal plans toggle should never be visible for system recipe
-- [x] There is a small disconnect between creating a plan and saving a plan. I can see on the dashboard card draft items are included so this should show a different display if the plan is in draft. We also need to update the UX with a sticky button to prompt the user to save their plan.
-- [x] Need the ability to select previous weeks for meal plan and start dates. Start dates should be able to overlap, in which case you should be asked what meal plan you want to view
-- [x] Users can start a **blank weekly plan** (seven empty days) to pick every meal manually, in addition to AI-generated weeks
-- [x] Fried rice recipe: eggs appear in a step that only mentions chicken (method / ingredient refs).
-- [x] Scan codebase for all unused convex functions and migrations and purge
-- [x] Confirm FAQ pages do not carry an unintended `noindex`.
-- [x] New recipes: **opt-out by default** for household sharing—share to all linked households unless the user opts out; recipe UI should show shared state at a glance.
-- [x] Super-users can edit system recipes in-app.
-- [x] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, it's all just vegetables on a table. Update the model for better blog writing.
+- Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 
 ### Strategic / growth
 
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority. **Execution checklist + scoreboard:** [`docs/GROWTH.md`](docs/GROWTH.md).
-- Ordered beta outreach checklist: see **Beta visibility & user acquisition** (end of this file).
+- [ ] Ordered beta outreach checklist: see **Beta visibility & user acquisition** (end of this file).
 - [x] Move all support documentation to public URLs.
 - [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Launch on Product Hunt after initial traction (market as HelloFresh without the food delivery; ordering in **Beta visibility & user acquisition**).
@@ -69,9 +56,8 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ### High-intent beta platforms
 
-- [ ] Submit to BetaList (paid fast-track)
-- [ ] Submit to FirstUsers.tech
-- [ ] Submit to BetaPage
+- [ ] Submit to BetaList (paid fast-track) delayed until the end of the month when I can pay for the package
+- [x] Submit to FirstUsers.tech
 
 ### Reddit
 
@@ -106,16 +92,16 @@ _Angle: looking for ~20 testers / feedback._
 ### Urgent / high-priority bugs
 
 - [ ] Fix the “frozen WebView” state when the app sits idle for a while.
-- [ ] Meal picker on mobile for meal plan: add safe area inset for the close button.
-- [ ] Overflow on sign-in page on iPhone.
+- [x] Meal picker on mobile for meal plan: add safe area inset for the close button.
+- [x] Overflow on sign-in page on iPhone.
 
 ### Meal plan, sharing, and shopping
 
-- [ ] Meal plans should be shared to households automatically.
+- [x] Meal plans should be shared to households automatically.
 
 ### Chalkboard and UI friction
 
-- [ ] Users cannot delete other users’ items from shared chalkboards.
+- [x] Users cannot delete other users’ items from shared chalkboards.
 
 ### PWA, install, and Safari
 
@@ -158,7 +144,7 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 
 - [ ] **Web import accuracy**: Parser robustness for edge cases.
 - [ ] **Recipe image quality**: Review handling/compression/resolution vs source sites.
-- [ ] **404 on login**: Intermittent 404 when logging in; investigate and fix.
+- [x] **404 on login**: Intermittent 404 when logging in; investigate and fix.
 
 ### Social, SEO and AEO
 
