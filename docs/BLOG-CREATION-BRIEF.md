@@ -138,6 +138,8 @@ Avoid topics that don’t relate to meal planning, recipes, or family cooking; k
 - **Calm and reassuring:** Meal planning can feel overwhelming; the tone should reduce stress, not add to it.
 - **Brand-aligned:** When mentioning Foodedo, be clear and benefit-led (e.g. “Foodedo helps you…” or “With Foodedo, you can…”). No hype or exaggeration.
 
+**Readable, magazine-like prose:** It is encouraged to write with warmth and specific, human scenes (e.g. a believable weeknight moment) and varied rhythm, as long as you still meet the SEO/AEO structure in this brief (clear headings, direct answers, grounded numbers only—no invented studies or statistics).
+
 ---
 
 ## 6. Supplemental Guidance for AI / Agent Use

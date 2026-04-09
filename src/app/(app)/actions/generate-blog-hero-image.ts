@@ -25,7 +25,12 @@ export type GenerateBlogHeroImageResult =
     }
   | { success: false; error: string };
 
-const DEFAULT_MODEL = "google/imagen-4.0-ultra-generate-001";
+const DEFAULT_IMAGE_MODEL = "google/imagen-4.0-ultra-generate-001";
+
+function getBlogImageModel(): string {
+  const v = process.env.FOODEDO_BLOG_IMAGE_MODEL?.trim();
+  return v && v.length > 0 ? v : DEFAULT_IMAGE_MODEL;
+}
 
 export async function generateBlogHeroImage(
   rawInput: unknown,
@@ -69,7 +74,7 @@ export async function generateBlogHeroImage(
 
   try {
     const result = await generateImage({
-      model: DEFAULT_MODEL,
+      model: getBlogImageModel(),
       prompt: promptUsed,
       aspectRatio: "16:9",
       maxRetries: 0,
@@ -99,10 +104,17 @@ function pickVariationHint(
     "Change camera angle (overhead vs 45° vs close crop), but keep it hero-friendly and wide.",
     "Vary the surface/background (light marble, warm wood, neutral linen).",
   ];
+  const metaphorAndPalette = [
+    "Art direction: pick a dominant palette (terracotta and cream, sage and stone, or amber and charcoal) and stick to it.",
+    "Use negative space as a compositional device—subject or cluster off-centre for a magazine header.",
+    "Metaphor over literal: suggest routine, calm, or abundance through shape and colour rather than a full meal scene.",
+  ];
   const byStyle: Record<(typeof BLOG_HERO_IMAGE_STYLES)[number], string[]> = {
     generalAuto: [
-      "Auto variety: change camera angle and background; keep it wide and hero-friendly.",
+      "Auto variety: alternate between photoreal food scenes and stylised abstract or editorial illustration when the topic allows.",
+      "If photoreal: change camera angle and background; if stylised: vary texture (paper grain, soft gradient, flat shapes).",
       ...common,
+      ...metaphorAndPalette,
     ],
     finishedDish: [
       "Plate style: rustic ceramic bowl vs modern white plate.",
@@ -133,6 +145,21 @@ function pickVariationHint(
       "Ultra-clean editorial mood: neutral tones, soft shadows.",
       "Avoid countertop prep; think gallery-like still life.",
       ...common,
+    ],
+    abstractConcept: [
+      "Flowing organic forms or soft geometry suggesting the topic—avoid busy detail.",
+      "Single visual metaphor (e.g. nested shapes for planning, radiating lines for a busy week) kept minimal.",
+      ...metaphorAndPalette,
+    ],
+    editorialIllustration: [
+      "Limited colour blocks and simplified silhouettes; one focal illustrated object or scene.",
+      "Subtle print or paper texture; mid-century cookbook calm, not childlike.",
+      ...metaphorAndPalette,
+    ],
+    boldColorGraphic: [
+      "3–4 flat colours max; bold shapes with clear silhouette readable at small header size.",
+      "High contrast focal shape; plenty of breathing room for UI overlay.",
+      ...metaphorAndPalette,
     ],
   };
 

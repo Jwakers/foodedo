@@ -186,6 +186,30 @@ export function BlogImagesClient() {
     }
   }, [selected, style, overridePrompt]);
 
+  const existingImageUrl = useMemo(() => {
+    if (selected?.mainImage?.asset?._ref == null) return null;
+    try {
+      return urlFor(selected.mainImage).width(1200).height(675).url();
+    } catch {
+      return null;
+    }
+  }, [selected]);
+
+  const imageDataUrl =
+    generated?.base64 && generated.mediaType
+      ? `data:${generated.mediaType};base64,${generated.base64}`
+      : null;
+
+  const downloadName = selected?.slug?.current
+    ? `blog-hero-${selected.slug.current}`
+    : selected?.title
+      ? `blog-hero-${selected.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase().slice(0, 50)}`
+      : "blog-hero";
+  const downloadExt =
+    generated?.mediaType === "image/jpeg" || generated?.mediaType === "image/jpg"
+      ? "jpg"
+      : "png";
+
   if (user === undefined) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -216,30 +240,6 @@ export function BlogImagesClient() {
       </div>
     );
   }
-
-  const imageDataUrl =
-    generated?.base64 && generated.mediaType
-      ? `data:${generated.mediaType};base64,${generated.base64}`
-      : null;
-
-  const existingImageUrl = useMemo(() => {
-    if (selected?.mainImage?.asset?._ref == null) return null;
-    try {
-      return urlFor(selected.mainImage).width(1200).height(675).url();
-    } catch {
-      return null;
-    }
-  }, [selected?.mainImage?.asset?._ref]);
-
-  const downloadName = selected?.slug?.current
-    ? `blog-hero-${selected.slug.current}`
-    : selected?.title
-      ? `blog-hero-${selected.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase().slice(0, 50)}`
-      : "blog-hero";
-  const downloadExt =
-    generated?.mediaType === "image/jpeg" || generated?.mediaType === "image/jpg"
-      ? "jpg"
-      : "png";
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -435,6 +435,15 @@ export function BlogImagesClient() {
                         <SelectItem value="techniqueCloseup">Technique close-up</SelectItem>
                         <SelectItem value="lifestyleTableScene">Lifestyle table scene</SelectItem>
                         <SelectItem value="minimalStillLife">Minimal still life</SelectItem>
+                        <SelectItem value="abstractConcept">
+                          Abstract / conceptual
+                        </SelectItem>
+                        <SelectItem value="editorialIllustration">
+                          Editorial illustration
+                        </SelectItem>
+                        <SelectItem value="boldColorGraphic">
+                          Bold colour graphic
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <div className="mt-1 text-xs text-muted-foreground">

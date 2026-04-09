@@ -15,6 +15,12 @@
 
 - **`AI_GATEWAY_API_KEY`** – (Server-only.) Required for AI SDK `generateImage()` calls (used by the “Blog images” admin tool to generate hero images). Get a key from Vercel AI Gateway.
 
+### AI blog draft generation (admin tools)
+
+- **`FOODEDO_BLOG_AI_MODEL`** – (Server-only, optional.) Vercel AI Gateway model id for the admin blog generator (default: `openai/gpt-4o`). Override if your gateway uses a different id.
+- **`FOODEDO_BLOG_AI_TEMPERATURE`** – (Server-only, optional.) Sampling temperature for blog draft generation, `0`–`2` (default: `0.85`).
+- **`FOODEDO_BLOG_IMAGE_MODEL`** – (Server-only, optional.) Gateway model id for blog hero image generation (default: `google/imagen-4.0-ultra-generate-001`).
+
 ### PostHog analytics (organic growth)
 
 - **`NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`** – PostHog project token for browser capture.
@@ -43,8 +49,8 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Confirm FAQ pages do not carry an unintended `noindex`.
 - [x] New recipes: **opt-out by default** for household sharing—share to all linked households unless the user opts out; recipe UI should show shared state at a glance.
 - [x] Super-users can edit system recipes in-app.
+- [x] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, it's all just vegetables on a table. Update the model for better blog writing.
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
-- [ ] Blog generation is feeling a bit stiff and seems to be lacking creativity and research into topics. The restraints may be too tight. The same applies to image generations, it's all just vegetables on a table. Update the model for better blog writing.
 
 ### Strategic / growth
 
