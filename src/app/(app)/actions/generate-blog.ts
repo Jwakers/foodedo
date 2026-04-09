@@ -8,6 +8,31 @@ import { z } from "zod";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
+const DEFAULT_BLOG_AI_MODEL = "openai/gpt-4o";
+const DEFAULT_BLOG_AI_TEMPERATURE = 0.85;
+
+function getBlogAiModel(): string {
+  const v = process.env.FOODEDO_BLOG_AI_MODEL?.trim();
+  return v && v.length > 0 ? v : DEFAULT_BLOG_AI_MODEL;
+}
+
+function getBlogAiTemperature(): number {
+  const raw = process.env.FOODEDO_BLOG_AI_TEMPERATURE?.trim();
+  if (!raw) return DEFAULT_BLOG_AI_TEMPERATURE;
+  const n = Number.parseFloat(raw);
+  if (!Number.isFinite(n) || n < 0 || n > 2) return DEFAULT_BLOG_AI_TEMPERATURE;
+  return n;
+}
+
+/** Voice and visual variety layered on top of docs/BLOG-CREATION-BRIEF.md. */
+const BLOG_CREATIVITY_GUIDANCE = `CREATIVITY AND READABILITY (still obey every mandatory rule in the brief above):
+- Use concrete, relatable moments (e.g. a specific evening routine, busy weeknight constraints) and varied sentence rhythm. Avoid making every paragraph follow the same SEO-template shape.
+- Open with one memorable angle or tension that fits the topic—honest and practical. Do not invent statistics, studies, or survey data.
+- Where you use numbers, keep them grounded (e.g. "about 15 minutes", "three dinners you already know") rather than fabricated percentages or citations.
+
+IMAGE PROMPT FOR HERO (imageGenerationPrompt field):
+- May describe a photoreal food/lifestyle scene OR an editorial illustration, abstract metaphor, or bold graphic treatment—whatever best matches the post—still with no readable text, logos, watermarks, or UI; optimised for a wide 16:9 hero crop.`;
+
 const GenerateBlogInputSchema = z.object({
   mode: z.enum(["fromGuidance", "auto"]),
   guidance: z.string().nullable(),
@@ -65,7 +90,7 @@ const GenerateBlogResultSchema = z.object({
   imageGenerationPrompt: z
     .string()
     .describe(
-      "A single detailed English prompt for a text-to-image tool to create a blog hero image that matches this post. Describe subject, composition, lighting, mood, and setting. Optimise for wide 16:9 hero crop. No readable text, logos, watermarks, or UI. Realistic food/lifestyle photography style.",
+      "A single detailed English prompt for a text-to-image tool for this post's hero. Photoreal food/lifestyle OR editorial illustration, abstract metaphor, or bold graphic—match the article. Describe subject, composition, lighting or colour, mood, and setting. Wide 16:9 hero crop. No readable text, logos, watermarks, or UI.",
     ),
 });
 
@@ -294,6 +319,8 @@ function buildSystemPrompt(args: {
 You MUST follow this brief exactly:
 ${args.brief}
 
+${BLOG_CREATIVITY_GUIDANCE}
+
 UNIQUENESS CONSTRAINT (mandatory):
 - Do NOT reuse an existing title or slug from the exclusion list below.
 - Titles and slugs must be unique by exact match (case-insensitive).
@@ -307,7 +334,7 @@ OUTPUT FORMAT (mandatory):
 - markdownBody must contain exactly one H1 and it must match the JSON title.
 - All internal links must be relative paths starting with / (no domain).
 - IMPORTANT: Embed 1–3 internal links inline inside markdownBody using markdown link syntax, e.g. [Try Foodedo](/sign-up). Do not return links only in suggestedInternalLinks.
-- imageGenerationPrompt: a copy-paste-ready prompt for an external image generator (not stored in CMS). Must align with title + excerpt + topic; no readable text in the described scene.
+- imageGenerationPrompt: copy-paste-ready for an image generator; align with title + excerpt + topic. Photoreal or stylised/abstract/graphic per CREATIVITY AND READABILITY above; no readable text in the described scene.
 
 ${modeInstruction}`;
 }
@@ -328,62 +355,67 @@ export async function generateBlogDraft(rawInput: unknown): Promise<
     return { success: false, error: "Please provide guidance." };
   }
 
-  const [brief, existing] = await Promise.all([
-    loadBlogBrief(),
-    fetchExistingTitlesAndSlugs(),
-  ]);
-  const exclusions = buildExclusions(existing);
+  try {
+    const [brief, existing] = await Promise.all([
+      loadBlogBrief(),
+      fetchExistingTitlesAndSlugs(),
+    ]);
+    const exclusions = buildExclusions(existing);
 
-  const system = buildSystemPrompt({ brief, existing, input });
+    const system = buildSystemPrompt({ brief, existing, input });
 
-  const result = await generateText({
-    model: "openai/gpt-4o-mini",
-    system,
-    prompt:
-      input.mode === "fromGuidance"
-        ? `Generate a Foodedo blog post using this guidance:\n\n${input.guidance}`
-        : "Generate a Foodedo blog post draft for next week's publish.",
-    output: Output.object({
-      schema: GenerateBlogResultSchema,
-      name: "foodedo_blog_draft",
-    }),
-    temperature: 0.7,
-  });
+    const result = await generateText({
+      model: getBlogAiModel(),
+      system,
+      prompt:
+        input.mode === "fromGuidance"
+          ? `Generate a Foodedo blog post using this guidance:\n\n${input.guidance}`
+          : "Generate a Foodedo blog post draft for next week's publish.",
+      output: Output.object({
+        schema: GenerateBlogResultSchema,
+        name: "foodedo_blog_draft",
+      }),
+      temperature: getBlogAiTemperature(),
+    });
 
-  const validation = GenerateBlogResultSchema.safeParse(result.output);
-  if (!validation.success) {
-    return { success: false, error: "AI returned invalid blog draft data." };
+    const validation = GenerateBlogResultSchema.safeParse(result.output);
+    if (!validation.success) {
+      return { success: false, error: "AI returned invalid blog draft data." };
+    }
+
+    const draft = validation.data;
+
+    // Enforce uniqueness (exact match only).
+    const titleKey = normaliseKey(draft.title);
+    const slugKey = normaliseKey(draft.slug);
+    if (exclusions.titles.has(titleKey)) {
+      return { success: false, error: "Generated title that already exists in Sanity." };
+    }
+    if (exclusions.slugs.has(slugKey)) {
+      return { success: false, error: "Generated slug that already exists in Sanity." };
+    }
+
+    const markdownWithLinks = injectInternalLinksIntoMarkdown({
+      markdownBody: draft.markdownBody,
+      suggestedInternalLinks: draft.suggestedInternalLinks,
+    });
+    const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
+
+    const warnings: string[] = [];
+    warnings.push(...excerptWarnings(draft.excerpt));
+    if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
+      warnings.push("Slug is not strict kebab-case.");
+    }
+
+    return {
+      success: true,
+      data: { ...draft, markdownBody },
+      warnings: warnings.filter(Boolean),
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, error: message };
   }
-
-  const draft = validation.data;
-
-  // Enforce uniqueness (exact match only).
-  const titleKey = normaliseKey(draft.title);
-  const slugKey = normaliseKey(draft.slug);
-  if (exclusions.titles.has(titleKey)) {
-    return { success: false, error: "Generated title that already exists in Sanity." };
-  }
-  if (exclusions.slugs.has(slugKey)) {
-    return { success: false, error: "Generated slug that already exists in Sanity." };
-  }
-
-  const markdownWithLinks = injectInternalLinksIntoMarkdown({
-    markdownBody: draft.markdownBody,
-    suggestedInternalLinks: draft.suggestedInternalLinks,
-  });
-  const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
-
-  const warnings: string[] = [];
-  warnings.push(...excerptWarnings(draft.excerpt));
-  if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
-    warnings.push("Slug is not strict kebab-case.");
-  }
-
-  return {
-    success: true,
-    data: { ...draft, markdownBody },
-    warnings: warnings.filter(Boolean),
-  };
 }
 
 function buildSystemPromptForResubmit(args: {
@@ -404,6 +436,8 @@ You are updating an EXISTING Foodedo blog draft.
 You MUST follow this brief exactly:
 ${args.brief}
 
+${BLOG_CREATIVITY_GUIDANCE}
+
 UNIQUENESS CONSTRAINT (mandatory):
 - Do NOT reuse an existing title or slug from the exclusion list below.
 
@@ -422,7 +456,7 @@ OUTPUT FORMAT (mandatory):
 - markdownBody must contain exactly one H1 which matches the JSON title.
 - All internal links must be relative paths starting with / (no domain).
 - IMPORTANT: Embed 1–3 internal links inline inside markdownBody using markdown link syntax, e.g. [Try Foodedo](/sign-up).
-- imageGenerationPrompt: refresh it when the post topic, title, excerpt, or visual angle changes; keep it aligned and copy-paste-ready for image tools (no readable text in scene).
+- imageGenerationPrompt: refresh when topic, title, excerpt, or visual angle changes; photoreal or stylised/abstract/graphic as appropriate; copy-paste-ready; no readable text in scene.
 
 PREFERENCES:
 - Prefer keeping the current title/slug/excerpt/body structure unless the user changes require edits.
@@ -446,79 +480,84 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
     return { success: false, error: "Additional prompt is empty." };
   }
 
-  const [brief, existing] = await Promise.all([
-    loadBlogBrief(),
-    (async () => {
-      const rows = await fetchExistingTitlesAndSlugsWithIds();
-      const rowsExcludingCurrent = excludeSanityId
-        ? rows.filter((r) => {
-            const draftId = excludeSanityId.startsWith("drafts.")
-              ? excludeSanityId
-              : `drafts.${excludeSanityId}`;
-            return r._id !== excludeSanityId && r._id !== draftId;
-          })
-        : rows;
-      return rowsExcludingCurrent.map(({ title, slug }) => ({ title, slug }));
-    })(),
-  ]);
-  const exclusions = buildExclusions(existing);
+  try {
+    const [brief, existing] = await Promise.all([
+      loadBlogBrief(),
+      (async () => {
+        const rows = await fetchExistingTitlesAndSlugsWithIds();
+        const rowsExcludingCurrent = excludeSanityId
+          ? rows.filter((r) => {
+              const draftId = excludeSanityId.startsWith("drafts.")
+                ? excludeSanityId
+                : `drafts.${excludeSanityId}`;
+              return r._id !== excludeSanityId && r._id !== draftId;
+            })
+          : rows;
+        return rowsExcludingCurrent.map(({ title, slug }) => ({ title, slug }));
+      })(),
+    ]);
+    const exclusions = buildExclusions(existing);
 
-  const system = buildSystemPromptForResubmit({
-    brief,
-    existing,
-    current,
-    additionalPrompt: trimmedAdditionalPrompt,
-  });
+    const system = buildSystemPromptForResubmit({
+      brief,
+      existing,
+      current,
+      additionalPrompt: trimmedAdditionalPrompt,
+    });
 
-  const result = await generateText({
-    model: "openai/gpt-4o-mini",
-    system,
-    prompt: "Update the draft according to USER CHANGES. Return JSON only.",
-    output: Output.object({
-      schema: GenerateBlogResultSchema,
-      name: "foodedo_blog_draft",
-    }),
-    temperature: 0.7,
-  });
+    const result = await generateText({
+      model: getBlogAiModel(),
+      system,
+      prompt: "Update the draft according to USER CHANGES. Return JSON only.",
+      output: Output.object({
+        schema: GenerateBlogResultSchema,
+        name: "foodedo_blog_draft",
+      }),
+      temperature: getBlogAiTemperature(),
+    });
 
-  const validation = GenerateBlogResultSchema.safeParse(result.output);
-  if (!validation.success) {
-    return { success: false, error: "AI returned invalid blog draft data." };
-  }
+    const validation = GenerateBlogResultSchema.safeParse(result.output);
+    if (!validation.success) {
+      return { success: false, error: "AI returned invalid blog draft data." };
+    }
 
-  const draft = validation.data;
+    const draft = validation.data;
 
-  const titleKey = normaliseKey(draft.title);
-  const slugKey = normaliseKey(draft.slug);
-  if (exclusions.titles.has(titleKey)) {
+    const titleKey = normaliseKey(draft.title);
+    const slugKey = normaliseKey(draft.slug);
+    if (exclusions.titles.has(titleKey)) {
+      return {
+        success: false,
+        error: "Resubmission generated a title that already exists in Sanity.",
+      };
+    }
+    if (exclusions.slugs.has(slugKey)) {
+      return {
+        success: false,
+        error: "Resubmission generated a slug that already exists in Sanity.",
+      };
+    }
+
+    const markdownWithLinks = injectInternalLinksIntoMarkdown({
+      markdownBody: draft.markdownBody,
+      suggestedInternalLinks: draft.suggestedInternalLinks,
+    });
+    const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
+
+    const warnings: string[] = [];
+    warnings.push(...excerptWarnings(draft.excerpt));
+    if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
+      warnings.push("Slug is not strict kebab-case.");
+    }
+
     return {
-      success: false,
-      error: "Resubmission generated a title that already exists in Sanity.",
+      success: true,
+      data: { ...draft, markdownBody },
+      warnings: warnings.filter(Boolean),
     };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, error: message };
   }
-  if (exclusions.slugs.has(slugKey)) {
-    return {
-      success: false,
-      error: "Resubmission generated a slug that already exists in Sanity.",
-    };
-  }
-
-  const markdownWithLinks = injectInternalLinksIntoMarkdown({
-    markdownBody: draft.markdownBody,
-    suggestedInternalLinks: draft.suggestedInternalLinks,
-  });
-  const markdownBody = ensureSingleH1(draft.title, markdownWithLinks);
-
-  const warnings: string[] = [];
-  warnings.push(...excerptWarnings(draft.excerpt));
-  if (!draft.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug.trim())) {
-    warnings.push("Slug is not strict kebab-case.");
-  }
-
-  return {
-    success: true,
-    data: { ...draft, markdownBody },
-    warnings: warnings.filter(Boolean),
-  };
 }
 

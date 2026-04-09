@@ -10,11 +10,20 @@ export const metadata: Metadata = {
     siteName: APP_NAME,
     title: `${APP_NAME} - Family Meal Planning`,
     description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: `${APP_NAME} - Family Meal Planning Made Simple`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${APP_NAME} - Family Meal Planning`,
     description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
+    images: ["/og-image.png"],
   },
 };
 
