@@ -342,7 +342,7 @@ _Shipped: PWA plugin, manual text import, install hints._ Open:
 - **Backend**: Convex (DB + realtime sync)
 - **Auth**: Clerk (Google + email)
 - **File storage**: Convex file storage
-- **AI**: OpenAI (e.g. GPT-4o-mini) for parsing and related flows
+- **AI**: Vercel AI Gateway (`AI_GATEWAY_API_KEY`) for server-side models. **Admin blog drafts** use `FOODEDO_BLOG_AI_MODEL` (default `openai/gpt-4o`) and `FOODEDO_BLOG_AI_TEMPERATURE` (default `0.85`). **Admin blog hero images** use `FOODEDO_BLOG_IMAGE_MODEL` (default `google/imagen-4.0-ultra-generate-001`). Recipe import/parsing and related flows use smaller OpenAI models (e.g. `openai/gpt-4o-mini`) in code—see `src/app/(app)/actions/parse-recipe*.ts`.
 - **Hosting**: Vercel (frontend), Convex (backend)
 
 ### Database schema status (Convex)

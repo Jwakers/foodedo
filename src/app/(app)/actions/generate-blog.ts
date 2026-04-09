@@ -363,19 +363,25 @@ export async function generateBlogDraft(rawInput: unknown): Promise<
 
   const system = buildSystemPrompt({ brief, existing, input });
 
-  const result = await generateText({
-    model: getBlogAiModel(),
-    system,
-    prompt:
-      input.mode === "fromGuidance"
-        ? `Generate a Foodedo blog post using this guidance:\n\n${input.guidance}`
-        : "Generate a Foodedo blog post draft for next week's publish.",
-    output: Output.object({
-      schema: GenerateBlogResultSchema,
-      name: "foodedo_blog_draft",
-    }),
-    temperature: getBlogAiTemperature(),
-  });
+  let result;
+  try {
+    result = await generateText({
+      model: getBlogAiModel(),
+      system,
+      prompt:
+        input.mode === "fromGuidance"
+          ? `Generate a Foodedo blog post using this guidance:\n\n${input.guidance}`
+          : "Generate a Foodedo blog post draft for next week's publish.",
+      output: Output.object({
+        schema: GenerateBlogResultSchema,
+        name: "foodedo_blog_draft",
+      }),
+      temperature: getBlogAiTemperature(),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, error: message };
+  }
 
   const validation = GenerateBlogResultSchema.safeParse(result.output);
   if (!validation.success) {
@@ -499,16 +505,22 @@ export async function resubmitBlogDraft(rawInput: unknown): Promise<
     additionalPrompt: trimmedAdditionalPrompt,
   });
 
-  const result = await generateText({
-    model: getBlogAiModel(),
-    system,
-    prompt: "Update the draft according to USER CHANGES. Return JSON only.",
-    output: Output.object({
-      schema: GenerateBlogResultSchema,
-      name: "foodedo_blog_draft",
-    }),
-    temperature: getBlogAiTemperature(),
-  });
+  let result;
+  try {
+    result = await generateText({
+      model: getBlogAiModel(),
+      system,
+      prompt: "Update the draft according to USER CHANGES. Return JSON only.",
+      output: Output.object({
+        schema: GenerateBlogResultSchema,
+        name: "foodedo_blog_draft",
+      }),
+      temperature: getBlogAiTemperature(),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, error: message };
+  }
 
   const validation = GenerateBlogResultSchema.safeParse(result.output);
   if (!validation.success) {

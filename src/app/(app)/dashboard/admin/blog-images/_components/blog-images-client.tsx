@@ -46,6 +46,21 @@ function labelForPost(p: SanityPostListRow) {
   return p.isDraft || isDraftId(p._id) ? "Draft" : "Published";
 }
 
+/** Map image MIME (parameters after `;` ignored) to a download file extension; default `png`. */
+function fileExtensionFromImageMediaType(mediaType: string | undefined): string {
+  if (!mediaType?.trim()) return "png";
+  const base = mediaType.split(";")[0]?.trim().toLowerCase() ?? "";
+  const map: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/jpg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+    "image/svg+xml": "svg",
+  };
+  return map[base] ?? "png";
+}
+
 type GeneratedImage = {
   base64: string;
   mediaType: string;
@@ -205,10 +220,7 @@ export function BlogImagesClient() {
     : selected?.title
       ? `blog-hero-${selected.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase().slice(0, 50)}`
       : "blog-hero";
-  const downloadExt =
-    generated?.mediaType === "image/jpeg" || generated?.mediaType === "image/jpg"
-      ? "jpg"
-      : "png";
+  const downloadExt = fileExtensionFromImageMediaType(generated?.mediaType);
 
   if (user === undefined) {
     return (
