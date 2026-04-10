@@ -73,7 +73,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "How do I lock or swap a meal?",
         answer:
-          "On each meal card, use the lock icon to lock meals you want to keep—they won't change when you tap 'Regenerate'. Use the menu on the card (three dots) to 'Pick recipe' or 'Swap' and choose a different recipe from your collection. You can also remove a meal entirely from the menu.",
+          "On each meal card, use the lock icon to lock meals you want to keep; they won't change when you tap 'Regenerate'. Use the menu on the card (three dots) to 'Pick recipe' or 'Swap' and choose a different recipe from your collection. You can also remove a meal entirely from the menu.",
       },
       {
         question: "What does 'Regenerate' do?",
@@ -83,7 +83,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "What does 'Finalise' mean on a meal plan?",
         answer:
-          "Finalising saves your plan so you can't add, remove, or swap meals anymore—you can still move meals between days. Use it when you're happy with the week and want to avoid accidental changes. You can generate a shopping list before or after finalising.",
+          "Finalising saves your plan so you can't add, remove, or swap meals anymore. You can still move meals between days. Use it when you're happy with the week and want to avoid accidental changes. You can generate a shopping list before or after finalising.",
       },
       {
         question: "How do I generate a shopping list from my meal plan?",
@@ -108,7 +108,7 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
       {
         question: "How do I create a shopping list from recipes?",
         answer:
-          "You can create a shopping list in two ways: (1) From your meal plan — tap 'Generate shopping list' on the meal plan page to create a list from your planned meals. (2) Ad-hoc — go to 'Shopping list' from the dashboard or support links. Select recipes manually and create a list. Both lists work the same: you can finalise, check off items, and share or print.",
+          "You can create a shopping list in two ways: (1) From your meal plan, tap 'Generate shopping list' on the meal plan page to create a list from your planned meals. (2) Ad-hoc: go to 'Shopping list' from the dashboard or support links. Select recipes manually and create a list. Both lists work the same: you can finalise, check off items, and share or print.",
       },
       {
         question: "How do I share my shopping list with others?",

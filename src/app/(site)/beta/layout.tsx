@@ -1,23 +1,26 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { getSiteBaseUrl } from "@/lib/site-url";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
+import { SITE_MISSION } from "@/lib/site-messaging";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 
 const betaCanonical = `${getSiteBaseUrl()}${ROUTES.BETA}`;
 
+const betaDescription = `Join the ${APP_NAME} open beta: ${SITE_MISSION} Your feedback shapes what we ship. Free, no card.`;
+
 export const metadata: Metadata = {
   alternates: { canonical: betaCanonical },
   title: "Beta",
-  description: `Join the ${APP_NAME} beta. Help shape family meal planning with your feedback. Build a repeatable meal planning rhythm for your household.`,
+  description: betaDescription,
   openGraph: {
     ...openGraphSiteAndUrl(betaCanonical),
     title: `${APP_NAME} Beta`,
-    description: `Join the ${APP_NAME} beta. Help shape family meal planning with your feedback. Build a repeatable meal planning rhythm for your household.`,
+    description: betaDescription,
   },
   twitter: {
     card: "summary_large_image",
     title: `${APP_NAME} Beta`,
-    description: `Join the ${APP_NAME} beta. Help shape family meal planning with your feedback. Build a repeatable meal planning rhythm for your household.`,
+    description: betaDescription,
   },
 };
 

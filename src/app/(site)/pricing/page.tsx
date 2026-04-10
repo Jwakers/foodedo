@@ -46,7 +46,7 @@ export default function PricingPage() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               We&apos;re currently in beta. Everyone gets access to all
-              features, including premium — no plan limits while we build.
+              features, including premium, with no plan limits while we build.
             </p>
           </div>
 
@@ -78,7 +78,7 @@ export default function PricingPage() {
                 <div className="space-y-3 text-muted-foreground">
                   <p>
                     {APP_NAME} is currently in beta. During this time, everyone
-                    gets access to all features, including premium — there are
+                    gets access to all features, including premium. There are
                     no plan limits. Your feedback is invaluable as we improve
                     and refine the platform.
                   </p>
@@ -147,11 +147,11 @@ export default function PricingPage() {
           {/* Final CTA */}
           <div className="text-center space-y-6 py-12">
             <h2 className="text-3xl font-bold">
-              Ready to simplify meal planning?
+              Ready for weekly meal plans in one click?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join {APP_NAME} today and experience stress-free meal planning
-              with your family.
+              Join {APP_NAME} in beta. Balanced weeks, smart shopping lists, and
+              your household in one place.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Authenticated>

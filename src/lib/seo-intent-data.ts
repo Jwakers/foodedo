@@ -21,16 +21,16 @@ export type IntentPageDefinition = {
 
 export const INTENT_FAMILY_MEAL_PLANNING: IntentPageDefinition = {
   path: ROUTES.FAMILY_MEAL_PLANNING,
-  metaTitle: "Family Meal Planning App — Weekly Plans & Smart Shopping Lists",
+  metaTitle: "Family Meal Planning App | Weekly Plans & Smart Shopping Lists",
   metaDescription:
-    "Plan balanced weekly meals for your household in minutes. Foodedo helps families build a week of dinners, swap meals, and generate a shopping list—without the Sunday-night scramble.",
+    "Weekly meal plans in one click for your household. Foodedo helps families build a balanced week of dinners, swap meals, and generate one shopping list, without the Sunday-night scramble.",
   h1: "Family meal planning that fits real weeks",
   intro:
-    "Foodedo is built for households who want a repeatable rhythm: pick meals for the week, stay flexible, and turn the plan into one organised shopping list.",
+    "Weekly meal plans in one click, then a rhythm you can repeat: pick meals for the week, stay flexible, and turn the plan into one organised shopping list.",
   sections: [
     {
       heading: "Why weekly planning matters",
-      body: "When the week is visible ahead of time, you shop once, cook with less stress, and waste less food. Foodedo focuses on speed: generate a week, then tweak instead of starting from a blank page.",
+      body: "When the week is visible ahead of time, you shop once, cook with less stress, and waste less food. Foodedo focuses on speed: generate a full week in one click, then tweak instead of starting from a blank page.",
     },
     {
       heading: "How Foodedo supports families",
@@ -44,7 +44,7 @@ export const INTENT_FAMILY_MEAL_PLANNING: IntentPageDefinition = {
     },
     {
       question: "How do I plan meals for a whole week?",
-      answer: "Start with recipes you already enjoy, assign them to days, then fill gaps with new ideas from Discover or imports. Foodedo can help you generate a balanced week in one step, then you can lock, swap, or regenerate meals.",
+      answer: "Start with recipes you already enjoy, assign them to days, then fill gaps with new ideas from Discover or imports. Foodedo can generate a balanced week in one click, then you can lock, swap, or regenerate meals.",
     },
     {
       question: "Can meal planning save money?",
@@ -59,16 +59,16 @@ export const INTENT_FAMILY_MEAL_PLANNING: IntentPageDefinition = {
 
 export const INTENT_RECIPE_TO_SHOPPING_LIST: IntentPageDefinition = {
   path: ROUTES.RECIPE_TO_SHOPPING_LIST,
-  metaTitle: "Recipe to Shopping List — Turn Meal Plans Into One Grocery List",
+  metaTitle: "Recipe to Shopping List | Turn Meal Plans Into One Grocery List",
   metaDescription:
-    "Combine recipes and meal plans into a single smart shopping list. Foodedo aggregates ingredients so you buy what you need for what you will actually cook.",
+    "Weekly meal plans in one click, then one smart list: Foodedo combines planned meals into a single shopping list so you buy what you need for what you will actually cook.",
   h1: "From recipes to a single shopping list",
   intro:
-    "Stop re-typing ingredients from screenshots and bookmarks. Plan what you will cook, then let Foodedo roll ingredients into one list you can check off at the store.",
+    "Weekly meal plans in one click, then stop re-typing ingredients from screenshots. Plan what you will cook and let Foodedo roll ingredients into one list you can check off at the store.",
   sections: [
     {
       heading: "Ingredients that match your plan",
-      body: "Your list reflects meals on your plan—not random one-off recipes—so quantities line up with what you intend to cook this week.",
+      body: "Your list reflects meals on your plan (not random one-off recipes), so quantities line up with what you intend to cook this week.",
     },
     {
       heading: "Chalkboard and household flows",
@@ -97,12 +97,12 @@ export const INTENT_RECIPE_TO_SHOPPING_LIST: IntentPageDefinition = {
 
 export const INTENT_HOUSEHOLD_MEAL_PLANNING: IntentPageDefinition = {
   path: ROUTES.HOUSEHOLD_MEAL_PLANNING,
-  metaTitle: "Household Meal Planning — Share Plans, Lists & Recipes",
+  metaTitle: "Household Meal Planning | Share Plans, Lists & Recipes",
   metaDescription:
-    "Collaborate on meal plans with your household: shared context, recipes, and shopping lists so everyone stays aligned on what is for dinner.",
+    "Weekly meal plans in one click, shared with your household: one plan, shared recipes, and shopping lists so everyone stays aligned on dinner.",
   h1: "Meal planning for households, not just individuals",
   intro:
-    "Foodedo is household-first: invite people you cook with, share recipes, and align on the week so “what is for dinner?” has one answer everyone can see.",
+    "Household-first weekly plans in one click: invite people you cook with, share recipes, and align on the week so “what is for dinner?” has one answer everyone can see.",
   sections: [
     {
       heading: "Shared visibility",

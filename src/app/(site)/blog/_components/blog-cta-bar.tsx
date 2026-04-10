@@ -16,7 +16,7 @@ export function BlogCtaBar() {
         <p className="text-sm text-muted-foreground flex items-center gap-2">
           <ChefHat className="size-4 text-primary shrink-0" aria-hidden />
           <span>
-            Turn what you read into real meals — try{" "}
+            Turn what you read into real meals. Try{" "}
             <span className="font-semibold text-foreground">{APP_NAME}</span>{" "}
             free.
           </span>

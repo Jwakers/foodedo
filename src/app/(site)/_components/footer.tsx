@@ -14,9 +14,8 @@ export function Footer() {
               <span className="font-bold text-xl">{APP_NAME}</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-md">
-              Making family meal planning simple, organised, and stress-free.
-              Create recipes, generate smart shopping lists, and collaborate
-              with your household.
+              Weekly meal plans in one click, plus recipes, smart shopping lists,
+              and your household, all in one place.
             </p>
           </div>
 

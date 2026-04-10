@@ -4,7 +4,8 @@ import MealPlanClient from "./_components/meal-plan-client";
 
 export const metadata: Metadata = {
   title: "Meal planning",
-  description: "Plan your week with recipes and generate a shopping list",
+  description:
+    "Weekly meal plans in one click. Then adjust, share, and generate a shopping list.",
 };
 
 export default function MealPlanPage() {

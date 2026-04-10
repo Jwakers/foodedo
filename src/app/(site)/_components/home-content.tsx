@@ -1,5 +1,8 @@
 "use client";
 
+import { BalanceVarietySection } from "@/app/(site)/_components/balance-variety-section";
+import { ExampleWeekSection } from "@/app/(site)/_components/example-week-section";
+import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import InstallPrompt from "@/components/installation-prompt";
@@ -20,9 +23,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { BalanceVarietySection } from "@/app/(site)/_components/balance-variety-section";
-import { ExampleWeekSection } from "@/app/(site)/_components/example-week-section";
-import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
 
 const HERO_IMAGE = "/hero-2.png";
 
@@ -32,7 +32,10 @@ const CTA_BUTTON_CLASSES =
 export default function HomeContent() {
   return (
     <div className="flex flex-col">
-      <PublicPageTracker event={ANALYTICS_EVENTS.LANDING_VIEWED} props={{ intent_topic: "home" }} />
+      <PublicPageTracker
+        event={ANALYTICS_EVENTS.LANDING_VIEWED}
+        props={{ intent_topic: "home" }}
+      />
       {/* Hero Section — split layout: copy on solid background, image as featured visual */}
       <section className="relative min-h-[85vh] flex flex-col lg:flex-row lg:min-h-[90vh]">
         {/* Left: copy on readable background */}
@@ -45,20 +48,22 @@ export default function HomeContent() {
               )}
             >
               <Sparkles className="size-4 mr-2" />
-              Open beta — free · we want your feedback
+              Open beta, free. We want your feedback.
             </Badge>
 
             <div className="space-y-6">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]">
-                <span className="text-foreground">Your personalised week of meals,</span>
+                <span className="text-foreground">
+                  Your personalised week of meals,
+                </span>
                 <br />
-                <span className="text-primary">in one tap.</span>
+                <span className="text-primary">in one click.</span>
               </h1>
 
               <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Sign up in seconds, then one click for a balanced week of dinners.
-                Free while we&apos;re in beta — your
-                feedback shapes what we ship.{" "}
+                Sign up in seconds, then one click for a balanced week of
+                dinners. Free while we&apos;re in beta. Your feedback shapes
+                what we build.{" "}
                 <Link
                   href={ROUTES.BETA}
                   className="text-primary hover:text-primary/80 underline underline-offset-2"
@@ -68,23 +73,19 @@ export default function HomeContent() {
                 .
               </p>
 
-              <div className="flex justify-center lg:justify-start gap-1.5 pt-1" aria-hidden>
+              <div
+                className="flex justify-center lg:justify-start gap-1.5 pt-1"
+                aria-hidden
+              >
                 {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                  <div
-                    key={i}
-                    className="size-2 rounded-full bg-primary/30"
-                  />
+                  <div key={i} className="size-2 rounded-full bg-primary/30" />
                 ))}
               </div>
             </div>
 
             <div className="flex flex-col gap-3 justify-center lg:justify-start items-stretch sm:items-center sm:flex-row sm:flex-wrap">
               <Authenticated>
-                <Button
-                  asChild
-                  size="lg"
-                  className={CTA_BUTTON_CLASSES}
-                >
+                <Button asChild size="lg" className={CTA_BUTTON_CLASSES}>
                   <Link href={ROUTES.DASHBOARD}>
                     Go to dashboard
                     <ArrowRight className="ml-2 size-5" />
@@ -133,7 +134,7 @@ export default function HomeContent() {
               <div className="hidden sm:block size-1 bg-muted-foreground/30 rounded-full" />
               <div className="flex items-center gap-2 text-center sm:text-left">
                 <CheckCircle className="size-4 text-primary shrink-0" />
-                <span>Open to everyone — tell us what to improve</span>
+                <span>Open to everyone. Tell us what to improve.</span>
               </div>
             </div>
           </div>
@@ -177,7 +178,7 @@ export default function HomeContent() {
               Everything that feeds your plan
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Recipes, household, and shopping — all in service of your week.
+              Recipes, household, and shopping, all in service of your week.
             </p>
           </div>
 
@@ -196,9 +197,9 @@ export default function HomeContent() {
                   Your week, then your shop
                 </h3>
                 <p className="text-muted-foreground">
-                  Generate a meal plan in one tap, or build it yourself. Add
-                  meals from your recipes, then generate a shopping list from the
-                  plan. Check off as you go.
+                  Generate a full week in one click, or build it yourself. Add
+                  meals from your recipes, then generate a shopping list from
+                  the plan. Check off as you go.
                 </p>
                 <Button asChild variant="outline" size="sm">
                   <Link href={ROUTES.MEAL_PLAN}>Meal planning</Link>
@@ -221,7 +222,7 @@ export default function HomeContent() {
                   Always forgetting pantry staples by Friday?
                 </h3>
                 <p className="text-muted-foreground">
-                  A shared chalkboard for &quot;need by end of week&quot; —
+                  A shared chalkboard for &quot;need by end of week&quot;:
                   milk, olive oil, tin foil. So the basics don&apos;t get
                   missed.
                 </p>
@@ -240,7 +241,7 @@ export default function HomeContent() {
               </h3>
               <p className="text-muted-foreground">
                 Paste a URL and we pull the recipe into {APP_NAME}. Straight to
-                the point every time — no life stories, no endless scroll. Then
+                the point every time: no life stories, no endless scroll. Then
                 save it and tweak it to make it yours.
               </p>
               <Button asChild variant="outline" size="sm">
@@ -289,7 +290,7 @@ export default function HomeContent() {
               </h3>
               <p className="text-muted-foreground">
                 Edit ingredients, steps, and notes so every recipe is yours.
-                Half the sugar, double the garlic — your way.
+                Half the sugar, double the garlic, your way.
               </p>
             </div>
             <div className="relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
@@ -338,8 +339,8 @@ export default function HomeContent() {
             No more end-of-week decision fatigue.
           </h2>
           <p className="text-muted-foreground">
-            Your week is already decided. Less stress, more time for the parts you
-            enjoy. {APP_NAME} builds your week so you can focus on cooking.
+            Your week is already decided. Less stress, more time for the parts
+            you enjoy. {APP_NAME} builds your week so you can focus on cooking.
           </p>
         </div>
       </section>
@@ -356,7 +357,7 @@ export default function HomeContent() {
               on your meal plan.
             </p>
             <p className="text-sm text-muted-foreground mb-8">
-              Free while we&apos;re in beta — we read every bit of feedback.
+              Free while we&apos;re in beta. We read every bit of feedback.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Authenticated>

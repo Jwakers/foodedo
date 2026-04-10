@@ -1,11 +1,12 @@
 import { APP_NAME } from "@/app/constants";
+import { SITE_DEFAULT_DESCRIPTION, SITE_DEFAULT_TITLE } from "@/lib/site-messaging";
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: `${APP_NAME} - Family Meal Planning`,
+    name: SITE_DEFAULT_TITLE,
     short_name: APP_NAME,
-    description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
+    description: SITE_DEFAULT_DESCRIPTION,
     orientation: "portrait",
     categories: ["food", "lifestyle", "productivity"],
     display: "standalone",

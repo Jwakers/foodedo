@@ -1,29 +1,27 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  CalendarDays,
-  ListChecks,
-  BookMarked,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight, BookMarked, CalendarDays, ListChecks } from "lucide-react";
 import Link from "next/link";
 
 const benefits = [
   {
     icon: CalendarDays,
     title: "Plan your week",
-    description: "Drag-and-drop meal planning so the whole family knows what’s for dinner.",
+    description:
+      "Drag-and-drop meal planning so the whole family knows what’s for dinner.",
   },
   {
     icon: ListChecks,
     title: "Smart shopping lists",
-    description: "Auto-generated lists from your plan — no more forgotten ingredients.",
+    description:
+      "Auto-generated lists from your plan — no more forgotten ingredients.",
   },
   {
     icon: BookMarked,
     title: "Your recipe hub",
-    description: "Save, organise, and cook from one place. Import from anywhere.",
+    description:
+      "Save, organise, and cook from one place. Import from anywhere.",
   },
 ] as const;
 
@@ -51,9 +49,9 @@ export function BlogCtaSection() {
             Ready to cook what you love?
           </h2>
           <p className="mt-3 text-muted-foreground text-base sm:text-lg">
-            {APP_NAME} turns inspiration from the blog into organised meal plans,
-            shopping lists, and a recipe collection that actually works for busy
-            families.
+            {APP_NAME} turns inspiration from the blog into organised meal
+            plans, shopping lists, and a recipe collection that actually works
+            for busy families.
           </p>
         </div>
 

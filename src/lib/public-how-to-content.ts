@@ -28,7 +28,7 @@ export const PUBLIC_HOW_TO_SECTIONS = [
   {
     id: "start",
     title: "Get started",
-    content: `Create a free ${APP_NAME} account, then add a recipe you already cook often—either create it manually or import from a link. That gives you something real to put on your first meal plan.`,
+    content: `Create a free ${APP_NAME} account, then add a recipe you already cook often, either by creating it manually or importing from a link. That gives you something real to put on your first meal plan.`,
   },
   {
     id: "household",
