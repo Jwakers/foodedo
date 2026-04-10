@@ -313,7 +313,7 @@ export function TodaysMealSpotlight() {
                 {featured?.recipe?.title ?? "Save your plan to unlock recipes"}
               </h2>
               <p className="mb-5 max-w-xl text-sm leading-relaxed text-white/85 sm:text-base">
-                Your week is lined up, but this plan isn&apos;t saved yet—so we
+                Your week is lined up, but this plan isn&apos;t saved yet, so we
                 can&apos;t open recipes from here. Save on the meal plan page to
                 cook along and browse each dish.
               </p>

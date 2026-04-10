@@ -50,7 +50,7 @@ export default function SupportPage() {
           <h1 className="text-3xl font-bold">Help & Support</h1>
         </div>
         <p className="text-lg text-muted-foreground">
-          Find answers to common questions, learn how to use {APP_NAME} —
+          Find answers to common questions, learn how to use {APP_NAME},
           including weekly meal planning, shopping lists, and households, or get
           in touch with our support team.
         </p>

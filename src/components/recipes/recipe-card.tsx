@@ -116,7 +116,7 @@ export function RecipeCard({
               <span className="pointer-events-auto shrink-0">
                 <MealPlanBadgePopover
                   className="size-5 rounded-full flex items-center justify-center border border-border/50 text-muted-foreground/45"
-                  ariaLabel="Category not used by weekly planner — tap for details"
+                  ariaLabel="Category not used by weekly planner. Tap for details."
                   body={
                     <p>
                       This category isn’t used when the app builds a week for
@@ -135,7 +135,7 @@ export function RecipeCard({
                 <span className="pointer-events-auto shrink-0">
                   <MealPlanBadgePopover
                     className="size-6 rounded-full flex items-center justify-center border border-dashed border-muted-foreground text-muted-foreground"
-                    ariaLabel="Not yet eligible for weekly planner — tap for details"
+                    ariaLabel="Not yet eligible for weekly planner. Tap for details."
                     body={
                       <p>
                         Your category works for auto-planning, but set{" "}
@@ -160,7 +160,7 @@ export function RecipeCard({
                 <span className="pointer-events-auto shrink-0">
                   <MealPlanBadgePopover
                     className="size-6 rounded-full flex items-center justify-center border border-amber-600/70 bg-amber-500/15 text-amber-700 dark:border-amber-500/60 dark:text-amber-400"
-                    ariaLabel="Opted out of weekly planner suggestions — tap for details"
+                    ariaLabel="Opted out of weekly planner suggestions. Tap for details."
                     body={
                       <p>
                         You’ve turned off automatic suggestions for this recipe.
@@ -176,7 +176,7 @@ export function RecipeCard({
                 <span className="pointer-events-auto shrink-0">
                   <MealPlanBadgePopover
                     className="size-6 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center"
-                    ariaLabel="Eligible for weekly planner — tap for details"
+                    ariaLabel="Eligible for weekly planner. Tap for details."
                     body={
                       <p>
                         The weekly planner can suggest this recipe when you

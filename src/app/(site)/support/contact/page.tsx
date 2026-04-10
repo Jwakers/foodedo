@@ -56,22 +56,24 @@ export default async function PublicContactPage() {
 
       <div className="space-y-3 text-sm text-muted-foreground">
         <p>
+          For common questions about meal plans, lists, and households, see the{" "}
           <Link
             href={ROUTES.FAQ}
             className="text-primary underline-offset-4 hover:underline"
           >
             FAQ
-          </Link>{" "}
-          for common questions about meal plans, lists, and households.
+          </Link>
+          .
         </p>
         <p>
+          For an overview of public help pages, see the{" "}
           <Link
             href={ROUTES.PUBLIC_SUPPORT}
             className="text-primary underline-offset-4 hover:underline"
           >
             Help & Support hub
           </Link>
-          : overview of public help pages.
+          .
         </p>
       </div>
     </div>

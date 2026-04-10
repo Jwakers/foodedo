@@ -15,7 +15,7 @@ const benefits = [
     icon: ListChecks,
     title: "Smart shopping lists",
     description:
-      "Auto-generated lists from your plan — no more forgotten ingredients.",
+      "Auto-generated lists from your plan. No more forgotten ingredients.",
   },
   {
     icon: BookMarked,
