@@ -42,7 +42,7 @@ export default async function PublicContactPage() {
       <h1 className="text-4xl font-bold tracking-tight mb-4">Contact us</h1>
       <p className="text-muted-foreground mb-8">
         We read every message. For account-specific issues, the in-app contact
-        form is the fastest path—it attaches context so we can help quickly.
+        form is the fastest path; it attaches context so we can help quickly.
       </p>
 
       <div className="rounded-xl border bg-card p-6 space-y-4 mb-8">
@@ -56,22 +56,24 @@ export default async function PublicContactPage() {
 
       <div className="space-y-3 text-sm text-muted-foreground">
         <p>
+          For common questions about meal plans, lists, and households, see the{" "}
           <Link
             href={ROUTES.FAQ}
             className="text-primary underline-offset-4 hover:underline"
           >
             FAQ
-          </Link>{" "}
-          — common questions about meal plans, lists, and households.
+          </Link>
+          .
         </p>
         <p>
+          For an overview of public help pages, see the{" "}
           <Link
             href={ROUTES.PUBLIC_SUPPORT}
             className="text-primary underline-offset-4 hover:underline"
           >
             Help & Support hub
-          </Link>{" "}
-          — overview of public help pages.
+          </Link>
+          .
         </p>
       </div>
     </div>

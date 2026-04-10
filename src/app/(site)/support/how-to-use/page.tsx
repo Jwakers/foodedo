@@ -1,20 +1,21 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
-import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { buildFaqJsonLdFromPairs } from "@/lib/faq-json-ld";
+import { serializeJsonLd } from "@/lib/json-ld";
+import { openGraphSiteAndUrl } from "@/lib/og-metadata";
 import {
   PUBLIC_HOW_TO_FAQ,
   PUBLIC_HOW_TO_SECTIONS,
 } from "@/lib/public-how-to-content";
-import { buildFaqJsonLdFromPairs } from "@/lib/faq-json-ld";
-import { serializeJsonLd } from "@/lib/json-ld";
-import { openGraphSiteAndUrl } from "@/lib/og-metadata";
+import { SITE_MISSION } from "@/lib/site-messaging";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -22,21 +23,23 @@ import Link from "next/link";
 const path = ROUTES.PUBLIC_SUPPORT_HOW_TO;
 const canonicalUrl = `${getSiteBaseUrl()}${path}`;
 
+const SOCIAL_DESCRIPTION = `Quick start for ${APP_NAME}: ${SITE_MISSION} Recipes, lists, and households.`;
+
 export const metadata: Metadata = {
   title: `How to use ${APP_NAME} | Quick start`,
-  description: `Learn how ${APP_NAME} works: households, weekly meal planning, shopping lists, and recipe discovery—then open the full guide in the app when you are signed in.`,
+  description: `${SITE_MISSION} Learn how ${APP_NAME} fits households, shopping lists, and recipe discovery. Open the full guide in the app when you are signed in.`,
   alternates: { canonical: canonicalUrl },
   robots: { index: true, follow: true },
   openGraph: {
     ...openGraphSiteAndUrl(canonicalUrl),
     title: `How to use ${APP_NAME}`,
-    description: `Quick start for ${APP_NAME}: recipes, meal plans, shopping lists, and households.`,
+    description: SOCIAL_DESCRIPTION,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: `How to use ${APP_NAME}`,
-    description: `Quick start for ${APP_NAME}: recipes, meal plans, shopping lists, and households.`,
+    description: SOCIAL_DESCRIPTION,
   },
 };
 

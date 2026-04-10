@@ -23,7 +23,7 @@ export function BalanceVarietySection() {
             Automatically balances your week
           </h2>
           <p className="text-lg text-muted-foreground">
-            So you get an intentional plan — without the spreadsheet brain.
+            So you get an intentional plan, without the spreadsheet brain.
           </p>
         </div>
 

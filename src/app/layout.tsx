@@ -1,5 +1,10 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { ThemeProvider } from "@/components/theme-provider";
+import {
+  SITE_DEFAULT_DESCRIPTION,
+  SITE_DEFAULT_OG_IMAGE_ALT,
+  SITE_DEFAULT_TITLE,
+} from "@/lib/site-messaging";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -15,9 +20,9 @@ const lexendSans = Lexend({
   subsets: ["latin"],
 });
 
-const APP_DEFAULT_TITLE = `${APP_NAME} - Family Meal Planning`;
+const APP_DEFAULT_TITLE = SITE_DEFAULT_TITLE;
 const APP_TITLE_TEMPLATE = `%s | ${APP_NAME}`;
-const APP_DESCRIPTION = `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`;
+const APP_DESCRIPTION = SITE_DEFAULT_DESCRIPTION;
 
 const APP_URL = new URL(getSiteBaseUrl());
 
@@ -268,7 +273,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: `${APP_NAME} - Family Meal Planning Made Simple`,
+        alt: SITE_DEFAULT_OG_IMAGE_ALT,
       },
     ],
   },

@@ -272,7 +272,7 @@ export default function MealPlanClient() {
         sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
       }
       router.push(ROUTES.mealPlanWithId(planId));
-      toast.success("Manual plan ready — add your meals.");
+      toast.success("Manual plan ready. Add your meals.");
     } catch (e) {
       toast.error(
         e instanceof Error ? e.message : "Failed to create manual plan",
@@ -963,7 +963,7 @@ export default function MealPlanClient() {
             <AlertDialogHeader>
               <AlertDialogTitle>Save this plan?</AlertDialogTitle>
               <AlertDialogDescription>
-                Once saved, you can&apos;t add, remove, or swap meals—only move
+                Once saved, you can&apos;t add, remove, or swap meals, only move
                 them between days. To make bigger changes, you&apos;d need to
                 delete this plan and create a new one.
               </AlertDialogDescription>
@@ -996,7 +996,7 @@ export default function MealPlanClient() {
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Everyone in this household can see this plan and shop from
-                  it—including new weeks you generate.{" "}
+                  it, including new weeks you generate.{" "}
                 </p>
               </div>
             </CardContent>

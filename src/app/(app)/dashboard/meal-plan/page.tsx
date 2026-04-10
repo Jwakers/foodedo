@@ -1,10 +1,11 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { SITE_MISSION } from "@/lib/site-messaging";
 import MealPlanClient from "./_components/meal-plan-client";
 
 export const metadata: Metadata = {
   title: "Meal planning",
-  description: "Plan your week with recipes and generate a shopping list",
+  description: `${SITE_MISSION} Then adjust, share, and generate a shopping list.`,
 };
 
 export default function MealPlanPage() {

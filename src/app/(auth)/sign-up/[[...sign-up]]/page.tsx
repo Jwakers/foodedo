@@ -51,11 +51,11 @@ export default function SignUpCatchAllPage() {
               </Link>
 
               <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
-                Join the family meal planning revolution
+                Weekly meal plans in one click
               </h1>
               <p className="text-xl text-primary-foreground/90">
-                Start your journey to stress-free meal planning with thousands
-                of families who have already transformed their kitchen routines.
+                Join the {APP_NAME} open beta: balanced weeks, smart lists, and
+                your household in one place. We read every bit of feedback.
               </p>
             </div>
 
@@ -70,7 +70,7 @@ export default function SignUpCatchAllPage() {
               <div className="flex items-center space-x-3">
                 <Calendar className="size-5 text-primary-foreground/80" />
                 <span className="text-primary-foreground/90">
-                  Plan weekly meals in minutes
+                  Generate a full week in one click
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -96,9 +96,8 @@ export default function SignUpCatchAllPage() {
             {/* Social Proof */}
             <div className="pt-4 border-t border-primary-foreground/20">
               <p className="text-sm text-primary-foreground/80">
-                Join over{" "}
-                <span className="font-semibold">10,000+ families</span> who have
-                made meal planning simple and enjoyable.
+                Free while we&apos;re in beta. No card required. Help shape what
+                we ship next.
               </p>
             </div>
           </div>
@@ -128,8 +127,8 @@ export default function SignUpCatchAllPage() {
               <span className="font-bold text-2xl">{APP_NAME}</span>
             </Link>
             <p className="text-muted-foreground">
-              Join thousands of families making meal planning simple and
-              enjoyable.
+              Weekly meal plans in one click. Free while we&apos;re in beta, and
+              your feedback is welcome.
             </p>
           </div>
 

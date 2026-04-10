@@ -185,7 +185,7 @@ export function CookModeOverlay({ recipe, onClose }: CookModeOverlayProps) {
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">
-          Cooking mode: {recipe.title} — {stepLabel}
+          Cooking mode: {recipe.title}, {stepLabel}
         </DialogTitle>
         <div className="flex size-full flex-col">
           <DialogClose asChild>
@@ -338,7 +338,7 @@ function MiseEnPlaceSlide({
         <h2 className="text-lg font-semibold text-primary">Before we start</h2>
         <p className="mt-2 text-muted-foreground">
           Great cooking starts with preparation. Gather and measure these
-          ingredients so you can cook smoothly—continue whenever you’re ready.
+          ingredients so you can cook smoothly. Continue whenever you’re ready.
         </p>
         {ingredients.length === 0 ? (
           <p className="mt-6 text-muted-foreground">No ingredients listed.</p>
@@ -433,7 +433,7 @@ function RecipeIngredientRows({
           </span>
           {ing.preparation && (
             <span className="text-muted-foreground capitalize italic">
-              — {ing.preparation}
+              , {ing.preparation}
             </span>
           )}
         </li>

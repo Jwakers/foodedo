@@ -7,7 +7,7 @@ export function HowItPlansSection() {
     {
       title: "Generate",
       description:
-        "One tap plans your entire week from your recipes. Set the end date — the planner fills the rest.",
+        "One click plans your entire week from your recipes. Set the end date and the planner fills the rest.",
       icon: CalendarPlus,
     },
     {

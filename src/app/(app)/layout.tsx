@@ -1,4 +1,5 @@
 import { APP_NAME } from "@/app/constants";
+import { SITE_DEFAULT_DESCRIPTION } from "@/lib/site-messaging";
 import { Metadata } from "next";
 import { AppFeedbackVisibilityProvider } from "./_components.tsx/app-feedback-visibility";
 import {
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
     default: APP_NAME,
   },
-  description: `${APP_NAME} - Family Meal Planning`,
+  description: SITE_DEFAULT_DESCRIPTION,
   robots: {
     index: false,
     follow: true,

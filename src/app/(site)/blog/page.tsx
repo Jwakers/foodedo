@@ -1,8 +1,8 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSiteBaseUrl } from "@/lib/site-url";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { client } from "@/sanity/client";
 import { urlFor } from "@/sanity/image";
 import type { PostListItem } from "@/sanity/types";

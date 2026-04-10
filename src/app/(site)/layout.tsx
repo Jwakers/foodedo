@@ -1,28 +1,33 @@
 import { APP_NAME } from "@/app/constants";
 import { Footer } from "@/app/(site)/_components/footer";
 import { Header } from "@/app/(site)/_components/header";
+import {
+  SITE_DEFAULT_DESCRIPTION,
+  SITE_DEFAULT_OG_IMAGE_ALT,
+  SITE_DEFAULT_TITLE,
+} from "@/lib/site-messaging";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} - Family Meal Planning`,
-  description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
+  title: SITE_DEFAULT_TITLE,
+  description: SITE_DEFAULT_DESCRIPTION,
   openGraph: {
     siteName: APP_NAME,
-    title: `${APP_NAME} - Family Meal Planning`,
-    description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DEFAULT_DESCRIPTION,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: `${APP_NAME} - Family Meal Planning Made Simple`,
+        alt: SITE_DEFAULT_OG_IMAGE_ALT,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${APP_NAME} - Family Meal Planning`,
-    description: `Create recipes, plan weekly meals, and generate smart shopping lists. Take the pain out of family meal planning with ${APP_NAME}.`,
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DEFAULT_DESCRIPTION,
     images: ["/og-image.png"],
   },
 };

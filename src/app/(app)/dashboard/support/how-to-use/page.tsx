@@ -58,7 +58,7 @@ export default function HowToUsePage() {
       step: 4,
       title: "Plan your week and create a shopping list",
       description:
-        "Tap 'Generate My Week' on the Meal plan page to fill a week with recipes in one go, or create a plan and add meals manually. Lock, swap, or regenerate as you like, then generate a shopping list from the plan. You can also create ad-hoc shopping lists from the Shopping list page.",
+        "On the Meal plan page, choose 'Generate My Week' to fill a week with recipes in one go, or create a plan and add meals manually. Lock, swap, or regenerate as you like, then generate a shopping list from the plan. You can also create ad-hoc shopping lists from the Shopping list page.",
       icon: <CalendarCheck className="size-5" />,
     },
   ];
@@ -72,25 +72,25 @@ export default function HowToUsePage() {
         {
           title: "Creating a Recipe",
           content: [
-            "1. Click the \"+\" icon from the bottom menu or from the 'My Recipes' page",
-            "2. Select 'Create Recipe'",
+            "1. Open the \"+\" icon from the bottom menu or from the 'My Recipes' page",
+            "2. Choose 'Create Recipe'",
             "3. Fill in the recipe name and description",
             "4. Add ingredients with quantities and units",
             "5. Write step-by-step cooking instructions",
             "6. Set prep time, cook time, and serving size",
             "7. Choose a category (main, dessert, snack, etc.)",
             "8. Upload photos if desired",
-            "9. Click 'Save Recipe'",
+            "9. Choose 'Save Recipe'",
           ],
         },
         {
           title: "Editing Recipes",
           content: [
             "1. Go to 'My Recipes' and find the recipe you want to edit",
-            "2. Click on the recipe to open it",
-            "3. Click the 'Edit' button",
+            "2. Open the recipe from the list",
+            "3. Choose 'Edit'",
             "4. Make your changes to any part of the recipe",
-            "5. Click 'Save Changes' when done",
+            "5. Choose 'Save Changes' when done",
           ],
         },
         {
@@ -114,10 +114,10 @@ export default function HowToUsePage() {
           content: [
             "1. Go to 'Import Recipe' from the main menu",
             "2. Paste the URL of the recipe you want to import",
-            "3. Click 'Import Recipe'",
+            "3. Choose 'Import Recipe'",
             "4. Review the extracted information",
             "5. Make any necessary edits or additions",
-            "6. Click 'Save Recipe' to add it to your collection",
+            "6. Choose 'Save Recipe' to add it to your collection",
           ],
         },
         {
@@ -148,67 +148,67 @@ export default function HowToUsePage() {
         "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
       sections: [
         {
-          title: "Generating your week in one tap",
+          title: "Generating your week in one step",
           content: [
             "1. Go to 'Meal plan' from the bottom nav or dashboard",
-            "2. Tap 'Generate My Week'",
+            "2. Choose 'Generate My Week'",
             "3. The app fills each day with recipes from your collection (and your household's)",
             "4. Review the week, then lock, swap, or remove meals as you like",
-            "5. Tap 'Regenerate' anytime to get a new mix (locked meals stay)",
+            "5. Choose 'Regenerate' anytime to get a new mix (locked meals stay)",
           ],
         },
         {
           title: "Creating a meal plan manually",
           content: [
             "1. Go to 'Meal plan' from the bottom nav or dashboard",
-            "2. Tap 'Create this week's plan' if you don't have a plan",
+            "2. Choose 'Create this week's plan' if you don't have a plan",
             "3. Set the end date (default is one week from today)",
-            "4. Tap 'Create plan'",
+            "4. Choose 'Create plan'",
           ],
         },
         {
           title: "Adding meals to your plan",
           content: [
             "1. On your meal plan page, find the day you want to add a meal to",
-            "2. Tap 'Add meal' for that day (or use an empty slot)",
-            "3. Choose a recipe from your recipes (or household recipes)",
+            "2. Choose 'Add meal' for that day (or use an empty slot)",
+            "3. Pick a recipe from your recipes (or household recipes)",
             "4. Optionally choose a meal label (Breakfast, Lunch, Dinner)",
-            "5. Tap 'Add'",
+            "5. Confirm to add the meal",
           ],
         },
         {
           title: "Locking, swapping, and removing meals",
           content: [
-            "• Lock: tap the lock icon on a meal card to keep it when you 'Regenerate'",
+            "• Lock: use the lock icon on a meal card to keep it when you 'Regenerate'",
             "• Swap: open the menu (three dots) on a meal → 'Pick recipe' or 'Swap' → choose another recipe",
             "• Remove: open the menu on a meal → 'Remove' to clear that slot",
-            "• Regenerate: tap 'Regenerate' to get a new suggested week; locked meals are kept",
+            "• Regenerate: choose 'Regenerate' to get a new suggested week; locked meals are kept",
           ],
         },
         {
           title: "Finalising your plan",
           content: [
-            "1. When you're happy with the week, tap 'Finalise' (in the plan menu)",
-            "2. After finalising, you can't add, remove, or swap meals—only move them between days",
+            "1. When you're happy with the week, choose 'Finalise' (in the plan menu)",
+            "2. After finalising, you can't add, remove, or swap meals, only move them between days",
             "3. Generate your shopping list before or after finalising",
           ],
         },
         {
           title: "Generating a shopping list from your plan",
           content: [
-            "1. On your meal plan page, tap 'Generate shopping list'",
+            "1. On your meal plan page, choose 'Generate shopping list'",
             "2. Optionally select chalkboard items to include",
-            "3. Tap 'Create shopping list' — you'll be taken to the shopping list",
+            "3. Choose 'Create shopping list'. You'll be taken to the shopping list",
             "4. Finalise the list when ready, then check off items as you shop",
           ],
         },
         {
           title: "Sharing your meal plan with a household",
           content: [
-            "1. On your meal plan page (as plan owner), tap 'Share with household'",
+            "1. On your meal plan page (as plan owner), choose 'Share with household'",
             "2. Select a household",
             "3. Household members can view the plan and generate their own shopping list from it",
-            "4. Tap 'Stop sharing' to remove the link",
+            "4. Choose 'Stop sharing' to remove the link",
           ],
         },
         {
@@ -229,7 +229,7 @@ export default function HowToUsePage() {
         {
           title: "From your meal plan",
           content: [
-            "1. On the meal plan page, tap 'Generate shopping list'",
+            "1. On the meal plan page, choose 'Generate shopping list'",
             "2. Ingredients from all planned recipes are combined into one list",
             "3. Optionally include chalkboard items, then create the list",
           ],
@@ -240,7 +240,7 @@ export default function HowToUsePage() {
             "1. Go to 'Shopping list' from the dashboard or support links",
             "2. Select recipes to add to your shopping list",
             "3. Select whether to include personal chalkboard items and/or household chalkboard items",
-            "4. Tap 'Create Shopping List'",
+            "4. Choose 'Create Shopping List'",
           ],
         },
       ],
@@ -255,7 +255,7 @@ export default function HowToUsePage() {
           title: "Creating a Household",
           content: [
             "1. Go to 'Households' from the main menu",
-            "2. Click 'Create Household'",
+            "2. Choose 'Create Household'",
             "3. Enter a name for your household",
             "4. Generate an invitation code",
             "5. Share the code with family members or room-mates",
@@ -290,7 +290,7 @@ export default function HowToUsePage() {
           title: "Using the Chalkboard",
           content: [
             "1. Go to 'Kitchen Chalkboard' from the main menu",
-            "2. Click in the text area to start typing",
+            "2. Select the text area to start typing",
             "3. Your notes are automatically saved",
             "4. Use it for cooking reminders, substitutions, or quick notes",
             "5. Notes are shared with household members if applicable",
@@ -449,8 +449,8 @@ export default function HowToUsePage() {
             <div>
               <h4 className="font-semibold mb-2">Efficiency Tips</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Use &apos;Generate My Week&apos; to plan a full week in one tap</li>
-                <li>• Lock meals you love before tapping Regenerate</li>
+                <li>• Use &apos;Generate My Week&apos; to plan a full week in one step</li>
+                <li>• Lock meals you love before choosing Regenerate</li>
                 <li>• Import recipes from websites to save time</li>
                 <li>• Create shopping lists directly from your meal plan</li>
                 <li>• Use the chalkboard for pantry ingredient reminders</li>

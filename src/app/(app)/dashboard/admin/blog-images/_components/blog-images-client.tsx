@@ -460,7 +460,7 @@ export function BlogImagesClient() {
                     </Select>
                     <div className="mt-1 text-xs text-muted-foreground">
                       The prompt uses the selected style. If it still looks
-                      generic, switch style and regenerate—or use the override
+                      generic, switch style and regenerate, or use the override
                       box for a very specific composition.
                     </div>
 

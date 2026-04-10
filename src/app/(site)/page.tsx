@@ -1,13 +1,14 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { getSiteBaseUrl } from "@/lib/site-url";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
+import { SITE_DEFAULT_OG_IMAGE_ALT, SITE_MISSION } from "@/lib/site-messaging";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import HomeContent from "./_components/home-content";
 
 const canonicalUrl = `${getSiteBaseUrl()}${ROUTES.HOME}`;
 
-const homeTitle = `${APP_NAME} — Family Meal Planning App & Weekly Planner (Open Beta)`;
-const homeDescription = `Open beta family meal planning: personalised weekly plans in one tap from your recipes — balanced, list & sharing. Free, no card. Feedback welcome.`;
+const homeTitle = `${APP_NAME} - Weekly meal plans in one click (open beta)`;
+const homeDescription = `Open beta: ${SITE_MISSION} Personalised weeks from your recipes: balanced, lists, and household sharing. Free, no card. Feedback welcome.`;
 
 const homeOgImage = "/hero-2.png";
 
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
         url: homeOgImage,
         width: 1376,
         height: 768,
-        alt: `${APP_NAME} — personalised weekly meal planning`,
+        alt: SITE_DEFAULT_OG_IMAGE_ALT,
       },
     ],
   },

@@ -650,7 +650,7 @@ Include:
                       Image generation prompt
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Utility only — not uploaded to Sanity. Paste into your
+                      Utility only, not uploaded to Sanity. Paste into your
                       image tool for a hero that matches this post.
                     </p>
                   </div>

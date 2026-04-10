@@ -94,7 +94,7 @@ export default function PublicSupportHubPage() {
               <CardTitle className="text-lg">Contact</CardTitle>
             </div>
             <CardDescription>
-              Send feedback or questions—sign in to use the in-app form.
+              Send feedback or questions. Sign in to use the in-app form.
             </CardDescription>
           </CardHeader>
           <CardContent>
