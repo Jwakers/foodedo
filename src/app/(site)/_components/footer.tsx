@@ -1,4 +1,5 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
+import { SITE_MISSION } from "@/lib/site-messaging";
 import { Utensils } from "lucide-react";
 import Link from "next/link";
 
@@ -14,8 +15,7 @@ export function Footer() {
               <span className="font-bold text-xl">{APP_NAME}</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-md">
-              Weekly meal plans in one click, plus recipes, smart shopping lists,
-              and your household, all in one place.
+              {SITE_MISSION}
             </p>
           </div>
 

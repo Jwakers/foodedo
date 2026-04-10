@@ -23,6 +23,8 @@ import Link from "next/link";
 const path = ROUTES.PUBLIC_SUPPORT_HOW_TO;
 const canonicalUrl = `${getSiteBaseUrl()}${path}`;
 
+const SOCIAL_DESCRIPTION = `Quick start for ${APP_NAME}: ${SITE_MISSION} Recipes, lists, and households.`;
+
 export const metadata: Metadata = {
   title: `How to use ${APP_NAME} | Quick start`,
   description: `${SITE_MISSION} Learn how ${APP_NAME} fits households, shopping lists, and recipe discovery. Open the full guide in the app when you are signed in.`,
@@ -31,13 +33,13 @@ export const metadata: Metadata = {
   openGraph: {
     ...openGraphSiteAndUrl(canonicalUrl),
     title: `How to use ${APP_NAME}`,
-    description: `Quick start for ${APP_NAME}: ${SITE_MISSION} Recipes, lists, and households.`,
+    description: SOCIAL_DESCRIPTION,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: `How to use ${APP_NAME}`,
-    description: `Quick start for ${APP_NAME}: ${SITE_MISSION} Recipes, lists, and households.`,
+    description: SOCIAL_DESCRIPTION,
   },
 };
 

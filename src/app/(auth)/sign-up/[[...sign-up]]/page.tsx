@@ -127,7 +127,8 @@ export default function SignUpCatchAllPage() {
               <span className="font-bold text-2xl">{APP_NAME}</span>
             </Link>
             <p className="text-muted-foreground">
-              Weekly meal plans in one click. Free beta, your feedback welcome.
+              Weekly meal plans in one click. Free while we&apos;re in beta, and
+              your feedback is welcome.
             </p>
           </div>
 
