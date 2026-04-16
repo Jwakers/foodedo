@@ -118,7 +118,7 @@ export function usePwaInstall({ surface }: UsePwaInstallOptions) {
     const prompt = deferredPromptRef.current;
     if (prompt) {
       try {
-        prompt.prompt();
+        await prompt.prompt();
         const { outcome } = await prompt.userChoice;
 
         if (outcome === "accepted") {
