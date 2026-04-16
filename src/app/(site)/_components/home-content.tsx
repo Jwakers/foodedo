@@ -6,7 +6,6 @@ import type { HomepageShowcaseRecipe } from "@/lib/homepage-showcase-recipes";
 import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
-import InstallPrompt from "@/components/installation-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
@@ -197,10 +196,6 @@ export default function HomeContent({
       </section>
 
       <ExampleWeekSection recipes={showcaseRecipes} />
-
-      <div className="container mt-4">
-        <InstallPrompt />
-      </div>
 
       <HowItPlansSection />
       <BalanceVarietySection />

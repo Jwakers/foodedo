@@ -1,6 +1,7 @@
 import { APP_NAME } from "@/app/constants";
 import { Footer } from "@/app/(site)/_components/footer";
 import { Header } from "@/app/(site)/_components/header";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import {
   SITE_DEFAULT_DESCRIPTION,
   SITE_DEFAULT_OG_IMAGE_ALT,
@@ -36,6 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh flex flex-col">
       <Header />
+      <InstallAppBanner placement="site" />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>

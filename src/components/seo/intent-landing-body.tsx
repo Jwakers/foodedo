@@ -26,7 +26,6 @@ export function IntentLandingBody({
           intentTopic={intent.path}
           secondaryHref={secondaryHref}
           secondaryLabel={secondaryLabel}
-          showInstall
         />
       </header>
 
@@ -75,7 +74,6 @@ export function IntentLandingBody({
           intentTopic={intent.path}
           secondaryHref={secondaryHref}
           secondaryLabel={secondaryLabel}
-          showInstall={false}
         />
       </footer>
     </article>
