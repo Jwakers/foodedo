@@ -2,6 +2,7 @@
 
 import { BalanceVarietySection } from "@/app/(site)/_components/balance-variety-section";
 import { ExampleWeekSection } from "@/app/(site)/_components/example-week-section";
+import type { HomepageShowcaseRecipe } from "@/lib/homepage-showcase-recipes";
 import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
@@ -29,14 +30,20 @@ const HERO_IMAGE = "/hero-2.png";
 const CTA_BUTTON_CLASSES =
   "text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto";
 
-export default function HomeContent() {
+type HomeContentProps = {
+  showcaseRecipes?: HomepageShowcaseRecipe[];
+};
+
+export default function HomeContent({
+  showcaseRecipes = [],
+}: HomeContentProps) {
   return (
     <div className="flex flex-col">
       <PublicPageTracker
         event={ANALYTICS_EVENTS.LANDING_VIEWED}
         props={{ intent_topic: "home" }}
       />
-      {/* Hero Section — split layout: copy on solid background, image as featured visual */}
+      {/* Hero: split layout, copy left and image right */}
       <section className="relative min-h-[85vh] flex flex-col lg:flex-row lg:min-h-[90vh]">
         {/* Left: copy on readable background */}
         <div className="flex-1 flex items-center justify-center bg-background px-4 py-16 lg:py-24 lg:pl-[max(1rem,calc((100vw-1200px)/2))] lg:pr-8">
@@ -54,16 +61,24 @@ export default function HomeContent() {
             <div className="space-y-6">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-foreground">
-                  Your personalised week of meals,
+                  Stop wondering what to cook every day.
                 </span>
                 <br />
-                <span className="text-primary">in one click.</span>
+                <span className="text-primary">
+                  Your week of meals, decided in one click.
+                </span>
               </h1>
 
+              <p className="text-lg sm:text-xl text-foreground/90 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                Build a balanced weekly meal plan in one click, then turn it
+                into a shopping list you can shop from and share with your
+                household.
+              </p>
+
               <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Sign up in seconds, then one click for a balanced week of
-                dinners. Free while we&apos;re in beta. Your feedback shapes
-                what we build.{" "}
+                Start with curated meals, and add your own recipes whenever you
+                like. Free while we&apos;re in beta. Your feedback shapes what we
+                build.{" "}
                 <Link
                   href={ROUTES.BETA}
                   className="text-primary hover:text-primary/80 underline underline-offset-2"
@@ -83,70 +98,89 @@ export default function HomeContent() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 justify-center lg:justify-start items-stretch sm:items-center sm:flex-row sm:flex-wrap">
-              <Authenticated>
-                <Button asChild size="lg" className={CTA_BUTTON_CLASSES}>
-                  <Link href={ROUTES.DASHBOARD}>
-                    Go to dashboard
-                    <ArrowRight className="ml-2 size-5" />
-                  </Link>
-                </Button>
-              </Authenticated>
-              <Unauthenticated>
-                <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className={CTA_BUTTON_CLASSES}
-                    onClick={() => {
-                      trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
-                        cta_type: "home_hero_join_beta",
-                        intent_topic: "home",
-                      });
-                      trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
-                        source_surface: "home_hero",
-                      });
-                    }}
-                  >
-                    Join the beta (free)
-                    <ArrowRight className="ml-2 size-5" />
+            <div className="flex flex-col gap-3 justify-center lg:justify-start items-stretch sm:max-w-xl lg:max-w-none">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:flex-wrap justify-center lg:justify-start">
+                <Authenticated>
+                  <Button asChild size="lg" className={CTA_BUTTON_CLASSES}>
+                    <Link href={ROUTES.DASHBOARD}>
+                      Go to dashboard
+                      <ArrowRight className="ml-2 size-5" />
+                    </Link>
                   </Button>
-                </SignUpButton>
-              </Unauthenticated>
-              <a
-                href="#how-it-plans"
-                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 sm:py-3 order-last sm:order-0 text-center sm:text-left"
-                onClick={() => {
-                  trackEvent(ANALYTICS_EVENTS.SECONDARY_ACTION_TAKEN, {
-                    action_name: "scroll_how_it_works",
-                    source_surface: "home_hero",
-                  });
-                }}
-              >
-                See how it works
-              </a>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-6 text-sm text-muted-foreground pt-2">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="size-4 text-primary shrink-0" />
-                <span>No credit card required</span>
+                </Authenticated>
+                <Unauthenticated>
+                  <SignUpButton mode="modal">
+                    <Button
+                      size="lg"
+                      className={CTA_BUTTON_CLASSES}
+                      onClick={() => {
+                        trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
+                          cta_type: "home_hero_join_beta",
+                          intent_topic: "home",
+                        });
+                        trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+                          source_surface: "home_hero",
+                        });
+                      }}
+                    >
+                      Join free beta
+                      <ArrowRight className="ml-2 size-5" />
+                    </Button>
+                  </SignUpButton>
+                </Unauthenticated>
+                <a
+                  href="#how-it-plans"
+                  className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 sm:py-3 text-center sm:text-left sm:order-0 order-last"
+                  onClick={() => {
+                    trackEvent(ANALYTICS_EVENTS.SECONDARY_ACTION_TAKEN, {
+                      action_name: "scroll_how_it_works",
+                      source_surface: "home_hero",
+                    });
+                  }}
+                >
+                  See how it works
+                </a>
               </div>
-              <div className="hidden sm:block size-1 bg-muted-foreground/30 rounded-full" />
-              <div className="flex items-center gap-2 text-center sm:text-left">
-                <CheckCircle className="size-4 text-primary shrink-0" />
-                <span>Open to everyone. Tell us what to improve.</span>
+
+              <Unauthenticated>
+                <p className="text-sm text-muted-foreground text-center lg:text-left">
+                  Then generate your week in one click.
+                </p>
+              </Unauthenticated>
+
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground pt-1">
+                <div className="flex items-center gap-2 justify-center lg:justify-start">
+                  <CheckCircle className="size-4 text-primary shrink-0" />
+                  <span>Free while in beta</span>
+                </div>
+                <div className="flex items-center gap-2 justify-center lg:justify-start">
+                  <CheckCircle className="size-4 text-primary shrink-0" />
+                  <span>No credit card required</span>
+                </div>
+                <Unauthenticated>
+                  <div className="flex items-center gap-2 justify-center lg:justify-start">
+                    <CheckCircle className="size-4 text-primary shrink-0" />
+                    <span>Takes seconds to get started</span>
+                  </div>
+                </Unauthenticated>
+                <Authenticated>
+                  <div className="flex items-center gap-2 justify-center lg:justify-start">
+                    <CheckCircle className="size-4 text-primary shrink-0" />
+                    <span>Open to everyone. Tell us what to improve.</span>
+                  </div>
+                </Authenticated>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Hero 2 image as featured visual — no text overlay */}
+        {/* Right: hero image, no text overlay */}
         <div className="flex-1 relative flex items-center justify-center bg-muted/40 min-h-[50vh] lg:min-h-0 lg:pr-[max(1rem,calc((100vw-1200px)/2))] lg:pl-4">
           <div className="relative w-full max-w-2xl aspect-4/3 lg:aspect-6/5 mx-4 lg:mx-0">
             <div className="absolute inset-0 rounded-2xl lg:rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5 lg:shadow-2xl lg:-rotate-1">
               <Image
                 src={HERO_IMAGE}
-                alt="Kitchen counter with fresh herbs, lemons, and a meal-planning app on a tablet"
+                alt="Kitchen counter with fresh produce and a tablet showing a weekly meal plan and shopping list in Foodedo"
                 fill
                 className="object-cover"
                 priority
@@ -162,13 +196,14 @@ export default function HomeContent() {
         </div>
       </section>
 
+      <ExampleWeekSection recipes={showcaseRecipes} />
+
       <div className="container mt-4">
         <InstallPrompt />
       </div>
 
       <HowItPlansSection />
       <BalanceVarietySection />
-      <ExampleWeekSection />
 
       {/* What feeds your plan */}
       <section id="features" className="py-20 bg-muted/30 scroll-mt-20">
@@ -182,7 +217,7 @@ export default function HomeContent() {
             </p>
           </div>
 
-          {/* 1. Meal planning + shopping — lead, two columns */}
+          {/* 1. Meal planning + shopping (lead, two columns) */}
           <div className="grid lg:grid-cols-2 gap-6 md:gap-12 items-stretch mb-20">
             <div className="relative p-6 pt-14 rounded-lg border border-border bg-card overflow-visible">
               <div
@@ -197,9 +232,10 @@ export default function HomeContent() {
                   Your week, then your shop
                 </h3>
                 <p className="text-muted-foreground">
-                  Generate a full week in one click, or build it yourself. Add
-                  meals from your recipes, then generate a shopping list from
-                  the plan. Check off as you go.
+                  Generate a full week in one click, or build it yourself. Mix
+                  curated ideas with your own recipes and keep growing your
+                  library over time, then generate a shopping list from the plan
+                  and check items off as you go.
                 </p>
                 <Button asChild variant="outline" size="sm">
                   <Link href={ROUTES.MEAL_PLAN}>Meal planning</Link>
@@ -233,7 +269,7 @@ export default function HomeContent() {
             </div>
           </div>
 
-          {/* 2. Import from websites — image right */}
+          {/* 2. Import from websites, image right */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold">
@@ -258,7 +294,7 @@ export default function HomeContent() {
             </div>
           </div>
 
-          {/* 3. Recipe books + create your own — image left */}
+          {/* 3. Recipe books + create your own, image left */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="order-2 lg:order-1 relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
               <Image
@@ -282,7 +318,7 @@ export default function HomeContent() {
             </div>
           </div>
 
-          {/* 4. Customise every recipe — image right */}
+          {/* 4. Customise every recipe, image right */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold">
@@ -303,7 +339,7 @@ export default function HomeContent() {
             </div>
           </div>
 
-          {/* 5. Household sharing — image left */}
+          {/* 5. Household sharing, image left */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="order-2 lg:order-1 relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
               <Image
@@ -353,40 +389,52 @@ export default function HomeContent() {
               Get early access
             </h2>
             <p className="text-lg text-muted-foreground mb-2">
-              No credit card. Sign up in seconds, then one click for a full week
-              on your meal plan.
+              Your weekly meal plan and shopping list in one flow. Start with
+              curated meals and add your own anytime.
             </p>
-            <p className="text-sm text-muted-foreground mb-8">
+            <p className="text-sm text-muted-foreground mb-6">
               Free while we&apos;re in beta. We read every bit of feedback.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Authenticated>
-                <Button asChild size="lg" className="text-lg px-8">
-                  <Link href={ROUTES.DASHBOARD}>
-                    Go to dashboard
-                    <ArrowRight className="ml-2 size-5" />
-                  </Link>
-                </Button>
-              </Authenticated>
-              <Unauthenticated>
-                <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="text-lg px-8"
-                    onClick={() => {
-                      trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
-                        cta_type: "home_footer_join_beta",
-                        intent_topic: "home",
-                      });
-                      trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
-                        source_surface: "home_footer",
-                      });
-                    }}
-                  >
-                    Join the beta (free)
-                    <ArrowRight className="ml-2 size-5" />
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Authenticated>
+                  <Button asChild size="lg" className="text-lg px-8">
+                    <Link href={ROUTES.DASHBOARD}>
+                      Go to dashboard
+                      <ArrowRight className="ml-2 size-5" />
+                    </Link>
                   </Button>
-                </SignUpButton>
+                </Authenticated>
+                <Unauthenticated>
+                  <SignUpButton mode="modal">
+                    <Button
+                      size="lg"
+                      className="text-lg px-8"
+                      onClick={() => {
+                        trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
+                          cta_type: "home_footer_join_beta",
+                          intent_topic: "home",
+                        });
+                        trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+                          source_surface: "home_footer",
+                        });
+                      }}
+                    >
+                      Join free beta
+                      <ArrowRight className="ml-2 size-5" />
+                    </Button>
+                  </SignUpButton>
+                </Unauthenticated>
+              </div>
+              <Unauthenticated>
+                <p className="text-sm text-muted-foreground">
+                  Then generate your week in one click.
+                </p>
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-2 justify-center text-sm text-muted-foreground">
+                  <span>Free while in beta</span>
+                  <span>No credit card required</span>
+                  <span>Takes seconds to get started</span>
+                </div>
               </Unauthenticated>
             </div>
           </div>

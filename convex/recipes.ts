@@ -328,6 +328,63 @@ export const getSystemRecipes = query({
 });
 
 /**
+ * Public marketing: a small set of system recipes for the homepage “example week”.
+ * Prefers recipes with hero images; deterministic order (title sort within each group).
+ */
+export const getHomepageShowcaseRecipes = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const cap = Math.min(Math.max(1, args.limit ?? 7), 14);
+
+    const recipes = await ctx.db
+      .query("recipes")
+      .withIndex("by_source", (q) => q.eq("source", "system"))
+      .collect();
+
+    type Row = {
+      _id: Id<"recipes">;
+      title: string;
+      publicSlug: string | null;
+      image: string | null;
+      prepTime: number;
+      cookTime?: number | null;
+      totalTimeMinutes?: number;
+      category: Doc<"recipes">["category"];
+      primaryProtein: Doc<"recipes">["primaryProtein"];
+      nutrition: Doc<"recipes">["nutrition"];
+    };
+
+    const rows: Row[] = await Promise.all(
+      recipes.map(async (r) => ({
+        _id: r._id,
+        title: r.title,
+        publicSlug:
+          typeof r.publicSlug === "string" && r.publicSlug.length > 0
+            ? r.publicSlug
+            : null,
+        image: r.image ? await ctx.storage.getUrl(r.image) : null,
+        prepTime: r.prepTime ?? 0,
+        cookTime: r.cookTime ?? undefined,
+        totalTimeMinutes: r.totalTimeMinutes,
+        category: r.category,
+        primaryProtein: r.primaryProtein,
+        nutrition: r.nutrition,
+      })),
+    );
+
+    const sortByTitle = (a: Row, b: Row) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+
+    const withImage = rows.filter((r) => r.image != null).sort(sortByTitle);
+    const withoutImage = rows.filter((r) => r.image == null).sort(sortByTitle);
+
+    return [...withImage, ...withoutImage].slice(0, cap);
+  },
+});
+
+/**
  * Public discover URLs for sitemap.xml only: `publicSlug` + `updatedAt`.
  * Does not call storage (no image URLs) and returns a small payload vs `getSystemRecipes`.
  */
