@@ -79,8 +79,8 @@ export const metadata: Metadata = {
   },
 };
 
-/** Refresh homepage showcase recipes weekly (Convex-backed). */
-export const revalidate = 60 * 60 * 24 * 7;
+/** Refresh homepage showcase recipes weekly (Convex-backed). Must be a literal for Next.js static analysis. */
+export const revalidate = 604800;
 
 export default async function HomePage() {
   let showcaseRecipes: HomepageShowcaseRecipe[] = [];
