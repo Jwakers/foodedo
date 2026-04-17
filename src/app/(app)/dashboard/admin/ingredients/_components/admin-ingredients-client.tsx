@@ -183,24 +183,26 @@ export function AdminIngredientsClient() {
 
   const isSuperUser = user?.isSuperUser === true;
 
-  const filteredIngredients = (ingredients ?? []).filter((ing) => {
-    if (!ingredientSearch.trim()) return true;
-    const q = ingredientSearch.trim().toLowerCase();
-    const name = (ing.name ?? "").toLowerCase();
-    const displayName = (ing.displayName ?? "").toLowerCase();
-    const foodGroup = (ing.foodGroup ?? "").toLowerCase();
-    const foodSubGroup = (ing.foodSubGroup ?? "").toLowerCase();
-    const externalId = (ing.externalId ?? "").toLowerCase();
-    const aliases = (ing.aliases ?? []).join(" ").toLowerCase();
-    return (
-      name.includes(q) ||
-      displayName.includes(q) ||
-      foodGroup.includes(q) ||
-      foodSubGroup.includes(q) ||
-      externalId.includes(q) ||
-      aliases.includes(q)
-    );
-  });
+  const filteredIngredients = useMemo(() => {
+    return (ingredients ?? []).filter((ing) => {
+      if (!ingredientSearch.trim()) return true;
+      const q = ingredientSearch.trim().toLowerCase();
+      const name = (ing.name ?? "").toLowerCase();
+      const displayName = (ing.displayName ?? "").toLowerCase();
+      const foodGroup = (ing.foodGroup ?? "").toLowerCase();
+      const foodSubGroup = (ing.foodSubGroup ?? "").toLowerCase();
+      const externalId = (ing.externalId ?? "").toLowerCase();
+      const aliases = (ing.aliases ?? []).join(" ").toLowerCase();
+      return (
+        name.includes(q) ||
+        displayName.includes(q) ||
+        foodGroup.includes(q) ||
+        foodSubGroup.includes(q) ||
+        externalId.includes(q) ||
+        aliases.includes(q)
+      );
+    });
+  }, [ingredients, ingredientSearch]);
 
   const sortedFilteredIngredients = useMemo(() => {
     const mult = ingredientSortAsc ? 1 : -1;
