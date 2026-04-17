@@ -46,6 +46,9 @@ import { ConvexError } from "convex/values";
 import { useMutation, useQuery } from "convex/react";
 import {
   AlertTriangle,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  ExternalLink,
   Loader2,
   Link2,
   Pencil,
@@ -54,9 +57,10 @@ import {
   ShieldAlert,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type FormState = {
   name: string;
@@ -103,6 +107,30 @@ function getErrorMessage(err: unknown, defaultMessage = "Something went wrong.")
   return defaultMessage;
 }
 
+type IngredientSortKey = "name" | "foodGroup" | "foodSubGroup" | "externalId";
+
+function sortKeyLabel(key: IngredientSortKey): string {
+  switch (key) {
+    case "name":
+      return "Name";
+    case "foodGroup":
+      return "Food group";
+    case "foodSubGroup":
+      return "Food sub-group";
+    case "externalId":
+      return "External ID";
+    default:
+      return "Name";
+  }
+}
+
+function aliasesPreview(aliases: string[] | undefined, maxLen = 48): string {
+  if (!aliases?.length) return "—";
+  const joined = aliases.join(", ");
+  if (joined.length <= maxLen) return joined;
+  return `${joined.slice(0, maxLen - 1)}…`;
+}
+
 export function AdminIngredientsClient() {
   const router = useRouter();
   const user = useQuery(api.users.current);
@@ -137,27 +165,160 @@ export function AdminIngredientsClient() {
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const [ingredientSearch, setIngredientSearch] = useState("");
   const [ingredientsVisible, setIngredientsVisible] = useState(10);
+  const [ingredientSortKey, setIngredientSortKey] =
+    useState<IngredientSortKey>("name");
+  const [ingredientSortAsc, setIngredientSortAsc] = useState(true);
+  const [refsSearch, setRefsSearch] = useState("");
+  const [refsStatusFilter, setRefsStatusFilter] = useState<
+    "all" | "broken" | "unlinked"
+  >("all");
+  const [refsSortMode, setRefsSortMode] = useState<"recipe" | "alphabetical">(
+    "recipe",
+  );
+  const [recipeRefsVisible, setRecipeRefsVisible] = useState(10);
+  const [shoppingRefsVisible, setShoppingRefsVisible] = useState(10);
 
   const INGREDIENTS_PAGE_SIZE = 10;
+  const REFS_PAGE_SIZE = 10;
 
   const isSuperUser = user?.isSuperUser === true;
 
-  const filteredIngredients = (ingredients ?? []).filter((ing) => {
-    if (!ingredientSearch.trim()) return true;
-    const q = ingredientSearch.trim().toLowerCase();
-    const name = (ing.name ?? "").toLowerCase();
-    const displayName = (ing.displayName ?? "").toLowerCase();
-    const foodGroup = (ing.foodGroup ?? "").toLowerCase();
-    const aliases = (ing.aliases ?? []).join(" ").toLowerCase();
-    return (
-      name.includes(q) ||
-      displayName.includes(q) ||
-      foodGroup.includes(q) ||
-      aliases.includes(q)
-    );
-  });
-  const displayedIngredients = filteredIngredients.slice(0, ingredientsVisible);
-  const hasMore = filteredIngredients.length > ingredientsVisible;
+  const filteredIngredients = useMemo(() => {
+    return (ingredients ?? []).filter((ing) => {
+      if (!ingredientSearch.trim()) return true;
+      const q = ingredientSearch.trim().toLowerCase();
+      const name = (ing.name ?? "").toLowerCase();
+      const displayName = (ing.displayName ?? "").toLowerCase();
+      const foodGroup = (ing.foodGroup ?? "").toLowerCase();
+      const foodSubGroup = (ing.foodSubGroup ?? "").toLowerCase();
+      const externalId = (ing.externalId ?? "").toLowerCase();
+      const aliases = (ing.aliases ?? []).join(" ").toLowerCase();
+      return (
+        name.includes(q) ||
+        displayName.includes(q) ||
+        foodGroup.includes(q) ||
+        foodSubGroup.includes(q) ||
+        externalId.includes(q) ||
+        aliases.includes(q)
+      );
+    });
+  }, [ingredients, ingredientSearch]);
+
+  const sortedFilteredIngredients = useMemo(() => {
+    const mult = ingredientSortAsc ? 1 : -1;
+    const list = [...filteredIngredients];
+    list.sort((a, b) => {
+      const getVal = (doc: Doc<"ingredients">) => {
+        switch (ingredientSortKey) {
+          case "name":
+            return doc.name ?? "";
+          case "foodGroup":
+            return doc.foodGroup ?? "";
+          case "foodSubGroup":
+            return doc.foodSubGroup ?? "";
+          case "externalId":
+            return doc.externalId ?? "";
+          default:
+            return doc.name ?? "";
+        }
+      };
+      const av = getVal(a).toLowerCase();
+      const bv = getVal(b).toLowerCase();
+      const emptyLast = (s: string) => (s === "" ? "\uffff" : s);
+      const aKey = emptyLast(av);
+      const bKey = emptyLast(bv);
+      if (aKey < bKey) return -1 * mult;
+      if (aKey > bKey) return 1 * mult;
+      return a.name.localeCompare(b.name) * mult;
+    });
+    return list;
+  }, [filteredIngredients, ingredientSortKey, ingredientSortAsc]);
+
+  const filteredRecipeRefs = useMemo(() => {
+    let list = brokenRefs?.recipeRefs ?? [];
+    if (refsStatusFilter !== "all") {
+      list = list.filter((r) => r.status === refsStatusFilter);
+    }
+    const q = refsSearch.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (r) =>
+          r.lineName.toLowerCase().includes(q) ||
+          r.recipeTitle.toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [brokenRefs, refsSearch, refsStatusFilter]);
+
+  const filteredShoppingRefs = useMemo(() => {
+    let list = brokenRefs?.shoppingRefs ?? [];
+    if (refsStatusFilter !== "all") {
+      list = list.filter((r) => r.status === refsStatusFilter);
+    }
+    const q = refsSearch.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (r) =>
+          r.lineName.toLowerCase().includes(q) ||
+          r.shoppingListId.toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [brokenRefs, refsSearch, refsStatusFilter]);
+
+  const sortedRecipeRefs = useMemo(() => {
+    const list = [...filteredRecipeRefs];
+    if (refsSortMode === "alphabetical") {
+      list.sort((a, b) => {
+        const byLine = a.lineName.localeCompare(b.lineName, undefined, {
+          sensitivity: "base",
+        });
+        if (byLine !== 0) return byLine;
+        const byRecipe = a.recipeTitle.localeCompare(b.recipeTitle, undefined, {
+          sensitivity: "base",
+        });
+        if (byRecipe !== 0) return byRecipe;
+        return a.ingredientIndex - b.ingredientIndex;
+      });
+    }
+    return list;
+  }, [filteredRecipeRefs, refsSortMode]);
+
+  const sortedShoppingRefs = useMemo(() => {
+    const list = [...filteredShoppingRefs];
+    if (refsSortMode === "alphabetical") {
+      list.sort((a, b) => {
+        const byLine = a.lineName.localeCompare(b.lineName, undefined, {
+          sensitivity: "base",
+        });
+        if (byLine !== 0) return byLine;
+        return a.shoppingListId.localeCompare(b.shoppingListId);
+      });
+    }
+    return list;
+  }, [filteredShoppingRefs, refsSortMode]);
+
+  const displayedRecipeRefs = sortedRecipeRefs.slice(0, recipeRefsVisible);
+  const displayedShoppingRefs = sortedShoppingRefs.slice(
+    0,
+    shoppingRefsVisible,
+  );
+  const hasMoreRecipeRefs =
+    sortedRecipeRefs.length > recipeRefsVisible;
+  const hasMoreShoppingRefs =
+    sortedShoppingRefs.length > shoppingRefsVisible;
+
+  useEffect(() => {
+    setRecipeRefsVisible(REFS_PAGE_SIZE);
+    setShoppingRefsVisible(REFS_PAGE_SIZE);
+  }, [refsSearch, refsStatusFilter, refsSortMode]);
+
+  const displayedIngredients = sortedFilteredIngredients.slice(
+    0,
+    ingredientsVisible,
+  );
+  const hasMore =
+    sortedFilteredIngredients.length > ingredientsVisible;
 
   useEffect(() => {
     if (user !== undefined && !user) {
@@ -284,7 +445,7 @@ export function AdminIngredientsClient() {
   }
 
   return (
-    <div className="container max-w-4xl space-y-8 px-4 py-6">
+    <div className="container max-w-7xl space-y-8 px-4 py-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           Manage ingredients
@@ -314,26 +475,77 @@ export function AdminIngredientsClient() {
             </p>
           ) : (
             <>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search by name, display name, food group, or alias…"
-                  value={ingredientSearch}
-                  onChange={(e) => {
-                    setIngredientSearch(e.target.value);
-                    setIngredientsVisible(INGREDIENTS_PAGE_SIZE);
-                  }}
-                  className="pl-9"
-                  aria-label="Search ingredients"
-                />
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search name, display name, groups, external ID, aliases…"
+                    value={ingredientSearch}
+                    onChange={(e) => {
+                      setIngredientSearch(e.target.value);
+                      setIngredientsVisible(INGREDIENTS_PAGE_SIZE);
+                    }}
+                    className="pl-9"
+                    aria-label="Search ingredients"
+                  />
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="ing-sort" className="text-muted-foreground whitespace-nowrap text-xs">
+                      Sort
+                    </Label>
+                    <Select
+                      value={ingredientSortKey}
+                      onValueChange={(v) =>
+                        setIngredientSortKey(v as IngredientSortKey)
+                      }
+                    >
+                      <SelectTrigger id="ing-sort" className="h-9 w-[140px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(
+                          [
+                            "name",
+                            "foodGroup",
+                            "foodSubGroup",
+                            "externalId",
+                          ] as const
+                        ).map((k) => (
+                          <SelectItem key={k} value={k}>
+                            {sortKeyLabel(k)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 shrink-0"
+                    onClick={() => setIngredientSortAsc((a) => !a)}
+                    aria-label={
+                      ingredientSortAsc
+                        ? "Sort ascending; click for descending"
+                        : "Sort descending; click for ascending"
+                    }
+                  >
+                    {ingredientSortAsc ? (
+                      <ArrowDownAZ className="size-4" />
+                    ) : (
+                      <ArrowUpAZ className="size-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <p className="text-muted-foreground text-xs">
                 {ingredientSearch.trim()
-                  ? `Showing ${displayedIngredients.length} of ${filteredIngredients.length} matching`
+                  ? `Showing ${displayedIngredients.length} of ${sortedFilteredIngredients.length} matching`
                   : `Showing ${displayedIngredients.length} of ${ingredients.length}`}
               </p>
-              {filteredIngredients.length === 0 ? (
+              {sortedFilteredIngredients.length === 0 ? (
                 <p className="text-muted-foreground text-sm py-6 text-center">
                   No ingredients match your search. Try a different term or clear the search.
                 </p>
@@ -350,6 +562,15 @@ export function AdminIngredientsClient() {
                         </th>
                         <th className="h-10 px-4 text-left font-medium hidden md:table-cell">
                           Food group
+                        </th>
+                        <th className="h-10 px-4 text-left font-medium hidden md:table-cell">
+                          Food sub-group
+                        </th>
+                        <th className="h-10 px-4 text-left font-medium hidden lg:table-cell">
+                          External ID
+                        </th>
+                        <th className="h-10 px-4 text-left font-medium hidden xl:table-cell max-w-[200px]">
+                          Aliases
                         </th>
                         <th className="h-10 w-24 px-4 text-right font-medium">
                           Actions
@@ -368,6 +589,24 @@ export function AdminIngredientsClient() {
                         </td>
                         <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                           {ing.foodGroup ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
+                          {ing.foodSubGroup ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell font-mono text-xs">
+                          {ing.externalId ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground hidden xl:table-cell max-w-[200px]">
+                          <span className="text-xs">
+                            {(ing.aliases?.length ?? 0) > 0 && (
+                              <span className="text-muted-foreground mr-1.5">
+                                ({ing.aliases?.length})
+                              </span>
+                            )}
+                            <span className="line-clamp-2 wrap-break-word">
+                              {aliasesPreview(ing.aliases)}
+                            </span>
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
@@ -408,7 +647,7 @@ export function AdminIngredientsClient() {
                     setIngredientsVisible((n) => n + INGREDIENTS_PAGE_SIZE)
                   }
                 >
-                  Show more ({Math.min(INGREDIENTS_PAGE_SIZE, filteredIngredients.length - ingredientsVisible)} more)
+                  Show more ({Math.min(INGREDIENTS_PAGE_SIZE, sortedFilteredIngredients.length - ingredientsVisible)} more)
                 </Button>
               )}
               </>
@@ -419,15 +658,83 @@ export function AdminIngredientsClient() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="size-5 text-amber-600 dark:text-amber-500" />
-            Broken or unlinked references
-          </CardTitle>
-          <p className="text-muted-foreground text-sm">
-            Recipe or shopping list lines that have no linked ingredient or
-            point to a deleted ingredient.
-          </p>
+        <CardHeader className="space-y-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-amber-600 dark:text-amber-500" />
+              Broken or unlinked references
+            </CardTitle>
+            <p className="text-muted-foreground text-sm mt-1">
+              Recipe or shopping list lines that have no linked ingredient or
+              point to a deleted ingredient. Search and filter to narrow the list.
+            </p>
+          </div>
+          {brokenRefs !== undefined &&
+            (brokenRefs.recipeRefs.length > 0 ||
+              brokenRefs.shoppingRefs.length > 0) && (
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:flex-wrap">
+                <div className="relative min-w-0 flex-1 lg:min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search line name, recipe title, or list id…"
+                    value={refsSearch}
+                    onChange={(e) => setRefsSearch(e.target.value)}
+                    className="pl-9"
+                    aria-label="Search broken or unlinked references"
+                  />
+                </div>
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Label
+                      htmlFor="refs-status"
+                      className="text-muted-foreground whitespace-nowrap text-xs"
+                    >
+                      Status
+                    </Label>
+                    <Select
+                      value={refsStatusFilter}
+                      onValueChange={(v) =>
+                        setRefsStatusFilter(v as typeof refsStatusFilter)
+                      }
+                    >
+                      <SelectTrigger id="refs-status" className="h-9 w-[140px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="broken">Broken only</SelectItem>
+                        <SelectItem value="unlinked">Unlinked only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Label
+                      htmlFor="refs-sort"
+                      className="text-muted-foreground whitespace-nowrap text-xs"
+                    >
+                      Sort
+                    </Label>
+                    <Select
+                      value={refsSortMode}
+                      onValueChange={(v) =>
+                        setRefsSortMode(v as typeof refsSortMode)
+                      }
+                    >
+                      <SelectTrigger id="refs-sort" className="h-9 w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="recipe">By recipe</SelectItem>
+                        <SelectItem value="alphabetical">
+                          Alphabetical (line name)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
         </CardHeader>
         <CardContent>
           {brokenRefs === undefined ? (
@@ -445,126 +752,213 @@ export function AdminIngredientsClient() {
                 <>
                   {brokenRefs.recipeRefs.length > 0 && (
                     <div>
-                      <h3 className="font-medium text-sm mb-2">
-                        Recipe ingredients ({brokenRefs.recipeRefs.length})
-                      </h3>
-                      <ul className="space-y-1.5 text-sm">
-                        {brokenRefs.recipeRefs.map((ref, i) => (
-                          <li
-                            key={`${ref.recipeId}-${ref.ingredientIndex}-${i}`}
-                            className={cn(
-                              "rounded px-3 py-2 border flex flex-wrap items-center justify-between gap-2",
-                              ref.status === "broken"
-                                ? "border-amber-500/50 bg-amber-500/5"
-                                : "border-border bg-muted/30"
-                            )}
-                          >
-                            <span>
-                              <span className="font-medium">
-                                {ref.lineName}
-                              </span>
-                              <span className="text-muted-foreground ml-1">
-                                ({ref.recipeTitle})
-                              </span>
-                              {ref.status === "broken" && (
-                                <span className="ml-2 text-amber-600 dark:text-amber-500 text-xs">
-                                  (ingredient deleted)
-                                </span>
+                      <h3 className="font-medium text-sm">Recipe ingredients</h3>
+                      <p className="text-muted-foreground text-xs mb-2">
+                        {sortedRecipeRefs.length === 0
+                          ? "No recipe rows in the current filter."
+                          : `Showing ${displayedRecipeRefs.length} of ${sortedRecipeRefs.length} matching${sortedRecipeRefs.length !== brokenRefs.recipeRefs.length ? ` (${brokenRefs.recipeRefs.length} total)` : ""}`}
+                      </p>
+                      {sortedRecipeRefs.length === 0 ? null : (
+                        <ul className="space-y-1.5 text-sm">
+                          {displayedRecipeRefs.map((ref) => (
+                            <li
+                              key={`${ref.recipeId}-${ref.ingredientIndex}`}
+                              className={cn(
+                                "rounded px-3 py-2 border flex flex-wrap items-center justify-between gap-2",
+                                ref.status === "broken"
+                                  ? "border-amber-500/50 bg-amber-500/5"
+                                  : "border-border bg-muted/30",
                               )}
-                              {ref.status === "unlinked" && (
-                                <span className="ml-2 text-muted-foreground text-xs">
-                                  (not linked)
+                            >
+                              <span>
+                                <span className="font-medium">
+                                  {ref.lineName}
                                 </span>
-                              )}
-                            </span>
-                            <div className="flex gap-1 shrink-0">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => openCreateWithPrefill(ref.lineName)}
-                              >
-                                <Plus className="size-3.5 mr-1" />
-                                Add as ingredient
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => {
-                                  setAliasDialog({ alias: ref.lineName });
-                                  setAliasSelectedId(null);
-                                }}
-                              >
-                                <Link2 className="size-3.5 mr-1" />
-                                Add as alias
-                              </Button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
+                                <span className="text-muted-foreground ml-1">
+                                  ({ref.recipeTitle})
+                                </span>
+                                {ref.status === "broken" && (
+                                  <span className="ml-2 text-amber-600 dark:text-amber-500 text-xs">
+                                    (ingredient deleted)
+                                  </span>
+                                )}
+                                {ref.status === "unlinked" && (
+                                  <span className="ml-2 text-muted-foreground text-xs">
+                                    (not linked)
+                                  </span>
+                                )}
+                              </span>
+                              <div className="flex flex-wrap gap-1 shrink-0 justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  asChild
+                                >
+                                  <Link
+                                    href={`${ROUTES.RECIPE}/${ref.recipeId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="size-3.5 mr-1" />
+                                    Open recipe
+                                  </Link>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() =>
+                                    openCreateWithPrefill(ref.lineName)
+                                  }
+                                >
+                                  <Plus className="size-3.5 mr-1" />
+                                  Add as ingredient
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => {
+                                    setAliasDialog({ alias: ref.lineName });
+                                    setAliasSelectedId(null);
+                                  }}
+                                >
+                                  <Link2 className="size-3.5 mr-1" />
+                                  Add as alias
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {hasMoreRecipeRefs && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 w-full"
+                          onClick={() =>
+                            setRecipeRefsVisible(
+                              (n) => n + REFS_PAGE_SIZE,
+                            )
+                          }
+                        >
+                          Show more (
+                          {Math.min(
+                            REFS_PAGE_SIZE,
+                            sortedRecipeRefs.length - recipeRefsVisible,
+                          )}{" "}
+                          more)
+                        </Button>
+                      )}
                     </div>
                   )}
                   {brokenRefs.shoppingRefs.length > 0 && (
                     <div>
-                      <h3 className="font-medium text-sm mb-2">
-                        Shopping list items ({brokenRefs.shoppingRefs.length})
+                      <h3 className="font-medium text-sm">
+                        Shopping list items
                       </h3>
-                      <ul className="space-y-1.5 text-sm">
-                        {brokenRefs.shoppingRefs.map((ref, i) => (
-                          <li
-                            key={`${ref.itemId}-${i}`}
-                            className={cn(
-                              "rounded px-3 py-2 border flex flex-wrap items-center justify-between gap-2",
-                              ref.status === "broken"
-                                ? "border-amber-500/50 bg-amber-500/5"
-                                : "border-border bg-muted/30"
-                            )}
-                          >
-                            <span>
-                              <span className="font-medium">
-                                {ref.lineName}
-                              </span>
-                              <span className="text-muted-foreground ml-1">
-                                (shopping list)
-                              </span>
-                              {ref.status === "broken" && (
-                                <span className="ml-2 text-amber-600 dark:text-amber-500 text-xs">
-                                  (ingredient deleted)
-                                </span>
+                      <p className="text-muted-foreground text-xs mb-2">
+                        {sortedShoppingRefs.length === 0
+                          ? "No shopping rows in the current filter."
+                          : `Showing ${displayedShoppingRefs.length} of ${sortedShoppingRefs.length} matching${sortedShoppingRefs.length !== brokenRefs.shoppingRefs.length ? ` (${brokenRefs.shoppingRefs.length} total)` : ""}`}
+                      </p>
+                      {sortedShoppingRefs.length === 0 ? null : (
+                        <ul className="space-y-1.5 text-sm">
+                          {displayedShoppingRefs.map((ref) => (
+                            <li
+                              key={ref.itemId}
+                              className={cn(
+                                "rounded px-3 py-2 border flex flex-wrap items-center justify-between gap-2",
+                                ref.status === "broken"
+                                  ? "border-amber-500/50 bg-amber-500/5"
+                                  : "border-border bg-muted/30",
                               )}
-                              {ref.status === "unlinked" && (
-                                <span className="ml-2 text-muted-foreground text-xs">
-                                  (not linked)
+                            >
+                              <span>
+                                <span className="font-medium">
+                                  {ref.lineName}
                                 </span>
-                              )}
-                            </span>
-                            <div className="flex gap-1 shrink-0">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => openCreateWithPrefill(ref.lineName)}
-                              >
-                                <Plus className="size-3.5 mr-1" />
-                                Add as ingredient
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => {
-                                  setAliasDialog({ alias: ref.lineName });
-                                  setAliasSelectedId(null);
-                                }}
-                              >
-                                <Link2 className="size-3.5 mr-1" />
-                                Add as alias
-                              </Button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
+                                <span className="text-muted-foreground ml-1">
+                                  (shopping list)
+                                </span>
+                                {ref.status === "broken" && (
+                                  <span className="ml-2 text-amber-600 dark:text-amber-500 text-xs">
+                                    (ingredient deleted)
+                                  </span>
+                                )}
+                                {ref.status === "unlinked" && (
+                                  <span className="ml-2 text-muted-foreground text-xs">
+                                    (not linked)
+                                  </span>
+                                )}
+                              </span>
+                              <div className="flex flex-wrap gap-1 shrink-0 justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  asChild
+                                >
+                                  <Link
+                                    href={ROUTES.shoppingListWithId(
+                                      ref.shoppingListId,
+                                    )}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="size-3.5 mr-1" />
+                                    Open list
+                                  </Link>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() =>
+                                    openCreateWithPrefill(ref.lineName)
+                                  }
+                                >
+                                  <Plus className="size-3.5 mr-1" />
+                                  Add as ingredient
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => {
+                                    setAliasDialog({ alias: ref.lineName });
+                                    setAliasSelectedId(null);
+                                  }}
+                                >
+                                  <Link2 className="size-3.5 mr-1" />
+                                  Add as alias
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {hasMoreShoppingRefs && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 w-full"
+                          onClick={() =>
+                            setShoppingRefsVisible(
+                              (n) => n + REFS_PAGE_SIZE,
+                            )
+                          }
+                        >
+                          Show more (
+                          {Math.min(
+                            REFS_PAGE_SIZE,
+                            sortedShoppingRefs.length -
+                              shoppingRefsVisible,
+                          )}{" "}
+                          more)
+                        </Button>
+                      )}
                     </div>
                   )}
                 </>
