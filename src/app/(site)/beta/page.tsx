@@ -1,7 +1,6 @@
 "use client";
 
 import { APP_NAME, ROUTES } from "@/app/constants";
-import InstallPrompt from "@/components/installation-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -66,10 +65,6 @@ export default function BetaLandingPage() {
           </div>
         </div>
       </section>
-
-      <div className="container">
-        <InstallPrompt />
-      </div>
 
       <section className="bg-muted/30">
         <div className="container mx-auto px-4">

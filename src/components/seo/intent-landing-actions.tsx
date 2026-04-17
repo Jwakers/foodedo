@@ -1,7 +1,6 @@
 "use client";
 
 import { APP_NAME, ROUTES } from "@/app/constants";
-import InstallPrompt from "@/components/installation-prompt";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
@@ -17,20 +16,16 @@ type IntentLandingActionsProps = {
   intentTopic: string;
   secondaryHref: string;
   secondaryLabel: string;
-  /** Show PWA install block (default true). Set false on repeated CTAs lower on the page. */
-  showInstall?: boolean;
 };
 
 /**
  * Primary: sign up (unauthenticated) or dashboard (authenticated).
  * Secondary: usually Discover or FAQ.
- * Install: PWA install prompt for organic landing pages.
  */
 export function IntentLandingActions({
   intentTopic,
   secondaryHref,
   secondaryLabel,
-  showInstall = true,
 }: IntentLandingActionsProps) {
   return (
     <div className="space-y-6">
@@ -92,18 +87,6 @@ export function IntentLandingActions({
           </Link>
         </Button>
       </div>
-      {showInstall ? (
-        <div className="rounded-xl border bg-muted/30 p-4">
-          <p className="text-sm font-medium text-foreground mb-2">
-            Install on your phone
-          </p>
-          <p className="text-sm text-muted-foreground mb-3">
-            Add {APP_NAME} to your home screen for a focused cooking and planning
-            experience.
-          </p>
-          <InstallPrompt />
-        </div>
-      ) : null}
     </div>
   );
 }

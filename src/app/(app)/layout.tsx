@@ -1,4 +1,5 @@
 import { APP_NAME } from "@/app/constants";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import { SITE_DEFAULT_DESCRIPTION } from "@/lib/site-messaging";
 import { Metadata } from "next";
 import { AppFeedbackVisibilityProvider } from "./_components.tsx/app-feedback-visibility";
@@ -31,8 +32,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <CannyIdentify />
       <PostHogIdentify />
       <AppFeedbackVisibilityProvider>
-        <div className="grid grid-rows-[auto_1fr_auto] min-h-dvh">
+        <div className="grid grid-rows-[auto_auto_1fr_auto] min-h-dvh">
           <Header />
+          <InstallAppBanner placement="app" />
           <main className="w-full min-w-0">{children}</main>
           <div className="sticky pointer-events-none bottom-0 z-10 flex flex-col gap-2 items-start">
             <CannyFeedbackButton />

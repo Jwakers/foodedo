@@ -9,6 +9,10 @@ export const ANALYTICS_EVENTS = {
   SIGNUP_STARTED: "signup_started",
   SIGNUP_COMPLETED: "signup_completed",
   SIGNIN_COMPLETED: "signin_completed",
+  /**
+   * Install funnel. Payloads include `surface` where emitted (e.g. `global_banner`;
+   * legacy events may omit it).
+   */
   INSTALL_PROMPT_SHOWN: "install_prompt_shown",
   INSTALL_PROMPT_CLICKED: "install_prompt_clicked",
   INSTALL_PROMPT_OUTCOME: "install_prompt_outcome",
