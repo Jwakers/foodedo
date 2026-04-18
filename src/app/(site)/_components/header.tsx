@@ -59,7 +59,10 @@ export function Header() {
               <SignInButton mode="modal">
                 <Button variant="ghost">Sign In</Button>
               </SignInButton>
-              <SignUpButton mode="modal">
+              <SignUpButton
+                mode="modal"
+                forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+              >
                 <Button>Get Started</Button>
               </SignUpButton>
             </Unauthenticated>
@@ -199,7 +202,10 @@ export function Header() {
                         Sign In
                       </Button>
                     </SignInButton>
-                    <SignUpButton mode="modal">
+                    <SignUpButton
+                      mode="modal"
+                      forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                    >
                       <Button
                         className="w-full"
                         onClick={() => {

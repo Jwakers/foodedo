@@ -69,7 +69,7 @@ function ExampleDayCard({
             unoptimized
             priority={imagePriority}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-            sizes="(max-width: 768px) 72vw, (max-width: 1024px) 28vw, (max-width: 1536px) 22vw, 180px"
+            sizes="(max-width: 768px) 72vw, (max-width: 1024px) 32vw, (max-width: 1280px) 24vw, 280px"
           />
         ) : (
           <div className="flex size-full items-center justify-center bg-linear-to-br from-muted to-muted/60 px-3 text-center text-sm text-muted-foreground">
@@ -172,7 +172,7 @@ function ExampleWeekCtaCard() {
 
 function StaticFallbackWeek() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 2xl:grid-cols-7 2xl:gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5">
       {FALLBACK_DAYS.map((label, i) => (
         <div
           key={String(label)}
@@ -281,8 +281,8 @@ export function ExampleWeekSection({
                     </div>
                   </div>
                 </div>
-                {/* md+: 8 tiles — tighter columns on 2xl so eight fit without crowding earlier breakpoints. */}
-                <div className="hidden md:grid md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-5 2xl:grid-cols-8 2xl:gap-4">
+                {/* md+: never more than 4 columns — wide tiles, two rows on xl+ (7 days + CTA). */}
+                <div className="hidden md:grid md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6 xl:gap-7">
                   {recipes.slice(0, 7).map((recipe, i) => (
                     <div key={recipe._id} className="min-w-0">
                       <ExampleDayCard

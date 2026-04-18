@@ -17,6 +17,7 @@ import {
 } from "@/lib/public-how-to-content";
 import { SITE_MISSION } from "@/lib/site-messaging";
 import { getSiteBaseUrl } from "@/lib/site-url";
+import { OpenInAppHowToCta } from "@/components/marketing/open-in-app-how-to-cta";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -80,9 +81,7 @@ export default function PublicHowToUsePage() {
         <Button asChild size="lg">
           <Link href={ROUTES.SIGN_UP}>Create free account</Link>
         </Button>
-        <Button variant="outline" size="lg" asChild>
-          <Link href={ROUTES.SUPPORT_HOW_TO}>Open full guide in app</Link>
-        </Button>
+        <OpenInAppHowToCta />
       </div>
       <p className="text-sm text-muted-foreground mt-4">
         The in-app guide includes the same topics with more detail. Sign in

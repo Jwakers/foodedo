@@ -2,7 +2,17 @@
 
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, ChefHat, Clipboard, Home, Plus } from "lucide-react";
+import { cn, startOfLocalDayMs } from "@/lib/utils";
+import { api } from "convex/_generated/api";
+import { useQuery } from "convex/react";
+import {
+  CalendarCheck,
+  ChefHat,
+  Clipboard,
+  Home,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { AddRecipeDrawer } from "./add-recipe-drawer";
@@ -10,6 +20,11 @@ import { AddRecipeDrawer } from "./add-recipe-drawer";
 export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
+  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
+    localDayStartMs: startOfLocalDayMs(Date.now()),
+  });
+  const showPlanWeekFab =
+    currentPlan !== undefined && currentPlan === null;
 
   useLayoutEffect(() => {
     document.body.style.setProperty(
@@ -51,15 +66,30 @@ export function Navbar() {
             </Button>
           </Link>
 
-          {/* Add Recipe - Primary action */}
-          <Button
-            size="icon"
-            className="size-14 rounded-full shadow-lg mx-auto"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Add Recipe"
-          >
-            <Plus className="size-6" />
-          </Button>
+          {/* Primary: plan week when none yet; otherwise add recipe */}
+          {showPlanWeekFab ? (
+            <Button
+              size="icon"
+              className="size-14 rounded-full shadow-lg mx-auto"
+              asChild
+            >
+              <Link href={ROUTES.MEAL_PLAN} aria-label="Plan your week">
+                <Sparkles className="size-6" />
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              size="icon"
+              className={cn(
+                "size-14 rounded-full shadow-lg mx-auto",
+                currentPlan === undefined && "opacity-90",
+              )}
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Add Recipe"
+            >
+              <Plus className="size-6" />
+            </Button>
+          )}
 
           {/* Chalkboard */}
           <Link href={ROUTES.CHALKBOARD}>

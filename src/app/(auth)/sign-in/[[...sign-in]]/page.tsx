@@ -157,7 +157,7 @@ export default function SignInPage() {
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>• Free forever plan available</li>
               <li>• No credit card required</li>
-              <li>• Join 10,000+ families already planning</li>
+              <li>• Open beta — we read every bit of feedback</li>
             </ul>
           </div>
         </div>

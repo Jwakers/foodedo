@@ -6,6 +6,7 @@ import type { HomepageShowcaseRecipe } from "@/lib/homepage-showcase-recipes";
 import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
+import { ProtectedAppCta } from "@/components/marketing/protected-app-cta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
@@ -69,15 +70,14 @@ export default function HomeContent({
               </h1>
 
               <p className="text-lg sm:text-xl text-foreground/90 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                Build a balanced weekly meal plan in one click, then turn it
-                into a shopping list you can shop from and share with your
-                household.
+                Build a balanced week in one click from our curated catalog (and
+                anything you save), then turn it into a shopping list you can
+                shop from and share with your household.
               </p>
 
               <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Start with curated meals, and add your own recipes whenever you
-                like. Free while we&apos;re in beta. Your feedback shapes what we
-                build.{" "}
+                Add your own recipes whenever you like. Free while we&apos;re in
+                beta. Your feedback shapes what we build.{" "}
                 <Link
                   href={ROUTES.BETA}
                   className="text-primary hover:text-primary/80 underline underline-offset-2"
@@ -108,7 +108,10 @@ export default function HomeContent({
                   </Button>
                 </Authenticated>
                 <Unauthenticated>
-                  <SignUpButton mode="modal">
+                  <SignUpButton
+                    mode="modal"
+                    forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                  >
                     <Button
                       size="lg"
                       className={CTA_BUTTON_CLASSES}
@@ -232,12 +235,18 @@ export default function HomeContent({
                   library over time, then generate a shopping list from the plan
                   and check items off as you go.
                 </p>
-                <Button asChild variant="outline" size="sm">
-                  <Link href={ROUTES.MEAL_PLAN}>Meal planning</Link>
-                </Button>
-                <Button asChild variant="ghost" size="sm" className="ml-2">
-                  <Link href={ROUTES.SHOPPING_LIST}>Shopping list</Link>
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <ProtectedAppCta href={ROUTES.MEAL_PLAN} variant="outline" size="sm">
+                    Meal planning
+                  </ProtectedAppCta>
+                  <ProtectedAppCta
+                    href={ROUTES.SHOPPING_LIST}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Shopping list
+                  </ProtectedAppCta>
+                </div>
               </div>
             </div>
             <div className="relative p-6 pt-14 rounded-lg border border-border bg-card overflow-visible">
@@ -257,9 +266,9 @@ export default function HomeContent({
                   milk, olive oil, tin foil. So the basics don&apos;t get
                   missed.
                 </p>
-                <Button asChild variant="outline" size="sm">
-                  <Link href={ROUTES.CHALKBOARD}>Chalkboard</Link>
-                </Button>
+                <ProtectedAppCta href={ROUTES.CHALKBOARD} variant="outline" size="sm">
+                  Chalkboard
+                </ProtectedAppCta>
               </div>
             </div>
           </div>
@@ -275,9 +284,9 @@ export default function HomeContent({
                 the point every time: no life stories, no endless scroll. Then
                 save it and tweak it to make it yours.
               </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href={ROUTES.IMPORT_RECIPE}>Import a recipe</Link>
-              </Button>
+              <ProtectedAppCta href={ROUTES.IMPORT_RECIPE} variant="outline" size="sm">
+                Import a recipe
+              </ProtectedAppCta>
             </div>
             <div className="relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
               <Image
@@ -307,9 +316,9 @@ export default function HomeContent({
                 Snap a photo from a recipe book or type from scratch. One place
                 for everything you love to cook.
               </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href={ROUTES.IMPORT_RECIPE}>Add a recipe</Link>
-              </Button>
+              <ProtectedAppCta href={ROUTES.IMPORT_RECIPE} variant="outline" size="sm">
+                Add a recipe
+              </ProtectedAppCta>
             </div>
           </div>
 
@@ -355,9 +364,9 @@ export default function HomeContent({
                 Share recipes and meal ideas with your household. Plan and cook
                 together so everyone knows what&apos;s for dinner.
               </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href={ROUTES.HOUSEHOLDS}>Households</Link>
-              </Button>
+              <ProtectedAppCta href={ROUTES.HOUSEHOLDS} variant="outline" size="sm">
+                Households
+              </ProtectedAppCta>
             </div>
           </div>
         </div>
@@ -401,7 +410,10 @@ export default function HomeContent({
                   </Button>
                 </Authenticated>
                 <Unauthenticated>
-                  <SignUpButton mode="modal">
+                  <SignUpButton
+                    mode="modal"
+                    forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                  >
                     <Button
                       size="lg"
                       className="text-lg px-8"

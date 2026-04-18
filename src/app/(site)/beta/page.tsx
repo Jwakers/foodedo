@@ -41,7 +41,10 @@ export default function BetaLandingPage() {
                 </Button>
               </Authenticated>
               <Unauthenticated>
-                <SignUpButton mode="modal">
+                <SignUpButton
+                  mode="modal"
+                  forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                >
                   <Button size="lg" className="text-lg px-8">
                     Join the Beta
                     <ArrowRight className="ml-2 size-5" />
@@ -159,7 +162,10 @@ export default function BetaLandingPage() {
                 </Button>
               </Authenticated>
               <Unauthenticated>
-                <SignUpButton mode="modal">
+                <SignUpButton
+                  mode="modal"
+                  forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                >
                   <Button size="lg" className="text-lg px-8">
                     Sign Up
                     <ArrowRight className="ml-2 size-5" />

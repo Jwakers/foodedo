@@ -309,7 +309,7 @@ export default function RootLayout({
         <ClerkProvider
           // Fallback to dashboard if no redirect_url param or per-component URL is set.
           signInFallbackRedirectUrl={ROUTES.DASHBOARD}
-          signUpFallbackRedirectUrl={ROUTES.DASHBOARD}
+          signUpFallbackRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
         >
           <ConvexClientProvider>
             <ThemeProvider

@@ -1,11 +1,11 @@
 "use client";
 
 import { ROUTES } from "@/app/constants";
+import { ProtectedAppCta } from "@/components/marketing/protected-app-cta";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
-import Link from "next/link";
 
 export function PublicContactActions() {
   return (
@@ -22,7 +22,10 @@ export function PublicContactActions() {
           Sign in
         </Button>
       </SignInButton>
-      <SignUpButton mode="modal">
+      <SignUpButton
+        mode="modal"
+        forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
+      >
         <Button
           variant="outline"
           className="w-full sm:w-auto"
@@ -38,11 +41,13 @@ export function PublicContactActions() {
           Create account
         </Button>
       </SignUpButton>
-      <Button variant="ghost" asChild className="w-full sm:w-auto">
-        <Link href={ROUTES.CONTACT}>
-          Open in-app contact (requires sign-in)
-        </Link>
-      </Button>
+      <ProtectedAppCta
+        href={ROUTES.CONTACT}
+        variant="ghost"
+        className="w-full sm:w-auto"
+      >
+        Open in-app contact (requires sign-in)
+      </ProtectedAppCta>
     </div>
   );
 }

@@ -217,12 +217,12 @@ export function TodaysMealSpotlight() {
               </span>
             </div>
             <h2 className="mb-3 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-              Your week starts with a plan
+              Your week starts with one tap
             </h2>
             <p className="mb-8 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Drop in recipes, see what&apos;s cooking day by day, and spin up a
-              shopping list in one go. When you&apos;re ready, we&apos;ll put your
-              next meal right here.
+              Generate meals from our curated catalog plus anything you&apos;ve
+              saved—then open recipes here day by day and turn the plan into a
+              shopping list. No recipe library required to start.
             </p>
             <Link
               href={ROUTES.MEAL_PLAN}
@@ -233,7 +233,7 @@ export function TodaysMealSpotlight() {
               )}
             >
               <CalendarDays className="size-4 shrink-0" aria-hidden />
-              Create a meal plan
+              Generate your week
               <ArrowRight
                 className="size-4 transition-transform duration-300 group-hover/cta:translate-x-1"
                 aria-hidden
