@@ -24,6 +24,14 @@ export const ANALYTICS_EVENTS = {
   HOUSEHOLD_CREATED: "household_created",
   HOUSEHOLD_INVITATION_ACCEPTED: "household_invitation_accepted",
   MEAL_PLAN_GENERATED: "meal_plan_generated",
+  /** Fired once per session when the dashboard loads and there is no current meal plan. */
+  ONBOARDING_DASHBOARD_NO_PLAN_VIEWED: "onboarding_dashboard_no_plan_viewed",
+  /** Fired once per session when the meal plan page shows the empty (no plans) state. */
+  ONBOARDING_MEAL_PLAN_EMPTY_VIEWED: "onboarding_meal_plan_empty_viewed",
+  /** User tapped generate before the mutation runs (empty state or top bar). */
+  ONBOARDING_GENERATE_WEEK_CLICKED: "onboarding_generate_week_clicked",
+  /** Generate week failed (e.g. empty recipe pool). */
+  MEAL_PLAN_GENERATE_FAILED: "meal_plan_generate_failed",
   MEAL_PLAN_BLANK_CREATED: "meal_plan_blank_created",
   MEAL_PLAN_REGENERATED: "meal_plan_regenerated",
   MEAL_PLAN_FINALISED: "meal_plan_finalised",

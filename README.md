@@ -36,7 +36,11 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
-- [ ] Improve the ingredient manager for superusers: uncategorised ingredients should be searchable, and subcategories should appear alongside categorised ingredients for at-a-glance visibility.
+- [ ] Focus on the new user onboarding journey
+- [ ] Remove rabbit meals from system recipes + anything else that might be considered too niche
+- [ ] Plan in a premium feature that takes existing ingredients and helps you use them up in your next meal plan (do consider that premium features are free in beta)
+- [ ] Create the premium tier recipe generator (free in beta).
+- [x] Improve the ingredient manager for superusers: uncategorised ingredients should be searchable, and subcategories should appear alongside categorised ingredients for at-a-glance visibility.
 - Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME } from "@/app/constants";
+import { APP_NAME, ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -146,6 +146,7 @@ export default function SignUpCatchAllPage() {
             <CardContent>
               <div className="flex justify-center">
                 <SignUp
+                  forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
                   appearance={{
                     elements: {
                       formButtonPrimary:

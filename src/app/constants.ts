@@ -15,6 +15,11 @@ export const ROUTES = {
   SIGN_IN: "/sign-in",
   SIGN_UP: "/sign-up",
   DASHBOARD: "/dashboard",
+  /**
+   * After sign-up: land on dashboard with a flag so we can send users without a
+   * current-week meal plan straight to meal planning (see PostAuthMealPlanRedirect).
+   */
+  DASHBOARD_AFTER_SIGNUP: "/dashboard?planning=1",
   MY_RECIPES: "/dashboard/my-recipes",
   /** My Recipes page with Discover tab selected (use for in-app Discover links) */
   MY_RECIPES_DISCOVER_TAB: "/dashboard/my-recipes?tab=discover",

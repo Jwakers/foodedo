@@ -10,8 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, startOfDayMs, startOfLocalDayMs } from "@/lib/utils";
+import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -35,172 +36,38 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { MealPlanOverviewSection } from "./meal-plan-overview-section";
 import { TodaysMealSpotlight } from "./todays-meal-spotlight";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
 const baseCannyBoardUrl = process.env.NEXT_PUBLIC_CANNY_BOARD_URL;
 
-function formatDateShort(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
-}
-
-function MealPlanOverviewSection() {
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDayStartMs: startOfLocalDayMs(Date.now()),
-  });
-
-  // Group meals by date - must be called before early returns to follow Rules of Hooks
-  const mealsByDate = useMemo(() => {
-    if (!currentPlan?.entries) return [];
-    const grouped = new Map<
-      number,
-      Array<{ title: string; mealLabel?: string }>
-    >();
-    currentPlan.entries.forEach((entry) => {
-      const dateKey = startOfDayMs(entry.date);
-      if (!grouped.has(dateKey)) {
-        grouped.set(dateKey, []);
-      }
-      if (entry.recipe?.title) {
-        grouped.get(dateKey)!.push({
-          title: entry.recipe.title,
-          mealLabel: entry.mealLabel ?? undefined,
-        });
-      }
-    });
-    // Sort by date
-    return Array.from(grouped.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([date, meals]) => ({ date, meals }));
-  }, [currentPlan?.entries]);
-
-  if (currentPlan === undefined) {
-    return (
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-12 rounded-lg" />
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-5 w-48" />
-              <Skeleton className="h-4 w-64" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  /* No plan: TodaysMealSpotlight shows the primary CTA above — avoid duplicate card. */
-  if (!currentPlan) {
-    return null;
-  }
-
-  const displayStart =
-    currentPlan.startDate ??
-    (currentPlan.entries?.length
-      ? Math.min(...currentPlan.entries.map((e) => e.date))
-      : startOfDayMs(Date.now()));
-  const displayEnd =
-    currentPlan.endDate ??
-    (currentPlan.entries?.length
-      ? Math.max(...currentPlan.entries.map((e) => e.date))
-      : startOfDayMs(Date.now()));
-  const mealCount = currentPlan.entries?.length ?? 0;
-  const isDraft = currentPlan.isFinalised !== true;
-  const planHref = ROUTES.mealPlanWithId(currentPlan._id);
-
-  return (
-    <Card
-      className={cn(
-        "mb-6 overflow-hidden min-w-0",
-        isDraft
-          ? "border-amber-500/35 bg-amber-500/5"
-          : "border-primary/20 bg-primary/5",
-      )}
-    >
-      <CardContent className="p-4 sm:p-6 min-w-0 overflow-hidden">
-        <div className="flex flex-col gap-4 min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
-            <div className="flex items-start gap-3 min-w-0 flex-1 overflow-hidden">
-              <div
-                className={cn(
-                  "p-2 rounded-lg shrink-0",
-                  isDraft ? "bg-amber-500/15" : "bg-primary/15",
-                )}
-              >
-                <CalendarCheck
-                  className={cn(
-                    "size-6",
-                    isDraft ? "text-amber-700 dark:text-amber-400" : "text-primary",
-                  )}
-                />
-              </div>
-              <div className="min-w-0 overflow-hidden">
-                <h2 className="text-lg font-semibold text-foreground mb-0.5 truncate">
-                  {isDraft ? "Draft meal plan" : "This week’s meal plan"}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {formatDateShort(displayStart)} –{" "}
-                  {formatDateShort(displayEnd)}
-                  {" · "}
-                  {mealCount} meal{mealCount !== 1 ? "s" : ""} planned
-                  {isDraft ? " · save to open recipes" : ""}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-              <Button asChild variant="default" size="sm" className="shrink-0">
-                <Link href={planHref}>
-                  {isDraft ? "Review plan" : "View plan"}
-                </Link>
-              </Button>
-            </div>
-          </div>
-          {mealsByDate.length > 0 && (
-            <div className="min-w-0 overflow-hidden rounded-md border border-border/60 bg-background/50">
-              <div className="p-2 sm:p-3 max-h-48 overflow-y-auto space-y-3">
-                {mealsByDate.map(({ date, meals }) => (
-                  <div key={date} className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2">
-                      {formatDateShort(date)}
-                    </p>
-                    <ul className="list-none space-y-0.5">
-                      {meals.map((meal, i) => (
-                        <li
-                          key={`${date}-${meal.title}-${i}`}
-                          className="py-1.5 px-2 text-sm text-foreground truncate"
-                        >
-                          {meal.mealLabel && (
-                            <span className="text-muted-foreground text-xs mr-2">
-                              {meal.mealLabel}:
-                            </span>
-                          )}
-                          {meal.title}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+const NEW_ACCOUNT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
 function HeroSection() {
-  const { user } = useUser();
-  const firstName = user?.firstName?.trim();
-  const welcomeTitle =
-    firstName && firstName.length > 0
-      ? `Welcome back, ${firstName}`
-      : "Welcome back";
+  const { user, isLoaded } = useUser();
+  const firstName = user?.firstName?.trim() ?? "";
+
+  /** Only trust account age after Clerk has hydrated — avoids "Welcome back" flash for new users. */
+  const accountCreatedMs = useMemo(() => {
+    if (!isLoaded || !user?.createdAt) return null;
+    const t = new Date(user.createdAt).getTime();
+    return Number.isFinite(t) ? t : null;
+  }, [isLoaded, user?.createdAt]);
+
+  const isNewAccount =
+    isLoaded &&
+    accountCreatedMs !== null &&
+    Date.now() - accountCreatedMs >= 0 &&
+    Date.now() - accountCreatedMs < NEW_ACCOUNT_MAX_AGE_MS;
+
+  const welcomeTitle = useMemo(() => {
+    if (!isLoaded) return "";
+    if (firstName.length > 0) {
+      return isNewAccount ? `Welcome, ${firstName}` : `Welcome back, ${firstName}`;
+    }
+    return isNewAccount ? "Welcome" : "Welcome back";
+  }, [firstName, isLoaded, isNewAccount]);
 
   /** Client-only: avoids hydration mismatch (server default locale/time ≠ browser). */
   const [heroDate, setHeroDate] = useState<{
@@ -256,7 +123,14 @@ function HeroSection() {
     <header className="mb-8 min-w-0">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          {welcomeTitle}
+          {!isLoaded ? (
+            <span
+              className="inline-block h-9 min-h-9 w-48 max-w-[min(18rem,75vw)] shrink-0 rounded-md bg-muted/70 align-middle animate-pulse sm:h-10 sm:min-h-10 sm:w-56"
+              aria-hidden
+            />
+          ) : (
+            welcomeTitle
+          )}
         </h1>
         {heroDate ? (
           <time
@@ -370,11 +244,24 @@ function RecentActivitySection({ data }: { data: RecentActivity | undefined }) {
       </CardHeader>
       <CardContent>
         {!hasActivity ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8 px-1">
             <ChefHat className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground mb-4">
-              No recent activity - start by creating a recipe with the
-              &quot;+&quot; button below
+            <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
+              No recipes yet. You can still{" "}
+              <Link
+                href={ROUTES.MEAL_PLAN}
+                className="text-primary font-medium underline-offset-2 hover:underline"
+              >
+                generate a week
+              </Link>{" "}
+              from our curated catalog; then add your own from{" "}
+              <Link
+                href={ROUTES.MY_RECIPES_DISCOVER_TAB}
+                className="text-primary font-medium underline-offset-2 hover:underline"
+              >
+                Discover
+              </Link>{" "}
+              or the + button.
             </p>
           </div>
         ) : (
@@ -405,6 +292,7 @@ function FeatureCard({
   href,
   className = "",
   children,
+  startHere,
 }: {
   title: string;
   description: string;
@@ -412,22 +300,36 @@ function FeatureCard({
   href: string;
   className?: string;
   children?: React.ReactNode;
+  /** Highlight this card when the user has no current meal plan. */
+  startHere?: boolean;
 }) {
   return (
     <Link href={href}>
       <Card
         className={cn(
           "group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer",
+          startHere &&
+            "border-primary/35 bg-primary/6 ring-1 ring-primary/15 md:col-span-2",
           className,
         )}
       >
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors shrink-0">
               <Icon className="size-5 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-lg">{title}</CardTitle>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-2 gap-y-1">
+                <CardTitle className="text-lg">{title}</CardTitle>
+                {startHere ? (
+                  <Badge
+                    variant="secondary"
+                    className="bg-primary/15 text-primary border-primary/25 text-xs"
+                  >
+                    Start here
+                  </Badge>
+                ) : null}
+              </div>
               <CardDescription className="text-sm">
                 {description}
               </CardDescription>
@@ -534,17 +436,25 @@ function FeedbackSection() {
   );
 }
 
-function BentoGrid() {
+function BentoGrid({ emphasizeMealPlan }: { emphasizeMealPlan: boolean }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
       {/* Meal planning */}
       <FeatureCard
         title="Meal planning"
-        description="Plan your week with recipes, then generate a shopping list"
+        description="Plan your week from our catalog and your recipes, then build a shopping list"
         icon={CalendarCheck}
         href={ROUTES.MEAL_PLAN}
-        className="md:col-span-1 h-full"
-      />
+        className="h-full"
+        startHere={emphasizeMealPlan}
+      >
+        {emphasizeMealPlan ? (
+          <p className="text-sm font-medium text-primary pt-1">
+            Generate a full week in one tap — no recipe library required to
+            start.
+          </p>
+        ) : null}
+      </FeatureCard>
 
       {/* Shopping List */}
       <FeatureCard
@@ -596,6 +506,11 @@ function BentoGrid() {
 
 export default function DashboardClient() {
   const recentActivity = useQuery(api.recipes.getRecentActivity);
+  const currentPlanForLayout = useQuery(api.mealPlans.getCurrentMealPlan, {
+    localDayStartMs: startOfLocalDayMs(Date.now()),
+  });
+  const emphasizeNoPlan =
+    currentPlanForLayout !== undefined && currentPlanForLayout === null;
 
   return (
     <div className="w-full min-w-0 overflow-x-hidden container mx-auto px-4 py-6 max-w-7xl box-border">
@@ -611,11 +526,28 @@ export default function DashboardClient() {
 
         {/* Feature Grid */}
         <div className="lg:col-span-2 order-1 lg:order-2">
-          <BentoGrid />
+          <BentoGrid emphasizeMealPlan={emphasizeNoPlan} />
         </div>
       </div>
-      <HouseholdsSection />
-      <FeedbackSection />
+      {emphasizeNoPlan ? (
+        <details className="mb-6 rounded-xl border border-border bg-muted/15 open:bg-muted/25 transition-colors">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-foreground list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
+            <span>More — households & feedback</span>
+            <span className="text-xs font-normal text-muted-foreground shrink-0">
+              Optional
+            </span>
+          </summary>
+          <div className="border-t border-border/60 px-2 pb-2 pt-4 space-y-6">
+            <HouseholdsSection />
+            <FeedbackSection />
+          </div>
+        </details>
+      ) : (
+        <>
+          <HouseholdsSection />
+          <FeedbackSection />
+        </>
+      )}
     </div>
   );
 }

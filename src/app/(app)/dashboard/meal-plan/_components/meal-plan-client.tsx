@@ -68,6 +68,24 @@ import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
 const MEAL_PLAN_LAST_VIEWED_STORAGE_KEY = "foodedo_meal_plan_last_viewed_id";
 
+/** Short codes for PostHog — never send raw exception text from user mutations. */
+function mealPlanGenerateFailureReason(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/no recipes available/i.test(msg)) return "empty_recipe_pool";
+  if (/timeout|timed out|network|fetch failed|failed to fetch/i.test(msg)) {
+    return "network";
+  }
+  if (/convex|mutation|unauthorized|forbidden|not found/i.test(msg)) {
+    return "backend_error";
+  }
+  if (/invalid|validation|must be|required/i.test(msg)) {
+    return "validation_error";
+  }
+  return "unknown_error";
+}
+const MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY =
+  "foodedo_onboarding_meal_plan_empty_viewed";
+
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
@@ -84,6 +102,8 @@ function formatPlanRangeShort(start: number | undefined, end: number): string {
 }
 
 export default function MealPlanClient() {
+  const emptyViewedTrackedRef = useRef(false);
+
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -132,6 +152,28 @@ export default function MealPlanClient() {
       sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
     }
   }, [planSummaries, planParam, resolvedPlanId, pathname, router]);
+
+  useEffect(() => {
+    if (planSummaries === undefined || planSummaries.length > 0) return;
+    if (emptyViewedTrackedRef.current) return;
+    try {
+      if (
+        typeof window !== "undefined" &&
+        sessionStorage.getItem(MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY)
+      ) {
+        emptyViewedTrackedRef.current = true;
+        return;
+      }
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY, "1");
+      }
+      emptyViewedTrackedRef.current = true;
+      trackEvent(ANALYTICS_EVENTS.ONBOARDING_MEAL_PLAN_EMPTY_VIEWED, {});
+    } catch {
+      emptyViewedTrackedRef.current = true;
+      trackEvent(ANALYTICS_EVENTS.ONBOARDING_MEAL_PLAN_EMPTY_VIEWED, {});
+    }
+  }, [planSummaries]);
 
   const currentPlan = useQuery(
     api.mealPlans.getMealPlan,
@@ -223,6 +265,9 @@ export default function MealPlanClient() {
       toast.info("Loading households…");
       return;
     }
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_GENERATE_WEEK_CLICKED, {
+      surface: "meal_plan",
+    });
     setIsGenerating(true);
     try {
       const payload =
@@ -243,7 +288,21 @@ export default function MealPlanClient() {
       router.push(ROUTES.mealPlanWithId(planId));
       toast.success("Your week is ready!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to generate plan");
+      const msg = e instanceof Error ? e.message : "Failed to generate plan";
+      trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATE_FAILED, {
+        error_reason: mealPlanGenerateFailureReason(e),
+      });
+      const emptyPool = /no recipes available/i.test(msg);
+      toast.error(msg, {
+        ...(emptyPool
+          ? {
+              action: {
+                label: "Browse Discover",
+                onClick: () => router.push(ROUTES.MY_RECIPES_DISCOVER_TAB),
+              },
+            }
+          : {}),
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -560,7 +619,8 @@ export default function MealPlanClient() {
                 Your Weekly Plan
               </h1>
               <p className="text-muted-foreground text-base sm:text-lg">
-                One click to organize your entire week of healthy eating.
+                One click fills the week from our catalog and recipes
+                you&apos;ve saved—then tweak or shop from there.
               </p>
             </div>
             <div className="flex flex-col gap-3 w-full sm:w-auto sm:items-end">
@@ -618,35 +678,13 @@ export default function MealPlanClient() {
                 Ready to eat better?
               </h2>
               <p className="text-muted-foreground mb-3 max-w-sm mx-auto">
-                Our intelligent system creates a balanced, delicious plan for
-                you in seconds.
+                We pick from the curated catalog plus your library so you get a
+                full week in seconds.
               </p>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                 Prefer to pick every meal yourself? Start a manual plan with
                 empty days, then fill them in.
               </p>
-              {households && households.length > 1 ? (
-                <div className="w-full max-w-sm mx-auto mb-4 space-y-1.5 text-left">
-                  <Label htmlFor="card-gen-household">Household</Label>
-                  <Select
-                    value={generateWeekHouseholdId || households[0]?._id || ""}
-                    onValueChange={(v) =>
-                      setGenerateWeekHouseholdId(v as Id<"households">)
-                    }
-                  >
-                    <SelectTrigger id="card-gen-household">
-                      <SelectValue placeholder="Select household" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {households.map((h) => (
-                        <SelectItem key={h._id} value={h._id}>
-                          {h.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null}
               <div className="flex w-full max-w-sm mx-auto flex-col gap-2 sm:flex-row sm:justify-center">
                 <Button
                   size="lg"
@@ -698,7 +736,7 @@ export default function MealPlanClient() {
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
       <div
         className={cn(
-          "relative w-full max-w-full min-w-0 px-4 py-6 sm:py-8 sm:container sm:mx-auto box-border",
+          "relative w-full max-w-full min-w-0 px-4 pt-6 sm:pt-8 sm:container sm:mx-auto box-border",
           !isFinalised && currentPlan.isOwner ? "pb-36" : "pb-20",
         )}
       >
@@ -995,8 +1033,8 @@ export default function MealPlanClient() {
                   <span className="text-primary">{sharedHousehold.name}</span>
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Everyone in this household can see this plan and shop from
-                  it, including new weeks you generate.{" "}
+                  Everyone in this household can see this plan and shop from it,
+                  including new weeks you generate.{" "}
                 </p>
               </div>
             </CardContent>
