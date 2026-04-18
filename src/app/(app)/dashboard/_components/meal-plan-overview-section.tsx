@@ -79,7 +79,11 @@ export function MealPlanOverviewSection() {
   const mealsByDate = useMemo(() => {
     if (!currentPlan?.entries) return [];
     const grouped = new Map<number, MealTile[]>();
-    currentPlan.entries.forEach((entry) => {
+    const entriesInPlanOrder = [...currentPlan.entries].sort(
+      (a, b) =>
+        a.date - b.date || (a.order ?? 999) - (b.order ?? 999),
+    );
+    entriesInPlanOrder.forEach((entry) => {
       const dateKey = startOfDayMs(entry.date);
       if (!grouped.has(dateKey)) {
         grouped.set(dateKey, []);

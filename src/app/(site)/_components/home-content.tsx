@@ -236,11 +236,17 @@ export default function HomeContent({
                   and check items off as you go.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <ProtectedAppCta href={ROUTES.MEAL_PLAN} variant="outline" size="sm">
+                  <ProtectedAppCta
+                    href={ROUTES.MEAL_PLAN}
+                    postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                    variant="outline"
+                    size="sm"
+                  >
                     Meal planning
                   </ProtectedAppCta>
                   <ProtectedAppCta
                     href={ROUTES.SHOPPING_LIST}
+                    postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
                     variant="ghost"
                     size="sm"
                   >
@@ -266,7 +272,12 @@ export default function HomeContent({
                   milk, olive oil, tin foil. So the basics don&apos;t get
                   missed.
                 </p>
-                <ProtectedAppCta href={ROUTES.CHALKBOARD} variant="outline" size="sm">
+                <ProtectedAppCta
+                  href={ROUTES.CHALKBOARD}
+                  postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                  variant="outline"
+                  size="sm"
+                >
                   Chalkboard
                 </ProtectedAppCta>
               </div>
@@ -284,7 +295,12 @@ export default function HomeContent({
                 the point every time: no life stories, no endless scroll. Then
                 save it and tweak it to make it yours.
               </p>
-              <ProtectedAppCta href={ROUTES.IMPORT_RECIPE} variant="outline" size="sm">
+              <ProtectedAppCta
+                href={ROUTES.IMPORT_RECIPE}
+                postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                variant="outline"
+                size="sm"
+              >
                 Import a recipe
               </ProtectedAppCta>
             </div>
@@ -316,7 +332,12 @@ export default function HomeContent({
                 Snap a photo from a recipe book or type from scratch. One place
                 for everything you love to cook.
               </p>
-              <ProtectedAppCta href={ROUTES.IMPORT_RECIPE} variant="outline" size="sm">
+              <ProtectedAppCta
+                href={ROUTES.IMPORT_RECIPE}
+                postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                variant="outline"
+                size="sm"
+              >
                 Add a recipe
               </ProtectedAppCta>
             </div>
@@ -364,7 +385,12 @@ export default function HomeContent({
                 Share recipes and meal ideas with your household. Plan and cook
                 together so everyone knows what&apos;s for dinner.
               </p>
-              <ProtectedAppCta href={ROUTES.HOUSEHOLDS} variant="outline" size="sm">
+              <ProtectedAppCta
+                href={ROUTES.HOUSEHOLDS}
+                postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
+                variant="outline"
+                size="sm"
+              >
                 Households
               </ProtectedAppCta>
             </div>

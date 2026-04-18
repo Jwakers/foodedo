@@ -1,6 +1,5 @@
 "use client";
 
-import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SignUpButton } from "@clerk/nextjs";
@@ -11,8 +10,10 @@ import type { ComponentProps } from "react";
 type ButtonProps = ComponentProps<typeof Button>;
 
 type ProtectedAppCtaProps = {
-  /** In-app route (e.g. meal plan). Logged-out users sign up and land on `DASHBOARD_AFTER_SIGNUP`. */
+  /** In-app route for signed-in users (e.g. meal plan). */
   href: string;
+  /** Clerk `forceRedirectUrl` after sign-up from this CTA (e.g. onboarding dashboard). */
+  postSignupTarget: string;
   children: React.ReactNode;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
@@ -25,6 +26,7 @@ type ProtectedAppCtaProps = {
  */
 export function ProtectedAppCta({
   href,
+  postSignupTarget,
   children,
   variant = "outline",
   size = "sm",
@@ -38,10 +40,7 @@ export function ProtectedAppCta({
         </Button>
       </Authenticated>
       <Unauthenticated>
-        <SignUpButton
-          mode="modal"
-          forceRedirectUrl={ROUTES.DASHBOARD_AFTER_SIGNUP}
-        >
+        <SignUpButton mode="modal" forceRedirectUrl={postSignupTarget}>
           <Button variant={variant} size={size} className={cn(className)}>
             {children}
           </Button>

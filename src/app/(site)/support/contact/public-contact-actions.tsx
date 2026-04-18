@@ -43,6 +43,7 @@ export function PublicContactActions() {
       </SignUpButton>
       <ProtectedAppCta
         href={ROUTES.CONTACT}
+        postSignupTarget={ROUTES.DASHBOARD_AFTER_SIGNUP}
         variant="ghost"
         className="w-full sm:w-auto"
       >

@@ -67,6 +67,22 @@ import { MealPlanDayView } from "./meal-plan-day-view";
 import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
 const MEAL_PLAN_LAST_VIEWED_STORAGE_KEY = "foodedo_meal_plan_last_viewed_id";
+
+/** Short codes for PostHog — never send raw exception text from user mutations. */
+function mealPlanGenerateFailureReason(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/no recipes available/i.test(msg)) return "empty_recipe_pool";
+  if (/timeout|timed out|network|fetch failed|failed to fetch/i.test(msg)) {
+    return "network";
+  }
+  if (/convex|mutation|unauthorized|forbidden|not found/i.test(msg)) {
+    return "backend_error";
+  }
+  if (/invalid|validation|must be|required/i.test(msg)) {
+    return "validation_error";
+  }
+  return "unknown_error";
+}
 const MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY =
   "foodedo_onboarding_meal_plan_empty_viewed";
 
@@ -268,7 +284,7 @@ export default function MealPlanClient() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to generate plan";
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATE_FAILED, {
-        error_message: msg,
+        error_reason: mealPlanGenerateFailureReason(e),
       });
       const emptyPool = /no recipes available/i.test(msg);
       toast.error(msg, {
