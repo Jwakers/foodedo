@@ -102,6 +102,8 @@ function formatPlanRangeShort(start: number | undefined, end: number): string {
 }
 
 export default function MealPlanClient() {
+  const emptyViewedTrackedRef = useRef(false);
+
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -153,18 +155,22 @@ export default function MealPlanClient() {
 
   useEffect(() => {
     if (planSummaries === undefined || planSummaries.length > 0) return;
+    if (emptyViewedTrackedRef.current) return;
     try {
       if (
         typeof window !== "undefined" &&
         sessionStorage.getItem(MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY)
       ) {
+        emptyViewedTrackedRef.current = true;
         return;
       }
       if (typeof window !== "undefined") {
         sessionStorage.setItem(MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY, "1");
       }
+      emptyViewedTrackedRef.current = true;
       trackEvent(ANALYTICS_EVENTS.ONBOARDING_MEAL_PLAN_EMPTY_VIEWED, {});
     } catch {
+      emptyViewedTrackedRef.current = true;
       trackEvent(ANALYTICS_EVENTS.ONBOARDING_MEAL_PLAN_EMPTY_VIEWED, {});
     }
   }, [planSummaries]);
