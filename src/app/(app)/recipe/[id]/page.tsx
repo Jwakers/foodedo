@@ -17,6 +17,13 @@ interface RecipePageProps {
   }>;
 }
 
+const getCachedRecipeForMetadata = unstable_cache(
+  async (recipeId: Id<"recipes">) =>
+    fetchQuery(api.recipes.getRecipe, { recipeId }),
+  ["recipe-open-graph-metadata"],
+  { revalidate: 60 * 60 * 12 },
+);
+
 export async function generateMetadata({
   params,
 }: RecipePageProps): Promise<Metadata> {
@@ -27,12 +34,7 @@ export async function generateMetadata({
   }
 
   try {
-    const getCachedRecipeForMetadata = unstable_cache(
-      async () => fetchQuery(api.recipes.getRecipe, { recipeId }),
-      ["recipe-open-graph-metadata", recipeId],
-      { revalidate: 60 * 60 * 12 },
-    );
-    const recipe = await getCachedRecipeForMetadata();
+    const recipe = await getCachedRecipeForMetadata(recipeId);
     if (recipe?.title) {
       const title = `${recipe.title} | ${APP_NAME}`;
       const description =

@@ -51,6 +51,10 @@ export function ShareToHouseholdDialog({
     open ? { recipeId } : "skip",
   );
 
+  const needsShareState = open && (households?.length ?? 0) > 0;
+  const shareStateLoaded =
+    !needsShareState || householdsByRecipeId !== undefined;
+
   const handleCheckboxChange = async (
     householdId: Id<"households">,
     isChecked: boolean,
@@ -105,6 +109,7 @@ export function ShareToHouseholdDialog({
   }, [open]);
 
   useEffect(() => {
+    if (householdsByRecipeId === undefined) return;
     const householdsIds =
       householdsByRecipeId?.map((household) => household.householdId) ?? [];
     setSelectedHouseholds(new Set(householdsIds));
@@ -130,6 +135,10 @@ export function ShareToHouseholdDialog({
             <div className="text-center text-muted-foreground py-8">
               Loading households...
             </div>
+          ) : needsShareState && !shareStateLoaded ? (
+            <div className="text-center text-muted-foreground py-8">
+              Loading sharing status...
+            </div>
           ) : households.length === 0 ? (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -149,7 +158,7 @@ export function ShareToHouseholdDialog({
                     htmlFor={household._id}
                     className={cn(
                       "w-full flex items-center space-x-3 p-3 rounded-lg border transition-colors",
-                      isPending
+                      isPending || !shareStateLoaded
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer",
                     )}
@@ -157,7 +166,7 @@ export function ShareToHouseholdDialog({
                     <Checkbox
                       id={household._id}
                       checked={selectedHouseholds.has(household._id)}
-                      disabled={isPending}
+                      disabled={isPending || !shareStateLoaded}
                       onCheckedChange={(checked) =>
                         handleCheckboxChange(household._id, checked === true)
                       }
