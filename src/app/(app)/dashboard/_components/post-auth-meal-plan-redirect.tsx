@@ -3,9 +3,7 @@
 import { ROUTES } from "@/app/constants";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
-import { startOfLocalDayMs } from "@/lib/utils";
-import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useCurrentMealPlan } from "@/app/(app)/_components.tsx/current-meal-plan-context";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -32,10 +30,7 @@ export function PostAuthMealPlanRedirect() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const planning = searchParams.get("planning") === "1";
-  const localDayStartMs = startOfLocalDayMs(Date.now());
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDayStartMs,
-  });
+  const { currentPlan } = useCurrentMealPlan();
   const redirectedRef = useRef(false);
 
   useEffect(() => {

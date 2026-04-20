@@ -28,7 +28,6 @@ import {
   MoreVertical,
   Save,
   Trash2,
-  UserRoundCheck,
   Users,
   X,
 } from "lucide-react";
@@ -94,7 +93,13 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
 
     setIsCookModeOpen(true);
   }, [pathname, recipe, recipeId, router, searchParams]);
-  const recipeForEdit = useQuery(api.recipes.getRecipeForEdit, { recipeId });
+
+  const [editLoadRequested, setEditLoadRequested] = useState(false);
+
+  const recipeForEdit = useQuery(
+    api.recipes.getRecipeForEdit,
+    isEditMode || editLoadRequested ? { recipeId } : "skip",
+  );
   const updateRecipeMutation = useMutation(api.recipes.updateRecipe);
   const deleteRecipeMutation = useMutation(api.recipes.deleteRecipe);
 
@@ -119,56 +124,52 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
     if (isEditMode) {
       form.reset();
       setIsEditMode(false);
+      setEditLoadRequested(false);
       return;
     }
+    setEditLoadRequested(true);
+  };
 
-    // Check if recipeForEdit is loaded before entering edit mode
-    if (recipeForEdit === undefined) {
-      toast.info("Loading recipe data...", {
-        description: "Please wait while we prepare the form for editing.",
-      });
-      return;
-    }
-
+  useEffect(() => {
+    if (!editLoadRequested || isEditMode) return;
+    if (recipeForEdit === undefined) return;
     if (!recipeForEdit) {
       toast.error("Unable to load recipe data", {
         description: "Please refresh the page and try again.",
       });
+      setEditLoadRequested(false);
       return;
     }
+    if (!recipe) return;
 
-    // Only enter edit mode after successfully populating form with recipeForEdit data
-    if (recipe && recipeForEdit) {
-      form.reset({
-        // Use recipeForEdit which has all fields with storage IDs (not URLs)
-        title: recipeForEdit.title || "",
-        description: recipeForEdit.description || "",
-        prepTime: recipeForEdit.prepTime ?? 0,
-        cookTime: recipeForEdit.cookTime ?? undefined,
-        serves: recipeForEdit.serves ?? 1, // Default to 1 to match schema validation (min: 1)
-        category: recipeForEdit.category,
-        ingredients: recipeForEdit.ingredients || [],
-        // Convert storage ID to string for form
-        method: (recipeForEdit.method || []).map((step) => ({
-          title: step.title,
-          description: step.description,
-          image: step.image ? String(step.image) : undefined,
-          ingredientRefs: step.ingredientRefs ?? [],
-          ingredientRefsSource:
-            step.ingredientRefsSource === "user" ||
-            step.ingredientRefsSource === "auto"
-              ? step.ingredientRefsSource
-              : step.ingredientRefs?.length
-                ? "user"
-                : "auto",
-        })),
-        primaryProtein: recipeForEdit.primaryProtein,
-        complexityTier: recipeForEdit.complexityTier,
-        cuisine: recipeForEdit.cuisine ?? [],
-      });
-      setIsEditMode(true);
-    }
-  };
+    form.reset({
+      title: recipeForEdit.title || "",
+      description: recipeForEdit.description || "",
+      prepTime: recipeForEdit.prepTime ?? 0,
+      cookTime: recipeForEdit.cookTime ?? undefined,
+      serves: recipeForEdit.serves ?? 1,
+      category: recipeForEdit.category,
+      ingredients: recipeForEdit.ingredients || [],
+      method: (recipeForEdit.method || []).map((step) => ({
+        title: step.title,
+        description: step.description,
+        image: step.image ? String(step.image) : undefined,
+        ingredientRefs: step.ingredientRefs ?? [],
+        ingredientRefsSource:
+          step.ingredientRefsSource === "user" ||
+          step.ingredientRefsSource === "auto"
+            ? step.ingredientRefsSource
+            : step.ingredientRefs?.length
+              ? "user"
+              : "auto",
+      })),
+      primaryProtein: recipeForEdit.primaryProtein,
+      complexityTier: recipeForEdit.complexityTier,
+      cuisine: recipeForEdit.cuisine ?? [],
+    });
+    setIsEditMode(true);
+    setEditLoadRequested(false);
+  }, [editLoadRequested, isEditMode, recipe, recipeForEdit, form]);
 
   const handleSave = async (data: RecipeEditFormData) => {
     if (!recipe) return;
@@ -274,7 +275,9 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
                     onStartCooking={() => setIsCookModeOpen(true)}
                     isRecipeOwner={isRecipeOwner}
                     canSuperEditSystem={canSuperEditSystem}
-                    isRecipeForEditLoaded={recipeForEdit !== undefined}
+                    isEditPayloadLoading={
+                      editLoadRequested && recipeForEdit === undefined
+                    }
                   />
 
                   {isEditMode && (
@@ -326,51 +329,21 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
 }
 
 function RecipeHouseholdAccessButton({
-  recipe,
   onOpenDialog,
 }: {
-  recipe: NonNullable<Recipe>;
   onOpenDialog: () => void;
 }) {
-  const householdsByRecipeId = useQuery(
-    api.households.getHouseholdsByRecipeId,
-    { recipeId: recipe._id },
-  );
-  const sharedCount = householdsByRecipeId?.length ?? 0;
-  const isLoading = householdsByRecipeId === undefined;
-
-  const label = isLoading
-    ? "Household access"
-    : sharedCount === 0
-      ? "Share with households"
-      : sharedCount === 1
-        ? "Shared with 1 household"
-        : `Shared with ${sharedCount} households`;
-
-  const ariaLabel = isLoading
-    ? "Loading household access for this recipe"
-    : sharedCount === 0
-      ? "Share this recipe with one or more households"
-      : "Manage which households can see this recipe";
-
-  const isShared = !isLoading && sharedCount >= 1;
-
   return (
     <Button
       type="button"
       size="lg"
-      variant={isShared ? "secondary" : "outline"}
+      variant="outline"
       onClick={onOpenDialog}
-      className={cn("gap-2", isLoading && "opacity-90")}
-      aria-busy={isLoading}
-      aria-label={ariaLabel}
+      className="gap-2"
+      aria-label="Share this recipe with one or more households"
     >
-      {isShared ? (
-        <UserRoundCheck className="size-4 shrink-0" aria-hidden />
-      ) : (
-        <Users className="size-4 shrink-0" aria-hidden />
-      )}
-      {label}
+      <Users className="size-4 shrink-0" aria-hidden />
+      Share with households
     </Button>
   );
 }
@@ -383,7 +356,7 @@ function RecipeControls({
   onStartCooking,
   isRecipeOwner,
   canSuperEditSystem,
-  isRecipeForEditLoaded,
+  isEditPayloadLoading,
 }: {
   isEditMode: boolean;
   recipe: NonNullable<Recipe>;
@@ -392,7 +365,7 @@ function RecipeControls({
   onStartCooking: () => void;
   isRecipeOwner: boolean;
   canSuperEditSystem: boolean;
-  isRecipeForEditLoaded: boolean;
+  isEditPayloadLoading: boolean;
 }) {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
@@ -434,7 +407,6 @@ function RecipeControls({
           )}
           {isRecipeOwner && (
             <RecipeHouseholdAccessButton
-              recipe={recipe}
               onOpenDialog={() => setIsShareDialogOpen(true)}
             />
           )}
@@ -454,11 +426,11 @@ function RecipeControls({
                 <DropdownMenuItem
                   variant="default"
                   onClick={onToggleEditMode}
-                  disabled={!isRecipeForEditLoaded}
+                  disabled={isEditPayloadLoading}
                 >
                   <Edit className="size-4 mr-2" />
                   Edit Recipe
-                  {!isRecipeForEditLoaded && " (Loading...)"}
+                  {isEditPayloadLoading && " (Loading...)"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
@@ -477,13 +449,13 @@ function RecipeControls({
               size="lg"
               variant="outline"
               onClick={onToggleEditMode}
-              disabled={!isRecipeForEditLoaded}
+              disabled={isEditPayloadLoading}
               className="ml-auto gap-2 border-dashed font-mono text-xs text-muted-foreground"
               aria-label="Edit system recipe (super user)"
             >
               <Code2 className="size-4 shrink-0" aria-hidden />
               Edit system recipe
-              {!isRecipeForEditLoaded && " (loading…)"}
+              {isEditPayloadLoading && " (loading…)"}
             </Button>
           )}
         </>

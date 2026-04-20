@@ -7,6 +7,7 @@ import {
   CannyFeedbackButton,
   CannyIdentify,
 } from "./_components.tsx/canny-identify";
+import { CurrentMealPlanProvider } from "./_components.tsx/current-meal-plan-context";
 import { Header } from "./_components.tsx/header";
 import { Navbar } from "./_components.tsx/navbar";
 import { PostHogIdentify } from "./_components.tsx/posthog-identify";
@@ -32,17 +33,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <CannyIdentify />
       <PostHogIdentify />
       <AppFeedbackVisibilityProvider>
-        <div className="grid grid-rows-[auto_auto_1fr_auto] min-h-dvh">
-          <Header />
-          <InstallAppBanner placement="app" />
-          <main className="w-full min-w-0">{children}</main>
-          <div className="sticky pointer-events-none bottom-0 z-10 flex flex-col gap-2 items-start">
-            <CannyFeedbackButton />
-            <div className="pointer-events-auto w-full">
-              <Navbar />
+        <CurrentMealPlanProvider>
+          <div className="grid grid-rows-[auto_auto_1fr_auto] min-h-dvh">
+            <Header />
+            <InstallAppBanner placement="app" />
+            <main className="w-full min-w-0">{children}</main>
+            <div className="sticky pointer-events-none bottom-0 z-10 flex flex-col gap-2 items-start">
+              <CannyFeedbackButton />
+              <div className="pointer-events-auto w-full">
+                <Navbar />
+              </div>
             </div>
           </div>
-        </div>
+        </CurrentMealPlanProvider>
       </AppFeedbackVisibilityProvider>
     </div>
   );

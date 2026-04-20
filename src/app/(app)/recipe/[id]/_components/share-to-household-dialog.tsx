@@ -35,7 +35,10 @@ export function ShareToHouseholdDialog({
   open,
   onOpenChange,
 }: ShareToHouseholdDialogProps) {
-  const households = useQuery(api.households.getUserHouseholds);
+  const households = useQuery(
+    api.households.getUserHouseholds,
+    open ? {} : "skip",
+  );
   const [selectedHouseholds, setSelectedHouseholds] = useState<
     Set<Id<"households">>
   >(new Set());
@@ -45,9 +48,7 @@ export function ShareToHouseholdDialog({
   const unshareRecipe = useMutation(api.households.unshareRecipeFromHousehold);
   const householdsByRecipeId = useQuery(
     api.households.getHouseholdsByRecipeId,
-    {
-      recipeId,
-    },
+    open ? { recipeId } : "skip",
   );
 
   const handleCheckboxChange = async (
@@ -125,7 +126,7 @@ export function ShareToHouseholdDialog({
         </DialogHeader>
 
         <div className="py-4">
-          {households === undefined ? (
+          {!open ? null : households === undefined ? (
             <div className="text-center text-muted-foreground py-8">
               Loading households...
             </div>
