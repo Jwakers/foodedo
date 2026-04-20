@@ -2,6 +2,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { getCurrentUserOrThrow } from "./users";
 
 /** Normalise ingredient name for lookup: lowercase, trim, collapse spaces */
 export function normaliseIngredientName(name: string): string {
@@ -126,5 +127,56 @@ export const getDistinctFoodSubGroups = query({
       if (v) set.add(v);
     }
     return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  },
+});
+
+/**
+ * Autocomplete for leftover-ingredient picker (authenticated).
+ * Prefers prefix matches on name, then contains / displayName / aliases.
+ */
+export const search = query({
+  args: {
+    q: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await getCurrentUserOrThrow(ctx);
+    const max = Math.min(Math.max(args.limit ?? 20, 1), 50);
+    const qn = normaliseIngredientName(args.q);
+    if (!qn) return [];
+
+    const all = await ctx.db.query("ingredients").collect();
+    type Row = { ing: Doc<"ingredients">; score: number };
+    const rows: Row[] = [];
+
+    for (const ing of all) {
+      const name = normaliseIngredientName(ing.name);
+      const display = ing.displayName
+        ? normaliseIngredientName(ing.displayName)
+        : "";
+      let score = 0;
+      if (name.startsWith(qn)) score = 4;
+      else if (name.includes(qn)) score = 3;
+      else if (display && display.includes(qn)) score = 2;
+      else if (
+        ing.aliases?.some((a) => a && normaliseIngredientName(a).includes(qn))
+      ) {
+        score = 1;
+      }
+      if (score > 0) rows.push({ ing, score });
+    }
+
+    rows.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.ing.name.localeCompare(b.ing.name, undefined, {
+        sensitivity: "base",
+      });
+    });
+
+    return rows.slice(0, max).map(({ ing }) => ({
+      _id: ing._id,
+      name: ing.name,
+      displayName: ing.displayName ?? null,
+    }));
   },
 });

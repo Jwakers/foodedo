@@ -19,4 +19,8 @@ export type RecipeListItem = {
   totalTimeMinutes?: number | null;
   /** Public discover URL segment (system recipes). */
   publicSlug?: string | null;
+  /** When listing uses leftover-ingredient ranking (server search). */
+  leftoverMatchCount?: number;
+  source?: string | null;
+  userId?: Id<"users"> | null;
 };

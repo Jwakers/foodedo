@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -44,7 +45,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type ShoppingList = NonNullable<
@@ -52,6 +53,28 @@ type ShoppingList = NonNullable<
 >;
 
 type ShoppingListItem = ShoppingList["items"][number];
+
+/** Same shape as `getAmountLines` / Convex line display — single source for amount rows. */
+function normalizedAmountEntries(item: ShoppingListItem) {
+  if (item.amountEntries && item.amountEntries.length > 0) {
+    return item.amountEntries;
+  }
+  return [{ amount: item.amount, unit: item.unit }];
+}
+
+function amountLinesFromEntries(
+  entries: ReturnType<typeof normalizedAmountEntries>,
+) {
+  return entries
+    .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
+    .filter(Boolean);
+}
+
+function firstAmountEntryForItem(item: ShoppingListItem) {
+  const entries = normalizedAmountEntries(item);
+  const first = entries[0] ?? { amount: item.amount, unit: item.unit };
+  return { first, rest: entries.slice(1) };
+}
 
 function namesEqual(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -89,6 +112,9 @@ export default function ShoppingList({
   const [pantryIncludedIds, setPantryIncludedIds] = useState<
     Set<Id<"shoppingListItems">>
   >(new Set());
+  /** Draft UI only: leftover “already have” lines excluded from this shop trip (removed on confirm). */
+  const [leftoverExcludedFromTripIds, setLeftoverExcludedFromTripIds] =
+    useState<Set<Id<"shoppingListItems">>>(new Set());
   const [isConfirming, setIsConfirming] = useState(false);
 
   // Mutations
@@ -165,36 +191,35 @@ export default function ShoppingList({
     const foodSubGroup = ing?.foodSubGroup ?? undefined;
     return getAisleForFoodGroupAndSubGroup(foodGroup, foodSubGroup);
   };
-  const getAmountLines = (item: (typeof shoppingList.items)[number]) => {
-    const entries =
-      item.amountEntries && item.amountEntries.length > 0
-        ? item.amountEntries
-        : [
-            {
-              amount: item.amount,
-              unit: item.unit,
-            },
-          ];
-    return entries
-      .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
-      .filter(Boolean);
-  };
-  const { mainShoppingItems, pantryStapleItems } = useMemo(() => {
-    const staple = (item: ShoppingListItem) =>
-      isPantryStaple(getCanonicalKey(item));
-    const main: ShoppingListItem[] = [];
-    const pantry: ShoppingListItem[] = [];
-    for (const item of shoppingList.items) {
-      (staple(item) ? pantry : main).push(item);
-    }
-    const cmp = (a: ShoppingListItem, b: ShoppingListItem) =>
-      getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
-        sensitivity: "base",
-      });
-    main.sort(cmp);
-    pantry.sort(cmp);
-    return { mainShoppingItems: main, pantryStapleItems: pantry };
-  }, [shoppingList.items, ingredientsMap]);
+  const getAmountLines = (item: (typeof shoppingList.items)[number]) =>
+    amountLinesFromEntries(normalizedAmountEntries(item));
+  const { mainShoppingItems, pantryStapleItems, mealPlanLeftoverItems } =
+    useMemo(() => {
+      const staple = (item: ShoppingListItem) =>
+        isPantryStaple(getCanonicalKey(item));
+      const main: ShoppingListItem[] = [];
+      const pantry: ShoppingListItem[] = [];
+      const leftover: ShoppingListItem[] = [];
+      for (const item of shoppingList.items) {
+        if (item.mealPlanLeftoverIngredientId) {
+          leftover.push(item);
+          continue;
+        }
+        (staple(item) ? pantry : main).push(item);
+      }
+      const cmp = (a: ShoppingListItem, b: ShoppingListItem) =>
+        getDisplayName(a).localeCompare(getDisplayName(b), undefined, {
+          sensitivity: "base",
+        });
+      main.sort(cmp);
+      pantry.sort(cmp);
+      leftover.sort(cmp);
+      return {
+        mainShoppingItems: main,
+        pantryStapleItems: pantry,
+        mealPlanLeftoverItems: leftover,
+      };
+    }, [shoppingList.items, ingredientsMap]);
 
   const ingredientsByCategory = useMemo(() => {
     const cmp = (a: ShoppingListItem, b: ShoppingListItem) =>
@@ -242,17 +267,45 @@ export default function ShoppingList({
     });
   }, [pantryIdsKey]);
 
+  const leftoverIdsKey = useMemo(
+    () => mealPlanLeftoverItems.map((i) => i._id).join(","),
+    [mealPlanLeftoverItems],
+  );
+  useEffect(() => {
+    const validIds = new Set(
+      leftoverIdsKey
+        ? (leftoverIdsKey.split(",") as Id<"shoppingListItems">[])
+        : [],
+    );
+    setLeftoverExcludedFromTripIds((prev) => {
+      const next = new Set<Id<"shoppingListItems">>();
+      for (const id of prev) {
+        if (validIds.has(id)) next.add(id);
+      }
+      return next;
+    });
+  }, [leftoverIdsKey]);
+
   const prevFinalisedRef = useRef(isFinalised);
   useEffect(() => {
-    if (!isFinalised && prevFinalisedRef.current === true && pantryIdsKey) {
-      setPantryIncludedIds(
-        new Set(pantryIdsKey.split(",") as Id<"shoppingListItems">[]),
-      );
+    if (!isFinalised && prevFinalisedRef.current === true) {
+      if (pantryIdsKey) {
+        setPantryIncludedIds(
+          new Set(pantryIdsKey.split(",") as Id<"shoppingListItems">[]),
+        );
+      }
+      if (leftoverIdsKey) {
+        setLeftoverExcludedFromTripIds(new Set());
+      }
     }
     prevFinalisedRef.current = isFinalised;
-  }, [isFinalised, pantryIdsKey]);
+  }, [isFinalised, pantryIdsKey, leftoverIdsKey]);
 
-  const draftTripItemCount = mainShoppingItems.length + pantryIncludedIds.size;
+  const leftoverTripCount = mealPlanLeftoverItems.filter(
+    (i) => !leftoverExcludedFromTripIds.has(i._id),
+  ).length;
+  const draftTripItemCount =
+    mainShoppingItems.length + pantryIncludedIds.size + leftoverTripCount;
 
   // Get chalkboard data
   const households = useQuery(api.households.getUserHouseholds);
@@ -315,19 +368,26 @@ export default function ShoppingList({
 
   const availableChalkboardItemsCount = getAvailableChalkboardCount();
 
-  const handleAmountChange = async (
+  const commitItemAmount = useCallback(
+    async (
+      itemId: Id<"shoppingListItems">,
+      amount: number | string | null,
+    ) => {
+      try {
+        await updateItemAmount({ itemId, amount });
+      } catch (error) {
+        console.error("Failed to update amount:", error);
+        toast.error("Failed to update amount");
+      }
+    },
+    [updateItemAmount],
+  );
+
+  const handleAmountChange = (
     itemId: Id<"shoppingListItems">,
     newAmount: number,
   ) => {
-    try {
-      await updateItemAmount({
-        itemId,
-        amount: Math.max(0, newAmount),
-      });
-    } catch (error) {
-      console.error("Failed to update amount:", error);
-      toast.error("Failed to update amount");
-    }
+    void commitItemAmount(itemId, Math.max(0, newAmount));
   };
 
   const handleRemoveItem = async (itemId: Id<"shoppingListItems">) => {
@@ -358,9 +418,12 @@ export default function ShoppingList({
 
   const handleConfirmWithPantryTrim = async () => {
     if (isConfirming) return;
-    const toRemove = pantryStapleItems.filter(
-      (i) => !pantryIncludedIds.has(i._id),
-    );
+    const toRemove = [
+      ...pantryStapleItems.filter((i) => !pantryIncludedIds.has(i._id)),
+      ...mealPlanLeftoverItems.filter((i) =>
+        leftoverExcludedFromTripIds.has(i._id),
+      ),
+    ];
     setIsConfirming(true);
     try {
       await trimDraftItemsAndFinaliseShoppingList({
@@ -539,6 +602,39 @@ export default function ShoppingList({
                 </div>
               </div>
             ))}
+            {!isFinalised && mealPlanLeftoverItems.length > 0 ? (
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Already have (meal plan)
+                </h2>
+                <div className="space-y-1">
+                  {mealPlanLeftoverItems.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-start gap-3 py-2 border-b"
+                    >
+                      <div className="size-5 border-2 rounded shrink-0 mt-0.5">
+                        {item.checked && (
+                          <div className="size-full flex items-center justify-center">
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <span className={cn(item.checked && "line-through")}>
+                          {getDisplayName(item)}
+                        </span>
+                        {getAmountLines(item).length > 0 && (
+                          <span className="ml-2">
+                            {getAmountLines(item).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {!isFinalised && pantryStapleItems.length > 0 ? (
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
@@ -807,6 +903,137 @@ export default function ShoppingList({
                   </div>
                 </div>
               ))}
+              {!isFinalised && mealPlanLeftoverItems.length > 0 ? (
+                <div
+                  className={cn(
+                    "border-t border-border pt-6 space-y-4 rounded-lg border p-4",
+                    "border-amber-500/35 bg-amber-500/5",
+                  )}
+                >
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                      Already have (from your meal plan)
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Check what you need on this shop trip. Edit the amount
+                      (e.g. grams) for each line — change it to whatever you
+                      actually need to buy.
+                    </p>
+                  </div>
+                  <ul className="space-y-3">
+                    {mealPlanLeftoverItems.map((item) => {
+                      const excluded = leftoverExcludedFromTripIds.has(
+                        item._id,
+                      );
+                      const { first, rest } = firstAmountEntryForItem(item);
+                      const unitLabel = (first.unit ?? "").trim();
+                      const restSummary = rest
+                        .map(
+                          (e) =>
+                            `${e.amount ?? ""} ${e.unit ?? ""}`.trim(),
+                        )
+                        .filter(Boolean);
+                      return (
+                        <li
+                          key={item._id}
+                          className={cn(
+                            "rounded-lg border p-3 transition-opacity",
+                            excluded
+                              ? "border-dashed border-border/80 bg-muted/15 opacity-80"
+                              : "border-primary/35 bg-primary/5",
+                          )}
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                            <label className="flex cursor-pointer items-start gap-2 shrink-0">
+                              <Checkbox
+                                checked={!excluded}
+                                onCheckedChange={(v) => {
+                                  setLeftoverExcludedFromTripIds((prev) => {
+                                    const next = new Set(prev);
+                                    if (v === true) next.delete(item._id);
+                                    else next.add(item._id);
+                                    return next;
+                                  });
+                                }}
+                                className="size-4 mt-0.5 shrink-0"
+                              />
+                              <span className="text-sm font-medium capitalize leading-snug">
+                                {getDisplayName(item)}
+                                {isDev &&
+                                  item.ingredientId &&
+                                  ingredientsMap?.[item.ingredientId] && (
+                                    <span className="text-muted-foreground font-normal normal-case">
+                                      {" "}
+                                      ({getOriginalRecipeName(item)})
+                                    </span>
+                                  )}
+                              </span>
+                            </label>
+                            <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0 sm:justify-end">
+                              {typeof first.amount === "number" ? (
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step="any"
+                                  className="h-8 w-28 font-medium tabular-nums"
+                                  value={
+                                    Number.isFinite(first.amount)
+                                      ? first.amount
+                                      : ""
+                                  }
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    if (raw === "") {
+                                      void handleAmountChange(item._id, 0);
+                                      return;
+                                    }
+                                    const n = Number(raw);
+                                    if (Number.isFinite(n)) {
+                                      void handleAmountChange(
+                                        item._id,
+                                        Math.max(0, n),
+                                      );
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <Input
+                                  key={`${item._id}-${String(first.amount)}`}
+                                  type="text"
+                                  className="h-8 min-w-20 max-w-40 font-medium"
+                                  defaultValue={
+                                    first.amount != null
+                                      ? String(first.amount)
+                                      : ""
+                                  }
+                                  onBlur={(e) => {
+                                    const v = e.target.value.trim();
+                                    void commitItemAmount(
+                                      item._id,
+                                      v === "" ? null : v,
+                                    );
+                                  }}
+                                />
+                              )}
+                              {unitLabel ? (
+                                <span className="text-sm text-muted-foreground shrink-0">
+                                  {unitLabel}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                          {restSummary.length > 0 ? (
+                            <p className="text-[11px] text-muted-foreground mt-2 pl-6 sm:pl-0">
+                              Also in this week&apos;s total:{" "}
+                              {restSummary.join(" · ")}
+                            </p>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null}
               {!isFinalised && pantryStapleItems.length > 0 ? (
                 <div className="border-t border-border pt-6 space-y-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -907,8 +1134,9 @@ export default function ShoppingList({
               draftTripItemCount === 0 && (
                 <div className="text-center py-6 rounded-lg border border-dashed bg-muted/20">
                   <p className="text-sm text-muted-foreground px-4">
-                    Nothing selected for this shop yet. Add items from the list
-                    or pantry staples above.
+                    Nothing selected for this shop yet. Include items from your
+                    list, your &quot;already have&quot; lines, or pantry staples
+                    above.
                   </p>
                 </div>
               )}
@@ -1253,7 +1481,7 @@ function ShoppingListScreenItemRow({
                   >
                     <Minus className="size-3.5 text-muted-foreground" />
                   </button>
-                  <span className="min-w-[2rem] text-center text-sm font-medium tabular-nums">
+                  <span className="min-w-8 text-center text-sm font-medium tabular-nums">
                     {single.amount}
                   </span>
                   <button

@@ -20,6 +20,7 @@ import type * as lib_constants from "../lib/constants.js";
 import type * as lib_ingredientFoodGroups from "../lib/ingredientFoodGroups.js";
 import type * as lib_ingredientFoodSubGroups from "../lib/ingredientFoodSubGroups.js";
 import type * as lib_ingredientGrouping from "../lib/ingredientGrouping.js";
+import type * as lib_leftoverIngredients from "../lib/leftoverIngredients.js";
 import type * as lib_recipePublicSlug from "../lib/recipePublicSlug.js";
 import type * as lib_recipeStepIngredientMatch from "../lib/recipeStepIngredientMatch.js";
 import type * as lib_systemRecipes from "../lib/systemRecipes.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   "lib/ingredientFoodGroups": typeof lib_ingredientFoodGroups;
   "lib/ingredientFoodSubGroups": typeof lib_ingredientFoodSubGroups;
   "lib/ingredientGrouping": typeof lib_ingredientGrouping;
+  "lib/leftoverIngredients": typeof lib_leftoverIngredients;
   "lib/recipePublicSlug": typeof lib_recipePublicSlug;
   "lib/recipeStepIngredientMatch": typeof lib_recipeStepIngredientMatch;
   "lib/systemRecipes": typeof lib_systemRecipes;

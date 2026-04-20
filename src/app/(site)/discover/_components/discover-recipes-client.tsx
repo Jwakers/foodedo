@@ -28,12 +28,61 @@ function DiscoverRecipeListing() {
     filteredRecipes,
     clearFilters,
     hasActiveFilters,
+    leftoverListingMeta,
+    leftoverIngredientIds,
+    leftoverIngredientPhrases,
+    baseRecipesForTab,
   } = useRecipeListing();
 
+  const hasLeftoverFilter =
+    leftoverIngredientIds.length > 0 || leftoverIngredientPhrases.length > 0;
   const hasSourceRecipes = recipes != null && recipes.length > 0;
+  const sourceListEmpty =
+    baseRecipesForTab === undefined || baseRecipesForTab.length === 0;
 
   if (filteredRecipes.length === 0) {
-    if (!hasSourceRecipes) {
+    if (hasLeftoverFilter && leftoverListingMeta) {
+      if (!leftoverListingMeta.hasAnyMatch) {
+        return (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground max-w-md mx-auto">
+              None of your saved or Discover recipes use those ingredients yet.
+              Try different ingredients or clear the list.
+            </p>
+            {hasActiveFilters && (
+              <Button
+                className="mt-4"
+                variant="outline"
+                onClick={clearFilters}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        );
+      }
+      if (!sourceListEmpty) {
+        return (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground max-w-md mx-auto">
+              No Discover recipes use those ingredients. Try My Recipes or
+              adjust your ingredient list.
+            </p>
+            {hasActiveFilters && (
+              <Button
+                className="mt-4"
+                variant="outline"
+                onClick={clearFilters}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        );
+      }
+    }
+
+    if (!hasSourceRecipes && sourceListEmpty) {
       return (
         <div className="text-center py-16">
           <p className="text-muted-foreground">No recipes found.</p>
@@ -58,7 +107,12 @@ function DiscoverRecipeListing() {
     );
   }
 
-  return <DiscoverRecipeGrid recipes={filteredRecipes} />;
+  return (
+    <DiscoverRecipeGrid
+      recipes={filteredRecipes}
+      leftoverTargetCount={leftoverListingMeta?.targetCount}
+    />
+  );
 }
 
 export default function DiscoverRecipesClient() {

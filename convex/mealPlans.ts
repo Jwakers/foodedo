@@ -7,9 +7,17 @@ import {
   resolveDefaultHouseholdIdForSharing,
 } from "./households";
 import {
+  canUseLeftoverIngredients,
+  LEFTOVER_INGREDIENTS_MAX,
   MAX_DAYS_IN_MEAL_PLAN,
   RECENTLY_SUGGESTED_DAYS,
 } from "./lib/constants";
+import {
+  collectLeftoverMatchIds,
+  collectLeftoverMatchKeys,
+  lineMatchesLeftoverPhrase,
+  normaliseLeftoverPhrasesList,
+} from "./lib/leftoverIngredients";
 import {
   buildPool,
   getBehaviourStatsForActor,
@@ -27,6 +35,42 @@ import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+function phraseDisplayLabel(normalised: string): string {
+  return normalised
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function prepareLeftoverInputs(
+  rawIds: Id<"ingredients">[] | undefined,
+  rawPhrases: string[] | undefined,
+): {
+  ids: Id<"ingredients">[] | undefined;
+  phrases: string[] | undefined;
+  totalCount: number;
+  wantsLeftovers: boolean;
+} {
+  const ids =
+    rawIds?.filter(Boolean).length
+      ? ([...new Set(rawIds.filter(Boolean))] as Id<"ingredients">[])
+      : [];
+  const phrases = normaliseLeftoverPhrasesList(rawPhrases);
+  const totalCount = ids.length + phrases.length;
+  if (totalCount > LEFTOVER_INGREDIENTS_MAX) {
+    throw new ConvexError(
+      `At most ${LEFTOVER_INGREDIENTS_MAX} leftover ingredients`,
+    );
+  }
+  return {
+    ids: ids.length ? ids : undefined,
+    phrases: phrases.length ? phrases : undefined,
+    totalCount,
+    wantsLeftovers: totalCount > 0,
+  };
+}
+
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -35,6 +79,24 @@ function startOfDayMs(ms: number): number {
   const d = new Date(ms);
   d.setUTCHours(0, 0, 0, 0);
   return d.getTime();
+}
+
+/** Client may omit local day; use UTC “today” start for index bounds and overlap checks. */
+function resolveLocalDayRefMs(localDayStartMs?: number): number {
+  return localDayStartMs !== undefined
+    ? localDayStartMs
+    : startOfDayMs(Date.now());
+}
+
+/**
+ * Start of the plan window for overlap math (UTC day starts). Matches how spans are
+ * derived from stored `startDate`, else earliest entry date, else `endDate`.
+ */
+function effectivePlanStartMs(
+  plan: Doc<"mealPlans">,
+  entryMinDate: number | null,
+): number {
+  return plan.startDate ?? entryMinDate ?? plan.endDate;
 }
 
 type PlanWithEntryStats = {
@@ -55,8 +117,7 @@ function planOverlapsLocalCalendarDay(
   entryMinDate: number | null,
   localDayStartMs: number,
 ): boolean {
-  const planStart =
-    plan.startDate ?? entryMinDate ?? plan.endDate;
+  const planStart = effectivePlanStartMs(plan, entryMinDate);
   const planEndExclusive = plan.endDate + ONE_DAY_MS;
   const localEndExclusive = localDayStartMs + ONE_DAY_MS;
   return localDayStartMs < planEndExclusive && localEndExclusive > planStart;
@@ -66,22 +127,24 @@ function planOverlapsLocalCalendarDay(
 function planStillActiveForLocalDay(
   plan: Doc<"mealPlans">,
   localDayStartMs: number,
+  entryMinDate: number | null,
 ): boolean {
-  const planStart = plan.startDate ?? plan.endDate;
+  const planStart = effectivePlanStartMs(plan, entryMinDate);
   const planEndExclusive = plan.endDate + ONE_DAY_MS;
   const localEndExclusive = localDayStartMs + ONE_DAY_MS;
   return localDayStartMs < planEndExclusive && localEndExclusive > planStart;
 }
 
-async function collectActivePlansForUser(
+/**
+ * Meal plans the user can see (index + dedupe) that are not superseded.
+ * Overlap with “today” is applied after loading entry stats — see `planStillActiveForLocalDay`.
+ */
+async function collectCandidateMealPlansForUser(
   ctx: QueryCtx,
   userId: Id<"users">,
   localDayStartMs?: number,
 ): Promise<Doc<"mealPlans">[]> {
-  const refLocalStart =
-    localDayStartMs !== undefined
-      ? localDayStartMs
-      : startOfDayMs(Date.now());
+  const refLocalStart = resolveLocalDayRefMs(localDayStartMs);
   const indexGteEndDate = startOfDayMs(
     refLocalStart - (MAX_DAYS_IN_MEAL_PLAN + 3) * ONE_DAY_MS,
   );
@@ -119,11 +182,7 @@ async function collectActivePlansForUser(
     return true;
   });
 
-  return allPlans.filter(
-    (p) =>
-      p.replacedByPlanId === undefined &&
-      planStillActiveForLocalDay(p, refLocalStart),
-  );
+  return allPlans.filter((p) => p.replacedByPlanId === undefined);
 }
 
 async function loadPlanSummariesWithEntryStats(
@@ -177,10 +236,64 @@ function pickPreferredPlanDoc(
   return sorted[0]!.plan;
 }
 
+function buildLeftoverMatchPayload(
+  ingredients: Doc<"recipes">["ingredients"],
+  leftoverDocs: Doc<"ingredients">[],
+  phraseList: string[],
+): Array<
+  | { kind: "canonical"; ingredientId: Id<"ingredients">; label: string }
+  | { kind: "phrase"; label: string }
+> {
+  const rows: Array<
+    | { kind: "canonical"; ingredientId: Id<"ingredients">; label: string }
+    | { kind: "phrase"; label: string }
+  > = [];
+  if (leftoverDocs.length > 0) {
+    const matchedIds = collectLeftoverMatchIds(
+      ingredients,
+      leftoverDocs.map((d) => d._id),
+      leftoverDocs,
+    );
+    for (const id of matchedIds) {
+      const doc = leftoverDocs.find((d) => d._id === id);
+      const label = (
+        doc?.displayName?.trim() ||
+        doc?.name ||
+        "Ingredient"
+      ).trim();
+      rows.push({ kind: "canonical", ingredientId: id, label });
+    }
+  }
+  for (const ph of phraseList) {
+    let hit = false;
+    for (const line of ingredients ?? []) {
+      if (lineMatchesLeftoverPhrase(line.name, ph)) {
+        hit = true;
+        break;
+      }
+    }
+    if (hit) {
+      rows.push({ kind: "phrase", label: phraseDisplayLabel(ph) });
+    }
+  }
+  return rows;
+}
+
 async function buildEntriesWithRecipes(
   ctx: QueryCtx,
   mealPlanId: Id<"mealPlans">,
+  leftoverIngredientIds?: Id<"ingredients">[],
+  leftoverIngredientPhrases?: string[],
 ) {
+  let leftoverDocs: Doc<"ingredients">[] = [];
+  if (leftoverIngredientIds?.length) {
+    const got = await Promise.all(
+      leftoverIngredientIds.map((id) => ctx.db.get(id)),
+    );
+    leftoverDocs = got.filter((d): d is Doc<"ingredients"> => d != null);
+  }
+  const phraseList = normaliseLeftoverPhrasesList(leftoverIngredientPhrases);
+
   const entries = await ctx.db
     .query("mealPlanEntries")
     .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", mealPlanId))
@@ -196,6 +309,16 @@ async function buildEntriesWithRecipes(
       const totalTimeMinutes =
         recipe.totalTimeMinutes ??
         (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+
+      const leftoverMatches =
+        (leftoverDocs.length > 0 || phraseList.length > 0) && recipe.ingredients
+          ? buildLeftoverMatchPayload(
+              recipe.ingredients,
+              leftoverDocs,
+              phraseList,
+            )
+          : undefined;
+
       return {
         ...entry,
         recipe: {
@@ -209,6 +332,9 @@ async function buildEntriesWithRecipes(
           nutrition: recipe.nutrition,
           category: recipe.category,
           primaryProtein: recipe.primaryProtein,
+          ...(leftoverMatches && leftoverMatches.length > 0
+            ? { leftoverMatches }
+            : {}),
         },
       };
     }),
@@ -258,7 +384,12 @@ export const getMealPlan = query({
     const allowed = await canAccessMealPlan(ctx, user._id, plan);
     if (!allowed) return null;
 
-    const entries = await buildEntriesWithRecipes(ctx, args.mealPlanId);
+    const entries = await buildEntriesWithRecipes(
+      ctx,
+      args.mealPlanId,
+      plan.leftoverIngredientIds,
+      plan.leftoverIngredientPhrases,
+    );
 
     return {
       ...plan,
@@ -283,22 +414,33 @@ export const getCurrentMealPlan = query({
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const activePlans = await collectActivePlansForUser(
+    const refLocalStart = resolveLocalDayRefMs(args.localDayStartMs);
+    const candidates = await collectCandidateMealPlansForUser(
       ctx,
       user._id,
       args.localDayStartMs,
     );
-    if (activePlans.length === 0) return null;
+    if (candidates.length === 0) return null;
 
     const summaries = await loadPlanSummariesWithEntryStats(
       ctx,
-      activePlans,
+      candidates,
       user._id,
     );
-    const current = pickPreferredPlanDoc(summaries, args.localDayStartMs);
+    const activeSummaries = summaries.filter((s) =>
+      planStillActiveForLocalDay(s.plan, refLocalStart, s.entryMinDate),
+    );
+    if (activeSummaries.length === 0) return null;
+
+    const current = pickPreferredPlanDoc(activeSummaries, args.localDayStartMs);
     if (!current) return null;
 
-    const entries = await buildEntriesWithRecipes(ctx, current._id);
+    const entries = await buildEntriesWithRecipes(
+      ctx,
+      current._id,
+      current.leftoverIngredientIds,
+      current.leftoverIngredientPhrases,
+    );
 
     return {
       ...current,
@@ -319,23 +461,29 @@ export const getActiveMealPlanSummaries = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    const activePlans = await collectActivePlansForUser(
+    const refLocalStart = resolveLocalDayRefMs(args.localDayStartMs);
+    const candidates = await collectCandidateMealPlansForUser(
       ctx,
       user._id,
       args.localDayStartMs,
     );
-    if (activePlans.length === 0) return [];
+    if (candidates.length === 0) return [];
 
     const summaries = await loadPlanSummariesWithEntryStats(
       ctx,
-      activePlans,
+      candidates,
       user._id,
     );
-    summaries.sort(
+    const activeSummaries = summaries.filter((s) =>
+      planStillActiveForLocalDay(s.plan, refLocalStart, s.entryMinDate),
+    );
+    if (activeSummaries.length === 0) return [];
+
+    activeSummaries.sort(
       (a, b) => (b.plan.updatedAt ?? 0) - (a.plan.updatedAt ?? 0),
     );
 
-    return summaries.map((s) => ({
+    return activeSummaries.map((s) => ({
       _id: s.plan._id,
       startDate: s.plan.startDate,
       endDate: s.plan.endDate,
@@ -362,6 +510,10 @@ export const generateWeeklyPlan = mutation({
   args: {
     /** When omitted: shared if the user belongs to exactly one household; otherwise the new plan is private until they share or pass this field. */
     householdId: v.optional(v.id("households")),
+    /** Optional: boost recipes that use these canonical ingredients (premium / beta). */
+    leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
+    /** Optional: free-text leftovers (fuzzy-matched to recipe lines). */
+    leftoverIngredientPhrases: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -375,12 +527,26 @@ export const generateWeeklyPlan = mutation({
       args.householdId,
     );
 
+    const leftover = prepareLeftoverInputs(
+      args.leftoverIngredientIds?.filter(Boolean) as
+        | Id<"ingredients">[]
+        | undefined,
+      args.leftoverIngredientPhrases,
+    );
+    const wantsLeftovers = leftover.wantsLeftovers;
+    if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
+      throw new ConvexError("PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS");
+    }
+
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
     const actorType = "user";
     const actorId = user._id;
 
-    const pool = await buildPool(ctx, user._id, shareHouseholdId ?? null);
+    const pool = await buildPool(ctx, user._id, shareHouseholdId ?? null, {
+      leftoverTargetIds: wantsLeftovers ? leftover.ids : undefined,
+      leftoverTargetPhrases: wantsLeftovers ? leftover.phrases : undefined,
+    });
     const recentlySuggested = await getRecentlySuggested(
       ctx,
       actorType,
@@ -402,6 +568,16 @@ export const generateWeeklyPlan = mutation({
       throw new ConvexError("No recipes available to generate meal plan");
     }
 
+    let bestMatchInPool = 0;
+    if (wantsLeftovers) {
+      for (const p of pool) {
+        bestMatchInPool = Math.max(
+          bestMatchInPool,
+          p.leftoverMatchCount ?? 0,
+        );
+      }
+    }
+
     const planId = await ctx.db.insert("mealPlans", {
       userId: user._id,
       endDate,
@@ -412,6 +588,12 @@ export const generateWeeklyPlan = mutation({
       generationVersion: 1,
       generatedAt: now,
       ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
+      ...(wantsLeftovers && leftover.ids
+        ? { leftoverIngredientIds: leftover.ids }
+        : {}),
+      ...(wantsLeftovers && leftover.phrases
+        ? { leftoverIngredientPhrases: leftover.phrases }
+        : {}),
     });
 
     for (let i = 0; i < selectedIds.length; i++) {
@@ -427,7 +609,18 @@ export const generateWeeklyPlan = mutation({
     }
 
     await ctx.db.patch(planId, { updatedAt: Date.now() });
-    return { planId };
+    return {
+      planId,
+      ...(wantsLeftovers
+        ? {
+            leftoverMatchSummary: {
+              targetCount: leftover.totalCount,
+              bestMatchInPool,
+              hasAnyMatch: bestMatchInPool > 0,
+            },
+          }
+        : {}),
+    };
   },
 });
 
@@ -469,7 +662,11 @@ export const createBlankWeeklyPlan = mutation({
  * Regenerate week: create new plan, copy locked entries (no suggestedCount bump), fill rest with algorithm. Spec 6.2 Option B.
  */
 export const regenerateWeeklyPlan = mutation({
-  args: { previousPlanId: v.id("mealPlans") },
+  args: {
+    previousPlanId: v.id("mealPlans"),
+    leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
+    leftoverIngredientPhrases: v.optional(v.array(v.string())),
+  },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
     const previousPlan = await ctx.db.get(args.previousPlanId);
@@ -480,6 +677,28 @@ export const regenerateWeeklyPlan = mutation({
     if (previousPlan.isFinalised) {
       throw new ConvexError("Cannot regenerate a finalised plan");
     }
+
+    const leftover = prepareLeftoverInputs(
+      args.leftoverIngredientIds?.filter(Boolean) as
+        | Id<"ingredients">[]
+        | undefined,
+      args.leftoverIngredientPhrases,
+    );
+    const wantsLeftovers = leftover.wantsLeftovers;
+    if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
+      throw new ConvexError("PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS");
+    }
+
+    let leftoverDocs: Doc<"ingredients">[] = [];
+    if (wantsLeftovers && leftover.ids?.length) {
+      const got = await Promise.all(
+        leftover.ids.map((id) => ctx.db.get(id)),
+      );
+      leftoverDocs = got.filter((d): d is Doc<"ingredients"> => d != null);
+    }
+    const normalisedPhraseTargets = normaliseLeftoverPhrasesList(
+      leftover.phrases,
+    );
 
     const entries = await ctx.db
       .query("mealPlanEntries")
@@ -506,6 +725,10 @@ export const regenerateWeeklyPlan = mutation({
       generationVersion: 1,
       generatedAt: now,
       householdId: previousPlan.householdId,
+      ...(wantsLeftovers && leftover.ids ? { leftoverIngredientIds: leftover.ids } : {}),
+      ...(wantsLeftovers && leftover.phrases
+        ? { leftoverIngredientPhrases: leftover.phrases }
+        : {}),
     });
 
     const actor = getActorForPlan(previousPlan);
@@ -530,12 +753,25 @@ export const regenerateWeeklyPlan = mutation({
       (_, i) => i,
     ).filter((o) => !lockedOrders.has(o));
     const toSelect = availableOrders.length;
+    let bestMatchInPool = 0;
     if (toSelect > 0) {
       const pool = await buildPool(
         ctx,
         previousPlan.userId,
         previousPlan.householdId ?? null,
+        {
+          leftoverTargetIds: wantsLeftovers ? leftover.ids : undefined,
+          leftoverTargetPhrases: wantsLeftovers ? leftover.phrases : undefined,
+        },
       );
+      if (wantsLeftovers) {
+        for (const p of pool) {
+          bestMatchInPool = Math.max(
+            bestMatchInPool,
+            p.leftoverMatchCount ?? 0,
+          );
+        }
+      }
       const recentlySuggested = await getRecentlySuggested(
         ctx,
         actorType,
@@ -551,15 +787,31 @@ export const regenerateWeeklyPlan = mutation({
       const lockedPoolRecipes: PoolRecipe[] = [];
       for (const entry of lockedSorted) {
         const recipe = await ctx.db.get(entry.recipeId);
-        if (recipe)
+        if (!recipe) continue;
+        const base: PoolRecipe = {
+          _id: recipe._id,
+          primaryProtein: recipe.primaryProtein,
+          complexityTier: recipe.complexityTier,
+          cuisine: recipe.cuisine,
+          editorialBias: recipe.editorialBias,
+          isSystem: recipe.source === "system",
+        };
+        if (leftoverDocs.length > 0 || normalisedPhraseTargets.length > 0) {
+          const leftoverMatchKeys = collectLeftoverMatchKeys(
+            recipe.ingredients,
+            leftoverDocs.map((d) => d._id),
+            leftoverDocs,
+            normalisedPhraseTargets,
+          );
           lockedPoolRecipes.push({
-            _id: recipe._id,
-            primaryProtein: recipe.primaryProtein,
-            complexityTier: recipe.complexityTier,
-            cuisine: recipe.cuisine,
-            editorialBias: recipe.editorialBias,
-            isSystem: recipe.source === "system",
+            ...base,
+            leftoverTargetCount: leftoverDocs.length + normalisedPhraseTargets.length,
+            leftoverMatchCount: leftoverMatchKeys.length,
+            leftoverMatchKeys,
           });
+        } else {
+          lockedPoolRecipes.push(base);
+        }
       }
 
       const newIds = selectRecipes(
@@ -599,7 +851,18 @@ export const regenerateWeeklyPlan = mutation({
     }
 
     await ctx.db.patch(newPlanId, { updatedAt: Date.now() });
-    return { planId: newPlanId };
+    return {
+      planId: newPlanId,
+      ...(wantsLeftovers
+        ? {
+            leftoverMatchSummary: {
+              targetCount: leftover.totalCount,
+              bestMatchInPool,
+              hasAnyMatch: bestMatchInPool > 0,
+            },
+          }
+        : {}),
+    };
   },
 });
 

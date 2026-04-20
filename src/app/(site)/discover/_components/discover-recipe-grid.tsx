@@ -1,6 +1,7 @@
 "use client";
 
 import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
+import { LeftoverMatchBadge } from "@/components/recipes/leftover-match-badge";
 import type { RecipeListItem } from "@/components/recipes/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,8 +11,10 @@ import Link from "next/link";
 
 function DiscoverRecipeCard({
   recipe,
+  leftoverTargetCount,
 }: {
   recipe: RecipeListItem & { publicSlug: string };
+  leftoverTargetCount?: number;
 }) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
@@ -36,7 +39,16 @@ function DiscoverRecipeCard({
             className="absolute inset-0 bg-linear-to-t from-black/70 to-64% to-transparent"
             aria-hidden
           />
-          <div className="absolute top-4 right-4 flex items-center gap-2">
+          {leftoverTargetCount != null &&
+            leftoverTargetCount > 0 &&
+            recipe.leftoverMatchCount != null &&
+            recipe.leftoverMatchCount > 0 && (
+              <LeftoverMatchBadge
+                matchCount={recipe.leftoverMatchCount}
+                targetCount={leftoverTargetCount}
+              />
+            )}
+          <div className="absolute top-4 right-4 z-10 flex flex-wrap items-center justify-end gap-2 pointer-events-none">
             <Badge
               variant="secondary"
               className={cn(categoryColor, "border-0 font-medium")}
@@ -68,7 +80,13 @@ function DiscoverRecipeCard({
   );
 }
 
-export function DiscoverRecipeGrid({ recipes }: { recipes: RecipeListItem[] }) {
+export function DiscoverRecipeGrid({
+  recipes,
+  leftoverTargetCount,
+}: {
+  recipes: RecipeListItem[];
+  leftoverTargetCount?: number;
+}) {
   const withSlug = recipes.filter(
     (r): r is RecipeListItem & { publicSlug: string } =>
       typeof r.publicSlug === "string" && r.publicSlug.trim().length > 0,
@@ -88,7 +106,11 @@ export function DiscoverRecipeGrid({ recipes }: { recipes: RecipeListItem[] }) {
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {withSlug.map((recipe) => (
-          <DiscoverRecipeCard key={recipe._id} recipe={recipe} />
+          <DiscoverRecipeCard
+            key={recipe._id}
+            recipe={recipe}
+            leftoverTargetCount={leftoverTargetCount}
+          />
         ))}
       </div>
     </div>

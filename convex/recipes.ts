@@ -2,7 +2,10 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
-import { canAccessRecipe, resolveDefaultHouseholdIdForSharing } from "./households";
+import {
+  canAccessRecipe,
+  resolveDefaultHouseholdIdForSharing,
+} from "./households";
 import { resolveIngredientIdFromList } from "./ingredients";
 import {
   buildCanonicalIngredientDocsMap,
@@ -10,11 +13,17 @@ import {
   recipeLinesForMatcher,
 } from "./lib/applyMethodIngredientRefs";
 import {
+  canUseLeftoverIngredients,
   clampEditorialBias,
   CUISINE_MAX_SELECTIONS,
+  LEFTOVER_INGREDIENTS_MAX,
   MAX_WEEKLY_PLAN_POOL_SIZE,
   recipeIsInMealPlanGeneratorPool,
 } from "./lib/constants";
+import {
+  countRecipeLeftoverTargetMatches,
+  normaliseLeftoverPhrasesList,
+} from "./lib/leftoverIngredients";
 import { RECIPE_PUBLIC_SLUG_PATTERN } from "./lib/recipePublicSlug";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import {
@@ -324,6 +333,175 @@ export const getSystemRecipes = query({
       a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
     );
     return withUrls;
+  },
+});
+
+async function collectRecipesForLeftoverSearch(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+): Promise<Doc<"recipes">[]> {
+  const seen = new Set<string>();
+  const out: Doc<"recipes">[] = [];
+
+  const push = (r: Doc<"recipes"> | null) => {
+    if (!r || seen.has(r._id)) return;
+    seen.add(r._id);
+    out.push(r);
+  };
+
+  for (const r of await ctx.db
+    .query("recipes")
+    .withIndex("by_source", (q) => q.eq("source", "system"))
+    .collect()) {
+    push(r);
+  }
+
+  for (const r of await ctx.db
+    .query("recipes")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect()) {
+    push(r);
+  }
+
+  const memberships = await ctx.db
+    .query("householdMembers")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+
+  const householdIds = [...new Set(memberships.map((m) => m.householdId))];
+  const sharedPerHousehold = await Promise.all(
+    householdIds.map((householdId) =>
+      ctx.db
+        .query("householdRecipes")
+        .withIndex("by_household", (q) => q.eq("householdId", householdId))
+        .collect(),
+    ),
+  );
+  const sharedRecipeIds = new Set<Id<"recipes">>();
+  for (const shared of sharedPerHousehold) {
+    for (const s of shared) {
+      sharedRecipeIds.add(s.recipeId);
+    }
+  }
+  const householdOnlyIds = [...sharedRecipeIds].filter((id) => !seen.has(id));
+  const householdRecipeDocs = await Promise.all(
+    householdOnlyIds.map((id) => ctx.db.get(id)),
+  );
+  for (const r of householdRecipeDocs) {
+    if (!r) continue;
+    const { canAccess } = await canAccessRecipe(ctx, userId, r._id);
+    if (!canAccess) continue;
+    push(r);
+  }
+
+  return out;
+}
+
+/**
+ * Discover + My + shared household recipes that use at least one selected ingredient/phrase,
+ * ranked by match count (then title). Listing UI treats this as a filter — recipes with no
+ * matches are omitted. Premium (or beta free) only; throws PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS otherwise.
+ */
+export const searchWithLeftoverIngredients = query({
+  args: {
+    leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
+    leftoverIngredientPhrases: v.optional(v.array(v.string())),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    if (!canUseLeftoverIngredients(user.subscriptionTier)) {
+      throw new ConvexError("PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS");
+    }
+
+    const ids = [...new Set(args.leftoverIngredientIds ?? [])];
+    const phrases = normaliseLeftoverPhrasesList(
+      args.leftoverIngredientPhrases,
+    );
+    if (ids.length + phrases.length > LEFTOVER_INGREDIENTS_MAX) {
+      throw new ConvexError(
+        `At most ${LEFTOVER_INGREDIENTS_MAX} leftover ingredients`,
+      );
+    }
+    if (ids.length === 0 && phrases.length === 0) {
+      return {
+        recipes: [],
+        bestMatchCount: 0,
+        targetCount: 0,
+        hasAnyMatch: false,
+      };
+    }
+
+    const targetDocs = (
+      await Promise.all(ids.map((id) => ctx.db.get(id)))
+    ).filter((d): d is Doc<"ingredients"> => d != null);
+
+    const targetIds = targetDocs.map((d) => d._id);
+    const targetCount = targetDocs.length + phrases.length;
+    const all = await collectRecipesForLeftoverSearch(ctx, user._id);
+    const cap = Math.min(Math.max(args.limit ?? 500, 1), 1000);
+
+    const scored = all.map((recipe) => ({
+      recipe,
+      matchCount: countRecipeLeftoverTargetMatches(
+        recipe.ingredients,
+        targetIds,
+        targetDocs,
+        phrases,
+      ),
+    }));
+
+    const matchedOnly = scored.filter((row) => row.matchCount > 0);
+
+    let bestMatchCount = 0;
+    for (const row of matchedOnly) {
+      bestMatchCount = Math.max(bestMatchCount, row.matchCount);
+    }
+
+    matchedOnly.sort((a, b) => {
+      if (b.matchCount !== a.matchCount) return b.matchCount - a.matchCount;
+      return a.recipe.title.localeCompare(b.recipe.title, undefined, {
+        sensitivity: "base",
+      });
+    });
+
+    const slice = matchedOnly.slice(0, cap);
+    const recipes = await Promise.all(
+      slice.map(async ({ recipe, matchCount }) => {
+        const totalTimeMinutes =
+          recipe.totalTimeMinutes ??
+          (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+        return {
+          _id: recipe._id,
+          title: recipe.title,
+          description: recipe.description ?? null,
+          prepTime: recipe.prepTime ?? 0,
+          cookTime: recipe.cookTime,
+          serves: recipe.serves ?? 1,
+          category: recipe.category,
+          image: recipe.image ? await ctx.storage.getUrl(recipe.image) : null,
+          updatedAt: recipe.updatedAt,
+          _creationTime: recipe._creationTime,
+          isGeneratorEligible: recipe.isGeneratorEligible ?? null,
+          excludeFromMealPlanGenerator:
+            recipe.excludeFromMealPlanGenerator ?? null,
+          primaryProtein: recipe.primaryProtein ?? null,
+          complexityTier: recipe.complexityTier ?? null,
+          totalTimeMinutes,
+          publicSlug: recipe.publicSlug ?? null,
+          leftoverMatchCount: matchCount,
+          source: recipe.source ?? null,
+          userId: recipe.userId ?? null,
+        };
+      }),
+    );
+
+    return {
+      recipes,
+      bestMatchCount,
+      targetCount,
+      hasAnyMatch: bestMatchCount > 0,
+    };
   },
 });
 

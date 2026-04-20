@@ -8,14 +8,14 @@
  * Output: convex/generated-recipes/{protein}_batch_{seq}.json
  */
 
+import { generateText } from "ai";
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: ".env.local", override: true });
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateText } from "ai";
 import { PRIMARY_PROTEINS } from "../convex/lib/constants";
+dotenv.config();
+dotenv.config({ path: ".env.local", override: true });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -221,7 +221,7 @@ function getProteinClarification(protein: string): string {
   if (protein === "other") {
     return `
 PROTEIN CLARIFICATION: "other" means a protein NOT in the main list (${MAIN_PROTEINS}).
-Use something else as the primary ingredient, e.g. duck, venison, tofu, beans, lentils, halloumi, prawns, squid, rabbit.
+Use something else as the primary ingredient, e.g. duck, venison, tofu, beans, lentils, halloumi, prawns, squid.
 Vary the actual protein across recipes in this batch. Output primaryProtein as "other" in the schema.`;
   }
   if (protein === "none") {
@@ -348,10 +348,13 @@ async function main(): Promise<void> {
       "oil",
       "vegetable oil",
     ]);
-    for (const recipe of data.recipes as { ingredients?: { name?: string }[] }[]) {
+    for (const recipe of data.recipes as {
+      ingredients?: { name?: string }[];
+    }[]) {
       if (recipe.ingredients?.length) {
         recipe.ingredients = recipe.ingredients.filter(
-          (ing) => !pantryStapleNames.has((ing.name ?? "").toLowerCase().trim()),
+          (ing) =>
+            !pantryStapleNames.has((ing.name ?? "").toLowerCase().trim()),
         );
       }
     }

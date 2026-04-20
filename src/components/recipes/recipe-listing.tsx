@@ -16,11 +16,23 @@ import type { ReactNode } from "react";
 // -----------------------------------------------------------------------------
 
 export function RecipeListing() {
-  const { recipes, filteredRecipes, clearFilters, optimizeImage } =
-    useRecipeListing();
+  const {
+    recipes,
+    filteredRecipes,
+    clearFilters,
+    optimizeImage,
+    leftoverListingMeta,
+    leftoverIngredientIds,
+    leftoverIngredientPhrases,
+    baseRecipesForTab,
+  } = useRecipeListing();
 
   const loading = recipes === undefined;
+  const hasLeftoverFilter =
+    leftoverIngredientIds.length > 0 || leftoverIngredientPhrases.length > 0;
   const hasSourceRecipes = recipes != null && recipes.length > 0;
+  const sourceListEmpty =
+    baseRecipesForTab === undefined || baseRecipesForTab.length === 0;
 
   if (loading) {
     return <LoadingState />;
@@ -33,6 +45,9 @@ export function RecipeListing() {
       hasSourceRecipes={hasSourceRecipes}
       onClearFilters={clearFilters}
       optimizeImage={optimizeImage}
+      leftoverListingMeta={leftoverListingMeta}
+      hasLeftoverFilter={hasLeftoverFilter}
+      sourceListEmpty={sourceListEmpty}
     />
   );
 }
@@ -85,6 +100,14 @@ type RecipeGridProps = {
   hasSourceRecipes?: boolean;
   /** When true, recipe card images use Next.js Image optimization (e.g. system recipes). */
   optimizeImage?: boolean;
+  leftoverListingMeta?: {
+    bestMatchCount: number;
+    targetCount: number;
+    hasAnyMatch: boolean;
+  } | null;
+  hasLeftoverFilter?: boolean;
+  /** True when this tab had no recipes before leftover filtering. */
+  sourceListEmpty?: boolean;
 };
 
 export function RecipeGrid({
@@ -94,13 +117,58 @@ export function RecipeGrid({
   onClearFilters,
   hasSourceRecipes = false,
   optimizeImage = false,
+  leftoverListingMeta = null,
+  hasLeftoverFilter = false,
+  sourceListEmpty = false,
 }: RecipeGridProps) {
   if (loading || recipes === undefined) {
     return <LoadingState />;
   }
 
   if (recipes.length === 0) {
-    if (!hasSourceRecipes) {
+    if (hasLeftoverFilter && leftoverListingMeta) {
+      if (!leftoverListingMeta.hasAnyMatch) {
+        return (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground max-w-md mx-auto">
+              None of your saved or Discover recipes use those ingredients yet.
+              Try different ingredients or clear the list. Recipes with linked
+              ingredients match best.
+            </p>
+            {onClearFilters && (
+              <Button
+                className="mt-4"
+                variant="outline"
+                onClick={onClearFilters}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        );
+      }
+      if (!sourceListEmpty) {
+        return (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground max-w-md mx-auto">
+              No recipes in this tab use those ingredients. Try the other tab
+              or adjust your ingredient list.
+            </p>
+            {onClearFilters && (
+              <Button
+                className="mt-4"
+                variant="outline"
+                onClick={onClearFilters}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        );
+      }
+    }
+
+    if (!hasSourceRecipes && sourceListEmpty) {
       return (
         <>
           {emptyState ?? (
@@ -132,6 +200,7 @@ export function RecipeGrid({
           key={recipe._id}
           recipe={recipe}
           optimizeImage={optimizeImage}
+          leftoverTargetCount={leftoverListingMeta?.targetCount}
         />
       ))}
     </div>

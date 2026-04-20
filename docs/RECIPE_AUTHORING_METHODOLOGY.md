@@ -81,7 +81,7 @@ For **dinner-class** recipes, sanity-check **layers**:
 
 - New row: new stable **`_id`** (Convex-style id, unique in file and DB), **`source: "system"`**, no **`image`** until you upload later if desired.
 - Optional **`publicSlug`**: kebab-case, unique among system recipes; migration can allocate from title if omitted.
-- Deploy, then run **`migrations:patchSystemRecipesFromFile`** on the target deployment; follow [`AGENTS.md`](../AGENTS.md) for follow-up migrations.
+- After deploy, run **`migrations:patchSystemRecipesFromFile`**, then **`migrations:assignSystemRecipePublicSlugs`**, on the target deployment so the DB matches the file and slugs stay unique (exact CLI names and notes: [`AGENTS.md`](../AGENTS.md)).
 
 ---
 

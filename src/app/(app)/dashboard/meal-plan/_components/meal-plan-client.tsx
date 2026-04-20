@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/app/constants";
+import { LeftoverIngredientsPicker } from "@/components/recipes/leftover-ingredients-picker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ import { pickPreferredMealPlanIdFromSummaries } from "@/lib/meal-plan-preference
 import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
+import { canUseLeftoverIngredients } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
@@ -189,6 +191,7 @@ export default function MealPlanClient() {
     api.shoppingLists.getShoppingListsByMealPlan,
     currentPlan ? { mealPlanId: currentPlan._id } : "skip",
   );
+  const currentUser = useQuery(api.users.current);
   const personalChalkboard = useQuery(api.chalkboard.getPersonalChalkboard);
   const householdChalkboards = useQuery(
     api.chalkboard.getAllHouseholdChalkboards,
@@ -247,6 +250,27 @@ export default function MealPlanClient() {
     mode: "add" | "replace";
     entry?: CurrentPlan["entries"][number];
   } | null>(null);
+  const [mealPlanLeftoverIds, setMealPlanLeftoverIds] = useState<
+    Id<"ingredients">[]
+  >([]);
+  const [mealPlanLeftoverPhrases, setMealPlanLeftoverPhrases] = useState<
+    string[]
+  >([]);
+  const canUseMealPlanLeftovers =
+    currentUser != null &&
+    canUseLeftoverIngredients(currentUser.subscriptionTier);
+
+  useEffect(() => {
+    if (currentUser === undefined) return;
+    if (!canUseMealPlanLeftovers) {
+      setMealPlanLeftoverIds([]);
+      setMealPlanLeftoverPhrases([]);
+      return;
+    }
+    if (!currentPlan) return;
+    setMealPlanLeftoverIds(currentPlan.leftoverIngredientIds ?? []);
+    setMealPlanLeftoverPhrases(currentPlan.leftoverIngredientPhrases ?? []);
+  }, [currentPlan, canUseMealPlanLeftovers, currentUser]);
 
   const entriesSorted = useMemo(() => {
     const entries = currentPlan?.entries ?? [];
@@ -270,7 +294,11 @@ export default function MealPlanClient() {
     });
     setIsGenerating(true);
     try {
-      const payload =
+      const payload: {
+        householdId?: Id<"households">;
+        leftoverIngredientIds?: Id<"ingredients">[];
+        leftoverIngredientPhrases?: string[];
+      } =
         households.length > 1
           ? {
               householdId:
@@ -278,7 +306,19 @@ export default function MealPlanClient() {
                 households[0]!._id,
             }
           : {};
-      const { planId } = await generateWeeklyPlan(payload);
+      if (
+        canUseMealPlanLeftovers &&
+        (mealPlanLeftoverIds.length > 0 || mealPlanLeftoverPhrases.length > 0)
+      ) {
+        if (mealPlanLeftoverIds.length > 0) {
+          payload.leftoverIngredientIds = mealPlanLeftoverIds;
+        }
+        if (mealPlanLeftoverPhrases.length > 0) {
+          payload.leftoverIngredientPhrases = mealPlanLeftoverPhrases;
+        }
+      }
+      const result = await generateWeeklyPlan(payload);
+      const { planId } = result;
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATED, {
         shared_with_household: households.length > 1,
       });
@@ -287,6 +327,15 @@ export default function MealPlanClient() {
       }
       router.push(ROUTES.mealPlanWithId(planId));
       toast.success("Your week is ready!");
+      if (
+        "leftoverMatchSummary" in result &&
+        result.leftoverMatchSummary &&
+        !result.leftoverMatchSummary.hasAnyMatch
+      ) {
+        toast.message(
+          "No recipes in your planner pool used those ingredients—we still built a balanced week.",
+        );
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to generate plan";
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATE_FAILED, {
@@ -306,7 +355,15 @@ export default function MealPlanClient() {
     } finally {
       setIsGenerating(false);
     }
-  }, [generateWeeklyPlan, generateWeekHouseholdId, households, router]);
+  }, [
+    canUseMealPlanLeftovers,
+    generateWeeklyPlan,
+    generateWeekHouseholdId,
+    households,
+    mealPlanLeftoverIds,
+    mealPlanLeftoverPhrases,
+    router,
+  ]);
 
   const handleBlankWeek = useCallback(async () => {
     if (households === undefined) {
@@ -345,21 +402,49 @@ export default function MealPlanClient() {
     if (!currentPlan) return;
     setIsGenerating(true);
     try {
-      const { planId } = await regenerateWeeklyPlan({
+      const result = await regenerateWeeklyPlan({
         previousPlanId: currentPlan._id,
+        ...(canUseMealPlanLeftovers &&
+        (mealPlanLeftoverIds.length > 0 || mealPlanLeftoverPhrases.length > 0)
+          ? {
+              ...(mealPlanLeftoverIds.length > 0
+                ? { leftoverIngredientIds: mealPlanLeftoverIds }
+                : {}),
+              ...(mealPlanLeftoverPhrases.length > 0
+                ? { leftoverIngredientPhrases: mealPlanLeftoverPhrases }
+                : {}),
+            }
+          : {}),
       });
+      const { planId } = result;
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_REGENERATED);
       if (typeof window !== "undefined") {
         sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, planId);
       }
       router.push(ROUTES.mealPlanWithId(planId));
       toast.success("Week regenerated. Locked meals kept.");
+      if (
+        "leftoverMatchSummary" in result &&
+        result.leftoverMatchSummary &&
+        !result.leftoverMatchSummary.hasAnyMatch
+      ) {
+        toast.message(
+          "No recipes in your planner pool used those ingredients. The rest of the week was filled as usual.",
+        );
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to regenerate");
     } finally {
       setIsGenerating(false);
     }
-  }, [currentPlan, regenerateWeeklyPlan, router]);
+  }, [
+    canUseMealPlanLeftovers,
+    currentPlan,
+    mealPlanLeftoverIds,
+    mealPlanLeftoverPhrases,
+    regenerateWeeklyPlan,
+    router,
+  ]);
 
   const handleLockToggle = useCallback(
     async (entry: CurrentPlan["entries"][number]) => {
@@ -669,6 +754,18 @@ export default function MealPlanClient() {
               </div>
             </div>
           </div>
+          <div className="max-w-2xl mx-auto mb-6 w-full">
+            <LeftoverIngredientsPicker
+              selectedIds={mealPlanLeftoverIds}
+              selectedPhrases={mealPlanLeftoverPhrases}
+              onSelectionChange={({ ingredientIds, phrases }) => {
+                setMealPlanLeftoverIds(ingredientIds);
+                setMealPlanLeftoverPhrases(phrases);
+              }}
+              canUseFeatures={canUseMealPlanLeftovers}
+              description="Optional: prioritise recipes that use ingredients you want to finish this week."
+            />
+          </div>
           <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
             <CardContent className="p-0 flex flex-col items-center">
               <div className="size-16 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center mb-6">
@@ -792,6 +889,20 @@ export default function MealPlanClient() {
                 Generate next plan
               </Button>
             </div>
+          </div>
+        )}
+        {currentPlan.isOwner && (
+          <div className="mb-4 max-w-2xl">
+            <LeftoverIngredientsPicker
+              selectedIds={mealPlanLeftoverIds}
+              selectedPhrases={mealPlanLeftoverPhrases}
+              onSelectionChange={({ ingredientIds, phrases }) => {
+                setMealPlanLeftoverIds(ingredientIds);
+                setMealPlanLeftoverPhrases(phrases);
+              }}
+              canUseFeatures={canUseMealPlanLeftovers}
+              description="Optional: prioritise recipes that use ingredients you want to finish this week. Applies when you generate or regenerate."
+            />
           </div>
         )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6 min-w-0">
