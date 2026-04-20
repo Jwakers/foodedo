@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { LEFTOVER_INGREDIENTS_MAX } from "convex/lib/constants";
+import { useQuery } from "convex/react";
 import { Loader2, Lock, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -142,17 +142,12 @@ export function LeftoverIngredientsPicker({
       <p className="text-sm text-muted-foreground">{description}</p>
 
       <div
-        className={cn(
-          "space-y-2",
-          locked && "pointer-events-none opacity-60",
-        )}
+        className={cn("space-y-2", locked && "pointer-events-none opacity-60")}
       >
         <div className="relative max-w-md">
           <Input
             placeholder={
-              locked
-                ? "Upgrade to use this filter"
-                : "Search ingredients or add a custom name…"
+              locked ? "Upgrade to use this filter" : "Search ingredients…"
             }
             value={q}
             onChange={(e) => setQ(e.target.value)}
