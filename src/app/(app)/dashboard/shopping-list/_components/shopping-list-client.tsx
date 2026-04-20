@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
+import { navigateBackOr } from "@/lib/navigation";
 import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
 import { isPantryStaple } from "@/lib/pantry-staples";
 import { combineAmounts } from "convex/lib/unitConversion";
@@ -229,7 +230,9 @@ export default function ShoppingListClient() {
         ...householdArg,
       });
       toast.success("Shopping list created!");
-      router.push(ROUTES.shoppingListWithId(listId));
+      // Replace so Back/Cancel skip the hub/recipe-selection URL and return to the
+      // page the user was on before opening shopping list (see navigateBackOr).
+      router.replace(ROUTES.shoppingListWithId(listId));
     } catch (error) {
       console.error("Failed to create shopping list:", error);
       toast.error(
@@ -301,7 +304,7 @@ export default function ShoppingListClient() {
       }
     }
 
-    router.push(ROUTES.SHOPPING_LIST);
+    navigateBackOr(router, ROUTES.SHOPPING_LIST);
     setSelectedRecipeIds(new Set());
     setSelectedChalkboardItems(new Set());
   };
