@@ -7,6 +7,10 @@ export {
   RecipeListingLayout,
 } from "./recipe-listing";
 export { RecipeFilters } from "./recipe-filters";
+export {
+  LeftoverIngredientsPicker,
+  type LeftoverPickerSelection,
+} from "./leftover-ingredients-picker";
 export { RecipeTabSwitcher } from "./recipe-tab-switcher";
 export {
   RecipeListingProvider,

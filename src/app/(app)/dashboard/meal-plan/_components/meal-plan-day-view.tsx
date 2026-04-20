@@ -8,8 +8,8 @@ import {
   useDraggable,
   useDroppable,
 } from "@dnd-kit/react";
-import type { Id } from "convex/_generated/dataModel";
 import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
 import { GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -55,12 +55,18 @@ function DraggableEntryCard({
   const totalMin =
     recipe.totalTimeMinutes ?? recipe.prepTime + (recipe.cookTime ?? 0);
   const timeLabel = totalMin > 0 ? `${totalMin} min` : "";
+  const hasLeftoverMatches =
+    recipe.leftoverMatches && recipe.leftoverMatches.length > 0;
 
   return (
     <article
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow",
-        isDragging && "opacity-90 shadow-lg ring-2 ring-primary",
+        "flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow",
+        hasLeftoverMatches &&
+          !isDragging &&
+          "border-amber-500/40 ring-2 ring-amber-500/20",
+        !hasLeftoverMatches && "border-border",
+        isDragging && "border-border opacity-90 shadow-lg ring-2 ring-primary",
       )}
     >
       <div className="relative aspect-4/3 w-full overflow-hidden bg-muted">
@@ -88,6 +94,27 @@ function DraggableEntryCard({
         <h3 className="text-sm font-medium leading-tight text-foreground line-clamp-2">
           {recipe.title}
         </h3>
+        {hasLeftoverMatches && (
+          <div className="mt-1.5 space-y-1">
+            <p className="text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:text-amber-400/90">
+              Your ingredients
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {recipe.leftoverMatches?.map((m) => (
+                <span
+                  key={
+                    m.kind === "canonical"
+                      ? `id:${m.ingredientId}`
+                      : `ph:${m.label}`
+                  }
+                  className="rounded-md border border-amber-500/45 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-amber-950 dark:text-amber-100"
+                >
+                  {m.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </article>
   );

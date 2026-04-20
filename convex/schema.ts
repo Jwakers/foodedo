@@ -263,6 +263,24 @@ export default defineSchema({
     ),
     // Recipe IDs this line came from (for dev-mode "from" links)
     recipeIds: v.optional(v.array(v.id("recipes"))),
+    /** Meal-plan “already have” overlap: canonical ingredient + inclusion mode + baseline for edits */
+    mealPlanLeftoverIngredientId: v.optional(v.id("ingredients")),
+    leftoverIncludeMode: v.optional(
+      v.union(v.literal("full"), v.literal("reduced")),
+    ),
+    leftoverReducedScale: v.optional(v.number()),
+    leftoverBaseline: v.optional(
+      v.object({
+        amount: v.union(v.number(), v.string(), v.null()),
+        unit: v.optional(v.string()),
+        amountEntries: v.array(
+          v.object({
+            amount: v.union(v.number(), v.string(), v.null()),
+            unit: v.optional(v.string()),
+          }),
+        ),
+      }),
+    ),
   }).index("by_shopping_list", ["shoppingListId"]),
 
   mealPlans: defineTable({
@@ -277,6 +295,10 @@ export default defineSchema({
     generatedAt: v.optional(v.number()),
     replacedByPlanId: v.optional(v.id("mealPlans")),
     isFinalised: v.optional(v.boolean()), // when true, no add/remove/swap/regenerate; only move between days
+    /** When set, generation used “use up leftovers” for this plan (audit / future UX). */
+    leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
+    /** Free-text targets (no catalog row); matched with fuzzy line matching. */
+    leftoverIngredientPhrases: v.optional(v.array(v.string())),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_endDate", ["userId", "endDate"])

@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import { List, Lock, LockOpen, MoreVertical, RefreshCw, X } from "lucide-react";
 import Image from "next/image";
 
@@ -20,6 +21,10 @@ type Recipe = {
   nutrition?: { calories?: number } | null;
   category: string;
   primaryProtein?: string | null;
+  leftoverMatches?: Array<
+    | { kind: "canonical"; ingredientId: string; label: string }
+    | { kind: "phrase"; label: string }
+  >;
 };
 
 type Entry = {
@@ -68,11 +73,16 @@ export function MealPlanCard({
     tags.push(titleCase(recipe.primaryProtein));
   }
   const tagList = tags.slice(0, 2);
+  const hasLeftoverMatches =
+    recipe.leftoverMatches && recipe.leftoverMatches.length > 0;
 
   return (
     <article
       className={cn(
-        "group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+        "group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm",
+        hasLeftoverMatches
+          ? "border-amber-500/40 ring-2 ring-amber-500/20"
+          : "border-border",
         className,
       )}
     >
@@ -207,6 +217,28 @@ export function MealPlanCard({
         <h3 className="font-semibold leading-tight text-foreground line-clamp-2">
           {recipe.title}
         </h3>
+        {hasLeftoverMatches && (
+          <div className="space-y-1">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-amber-800 dark:text-amber-400/90">
+              Your ingredients
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {recipe.leftoverMatches?.map((m) => (
+                <Badge
+                  key={
+                    m.kind === "canonical"
+                      ? `id:${m.ingredientId}`
+                      : `ph:${m.label}`
+                  }
+                  variant="outline"
+                  className="border-amber-500/45 bg-amber-500/10 font-normal text-amber-950 dark:text-amber-100"
+                >
+                  {m.label}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
         {tagList.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {tagList.map((label) => (

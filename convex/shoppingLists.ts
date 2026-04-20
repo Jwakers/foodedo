@@ -229,6 +229,79 @@ function aggregateIngredientsFromRecipes(
     }));
 }
 
+export type AggregatedShoppingLine = ReturnType<
+  typeof aggregateIngredientsFromRecipes
+>[number];
+
+function roundScaledAmount(n: number): number {
+  return Math.round(n * 1000) / 1000;
+}
+
+function scaleAmountForLeftover(
+  amount: number | string | null,
+  factor: number,
+): number | string | null {
+  if (amount === null) return null;
+  if (typeof amount === "number" && Number.isFinite(amount)) {
+    return roundScaledAmount(amount * factor);
+  }
+  const parsed = Number(amount);
+  if (Number.isFinite(parsed)) {
+    return roundScaledAmount(parsed * factor);
+  }
+  return amount;
+}
+
+function combineAmountEntriesToDisplay(
+  entries: Array<{ amount: number | string | null; unit?: string }>,
+): { amount: number | string | null; unit?: string } {
+  if (entries.length === 0) return { amount: null, unit: undefined };
+  return entries.slice(1).reduce(
+    (acc, e) => combineAmounts(acc.amount, acc.unit, e.amount, e.unit),
+    { amount: entries[0]!.amount, unit: entries[0]!.unit },
+  );
+}
+
+/** Full baseline copy from an aggregated line (before any leftover scaling). */
+function baselineSnapshotFromAggregatedLine(line: AggregatedShoppingLine) {
+  const amountEntries =
+    line.amountEntries && line.amountEntries.length > 0
+      ? line.amountEntries.map((e) => ({
+          amount: e.amount,
+          unit: e.unit,
+        }))
+      : [{ amount: line.amount, unit: line.unit }];
+  return {
+    amount: line.amount,
+    unit: line.unit,
+    amountEntries,
+  };
+}
+
+function scaledLineFromBaseline(
+  baseline: {
+    amount: number | string | null;
+    unit?: string;
+    amountEntries: Array<{ amount: number | string | null; unit?: string }>;
+  },
+  factor: number,
+): {
+  amount: number | string | null;
+  unit?: string;
+  amountEntries: Array<{ amount: number | string | null; unit?: string }>;
+} {
+  const amountEntries = baseline.amountEntries.map((e) => ({
+    amount: scaleAmountForLeftover(e.amount, factor),
+    unit: e.unit,
+  }));
+  const combined = combineAmountEntriesToDisplay(amountEntries);
+  return {
+    amount: combined.amount ?? null,
+    unit: combined.unit,
+    amountEntries,
+  };
+}
+
 // ============================================================================
 // QUERIES
 // ============================================================================
@@ -267,8 +340,68 @@ async function getAccessibleMealPlanIds(
 }
 
 /**
- * Draft/active lists shared to households the user belongs to (excludes private lists and own lists).
+ * Preview aggregated lines and which ones overlap the meal plan’s “already have” ingredients.
+ * Optional for tooling or future UI; `createShoppingListFromMealPlan` does not depend on this
+ * (overlapping ingredients default to full amounts when no per-line choices are sent).
  */
+export const previewShoppingListFromMealPlan = query({
+  args: { mealPlanId: v.id("mealPlans") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const plan = await ctx.db.get(args.mealPlanId);
+    if (!plan) return null;
+    const allowed = await canAccessMealPlan(ctx, user._id, plan);
+    if (!allowed) return null;
+
+    const entries = await ctx.db
+      .query("mealPlanEntries")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
+      .collect();
+
+    const recipeIds = [...new Set(entries.map((e) => e.recipeId))];
+    const recipes = await Promise.all(recipeIds.map((id) => ctx.db.get(id)));
+    const validRecipes = recipes.filter(
+      (r): r is NonNullable<typeof r> => r != null,
+    );
+    const aggregated = aggregateIngredientsFromRecipes(validRecipes);
+    const leftoverSet = new Set(
+      (plan.leftoverIngredientIds ?? []).map((id) => id as string),
+    );
+
+    const overlapIngredients = aggregated
+      .filter(
+        (i) =>
+          i.ingredientId != null && leftoverSet.has(i.ingredientId as string),
+      )
+      .map((i) => ({
+        ingredientId: i.ingredientId!,
+        name: i.name,
+        amountSummary: formatAggregatedLineSummary(i),
+      }));
+
+    return {
+      hasLeftoverIntent:
+        (plan.leftoverIngredientIds?.length ?? 0) > 0 ||
+        (plan.leftoverIngredientPhrases?.length ?? 0) > 0,
+      overlapIngredients,
+      totalAggregatedLines: aggregated.length,
+    };
+  },
+});
+
+function formatAggregatedLineSummary(line: AggregatedShoppingLine): string {
+  const entries =
+    line.amountEntries.length > 0
+      ? line.amountEntries
+      : [{ amount: line.amount, unit: line.unit }];
+  const parts = entries.map((e) =>
+    `${e.amount ?? ""} ${e.unit ?? ""}`.trim(),
+  );
+  return parts.filter(Boolean).join(" + ") || "—";
+}
+
 async function collectHouseholdSharedShoppingLists(
   ctx: QueryCtx,
   userId: Id<"users">,
@@ -675,10 +808,22 @@ export const createShoppingList = mutation({
 /**
  * Create a shopping list from a meal plan. User must have access to the plan (owner or shared household).
  */
+const leftoverShoppingChoiceValidator = v.object({
+  ingredientId: v.id("ingredients"),
+  mode: v.union(
+    v.literal("full"),
+    v.literal("reduced"),
+    v.literal("exclude"),
+  ),
+  reducedScale: v.optional(v.number()),
+});
+
 export const createShoppingListFromMealPlan = mutation({
   args: {
     mealPlanId: v.id("mealPlans"),
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
+    /** Per overlapping ingredient: optional override (defaults to full amount on the list if omitted). */
+    leftoverIngredientChoices: v.optional(v.array(leftoverShoppingChoiceValidator)),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -706,7 +851,76 @@ export const createShoppingListFromMealPlan = mutation({
       args.chalkboardItemIds,
     );
 
-    if (!items.length && !resolvedChalkboard.length) {
+    const leftoverSet = new Set(
+      (plan.leftoverIngredientIds ?? []).map((id) => id as string),
+    );
+    const choiceMap = new Map<
+      string,
+      { mode: "full" | "reduced" | "exclude"; reducedScale?: number }
+    >();
+    for (const c of args.leftoverIngredientChoices ?? []) {
+      choiceMap.set(c.ingredientId as string, {
+        mode: c.mode,
+        reducedScale: c.reducedScale,
+      });
+    }
+
+    const rowsToInsert: Array<{
+      line: AggregatedShoppingLine;
+      leftoverMeta?: {
+        ingredientId: Id<"ingredients">;
+        mode: "full" | "reduced";
+        baseline: ReturnType<typeof baselineSnapshotFromAggregatedLine>;
+        reducedScale?: number;
+      };
+    }> = [];
+
+    for (const line of items) {
+      const iid = line.ingredientId;
+      const overlaps =
+        leftoverSet.size > 0 &&
+        iid !== undefined &&
+        leftoverSet.has(iid as string);
+      if (overlaps) {
+        const choice = choiceMap.get(iid as string) ?? {
+          mode: "full" as const,
+        };
+        if (choice.mode === "exclude") {
+          continue;
+        }
+        const scale =
+          choice.mode === "reduced" ? (choice.reducedScale ?? 0.5) : 1;
+        const baseline = baselineSnapshotFromAggregatedLine(line);
+        const display = scaledLineFromBaseline(baseline, scale);
+        rowsToInsert.push({
+          line: {
+            ...line,
+            amount: display.amount,
+            unit: display.unit,
+            amountEntries: display.amountEntries,
+          },
+          leftoverMeta: {
+            ingredientId: iid,
+            mode: choice.mode === "reduced" ? "reduced" : "full",
+            baseline,
+            reducedScale:
+              choice.mode === "reduced"
+                ? (choice.reducedScale ?? 0.5)
+                : undefined,
+          },
+        });
+        continue;
+      }
+      rowsToInsert.push({ line });
+    }
+
+    rowsToInsert.sort((a, b) =>
+      a.line.name.localeCompare(b.line.name, undefined, {
+        sensitivity: "base",
+      }),
+    );
+
+    if (!rowsToInsert.length && !resolvedChalkboard.length) {
       throw new ConvexError(
         "Cannot create a shopping list from this meal plan: no ingredients or chalkboard items."
       );
@@ -739,28 +953,40 @@ export const createShoppingListFromMealPlan = mutation({
       ...(plan.householdId !== undefined && { householdId: plan.householdId }),
     });
 
-    await Promise.all(
-      items.map((item, i) => {
-        const entries = item.amountEntries ?? [
-          { amount: item.amount, unit: item.unit },
-        ];
-        const first = entries[0];
-        return ctx.db.insert("shoppingListItems", {
-          shoppingListId: listId,
-          name: item.name,
-          amount: first?.amount ?? item.amount,
-          unit: first?.unit ?? item.unit,
-          preparation: item.preparation,
-          checked: false,
-          order: i,
-          ingredientId: item.ingredientId,
-          amountEntries: entries,
-          recipeIds: item.recipeIds,
-        });
-      })
-    );
+    let order = 0;
+    for (const row of rowsToInsert) {
+      const item = row.line;
+      const entries = item.amountEntries ?? [
+        { amount: item.amount, unit: item.unit },
+      ];
+      const first = entries[0];
+      await ctx.db.insert("shoppingListItems", {
+        shoppingListId: listId,
+        name: item.name,
+        amount: first?.amount ?? item.amount,
+        unit: first?.unit ?? item.unit,
+        preparation: item.preparation,
+        checked: false,
+        order: order++,
+        ingredientId: item.ingredientId,
+        amountEntries: entries,
+        recipeIds: item.recipeIds,
+        ...(row.leftoverMeta
+          ? {
+              mealPlanLeftoverIngredientId: row.leftoverMeta.ingredientId,
+              leftoverIncludeMode: row.leftoverMeta.mode,
+              leftoverReducedScale: row.leftoverMeta.reducedScale,
+              leftoverBaseline: {
+                amount: row.leftoverMeta.baseline.amount,
+                unit: row.leftoverMeta.baseline.unit,
+                amountEntries: row.leftoverMeta.baseline.amountEntries,
+              },
+            }
+          : {}),
+      });
+    }
 
-    const baseOrder = items.length;
+    const baseOrder = order;
     await Promise.all(
       resolvedChalkboard.map((r, j) =>
         ctx.db.insert("shoppingListItems", {
@@ -852,6 +1078,69 @@ export const updateItemAmount = mutation({
     await ctx.db.patch(args.itemId, updates);
 
     return { success: true };
+  },
+});
+
+/**
+ * Recompute a meal-plan “already have” line from its stored baseline using full / reduced / exclude.
+ * The shopping-list UI normally edits amounts via `updateItemAmount` instead; this remains useful
+ * for proportional scaling against `leftoverBaseline` when needed.
+ */
+export const updateMealPlanLeftoverShoppingItem = mutation({
+  args: {
+    itemId: v.id("shoppingListItems"),
+    mode: v.union(
+      v.literal("full"),
+      v.literal("reduced"),
+      v.literal("exclude"),
+    ),
+    reducedScale: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const item = await ctx.db.get(args.itemId);
+    if (!item) {
+      throw new ConvexError("Item not found");
+    }
+    const list = await ctx.db.get(item.shoppingListId);
+    if (!list) {
+      throw new ConvexError("Shopping list not found");
+    }
+    const allowed = await canAccessShoppingList(ctx, user._id, list);
+    if (!allowed) {
+      throw new ConvexError("You do not have access to this shopping list");
+    }
+    if (list.status !== "draft") {
+      throw new ConvexError("Can only update items in draft mode");
+    }
+    if (
+      item.mealPlanLeftoverIngredientId === undefined ||
+      item.leftoverBaseline === undefined
+    ) {
+      throw new ConvexError("This line is not an “already have” meal-plan item");
+    }
+
+    if (args.mode === "exclude") {
+      await ctx.db.delete(args.itemId);
+      return { deleted: true as const };
+    }
+
+    const baseline = item.leftoverBaseline;
+    const scale =
+      args.mode === "reduced" ? (args.reducedScale ?? 0.5) : 1;
+    const display = scaledLineFromBaseline(baseline, scale);
+    const entries = display.amountEntries;
+    const first = entries[0];
+    await ctx.db.patch(args.itemId, {
+      amount: first?.amount ?? display.amount,
+      unit: first?.unit ?? display.unit,
+      amountEntries: entries,
+      leftoverIncludeMode: args.mode === "reduced" ? "reduced" : "full",
+      leftoverReducedScale:
+        args.mode === "reduced" ? (args.reducedScale ?? 0.5) : undefined,
+    });
+
+    return { success: true as const };
   },
 });
 

@@ -15,6 +15,7 @@ import {
   recipeHasMealPlanGeneratorMetadata,
   recipeIsInMealPlanGeneratorPool,
 } from "convex/lib/constants";
+import { LeftoverMatchBadge } from "./leftover-match-badge";
 import type { RecipeListItem } from "./types";
 import { Ban, Check, Clock, Minus, Users, X } from "lucide-react";
 import Image from "next/image";
@@ -64,12 +65,15 @@ type RecipeCardProps = {
   showMealPlanBadge?: boolean;
   /** When true, use Next.js Image optimization (system recipes only). Default false for user recipes. */
   optimizeImage?: boolean;
+  /** When set with recipe.leftoverMatchCount, shows “Uses n/m” on the card. */
+  leftoverTargetCount?: number | null;
 };
 
 export function RecipeCard({
   recipe,
   showMealPlanBadge = true,
   optimizeImage = false,
+  leftoverTargetCount,
 }: RecipeCardProps) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
@@ -111,6 +115,15 @@ export function RecipeCard({
             className="absolute inset-0 bg-linear-to-t from-black/70 to-64% to-transparent"
             aria-hidden
           />
+          {leftoverTargetCount != null &&
+            leftoverTargetCount > 0 &&
+            recipe.leftoverMatchCount != null &&
+            recipe.leftoverMatchCount > 0 && (
+              <LeftoverMatchBadge
+                matchCount={recipe.leftoverMatchCount}
+                targetCount={leftoverTargetCount}
+              />
+            )}
           <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-none">
             {showMealPlanBadge && !categoryOkForPlanner && (
               <span className="pointer-events-auto shrink-0">

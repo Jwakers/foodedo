@@ -1,6 +1,10 @@
 "use client";
 
 import type { RecipeListItem } from "./types";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { canUseLeftoverIngredients } from "convex/lib/constants";
 import {
   createContext,
   useCallback,
@@ -101,6 +105,12 @@ export type RecipeListingFilterState = {
   selectedComplexity: string;
 };
 
+export type LeftoverListingMeta = {
+  bestMatchCount: number;
+  targetCount: number;
+  hasAnyMatch: boolean;
+};
+
 const initialFilterState: RecipeListingFilterState = {
   searchQuery: "",
   selectedCategory: "all",
@@ -124,6 +134,18 @@ export type RecipeListingContextValue = {
   currentTab: RecipeListingTab | null;
   /** When true, recipe card images use Next.js Image optimization (system recipes only). */
   optimizeImage: boolean;
+  leftoverIngredientIds: Id<"ingredients">[];
+  leftoverIngredientPhrases: string[];
+  setLeftoverSelection: (next: {
+    ingredientIds: Id<"ingredients">[];
+    phrases: string[];
+  }) => void;
+  /** Present when leftover search ran successfully (entitled + at least one id). */
+  leftoverListingMeta: LeftoverListingMeta | null;
+  /** User may use leftover ranking (Pro, or free during beta). */
+  canUseLeftoverFeatures: boolean;
+  /** Recipes for the current tab before leftover filter (for empty-state copy). */
+  baseRecipesForTab: RecipeListItem[] | undefined;
 };
 
 const RecipeListingContext = createContext<RecipeListingContextValue | null>(
@@ -159,17 +181,94 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
   const searchParams = useSearchParams();
   const [filterState, setFilterState] =
     useState<RecipeListingFilterState>(initialFilterState);
+  const [leftoverIngredientIds, setLeftoverIngredientIds] = useState<
+    Id<"ingredients">[]
+  >([]);
+  const [leftoverIngredientPhrases, setLeftoverIngredientPhrases] = useState<
+    string[]
+  >([]);
+
+  const user = useQuery(api.users.current);
+  const canUseLeftoverFeatures =
+    user != null && canUseLeftoverIngredients(user.subscriptionTier);
+
+  const hasLeftoverTargets =
+    leftoverIngredientIds.length > 0 || leftoverIngredientPhrases.length > 0;
+
+  const leftoverSearch = useQuery(
+    api.recipes.searchWithLeftoverIngredients,
+    canUseLeftoverFeatures && hasLeftoverTargets && user != null
+      ? {
+          leftoverIngredientIds:
+            leftoverIngredientIds.length > 0
+              ? leftoverIngredientIds
+              : undefined,
+          leftoverIngredientPhrases:
+            leftoverIngredientPhrases.length > 0
+              ? leftoverIngredientPhrases
+              : undefined,
+        }
+      : "skip",
+  );
 
   const isTabbed = isTabbedProps(props);
   const currentTab: RecipeListingTab | null = isTabbed
     ? getCurrentTab(searchParams)
     : null;
 
-  const recipes: RecipeListItem[] | undefined = isTabbed
-    ? currentTab === "discover"
-      ? props.systemRecipes
-      : props.myRecipes
-    : props.recipes;
+  const recipes: RecipeListItem[] | undefined = useMemo(() => {
+    if (!hasLeftoverTargets || !canUseLeftoverFeatures) {
+      if (isTabbedProps(props)) {
+        return currentTab === "discover"
+          ? props.systemRecipes
+          : props.myRecipes;
+      }
+      return props.recipes;
+    }
+    if (leftoverSearch === undefined) return undefined;
+    const from = leftoverSearch.recipes;
+    if (!isTabbedProps(props)) {
+      return from.filter((r) => r.source === "system") as RecipeListItem[];
+    }
+    if (currentTab === "discover") {
+      return from.filter((r) => r.source === "system") as RecipeListItem[];
+    }
+    return from.filter((r) => r.source !== "system") as RecipeListItem[];
+  }, [
+    props,
+    currentTab,
+    hasLeftoverTargets,
+    canUseLeftoverFeatures,
+    leftoverSearch,
+  ]);
+
+  const baseRecipesForTab: RecipeListItem[] | undefined = useMemo(() => {
+    if (isTabbedProps(props)) {
+      return currentTab === "discover"
+        ? props.systemRecipes
+        : props.myRecipes;
+    }
+    return props.recipes;
+  }, [props, currentTab]);
+
+  const leftoverListingMeta = useMemo((): LeftoverListingMeta | null => {
+    if (
+      !hasLeftoverTargets ||
+      !canUseLeftoverFeatures ||
+      leftoverSearch === undefined
+    ) {
+      return null;
+    }
+    return {
+      bestMatchCount: leftoverSearch.bestMatchCount,
+      targetCount: leftoverSearch.targetCount,
+      hasAnyMatch: leftoverSearch.hasAnyMatch,
+    };
+  }, [
+    hasLeftoverTargets,
+    canUseLeftoverFeatures,
+    leftoverSearch,
+  ]);
 
   const filteredRecipes = useMemo(
     () => filterRecipes(recipes, filterState),
@@ -181,10 +280,24 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
     filterState.selectedCategory !== "all" ||
     filterState.selectedProtein !== "all" ||
     filterState.selectedDuration !== "all" ||
-    filterState.selectedComplexity !== "all";
+    filterState.selectedComplexity !== "all" ||
+    hasLeftoverTargets;
+
+  const setLeftoverSelection = useCallback(
+    (next: {
+      ingredientIds: Id<"ingredients">[];
+      phrases: string[];
+    }) => {
+      setLeftoverIngredientIds(next.ingredientIds);
+      setLeftoverIngredientPhrases(next.phrases);
+    },
+    [],
+  );
 
   const clearFilters = useCallback(() => {
     setFilterState(initialFilterState);
+    setLeftoverIngredientIds([]);
+    setLeftoverIngredientPhrases([]);
   }, []);
 
   const setSearchQuery = useCallback(
@@ -223,6 +336,12 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       isTabbedMode: isTabbed,
       currentTab,
       optimizeImage: isTabbed ? currentTab === "discover" : true,
+      leftoverIngredientIds,
+      leftoverIngredientPhrases,
+      setLeftoverSelection,
+      leftoverListingMeta,
+      canUseLeftoverFeatures,
+      baseRecipesForTab,
     }),
     [
       recipes,
@@ -237,6 +356,12 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       hasActiveFilters,
       isTabbed,
       currentTab,
+      leftoverIngredientIds,
+      leftoverIngredientPhrases,
+      setLeftoverSelection,
+      leftoverListingMeta,
+      canUseLeftoverFeatures,
+      baseRecipesForTab,
     ],
   );
 

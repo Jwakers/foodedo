@@ -15,6 +15,7 @@ import {
   RECIPE_CATEGORIES,
 } from "convex/lib/constants";
 import { Search } from "lucide-react";
+import { LeftoverIngredientsFilter } from "./leftover-ingredients-filter";
 import { useRecipeListing } from "./recipe-listing-context";
 
 const DURATION_OPTIONS = [
@@ -61,11 +62,14 @@ export function RecipeFilters() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <span className="text-sm font-medium text-foreground">Filter</span>
-        <p className="text-sm text-muted-foreground">
-          Narrow results by category, protein, time, or complexity.
-        </p>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-foreground">Filter</span>
+          <p className="text-sm text-muted-foreground">
+            Narrow results by category, protein, time, complexity, or matching
+            ingredients (below).
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={filterState.selectedCategory}
@@ -133,6 +137,8 @@ export function RecipeFilters() {
             </SelectContent>
           </Select>
         </div>
+
+        <LeftoverIngredientsFilter />
       </div>
     </div>
   );

@@ -276,7 +276,26 @@ export type Cuisine = (typeof CUISINES)[number];
 
 // Property names should match clerk subscription tiers
 export const SUBSCRIPTION_TIERS = ["free_user", "pro_user"] as const;
-type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
+export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
+
+/**
+ * While true, free-tier users get premium features (e.g. leftover ingredients).
+ * Set to false when leaving beta so only `pro_user` retains access via {@link canUseLeftoverIngredients}.
+ */
+export const BETA_FREE_INCLUDES_PREMIUM_FEATURES = true;
+
+/** Max ingredients a user can select for “use up leftovers” flows. */
+export const LEFTOVER_INGREDIENTS_MAX = 10;
+
+/** Premium feature: search/rank recipes and boost meal-plan generation by leftover ingredients. */
+export function canUseLeftoverIngredients(
+  subscriptionTier: string | undefined,
+): boolean {
+  const tier = (subscriptionTier ?? "free_user") as SubscriptionTier;
+  if (tier === "pro_user") return true;
+  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
+  return false;
+}
 
 type PlanLimits = {
   maxRecipes: number;
