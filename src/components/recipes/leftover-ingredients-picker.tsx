@@ -171,30 +171,51 @@ export function LeftoverIngredientsPicker({
           searchResults &&
           searchResults.length > 0 &&
           !locked && (
-            <ul
-              className="max-h-48 overflow-auto rounded-md border bg-background text-sm shadow-sm"
-              role="listbox"
-            >
+            <ul className="max-h-48 overflow-auto rounded-md border bg-background text-sm shadow-sm">
               {searchResults.map((row) => {
                 const isSelected = selectedIds.includes(row._id);
+                const atCapacity = totalSelected >= LEFTOVER_INGREDIENTS_MAX;
+                const isDisabled = isSelected || atCapacity;
+                const labelText =
+                  row.displayName && row.displayName !== row.name
+                    ? `${row.name} (${row.displayName})`
+                    : row.name;
+                const ariaLabel = isSelected
+                  ? `${row.name} — already selected`
+                  : atCapacity
+                    ? `Cannot add ${row.name}: selection limit reached`
+                    : `Add ${row.name}`;
+                const buttonClass = cn(
+                  "flex w-full px-3 py-2 text-left",
+                  isDisabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:bg-accent",
+                );
                 return (
-                  <li key={row._id} role="option" aria-selected={isSelected}>
-                    <button
-                      type="button"
-                      className="flex w-full px-3 py-2 text-left hover:bg-accent"
-                      onClick={() => addId(row._id)}
-                    >
-                      {row.displayName && row.displayName !== row.name ? (
-                        <>
-                          {row.name}{" "}
-                          <span className="text-muted-foreground">
-                            ({row.displayName})
-                          </span>
-                        </>
-                      ) : (
-                        row.name
-                      )}
-                    </button>
+                  <li key={row._id}>
+                    {isSelected ? (
+                      <button
+                        type="button"
+                        aria-pressed="true"
+                        disabled={isDisabled}
+                        aria-label={ariaLabel}
+                        className={buttonClass}
+                        onClick={() => addId(row._id)}
+                      >
+                        {labelText}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        aria-pressed="false"
+                        disabled={isDisabled}
+                        aria-label={ariaLabel}
+                        className={buttonClass}
+                        onClick={() => addId(row._id)}
+                      >
+                        {labelText}
+                      </button>
+                    )}
                   </li>
                 );
               })}
