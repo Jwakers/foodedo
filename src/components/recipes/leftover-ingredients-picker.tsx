@@ -175,26 +175,29 @@ export function LeftoverIngredientsPicker({
               className="max-h-48 overflow-auto rounded-md border bg-background text-sm shadow-sm"
               role="listbox"
             >
-              {searchResults.map((row) => (
-                <li key={row._id} role="option">
-                  <button
-                    type="button"
-                    className="flex w-full px-3 py-2 text-left hover:bg-accent"
-                    onClick={() => addId(row._id)}
-                  >
-                    {row.displayName && row.displayName !== row.name ? (
-                      <>
-                        {row.name}{" "}
-                        <span className="text-muted-foreground">
-                          ({row.displayName})
-                        </span>
-                      </>
-                    ) : (
-                      row.name
-                    )}
-                  </button>
-                </li>
-              ))}
+              {searchResults.map((row) => {
+                const isSelected = selectedIds.includes(row._id);
+                return (
+                  <li key={row._id} role="option" aria-selected={isSelected}>
+                    <button
+                      type="button"
+                      className="flex w-full px-3 py-2 text-left hover:bg-accent"
+                      onClick={() => addId(row._id)}
+                    >
+                      {row.displayName && row.displayName !== row.name ? (
+                        <>
+                          {row.name}{" "}
+                          <span className="text-muted-foreground">
+                            ({row.displayName})
+                          </span>
+                        </>
+                      ) : (
+                        row.name
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         {canAddCustom && (

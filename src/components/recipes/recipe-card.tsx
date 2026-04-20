@@ -91,6 +91,17 @@ export function RecipeCard({
 
   const recipeHref = `${ROUTES.RECIPE}/${recipe._id}`;
 
+  const leftoverMatchBadge =
+    leftoverTargetCount != null &&
+    leftoverTargetCount > 0 &&
+    recipe.leftoverMatchCount != null &&
+    recipe.leftoverMatchCount > 0
+      ? {
+          matchCount: recipe.leftoverMatchCount,
+          targetCount: leftoverTargetCount,
+        }
+      : null;
+
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 pt-0">
       <div className="relative">
@@ -115,15 +126,12 @@ export function RecipeCard({
             className="absolute inset-0 bg-linear-to-t from-black/70 to-64% to-transparent"
             aria-hidden
           />
-          {leftoverTargetCount != null &&
-            leftoverTargetCount > 0 &&
-            recipe.leftoverMatchCount != null &&
-            recipe.leftoverMatchCount > 0 && (
-              <LeftoverMatchBadge
-                matchCount={recipe.leftoverMatchCount}
-                targetCount={leftoverTargetCount}
-              />
-            )}
+          {leftoverMatchBadge && (
+            <LeftoverMatchBadge
+              matchCount={leftoverMatchBadge.matchCount}
+              targetCount={leftoverMatchBadge.targetCount}
+            />
+          )}
           <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-none">
             {showMealPlanBadge && !categoryOkForPlanner && (
               <span className="pointer-events-auto shrink-0">

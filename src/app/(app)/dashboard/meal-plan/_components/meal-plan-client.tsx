@@ -260,6 +260,18 @@ export default function MealPlanClient() {
     currentUser != null &&
     canUseLeftoverIngredients(currentUser.subscriptionTier);
 
+  useEffect(() => {
+    if (currentUser === undefined) return;
+    if (!canUseMealPlanLeftovers) {
+      setMealPlanLeftoverIds([]);
+      setMealPlanLeftoverPhrases([]);
+      return;
+    }
+    if (!currentPlan) return;
+    setMealPlanLeftoverIds(currentPlan.leftoverIngredientIds ?? []);
+    setMealPlanLeftoverPhrases(currentPlan.leftoverIngredientPhrases ?? []);
+  }, [currentPlan, canUseMealPlanLeftovers, currentUser]);
+
   const entriesSorted = useMemo(() => {
     const entries = currentPlan?.entries ?? [];
     return [...entries].sort(

@@ -368,18 +368,30 @@ async function collectRecipesForLeftoverSearch(
     .withIndex("by_user", (q) => q.eq("userId", userId))
     .collect();
 
-  for (const m of memberships) {
-    const shared = await ctx.db
-      .query("householdRecipes")
-      .withIndex("by_household", (q) => q.eq("householdId", m.householdId))
-      .collect();
+  const householdIds = [...new Set(memberships.map((m) => m.householdId))];
+  const sharedPerHousehold = await Promise.all(
+    householdIds.map((householdId) =>
+      ctx.db
+        .query("householdRecipes")
+        .withIndex("by_household", (q) => q.eq("householdId", householdId))
+        .collect(),
+    ),
+  );
+  const sharedRecipeIds = new Set<Id<"recipes">>();
+  for (const shared of sharedPerHousehold) {
     for (const s of shared) {
-      const r = await ctx.db.get(s.recipeId);
-      if (!r) continue;
-      const { canAccess } = await canAccessRecipe(ctx, userId, s.recipeId);
-      if (!canAccess) continue;
-      push(r);
+      sharedRecipeIds.add(s.recipeId);
     }
+  }
+  const householdOnlyIds = [...sharedRecipeIds].filter((id) => !seen.has(id));
+  const householdRecipeDocs = await Promise.all(
+    householdOnlyIds.map((id) => ctx.db.get(id)),
+  );
+  for (const r of householdRecipeDocs) {
+    if (!r) continue;
+    const { canAccess } = await canAccessRecipe(ctx, userId, r._id);
+    if (!canAccess) continue;
+    push(r);
   }
 
   return out;

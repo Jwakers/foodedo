@@ -70,7 +70,7 @@ export async function buildPool(
     leftoverDocs = got.filter((d): d is Doc<"ingredients"> => d != null);
   }
   const normalisedPhrases = normaliseLeftoverPhrasesList(
-    options?.leftoverTargetPhrases ?? undefined,
+    options?.leftoverTargetPhrases,
   );
   const leftoverIdsForMatch = leftoverDocs.map((d) => d._id);
   const leftoverTargetCount =

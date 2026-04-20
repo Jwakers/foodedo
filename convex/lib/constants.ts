@@ -291,7 +291,7 @@ export const LEFTOVER_INGREDIENTS_MAX = 10;
 export function canUseLeftoverIngredients(
   subscriptionTier: string | undefined,
 ): boolean {
-  const tier = (subscriptionTier ?? "free_user") as SubscriptionTier;
+  const tier = subscriptionTier ?? "free_user";
   if (tier === "pro_user") return true;
   if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
   return false;

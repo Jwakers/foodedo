@@ -12,7 +12,9 @@ export function normaliseLeftoverPhraseForStorage(phrase: string): string {
 }
 
 /** Dedupe, drop empties, sort for stable keys. */
-export function normaliseLeftoverPhrasesList(raw: string[] | undefined): string[] {
+export function normaliseLeftoverPhrasesList(
+  raw: string[] | null | undefined,
+): string[] {
   if (!raw?.length) return [];
   const out = new Set<string>();
   for (const s of raw) {

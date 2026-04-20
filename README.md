@@ -105,7 +105,7 @@ _Angle: looking for ~20 testers / feedback._
 ### Meal plan, sharing, and shopping
 
 - [x] Meal plans should be shared to households automatically.
-- [ ] when navigating to the shopping list UI from the meal plan page, the back button takes you back to recipe selection even though you came from the meal plan generator. The back button should be general and take you back to the previous page you came from. Same when you cancel a shopping list
+- [ ] When opening the shopping list from the meal plan, Back/Cancel should return to the previous page (not default to recipe selection).
 
 ### Chalkboard and UI friction
 

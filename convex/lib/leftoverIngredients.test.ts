@@ -122,4 +122,6 @@ function runTests(): boolean {
   return failed === 0;
 }
 
-runTests();
+if (!runTests()) {
+  process.exit(1);
+}
