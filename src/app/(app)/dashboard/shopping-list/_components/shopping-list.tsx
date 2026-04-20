@@ -692,7 +692,7 @@ export default function ShoppingList({
             className="gap-2 -ml-2"
           >
             <ArrowLeft className="size-4" />
-            Back to Recipe Selection
+            Back
           </Button>
         ) : (
           <Button
@@ -1124,7 +1124,8 @@ export default function ShoppingList({
             {shoppingList.items.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
-                  All items removed. Go back to select recipes again.
+                  All items removed. Use the button above to leave or edit this
+                  list.
                 </p>
               </div>
             )}
