@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, startOfLocalDayMs } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -36,6 +36,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useCurrentMealPlan } from "@/app/(app)/_components.tsx/current-meal-plan-context";
 import { MealPlanOverviewSection } from "./meal-plan-overview-section";
 import { TodaysMealSpotlight } from "./todays-meal-spotlight";
 
@@ -506,9 +507,7 @@ function BentoGrid({ emphasizeMealPlan }: { emphasizeMealPlan: boolean }) {
 
 export default function DashboardClient() {
   const recentActivity = useQuery(api.recipes.getRecentActivity);
-  const currentPlanForLayout = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDayStartMs: startOfLocalDayMs(Date.now()),
-  });
+  const { currentPlan: currentPlanForLayout } = useCurrentMealPlan();
   const emphasizeNoPlan =
     currentPlanForLayout !== undefined && currentPlanForLayout === null;
 

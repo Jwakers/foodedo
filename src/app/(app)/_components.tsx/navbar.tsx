@@ -2,9 +2,7 @@
 
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
-import { cn, startOfLocalDayMs } from "@/lib/utils";
-import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { cn } from "@/lib/utils";
 import {
   CalendarCheck,
   ChefHat,
@@ -16,13 +14,12 @@ import {
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { AddRecipeDrawer } from "./add-recipe-drawer";
+import { useCurrentMealPlan } from "./current-meal-plan-context";
 
 export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDayStartMs: startOfLocalDayMs(Date.now()),
-  });
+  const { currentPlan } = useCurrentMealPlan();
   const showPlanWeekFab =
     currentPlan !== undefined && currentPlan === null;
 

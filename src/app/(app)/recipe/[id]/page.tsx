@@ -1,10 +1,11 @@
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { getSiteBaseUrl } from "@/lib/site-url";
 import { openGraphSiteAndUrl } from "@/lib/og-metadata";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { RecipeBackButton } from "./_components/recipe-back-button";
@@ -16,6 +17,13 @@ interface RecipePageProps {
   }>;
 }
 
+const getCachedRecipeForMetadata = unstable_cache(
+  async (recipeId: Id<"recipes">) =>
+    fetchQuery(api.recipes.getRecipe, { recipeId }),
+  ["recipe-open-graph-metadata"],
+  { revalidate: 60 * 60 * 12 },
+);
+
 export async function generateMetadata({
   params,
 }: RecipePageProps): Promise<Metadata> {
@@ -26,7 +34,7 @@ export async function generateMetadata({
   }
 
   try {
-    const recipe = await fetchQuery(api.recipes.getRecipe, { recipeId });
+    const recipe = await getCachedRecipeForMetadata(recipeId);
     if (recipe?.title) {
       const title = `${recipe.title} | ${APP_NAME}`;
       const description =

@@ -36,7 +36,8 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 ## Next steps & backlog
 
-- [ ] Focus on the new user onboarding journey
+- [x] Focus on the new user onboarding journey
+- [ ] Improve convex function call usage
 - [ ] Remove rabbit meals from system recipes + anything else that might be considered too niche
 - [ ] Plan in a premium feature that takes existing ingredients and helps you use them up in your next meal plan (do consider that premium features are free in beta)
 - [ ] Create the premium tier recipe generator (free in beta).

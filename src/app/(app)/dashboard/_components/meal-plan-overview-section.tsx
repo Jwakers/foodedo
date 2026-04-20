@@ -1,13 +1,12 @@
 "use client";
 
+import { useCurrentMealPlan } from "@/app/(app)/_components.tsx/current-meal-plan-context";
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, startOfDayMs, startOfLocalDayMs } from "@/lib/utils";
-import { api } from "convex/_generated/api";
+import { cn, startOfDayMs } from "@/lib/utils";
 import type { Id } from "convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { CalendarCheck, ChefHat, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,13 +67,9 @@ function MealThumbnail({
 }
 
 export function MealPlanOverviewSection() {
+  const { currentPlan } = useCurrentMealPlan();
   const now = Date.now();
-  const localTodayStart = startOfLocalDayMs(now);
   const utcTodayStart = startOfDayMs(now);
-
-  const currentPlan = useQuery(api.mealPlans.getCurrentMealPlan, {
-    localDayStartMs: localTodayStart,
-  });
 
   const mealsByDate = useMemo(() => {
     if (!currentPlan?.entries) return [];
