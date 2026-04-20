@@ -279,8 +279,8 @@ export const SUBSCRIPTION_TIERS = ["free_user", "pro_user"] as const;
 export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
 
 /**
- * While true, free-tier users get premium features (e.g. leftover ingredients).
- * Set to false when leaving beta so only `pro_user` retains access via {@link canUseLeftoverIngredients}.
+ * While true, free-tier users get premium features (e.g. leftover ingredients, AI recipe images).
+ * Set to false when leaving beta so only `pro_user` retains access via the `canUse*` helpers.
  */
 export const BETA_FREE_INCLUDES_PREMIUM_FEATURES = true;
 
@@ -296,6 +296,42 @@ export function canUseLeftoverIngredients(
   if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
   return false;
 }
+
+/** Premium feature: AI-generated recipe image for user-owned recipes (same beta flag as leftovers). */
+export function canGenerateRecipeHeroImageWithAI(
+  subscriptionTier: string | undefined,
+): boolean {
+  const tier = subscriptionTier ?? "free_user";
+  if (tier === "pro_user") return true;
+  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
+  return false;
+}
+
+/** Rate limits for AI recipe image generation (same caps for all entitled tiers during beta). */
+export const RECIPE_AI_HERO_LIMITS = {
+  MAX_SUCCEEDED_PER_24H: 5,
+  MAX_SUCCEEDED_PER_30D: 30,
+  MIN_INTERVAL_MS: 45_000,
+  MAX_SUCCEEDED_PER_RECIPE_PER_24H: 2,
+  JOB_TTL_MS: 15 * 60 * 1000,
+} as const;
+
+/** ConvexError codes (recipe AI image jobs). */
+export const RECIPE_AI_HERO_ERRORS = {
+  PREMIUM_REQUIRED: "PREMIUM_REQUIRED_RECIPE_AI_HERO_IMAGE",
+  RATE_LIMIT_USER_24H: "RATE_LIMIT_RECIPE_AI_HERO_IMAGE_24H",
+  RATE_LIMIT_USER_30D: "RATE_LIMIT_RECIPE_AI_HERO_IMAGE_30D",
+  RATE_LIMIT_RECIPE_24H: "RATE_LIMIT_RECIPE_AI_HERO_IMAGE_RECIPE_24H",
+  COOLDOWN: "COOLDOWN_RECIPE_AI_HERO_IMAGE",
+  PENDING_JOB: "PENDING_RECIPE_AI_HERO_IMAGE_JOB",
+  NOT_FOUND: "RECIPE_AI_HERO_IMAGE_JOB_NOT_FOUND",
+  NOT_OWNER: "RECIPE_AI_HERO_IMAGE_NOT_OWNER",
+  EXPIRED: "RECIPE_AI_HERO_IMAGE_JOB_EXPIRED",
+  INVALID_JOB_STATE: "RECIPE_AI_HERO_IMAGE_INVALID_JOB",
+  STORAGE_VERIFY: "RECIPE_AI_HERO_IMAGE_STORAGE_VERIFY_FAILED",
+  /** Recipe already has an AI-generated image; upload a photo first to replace it before generating again. */
+  ALREADY_HAS_AI_HERO: "RECIPE_AI_HERO_IMAGE_ALREADY_HAS_AI",
+} as const;
 
 type PlanLimits = {
   maxRecipes: number;

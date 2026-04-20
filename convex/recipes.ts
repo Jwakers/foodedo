@@ -1349,6 +1349,7 @@ export const updateRecipeImageAndDeleteOld = mutation({
     // Update recipe with new image
     await ctx.db.patch(args.recipeId, {
       image: args.storageId,
+      heroImageOrigin: "user_upload",
       updatedAt: Date.now(),
     });
 

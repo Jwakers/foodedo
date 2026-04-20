@@ -68,6 +68,10 @@ export default defineSchema({
     title: v.string(),
     description: v.optional(v.string()),
     image: v.optional(v.id("_storage")),
+    /** Main recipe image: set when it came from AI vs manual upload (manual path sets user_upload). */
+    heroImageOrigin: v.optional(
+      v.union(v.literal("user_upload"), v.literal("ai")),
+    ),
     prepTime: v.number(),
     cookTime: v.optional(v.number()),
     serves: v.number(),
@@ -138,6 +142,28 @@ export default defineSchema({
     .index("by_complexityTier", ["complexityTier"])
     .index("by_isGeneratorEligible", ["isGeneratorEligible"])
     .index("by_publicSlug", ["publicSlug"]),
+
+  /** Audit + quota for Pro AI recipe image generation (one row per attempt/job). */
+  recipeAiHeroImageAttempts: defineTable({
+    userId: v.id("users"),
+    recipeId: v.id("recipes"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("succeeded"),
+      v.literal("failed"),
+      v.literal("expired"),
+    ),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+    model: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    recipeTitleSnapshot: v.optional(v.string()),
+    promptCharLength: v.optional(v.number()),
+    storageId: v.optional(v.id("_storage")),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_recipe_created", ["recipeId", "createdAt"])
+    .index("by_user_status", ["userId", "status"]),
 
   ingredients: defineTable({
     name: v.string(),

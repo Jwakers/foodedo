@@ -207,6 +207,7 @@ export function RecipeHeader({
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
         existingImageUrl={recipe.image}
+        heroImageOrigin={recipe.heroImageOrigin}
       />
     </div>
   );
