@@ -179,6 +179,38 @@ function runTests(): boolean {
     );
   });
 
+  test("checkRecipeAiHeroImageQuota blocks user 30d cap", () => {
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    const now = 500_000_000;
+    const dayAgo = now - ONE_DAY;
+    const monthAgo = now - 30 * ONE_DAY;
+    const attempts: HeroImageAttemptForQuota[] = [];
+    // 26 successes older than 24h (so 24h cap not hit) but within 30d
+    for (let i = 0; i < 26; i++) {
+      const t = monthAgo + (i + 1) * 60_000;
+      attempts.push({
+        recipeId: recipeA,
+        status: "succeeded",
+        createdAt: t,
+        completedAt: t + 100,
+      });
+    }
+    // 4 more in the last 24h (under MAX_SUCCEEDED_PER_24H of 5); latest start old enough for cooldown
+    for (let j = 0; j < 4; j++) {
+      const t = dayAgo + (j + 1) * 1000;
+      attempts.push({
+        recipeId: recipeA,
+        status: "succeeded",
+        createdAt: now - 50_000,
+        completedAt: t,
+      });
+    }
+    assert.deepEqual(
+      checkRecipeAiHeroImageQuota({ now, recipeId: recipeA, attempts }),
+      { ok: false, code: RECIPE_AI_HERO_ERRORS.RATE_LIMIT_USER_30D },
+    );
+  });
+
   return failed === 0;
 }
 

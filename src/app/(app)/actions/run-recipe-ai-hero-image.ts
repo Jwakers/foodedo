@@ -11,6 +11,7 @@ import { getConvexHttpClient } from "@/lib/convex-http";
 import { RECIPE_AI_HERO_ERRORS } from "convex/lib/constants";
 
 const DEFAULT_MODEL = "google/imagen-4.0-ultra-generate-001";
+const UPLOAD_TO_CONVEX_TIMEOUT_MS = 30_000;
 
 function getRecipeImageModel(): string {
   const v = process.env.FOODEDO_RECIPE_IMAGE_MODEL?.trim();
@@ -67,10 +68,20 @@ export async function runRecipeAiHeroImageJob(
     return { success: false, error: "Authentication required." };
   }
 
-  const snapshot = await convex.query(
-    api.recipeAiHeroImages.getRecipeSnapshotForAiHeroJob,
-    { jobId },
-  );
+  let snapshot;
+  try {
+    snapshot = await convex.query(
+      api.recipeAiHeroImages.getRecipeSnapshotForAiHeroJob,
+      { jobId },
+    );
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    return {
+      success: false,
+      error: `Could not load recipe for generation (${detail})`,
+      code: "RECIPE_AI_HERO_CONVEX_QUERY_FAILED",
+    };
+  }
   if (!snapshot) {
     return {
       success: false,
@@ -163,11 +174,17 @@ export async function runRecipeAiHeroImageJob(
   }
 
   let storageId: Id<"_storage">;
+  const uploadController = new AbortController();
+  const uploadTimer = setTimeout(
+    () => uploadController.abort(),
+    UPLOAD_TO_CONVEX_TIMEOUT_MS,
+  );
   try {
     const uploadRes = await fetch(uploadUrl, {
       method: "POST",
       headers: { "Content-Type": mediaType },
       body: Buffer.from(bytes),
+      signal: uploadController.signal,
     });
     if (!uploadRes.ok) {
       const text = await uploadRes.text().catch(() => "");
@@ -187,7 +204,14 @@ export async function runRecipeAiHeroImageJob(
     }
     storageId = json.storageId as Id<"_storage">;
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Upload failed.";
+    const aborted =
+      e instanceof Error &&
+      (e.name === "AbortError" || uploadController.signal.aborted);
+    const message = aborted
+      ? "Upload timed out. Check your connection and try again."
+      : e instanceof Error
+        ? e.message
+        : "Upload failed.";
     try {
       await convex.mutation(api.recipeAiHeroImages.markRecipeAiHeroJobFailed, {
         jobId,
@@ -197,6 +221,8 @@ export async function runRecipeAiHeroImageJob(
       // best-effort
     }
     return { success: false, error: message };
+  } finally {
+    clearTimeout(uploadTimer);
   }
 
   try {

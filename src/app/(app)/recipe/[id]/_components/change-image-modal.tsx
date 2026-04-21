@@ -55,6 +55,16 @@ function friendlyAiHeroError(code?: string): string | undefined {
       return "That session expired. Start again.";
     case RECIPE_AI_HERO_ERRORS.ALREADY_HAS_AI_HERO:
       return "This recipe already has an AI-generated image. Upload your own photo first if you want a new one.";
+    case RECIPE_AI_HERO_ERRORS.NOT_FOUND:
+      return "Could not find that recipe or session. Try again.";
+    case RECIPE_AI_HERO_ERRORS.RECIPE_NOT_FOUND:
+      return "That recipe is no longer available. Start again from your recipe list.";
+    case RECIPE_AI_HERO_ERRORS.NOT_OWNER:
+      return "You don’t have permission to modify this recipe.";
+    case RECIPE_AI_HERO_ERRORS.INVALID_JOB_STATE:
+      return "That image job is no longer valid. Start a new one.";
+    case RECIPE_AI_HERO_ERRORS.STORAGE_VERIFY:
+      return "There was a problem verifying the image storage. Please try again or upload your own photo.";
     default:
       return undefined;
   }

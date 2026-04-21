@@ -1353,8 +1353,8 @@ export const updateRecipeImageAndDeleteOld = mutation({
       updatedAt: Date.now(),
     });
 
-    // Best-effort delete of the old image
-    if (oldImageId) {
+    // Best-effort delete of the old image (skip if unchanged — avoids deleting the new file on retry)
+    if (oldImageId && oldImageId !== args.storageId) {
       try {
         await ctx.storage.delete(oldImageId);
       } catch (e) {

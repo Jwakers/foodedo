@@ -190,7 +190,23 @@ export const issueUploadUrlForRecipeAiHeroJob = mutation({
     }
 
     const recipe = await ctx.db.get(row.recipeId);
-    if (recipe && recipeAlreadyHasAiHeroImage(recipe)) {
+    if (!recipe) {
+      await ctx.db.patch(args.jobId, {
+        status: "failed",
+        completedAt: now,
+        errorMessage: "Recipe not found or deleted",
+      });
+      throw new ConvexError(RECIPE_AI_HERO_ERRORS.RECIPE_NOT_FOUND);
+    }
+    if (recipe.userId !== user._id) {
+      await ctx.db.patch(args.jobId, {
+        status: "failed",
+        completedAt: now,
+        errorMessage: "Recipe not found or not owner",
+      });
+      throw new ConvexError(RECIPE_AI_HERO_ERRORS.NOT_OWNER);
+    }
+    if (recipeAlreadyHasAiHeroImage(recipe)) {
       await ctx.db.patch(args.jobId, {
         status: "failed",
         completedAt: now,
@@ -232,7 +248,20 @@ export const finalizeRecipeAiHeroJob = mutation({
     }
 
     const recipe = await ctx.db.get(row.recipeId);
-    if (!recipe || recipe.userId !== user._id) {
+    if (!recipe) {
+      await ctx.db.patch(args.jobId, {
+        status: "failed",
+        completedAt: now,
+        errorMessage: "Recipe not found or deleted",
+      });
+      throw new ConvexError(RECIPE_AI_HERO_ERRORS.RECIPE_NOT_FOUND);
+    }
+    if (recipe.userId !== user._id) {
+      await ctx.db.patch(args.jobId, {
+        status: "failed",
+        completedAt: now,
+        errorMessage: "Recipe not found or not owner",
+      });
       throw new ConvexError(RECIPE_AI_HERO_ERRORS.NOT_OWNER);
     }
     if (recipeAlreadyHasAiHeroImage(recipe)) {
@@ -246,10 +275,20 @@ export const finalizeRecipeAiHeroJob = mutation({
 
     const meta = await ctx.storage.getMetadata(args.storageId);
     if (!meta) {
+      await ctx.db.patch(args.jobId, {
+        status: "failed",
+        completedAt: now,
+        errorMessage: "Storage verification failed: file not found",
+      });
       throw new ConvexError(RECIPE_AI_HERO_ERRORS.STORAGE_VERIFY);
     }
     const ct = meta.contentType ?? "";
     if (!ct.startsWith(IMAGE_PREFIX)) {
+      await ctx.db.patch(args.jobId, {
+        status: "failed",
+        completedAt: now,
+        errorMessage: "Storage verification failed: not an image",
+      });
       throw new ConvexError(RECIPE_AI_HERO_ERRORS.STORAGE_VERIFY);
     }
 
@@ -269,7 +308,7 @@ export const finalizeRecipeAiHeroJob = mutation({
       promptCharLength: args.promptCharLength,
     });
 
-    if (oldImageId) {
+    if (oldImageId && oldImageId !== args.storageId) {
       try {
         await ctx.storage.delete(oldImageId);
       } catch (e) {
