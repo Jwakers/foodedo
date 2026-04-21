@@ -39,7 +39,7 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Focus on the new user onboarding journey
 - [x] Improve convex function call usage
 - [x] Remove rabbit meals from system recipes + anything else that might be considered too niche
-- [ ] Plan in a premium feature that takes existing ingredients and helps you use them up in your next meal plan (do consider that premium features are free in beta)
+- [x] Plan in a premium feature that takes existing ingredients and helps you use them up in your next meal plan (do consider that premium features are free in beta)
 - [ ] Pro tier, public, recipe image generator (need to be very secure and careful on throttling + usage for this one)
 - [ ] Create the premium tier recipe generator (free in beta). We should track which images are AI generated and persist this data to help with preventative re-generation and feature abuse.
 - [x] Improve the ingredient manager for superusers: uncategorised ingredients should be searchable, and subcategories should appear alongside categorised ingredients for at-a-glance visibility.
@@ -105,7 +105,7 @@ _Angle: looking for ~20 testers / feedback._
 ### Meal plan, sharing, and shopping
 
 - [x] Meal plans should be shared to households automatically.
-- [ ] When opening the shopping list from the meal plan, Back/Cancel should return to the previous page (not default to recipe selection).
+- [x] When opening the shopping list from the meal plan, Back/Cancel should return to the previous page (not default to recipe selection).
 
 ### Chalkboard and UI friction
 

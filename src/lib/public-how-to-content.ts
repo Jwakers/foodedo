@@ -22,6 +22,10 @@ export const PUBLIC_HOW_TO_FAQ = [
     question: `Where is the full step-by-step guide?`,
     answer: `The detailed in-app guide lives under Help after you sign in. This page is a public overview you can read without an account.`,
   },
+  {
+    question: `Can ${APP_NAME} create a recipe picture for me?`,
+    answer: `Yes, on your own recipes you can open Change image or Add image, choose With AI, and generate a recipe image from your recipe details. The FAQ on this site includes a Recipe features section with step-by-step notes, limits, and what to do if you want a new image later.`,
+  },
 ] as const;
 
 export const PUBLIC_HOW_TO_SECTIONS = [
@@ -49,5 +53,10 @@ export const PUBLIC_HOW_TO_SECTIONS = [
     id: "discover",
     title: "Discover & import",
     content: `Browse curated recipes in Discover, or import from URLs and photos when you find something new. Everything saves into your library for planning later.`,
+  },
+  {
+    id: "recipe-images",
+    title: "Recipe images (including AI)",
+    content: `For recipes you own, open the recipe and use Change image or Add image on the large picture at the top. You can upload a photo from your phone or computer on the Upload tab, or switch to With AI to create a recipe image from what you have written in the recipe (title, description, and steps). Generation usually takes a short moment. There are short cooldowns plus daily, monthly, and per-recipe limits so the feature stays fair for everyone. If your recipe already has an AI-created picture, upload your own photo first when you want to replace it—that clears the way to generate a fresh AI image if you like. More detail is in the FAQ on this site (link from the Help & Support hub) or, after you sign in, under Help in the app.`,
   },
 ] as const;

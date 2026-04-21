@@ -50,6 +50,11 @@ export const FAQ_SECTIONS_DATA: ReadonlyArray<FaqSectionData> = [
         answer:
           "When creating or editing a recipe, you can upload photos by clicking the edit recipe button and then the change image button. You can add multiple photos to show different steps or the final result.",
       },
+      {
+        question: "How do I create a recipe image with AI?",
+        answer:
+          "Open one of your own recipes, then use Change image or Add image on the main recipe photo. In the window that opens, choose the With AI tab and tap Generate recipe image. The app uses your recipe title, description, and method to create a single picture for the top of the recipe. While we are in beta, this may be available on all plans; later it is a Pro feature with sensible limits so the service stays reliable. You get one AI-generated image per recipe at a time—if you want a different AI picture later, upload your own photo first, then you can run With AI again. If something goes wrong, try again in a minute or use the Upload tab to add a photo from your device.",
+      },
     ],
   },
   {

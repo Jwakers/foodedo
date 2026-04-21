@@ -94,6 +94,18 @@ export default function HowToUsePage() {
           ],
         },
         {
+          title: "Recipe images (upload or AI)",
+          content: [
+            "1. Open a recipe you own (not a read-only shared copy).",
+            "2. Tap Change image or Add image on the large picture at the top.",
+            "3. Upload tab: choose a photo from your device and save it as the recipe image.",
+            "4. With AI tab: tap Generate recipe image. The app builds a picture from your title, description, and method. It may take a short moment.",
+            "5. While we are in beta, With AI may be available on every plan; later it is a Pro feature with daily and monthly limits.",
+            "6. If the recipe already has an AI-generated image, upload your own photo first when you want a different AI picture.",
+            "For more detail, open Help → FAQ and look under Recipe Features.",
+          ],
+        },
+        {
           title: "Organising Recipes",
           content: [
             "• Use categories to group similar recipes",
