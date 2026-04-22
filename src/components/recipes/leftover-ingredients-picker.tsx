@@ -144,7 +144,7 @@ export function LeftoverIngredientsPicker({
         {locked ? (
           <PremiumFeatureNotice
             title="Use up ingredients is premium"
-            description="You can preview this feature now. Upgrade on"
+            description="You can preview this feature now."
           />
         ) : null}
 

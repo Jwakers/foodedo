@@ -148,13 +148,11 @@ export default function MealPlanClient({
 
   const resolvedPlanId = useMemo(() => {
     if (generationOnly) return null;
+    if (planParam) return planParam as Id<"mealPlans">;
     if (planSummaries === undefined) return undefined;
     if (planSummaries.length === 0) return null;
 
     const validIds = new Set(planSummaries.map((s) => s._id));
-    if (planParam && validIds.has(planParam as Id<"mealPlans">)) {
-      return planParam as Id<"mealPlans">;
-    }
     if (typeof window !== "undefined") {
       const last = sessionStorage.getItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY);
       if (last && validIds.has(last as Id<"mealPlans">)) {
@@ -329,14 +327,30 @@ export default function MealPlanClient({
   }, [controlsLocked, customDayCount, dayOption]);
 
   const selectedStartDate = useMemo(() => {
-    if (controlsLocked) return localDayStartMs;
-    if (startDateOption === "today") return localDayStartMs;
-    if (startDateOption === "tomorrow") return localDayStartMs + ONE_DAY_MS;
-    if (startDateOption === "following")
-      return localDayStartMs + 2 * ONE_DAY_MS;
-    if (!customStartDate) return localDayStartMs;
-    const parsed = new Date(`${customStartDate}T00:00:00`).getTime();
-    return Number.isNaN(parsed) ? localDayStartMs : parsed;
+    const utcStartForLocalDate = (offsetDays: number): number => {
+      const local = new Date(localDayStartMs);
+      local.setDate(local.getDate() + offsetDays);
+      return Date.UTC(local.getFullYear(), local.getMonth(), local.getDate());
+    };
+
+    if (controlsLocked) return utcStartForLocalDate(0);
+    if (startDateOption === "today") return utcStartForLocalDate(0);
+    if (startDateOption === "tomorrow") return utcStartForLocalDate(1);
+    if (startDateOption === "following") return utcStartForLocalDate(2);
+    if (!customStartDate) return utcStartForLocalDate(0);
+
+    const [year, month, day] = customStartDate.split("-").map(Number);
+    if (
+      Number.isNaN(year) ||
+      Number.isNaN(month) ||
+      Number.isNaN(day) ||
+      year <= 0 ||
+      month <= 0 ||
+      day <= 0
+    ) {
+      return utcStartForLocalDate(0);
+    }
+    return Date.UTC(year, month - 1, day);
   }, [controlsLocked, customStartDate, localDayStartMs, startDateOption]);
 
   const followingDayLabel = useMemo(() => {
@@ -367,9 +381,19 @@ export default function MealPlanClient({
     );
   }, [currentPlan?.entries]);
 
+  const visiblePlanDays = useMemo(() => {
+    if (!currentPlan) return selectedDayCount;
+    if (currentPlan.startDate !== undefined) {
+      const computedDays =
+        Math.floor((currentPlan.endDate - currentPlan.startDate) / ONE_DAY_MS) + 1;
+      return Math.max(1, computedDays);
+    }
+    return selectedDayCount;
+  }, [currentPlan, selectedDayCount]);
+
   const emptySlotsCount = useMemo(
-    () => Math.max(0, 7 - (currentPlan?.entries?.length ?? 0)),
-    [currentPlan?.entries?.length],
+    () => Math.max(0, visiblePlanDays - (currentPlan?.entries?.length ?? 0)),
+    [currentPlan?.entries?.length, visiblePlanDays],
   );
 
   const handleGenerateWeek = useCallback(async () => {

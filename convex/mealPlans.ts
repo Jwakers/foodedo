@@ -103,6 +103,16 @@ function resolveMealPlanWindow(args: {
     ? (args.dayCount ?? MAX_DAYS_IN_MEAL_PLAN)
     : MAX_DAYS_IN_MEAL_PLAN;
 
+  if (requestedStart < nowStart) {
+    throw new ConvexError("startDate cannot be before today");
+  }
+  const maxAllowedStart = nowStart + (MAX_DAYS_IN_MEAL_PLAN - 1) * ONE_DAY_MS;
+  if (requestedStart > maxAllowedStart) {
+    throw new ConvexError(
+      `startDate cannot be more than ${MAX_DAYS_IN_MEAL_PLAN - 1} days ahead`,
+    );
+  }
+
   if (requestedDayCount < 1 || requestedDayCount > MAX_DAYS_IN_MEAL_PLAN) {
     throw new ConvexError(
       `dayCount must be between 1 and ${MAX_DAYS_IN_MEAL_PLAN}`,
