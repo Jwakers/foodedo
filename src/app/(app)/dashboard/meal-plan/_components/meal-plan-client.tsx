@@ -46,7 +46,10 @@ import { navigateBackOr } from "@/lib/navigation";
 import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { MEAL_PLAN_ERRORS } from "convex/lib/constants";
+import {
+  BETA_FREE_INCLUDES_PREMIUM_FEATURES,
+  MEAL_PLAN_ERRORS,
+} from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
@@ -75,13 +78,6 @@ import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
 const MEAL_PLAN_LAST_VIEWED_STORAGE_KEY = "foodedo_meal_plan_last_viewed_id";
 const MAX_DAYS_IN_MEAL_PLAN = 7;
-
-function canUsePremiumMealPlanFeatures(subscriptionTier: string | undefined) {
-  const tier = subscriptionTier ?? "free_user";
-  if (tier === "pro_user") return true;
-  // Keep client behavior in sync with current beta entitlement policy.
-  return tier === "free_user";
-}
 
 /** Short codes for PostHog — never send raw exception text from user mutations. */
 function mealPlanGenerateFailureReason(e: unknown): string {
@@ -220,23 +216,24 @@ function resolveMealPlanEntitlements(args: {
   currentUser: FunctionReturnType<typeof api.users.current> | undefined;
   ownedPlanCountForCreation: number | undefined;
 }) {
+  const subscriptionTier = args.currentUser?.subscriptionTier ?? "free_user";
+  const hasPremiumMealPlanAccess =
+    subscriptionTier === "pro_user" ||
+    (subscriptionTier === "free_user" &&
+      BETA_FREE_INCLUDES_PREMIUM_FEATURES === true);
   const entitlementsReady =
     args.currentUser !== undefined && args.ownedPlanCountForCreation !== undefined;
   const canUseMealPlanLeftovers =
-    entitlementsReady &&
-    args.currentUser != null &&
-    canUsePremiumMealPlanFeatures(args.currentUser.subscriptionTier);
+    entitlementsReady && args.currentUser != null && hasPremiumMealPlanAccess;
   const hasActivePlan =
     entitlementsReady && (args.ownedPlanCountForCreation ?? 0) > 0;
   const blocksAdditionalPlansOnFreeTier =
     entitlementsReady &&
     args.currentUser != null &&
     hasActivePlan &&
-    !canUsePremiumMealPlanFeatures(args.currentUser.subscriptionTier);
+    !hasPremiumMealPlanAccess;
   const canUseAdvancedControls =
-    entitlementsReady &&
-    args.currentUser != null &&
-    canUsePremiumMealPlanFeatures(args.currentUser.subscriptionTier);
+    entitlementsReady && args.currentUser != null && hasPremiumMealPlanAccess;
 
   return {
     entitlementsReady,
@@ -1032,23 +1029,33 @@ export default function MealPlanClient({
               ) : null}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Days</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div
+                  role="radiogroup"
+                  aria-label="Meal plan day options"
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                >
                   {(["3", "5", "7", "custom"] as const).map((option) => (
-                    <button
+                    <label
                       key={option}
-                      type="button"
-                      disabled={controlsLocked}
-                      onClick={() => setDayOption(option)}
                       className={cn(
-                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer",
                         dayOption === option
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-card text-muted-foreground",
                         controlsLocked && "cursor-not-allowed opacity-60",
                       )}
                     >
+                      <input
+                        type="radio"
+                        name="day-option"
+                        value={option}
+                        checked={dayOption === option}
+                        onChange={() => setDayOption(option)}
+                        disabled={controlsLocked}
+                        className="sr-only"
+                      />
                       {option === "custom" ? "Custom" : `${option} days`}
-                    </button>
+                    </label>
                   ))}
                 </div>
                 {dayOption === "custom" ? (
@@ -1072,7 +1079,11 @@ export default function MealPlanClient({
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Starts</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div
+                  role="radiogroup"
+                  aria-label="Meal plan start date options"
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                >
                   {(
                     [
                       ["today", "Today"],
@@ -1081,21 +1092,27 @@ export default function MealPlanClient({
                       ["custom", "Custom date"],
                     ] as const
                   ).map(([option, label]) => (
-                    <button
+                    <label
                       key={option}
-                      type="button"
-                      disabled={controlsLocked}
-                      onClick={() => setStartDateOption(option)}
                       className={cn(
-                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer",
                         startDateOption === option
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-card text-muted-foreground",
                         controlsLocked && "cursor-not-allowed opacity-60",
                       )}
                     >
+                      <input
+                        type="radio"
+                        name="start-date-option"
+                        value={option}
+                        checked={startDateOption === option}
+                        onChange={() => setStartDateOption(option)}
+                        disabled={controlsLocked}
+                        className="sr-only"
+                      />
                       {label}
-                    </button>
+                    </label>
                   ))}
                 </div>
                 {startDateOption === "custom" ? (
