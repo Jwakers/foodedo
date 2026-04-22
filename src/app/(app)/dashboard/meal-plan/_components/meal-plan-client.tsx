@@ -46,6 +46,7 @@ import { navigateBackOr } from "@/lib/navigation";
 import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
+import { MEAL_PLAN_ERRORS } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
@@ -74,12 +75,6 @@ import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
 const MEAL_PLAN_LAST_VIEWED_STORAGE_KEY = "foodedo_meal_plan_last_viewed_id";
 const MAX_DAYS_IN_MEAL_PLAN = 7;
-const MEAL_PLAN_ERRORS = {
-  PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS: "PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS",
-  PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS: "PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS",
-  PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS:
-    "PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS",
-} as const;
 
 function canUsePremiumMealPlanFeatures(subscriptionTier: string | undefined) {
   const tier = subscriptionTier ?? "free_user";
