@@ -95,13 +95,17 @@ function resolveMealPlanWindow(args: {
   // Server-side source of truth: if advanced controls are not allowed, silently
   // coerce to standard weekly defaults regardless of client payload.
   const requestedStart = isEntitledToAdvancedControls
-    ? args.startDate
+    ? args.startDate !== undefined
       ? startOfDayMs(args.startDate)
       : nowStart
     : nowStart;
   const requestedDayCount = isEntitledToAdvancedControls
     ? (args.dayCount ?? MAX_DAYS_IN_MEAL_PLAN)
     : MAX_DAYS_IN_MEAL_PLAN;
+
+  if (!Number.isInteger(requestedDayCount)) {
+    throw new ConvexError("dayCount must be an integer");
+  }
 
   if (requestedStart < nowStart) {
     throw new ConvexError("startDate cannot be before today");
@@ -558,6 +562,26 @@ export const getActiveMealPlanSummaries = query({
       entryMinDate: s.entryMinDate,
       entryMaxDate: s.entryMaxDate,
     }));
+  },
+});
+
+/**
+ * Count owned plans that would block free-tier additional plan creation:
+ * unreplaced plans with endDate >= today (UTC day start).
+ */
+export const getOwnedUnreplacedPlanCountForCreation = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return 0;
+    const today = startOfDayMs(Date.now());
+    const ownedPlans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_and_endDate", (q) =>
+        q.eq("userId", user._id).gte("endDate", today),
+      )
+      .collect();
+    return ownedPlans.filter((plan) => !plan.replacedByPlanId).length;
   },
 });
 

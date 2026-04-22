@@ -48,6 +48,7 @@ import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import {
   canCreateMultipleMealPlans,
+  canUseAdvancedMealPlanControls,
   canUseLeftoverIngredients,
   MAX_DAYS_IN_MEAL_PLAN,
 } from "convex/lib/constants";
@@ -145,6 +146,9 @@ export default function MealPlanClient({
   const planSummaries = useQuery(api.mealPlans.getActiveMealPlanSummaries, {
     localDayStartMs,
   });
+  const ownedPlanCountForCreation = useQuery(
+    api.mealPlans.getOwnedUnreplacedPlanCountForCreation,
+  );
 
   const resolvedPlanId = useMemo(() => {
     if (generationOnly) return null;
@@ -299,13 +303,14 @@ export default function MealPlanClient({
   const canUseMealPlanLeftovers =
     currentUser != null &&
     canUseLeftoverIngredients(currentUser.subscriptionTier);
-  const hasActivePlan = (planSummaries?.length ?? 0) > 0;
+  const hasActivePlan = (ownedPlanCountForCreation ?? 0) > 0;
   const blocksAdditionalPlansOnFreeTier =
     currentUser != null &&
     hasActivePlan &&
     !canCreateMultipleMealPlans(currentUser.subscriptionTier);
-  // Keep this aligned with premium-beta rollout semantics used by leftovers.
-  const canUseAdvancedControls = canUseMealPlanLeftovers;
+  const canUseAdvancedControls =
+    currentUser != null &&
+    canUseAdvancedMealPlanControls(currentUser.subscriptionTier);
   const controlsReady = currentUser !== undefined;
   const controlsLocked = controlsReady && !canUseAdvancedControls;
 
