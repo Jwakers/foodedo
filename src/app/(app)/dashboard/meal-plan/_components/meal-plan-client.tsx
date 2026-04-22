@@ -48,6 +48,7 @@ import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import {
   BETA_FREE_INCLUDES_PREMIUM_FEATURES,
+  MAX_DAYS_IN_MEAL_PLAN,
   MEAL_PLAN_ERRORS,
 } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
@@ -77,7 +78,6 @@ import { MealPlanDayView } from "./meal-plan-day-view";
 import { MealPlanRecipePickerModal } from "./meal-plan-recipe-picker-modal";
 
 const MEAL_PLAN_LAST_VIEWED_STORAGE_KEY = "foodedo_meal_plan_last_viewed_id";
-const MAX_DAYS_IN_MEAL_PLAN = 7;
 
 /** Short codes for PostHog — never send raw exception text from user mutations. */
 function mealPlanGenerateFailureReason(e: unknown): string {
@@ -400,16 +400,6 @@ export default function MealPlanClient({
     Id<"households"> | ""
   >("");
 
-  useEffect(() => {
-    if (
-      households &&
-      households.length > 1 &&
-      generateWeekHouseholdId === "" &&
-      households[0]
-    ) {
-      setGenerateWeekHouseholdId(households[0]._id);
-    }
-  }, [households, generateWeekHouseholdId]);
   const [isFinalising, setIsFinalising] = useState(false);
   const [pickerState, setPickerState] = useState<{
     mode: "add" | "replace";
@@ -432,21 +422,27 @@ export default function MealPlanClient({
   });
 
   const [dayOption, setDayOption] = useState<"3" | "5" | "7" | "custom">("7");
-  const [customDayCount, setCustomDayCount] = useState("7");
+  const [customDayCount, setCustomDayCount] = useState(
+    String(MAX_DAYS_IN_MEAL_PLAN),
+  );
   const [startDateOption, setStartDateOption] = useState<
     "today" | "tomorrow" | "following" | "custom"
   >("today");
   const [customStartDate, setCustomStartDate] = useState("");
 
   const selectedDayCount = useMemo(() => {
-    if (controlsLocked) return 7;
+    if (controlsLocked) return MAX_DAYS_IN_MEAL_PLAN;
     if (dayOption === "custom") {
       const parsed = Number.parseInt(customDayCount, 10);
-      if (Number.isNaN(parsed)) return 7;
+      if (Number.isNaN(parsed)) return MAX_DAYS_IN_MEAL_PLAN;
       return Math.max(1, Math.min(MAX_DAYS_IN_MEAL_PLAN, parsed));
     }
     return Number.parseInt(dayOption, 10);
   }, [controlsLocked, customDayCount, dayOption]);
+
+  const requiresHouseholdSelection = (households?.length ?? 0) > 1;
+  const missingRequiredHouseholdSelection =
+    requiresHouseholdSelection && generateWeekHouseholdId === "";
 
   const selectedStartDate = useMemo(() => {
     const utcStartForLocalDate = (offsetDays: number): number => {
@@ -530,6 +526,10 @@ export default function MealPlanClient({
       toast.info("Loading households…");
       return;
     }
+    if (requiresHouseholdSelection && generateWeekHouseholdId === "") {
+      toast.info("Select a household before generating your plan.");
+      return;
+    }
     trackEvent(ANALYTICS_EVENTS.ONBOARDING_GENERATE_WEEK_CLICKED, {
       surface: "meal_plan",
     });
@@ -541,14 +541,11 @@ export default function MealPlanClient({
         leftoverIngredientPhrases?: string[];
         startDate?: number;
         dayCount?: number;
-      } =
-        households.length > 1
-          ? {
-              householdId:
-                (generateWeekHouseholdId as Id<"households">) ||
-                households[0]!._id,
-            }
-          : {};
+      } = requiresHouseholdSelection
+        ? {
+            householdId: generateWeekHouseholdId as Id<"households">,
+          }
+        : {};
       payload.startDate = selectedStartDate;
       payload.dayCount = selectedDayCount;
       if (
@@ -611,6 +608,7 @@ export default function MealPlanClient({
     selectedDayCount,
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
+    requiresHouseholdSelection,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
@@ -624,16 +622,17 @@ export default function MealPlanClient({
       toast.info("Loading households…");
       return;
     }
+    if (requiresHouseholdSelection && generateWeekHouseholdId === "") {
+      toast.info("Select a household before creating a manual plan.");
+      return;
+    }
     setIsGenerating(true);
     try {
-      const payload =
-        households.length > 1
-          ? {
-              householdId:
-                (generateWeekHouseholdId as Id<"households">) ||
-                households[0]!._id,
-            }
-          : {};
+      const payload = requiresHouseholdSelection
+        ? {
+            householdId: generateWeekHouseholdId as Id<"households">,
+          }
+        : {};
       const { planId } = await createBlankWeeklyPlan({
         ...payload,
         startDate: selectedStartDate,
@@ -660,6 +659,7 @@ export default function MealPlanClient({
     selectedDayCount,
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
+    requiresHouseholdSelection,
   ]);
 
   const handleRegenerateWeek = useCallback(async () => {
@@ -1038,7 +1038,7 @@ export default function MealPlanClient({
                     <label
                       key={option}
                       className={cn(
-                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer",
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary/50 focus-within:ring-offset-2",
                         dayOption === option
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-card text-muted-foreground",
@@ -1052,7 +1052,7 @@ export default function MealPlanClient({
                         checked={dayOption === option}
                         onChange={() => setDayOption(option)}
                         disabled={controlsLocked}
-                        className="sr-only"
+                        className="peer sr-only"
                       />
                       {option === "custom" ? "Custom" : `${option} days`}
                     </label>
@@ -1061,14 +1061,14 @@ export default function MealPlanClient({
                 {dayOption === "custom" ? (
                   <div className="max-w-40">
                     <Label htmlFor="custom-day-count" className="text-xs">
-                      Custom days (max 7)
+                      {`Custom days (max ${MAX_DAYS_IN_MEAL_PLAN})`}
                     </Label>
                     <input
                       id="custom-day-count"
                       type="number"
                       min={1}
                       max={MAX_DAYS_IN_MEAL_PLAN}
-                      placeholder="1-7"
+                      placeholder={`1-${MAX_DAYS_IN_MEAL_PLAN}`}
                       value={customDayCount}
                       onChange={(e) => setCustomDayCount(e.target.value)}
                       disabled={controlsLocked}
@@ -1095,7 +1095,7 @@ export default function MealPlanClient({
                     <label
                       key={option}
                       className={cn(
-                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer",
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary/50 focus-within:ring-offset-2",
                         startDateOption === option
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-card text-muted-foreground",
@@ -1109,7 +1109,7 @@ export default function MealPlanClient({
                         checked={startDateOption === option}
                         onChange={() => setStartDateOption(option)}
                         disabled={controlsLocked}
-                        className="sr-only"
+                        className="peer sr-only"
                       />
                       {label}
                     </label>
@@ -1166,7 +1166,7 @@ export default function MealPlanClient({
                 <div className="mb-4 w-full max-w-sm text-left space-y-1.5">
                   <Label htmlFor="empty-gen-household">Household</Label>
                   <Select
-                    value={generateWeekHouseholdId || households[0]?._id || ""}
+                    value={generateWeekHouseholdId}
                     onValueChange={(v) =>
                       setGenerateWeekHouseholdId(v as Id<"households">)
                     }
@@ -1189,6 +1189,7 @@ export default function MealPlanClient({
                 disabled={
                   isGenerating ||
                   households === undefined ||
+                    missingRequiredHouseholdSelection ||
                   blocksAdditionalPlansOnFreeTier ||
                   !entitlementsReady
                 }
@@ -1252,6 +1253,7 @@ export default function MealPlanClient({
                 disabled={
                   isGenerating ||
                   households === undefined ||
+                    missingRequiredHouseholdSelection ||
                   blocksAdditionalPlansOnFreeTier ||
                   !entitlementsReady
                 }
