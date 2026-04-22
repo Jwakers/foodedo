@@ -219,8 +219,7 @@ function resolveMealPlanEntitlements(args: {
   const subscriptionTier = args.currentUser?.subscriptionTier ?? "free_user";
   const hasPremiumMealPlanAccess =
     subscriptionTier === "pro_user" ||
-    (subscriptionTier === "free_user" &&
-      BETA_FREE_INCLUDES_PREMIUM_FEATURES === true);
+    (subscriptionTier === "free_user" && BETA_FREE_INCLUDES_PREMIUM_FEATURES);
   const entitlementsReady =
     args.currentUser !== undefined && args.ownedPlanCountForCreation !== undefined;
   const canUseMealPlanLeftovers =
@@ -1218,7 +1217,6 @@ export default function MealPlanClient({
                 you&apos;ve saved—then tweak or shop from there.
               </p>
             </div>
-            <div />
           </div>
           <div className="max-w-2xl mx-auto mb-6 w-full">
             <LeftoverIngredientsPicker
