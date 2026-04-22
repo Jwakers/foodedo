@@ -42,6 +42,7 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Plan in a premium feature that takes existing ingredients and helps you use them up in your next meal plan (do consider that premium features are free in beta)
 - [x] Pro tier, public, recipe image generator (need to be very secure and careful on throttling + usage for this one)
 - [x] Improve the ingredient manager for superusers: uncategorised ingredients should be searchable, and subcategories should appear alongside categorised ingredients for at-a-glance visibility.
+- [ ] Add more vegan and vegetarian options. Make sure these can be filtered too.
 - [ ] Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
 - [ ] Take most popular organic search results in google search console and make sure we have landing pages or blogs to capitalise.
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
@@ -154,6 +155,27 @@ Feedback: Users like the recent image-to-diagram and weekly plan features. Stron
 - [ ] **Web import accuracy**: Parser robustness for edge cases.
 - [ ] **Recipe image quality**: Review handling/compression/resolution vs source sites.
 - [x] **404 on login**: Intermittent 404 when logging in; investigate and fix.
+
+### User feedback – Household personalization & constraints (Premium)
+
+Context: Couples and households need flexible planning when preferences, allergies, and nutrition goals differ by person. These are **Premium (paid)** features (while premium features may remain free during beta).
+
+- [ ] **(Pro/Premium) Per-user allergies and intolerances**: Store hard exclusions per user and enforce them in generated meal candidates when that user is included.
+  - MVP: Ingredient-level exclusion list per profile and strict filtering in generation.
+  - V2: Add grouped intolerance presets and conflict messaging when choices are too restrictive.
+- [ ] **(Pro/Premium) Generation-time household profile toggles**: During meal plan generation, show card-like member selectors so users can include/exclude each household member's constraints (e.g., partner traveling, plan only for one person).
+  - MVP: Toggle each member on/off for generation input.
+  - V2: Save commonly used selector presets (e.g., "Both", "Just me").
+- [ ] **(Pro/Premium) Fast-prep meal constraints (count-based)**: Instead of day-specific slots, allow users to request a number of meals under a chosen prep-time limit in each generated plan.
+  - MVP: Inputs for "number of fast meals" and "max prep time".
+  - V2: Tune ranking to prioritize fast recipes earlier in the plan.
+- [ ] **(Pro/Premium) Per-user taste profiles**: Capture likes/dislikes and ingredient aversions per person, then weight meal selection accordingly when their profile is active.
+  - MVP: Likes/dislikes + disliked ingredients at profile level.
+  - V2: Preference strength and smarter ranking across household members.
+- [ ] **(Pro/Premium) Nutrition preference modes (needs deeper design)**: Add profile-level nutrition modes such as high-protein, lower-carb, or high-veg; define scope before build due to complexity.
+  - MVP: Discovery and rules definition only (constraints, portions, ranking impact).
+  - Future: Implement mode logic after profile and allergy foundations are stable.
+- [x] **Already implemented**: Avoid-repeat behavior across recent plans is already in place; do not duplicate this as new backlog scope.
 
 ### Social, SEO and AEO
 
