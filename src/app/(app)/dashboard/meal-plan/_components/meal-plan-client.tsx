@@ -101,6 +101,9 @@ function mealPlanErrorMessage(e: unknown): string {
   if (/PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS/i.test(msg)) {
     return "Multiple active meal plans are a premium feature. Upgrade to create another plan.";
   }
+  if (/PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS/i.test(msg)) {
+    return "Leftover-ingredient management is a premium feature. Upgrade to enable it.";
+  }
   if (/PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS/i.test(msg)) {
     return "Custom start dates and day lengths are premium controls.";
   }
@@ -300,19 +303,24 @@ export default function MealPlanClient({
   const [mealPlanLeftoverPhrases, setMealPlanLeftoverPhrases] = useState<
     string[]
   >([]);
+  const entitlementsReady =
+    currentUser !== undefined && ownedPlanCountForCreation !== undefined;
   const canUseMealPlanLeftovers =
+    entitlementsReady &&
     currentUser != null &&
     canUseLeftoverIngredients(currentUser.subscriptionTier);
-  const hasActivePlan = (ownedPlanCountForCreation ?? 0) > 0;
+  const hasActivePlan =
+    entitlementsReady && (ownedPlanCountForCreation ?? 0) > 0;
   const blocksAdditionalPlansOnFreeTier =
+    entitlementsReady &&
     currentUser != null &&
     hasActivePlan &&
     !canCreateMultipleMealPlans(currentUser.subscriptionTier);
   const canUseAdvancedControls =
+    entitlementsReady &&
     currentUser != null &&
     canUseAdvancedMealPlanControls(currentUser.subscriptionTier);
-  const controlsReady = currentUser !== undefined;
-  const controlsLocked = controlsReady && !canUseAdvancedControls;
+  const controlsLocked = !entitlementsReady || !canUseAdvancedControls;
 
   const [dayOption, setDayOption] = useState<"3" | "5" | "7" | "custom">("7");
   const [customDayCount, setCustomDayCount] = useState("7");
@@ -390,7 +398,8 @@ export default function MealPlanClient({
     if (!currentPlan) return selectedDayCount;
     if (currentPlan.startDate !== undefined) {
       const computedDays =
-        Math.floor((currentPlan.endDate - currentPlan.startDate) / ONE_DAY_MS) + 1;
+        Math.floor((currentPlan.endDate - currentPlan.startDate) / ONE_DAY_MS) +
+        1;
       return Math.max(1, computedDays);
     }
     return selectedDayCount;
@@ -402,6 +411,12 @@ export default function MealPlanClient({
   );
 
   const handleGenerateWeek = useCallback(async () => {
+    if (blocksAdditionalPlansOnFreeTier) {
+      toast.error(
+        "Free users can only have one active meal plan at a time. Delete your existing plan or upgrade to create another.",
+      );
+      return;
+    }
     if (households === undefined) {
       toast.info("Loading households…");
       return;
@@ -486,9 +501,16 @@ export default function MealPlanClient({
     router,
     selectedDayCount,
     selectedStartDate,
+    blocksAdditionalPlansOnFreeTier,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
+    if (blocksAdditionalPlansOnFreeTier) {
+      toast.error(
+        "Free users can only have one active meal plan at a time. Delete your existing plan or upgrade to create another.",
+      );
+      return;
+    }
     if (households === undefined) {
       toast.info("Loading households…");
       return;
@@ -528,6 +550,7 @@ export default function MealPlanClient({
     router,
     selectedDayCount,
     selectedStartDate,
+    blocksAdditionalPlansOnFreeTier,
   ]);
 
   const handleRegenerateWeek = useCallback(async () => {
@@ -1041,7 +1064,8 @@ export default function MealPlanClient({
                   disabled={
                     isGenerating ||
                     households === undefined ||
-                    blocksAdditionalPlansOnFreeTier
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
                   }
                 >
                   {isGenerating ? (
@@ -1058,7 +1082,8 @@ export default function MealPlanClient({
                   disabled={
                     isGenerating ||
                     households === undefined ||
-                    blocksAdditionalPlansOnFreeTier
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
                   }
                 >
                   {isGenerating ? (
@@ -1187,7 +1212,12 @@ export default function MealPlanClient({
                   variant="outline"
                   className="w-full sm:flex-1"
                   onClick={handleBlankWeek}
-                  disabled={isGenerating || households === undefined}
+                  disabled={
+                    isGenerating ||
+                    households === undefined ||
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
+                  }
                 >
                   <CalendarPlus className="size-5 mr-2" />
                   Manual plan
@@ -1196,7 +1226,12 @@ export default function MealPlanClient({
                   size="lg"
                   className="w-full sm:flex-1"
                   onClick={handleGenerateWeek}
-                  disabled={isGenerating || households === undefined}
+                  disabled={
+                    isGenerating ||
+                    households === undefined ||
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
+                  }
                 >
                   Start Planning
                   <ArrowRight className="size-5 ml-2" />
