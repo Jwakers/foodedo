@@ -1,8 +1,9 @@
 "use client";
 
-import { ROUTES } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { PremiumFeatureNotice } from "@/components/premium-feature-notice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, titleCase } from "@/lib/utils";
@@ -10,8 +11,7 @@ import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { LEFTOVER_INGREDIENTS_MAX } from "convex/lib/constants";
 import { useQuery } from "convex/react";
-import { Loader2, Lock, Sparkles, X } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 function normalisePhrase(s: string): string {
@@ -126,24 +126,31 @@ export function LeftoverIngredientsPicker({
     totalSelected < LEFTOVER_INGREDIENTS_MAX;
 
   return (
-    <div className="relative space-y-2 rounded-lg border border-border/80 bg-muted/20 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
-        <Label className="text-sm font-medium text-foreground">
-          Use up ingredients
-        </Label>
-        <Badge
-          variant="secondary"
-          className="text-[10px] font-semibold uppercase"
-        >
-          Pro
-        </Badge>
-      </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
+    <Card className="relative border-border/80 bg-muted/20">
+      <CardContent className="space-y-2 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
+          <Label className="text-base font-semibold text-foreground">
+            Use up ingredients
+          </Label>
+          <Badge
+            variant="secondary"
+            className="text-[10px] font-semibold uppercase"
+          >
+            Pro
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        {locked ? (
+          <PremiumFeatureNotice
+            title="Use up ingredients is premium"
+            description="You can preview this feature now. Upgrade on"
+          />
+        ) : null}
 
-      <div
-        className={cn("space-y-2", locked && "pointer-events-none opacity-60")}
-      >
+        <div
+          className={cn("space-y-2", locked && "pointer-events-none opacity-60")}
+        >
         <div className="relative max-w-md">
           <Input
             placeholder={
@@ -289,23 +296,8 @@ export function LeftoverIngredientsPicker({
             ))}
           </div>
         )}
-      </div>
-
-      {locked && (
-        <div className="pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-lg bg-background/75 p-4 text-center backdrop-blur-[1px]">
-          <Lock className="size-8 text-muted-foreground" aria-hidden />
-          <p className="text-sm font-medium text-foreground">
-            Premium feature — preview only
-          </p>
-          <p className="max-w-xs text-xs text-muted-foreground">
-            See how “use up ingredients” will work. Subscribe to unlock ranking
-            and meal-plan boosts when we leave beta.
-          </p>
-          <Button size="sm" asChild>
-            <Link href={ROUTES.PRICING}>View plans</Link>
-          </Button>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

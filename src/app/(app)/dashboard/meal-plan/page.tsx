@@ -1,6 +1,7 @@
-import { Metadata } from "next";
-import { Suspense } from "react";
 import { SITE_MISSION } from "@/lib/site-messaging";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import MealPlanClient from "./_components/meal-plan-client";
 
 export const metadata: Metadata = {
@@ -8,7 +9,18 @@ export const metadata: Metadata = {
   description: `${SITE_MISSION} Then adjust, share, and generate a shopping list.`,
 };
 
-export default function MealPlanPage() {
+type MealPlanPageProps = {
+  searchParams: Promise<{ plan?: string }>;
+};
+
+export default async function MealPlanPage({
+  searchParams,
+}: MealPlanPageProps) {
+  const { plan } = await searchParams;
+  if (plan) {
+    redirect(`/dashboard/meal-plan/${encodeURIComponent(plan)}`);
+  }
+
   return (
     <Suspense
       fallback={
@@ -18,7 +30,7 @@ export default function MealPlanPage() {
         </div>
       }
     >
-      <MealPlanClient />
+      <MealPlanClient generationOnly />
     </Suspense>
   );
 }
