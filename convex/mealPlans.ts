@@ -7,6 +7,8 @@ import {
   resolveDefaultHouseholdIdForSharing,
 } from "./households";
 import {
+  canCreateMultipleMealPlans,
+  canUseAdvancedMealPlanControls,
   canUseLeftoverIngredients,
   LEFTOVER_INGREDIENTS_MAX,
   MAX_DAYS_IN_MEAL_PLAN,
@@ -18,13 +20,13 @@ import {
   lineMatchesLeftoverPhrase,
   normaliseLeftoverPhrasesList,
 } from "./lib/leftoverIngredients";
+import type { PoolRecipe } from "./mealPlanGenerator";
 import {
   buildPool,
   getBehaviourStatsForActor,
   getRecentlySuggested,
   selectRecipes,
 } from "./mealPlanGenerator";
-import type { PoolRecipe } from "./mealPlanGenerator";
 import {
   getActorForPlan,
   incrementRemoved,
@@ -52,10 +54,9 @@ function prepareLeftoverInputs(
   totalCount: number;
   wantsLeftovers: boolean;
 } {
-  const ids =
-    rawIds?.filter(Boolean).length
-      ? ([...new Set(rawIds.filter(Boolean))] as Id<"ingredients">[])
-      : [];
+  const ids = rawIds?.filter(Boolean).length
+    ? ([...new Set(rawIds.filter(Boolean))] as Id<"ingredients">[])
+    : [];
   const phrases = normaliseLeftoverPhrasesList(rawPhrases);
   const totalCount = ids.length + phrases.length;
   if (totalCount > LEFTOVER_INGREDIENTS_MAX) {
@@ -79,6 +80,76 @@ function startOfDayMs(ms: number): number {
   const d = new Date(ms);
   d.setUTCHours(0, 0, 0, 0);
   return d.getTime();
+}
+
+function resolveMealPlanWindow(args: {
+  startDate?: number;
+  dayCount?: number;
+  subscriptionTier: string | undefined;
+}): { startDate: number; endDate: number; dayCount: number } {
+  const nowStart = startOfDayMs(Date.now());
+  const isEntitledToAdvancedControls = canUseAdvancedMealPlanControls(
+    args.subscriptionTier,
+  );
+
+  // Server-side source of truth: if advanced controls are not allowed, silently
+  // coerce to standard weekly defaults regardless of client payload.
+  const requestedStart = isEntitledToAdvancedControls
+    ? args.startDate !== undefined
+      ? startOfDayMs(args.startDate)
+      : nowStart
+    : nowStart;
+  const requestedDayCount = isEntitledToAdvancedControls
+    ? (args.dayCount ?? MAX_DAYS_IN_MEAL_PLAN)
+    : MAX_DAYS_IN_MEAL_PLAN;
+
+  if (!Number.isInteger(requestedDayCount)) {
+    throw new ConvexError("dayCount must be an integer");
+  }
+
+  if (requestedStart < nowStart) {
+    throw new ConvexError("startDate cannot be before today");
+  }
+  const maxAllowedStart = nowStart + (MAX_DAYS_IN_MEAL_PLAN - 1) * ONE_DAY_MS;
+  if (requestedStart > maxAllowedStart) {
+    throw new ConvexError(
+      `startDate cannot be more than ${MAX_DAYS_IN_MEAL_PLAN - 1} days ahead`,
+    );
+  }
+
+  if (requestedDayCount < 1 || requestedDayCount > MAX_DAYS_IN_MEAL_PLAN) {
+    throw new ConvexError(
+      `dayCount must be between 1 and ${MAX_DAYS_IN_MEAL_PLAN}`,
+    );
+  }
+
+  const endDate = startOfDayMs(
+    requestedStart + (requestedDayCount - 1) * ONE_DAY_MS,
+  );
+  return {
+    startDate: requestedStart,
+    endDate,
+    dayCount: requestedDayCount,
+  };
+}
+
+async function assertCanCreateAnotherPlanForUser(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+  subscriptionTier: string | undefined,
+): Promise<void> {
+  if (canCreateMultipleMealPlans(subscriptionTier)) return;
+  const today = startOfDayMs(Date.now());
+  const activeOwnedPlans = await ctx.db
+    .query("mealPlans")
+    .withIndex("by_user_and_endDate", (q) =>
+      q.eq("userId", userId).gte("endDate", today),
+    )
+    .collect();
+  const hasExisting = activeOwnedPlans.some((plan) => !plan.replacedByPlanId);
+  if (hasExisting) {
+    throw new ConvexError("PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS");
+  }
 }
 
 /** Client may omit local day; use UTC “today” start for index bounds and overlap checks. */
@@ -217,11 +288,7 @@ function pickPreferredPlanDoc(
     const finalisedCovering = summaries.filter(
       (s) =>
         s.plan.isFinalised === true &&
-        planOverlapsLocalCalendarDay(
-          s.plan,
-          s.entryMinDate,
-          localDayStartMs,
-        ),
+        planOverlapsLocalCalendarDay(s.plan, s.entryMinDate, localDayStartMs),
     );
     if (finalisedCovering.length > 0) {
       finalisedCovering.sort(
@@ -498,6 +565,26 @@ export const getActiveMealPlanSummaries = query({
   },
 });
 
+/**
+ * Count owned plans that would block free-tier additional plan creation:
+ * unreplaced plans with endDate >= today (UTC day start).
+ */
+export const getOwnedUnreplacedPlanCountForCreation = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return 0;
+    const today = startOfDayMs(Date.now());
+    const ownedPlans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_and_endDate", (q) =>
+        q.eq("userId", user._id).gte("endDate", today),
+      )
+      .collect();
+    return ownedPlans.filter((plan) => !plan.replacedByPlanId).length;
+  },
+});
+
 // ============================================================================
 // MUTATIONS
 // ============================================================================
@@ -514,12 +601,22 @@ export const generateWeeklyPlan = mutation({
     leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
     /** Optional: free-text leftovers (fuzzy-matched to recipe lines). */
     leftoverIngredientPhrases: v.optional(v.array(v.string())),
+    startDate: v.optional(v.number()),
+    dayCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
     const now = Date.now();
-    const startDate = startOfDayMs(now);
-    const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
+    const { startDate, endDate, dayCount } = resolveMealPlanWindow({
+      startDate: args.startDate,
+      dayCount: args.dayCount,
+      subscriptionTier: user.subscriptionTier,
+    });
+    await assertCanCreateAnotherPlanForUser(
+      ctx,
+      user._id,
+      user.subscriptionTier,
+    );
 
     const shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
       ctx,
@@ -557,7 +654,7 @@ export const generateWeeklyPlan = mutation({
 
     const selectedIds = selectRecipes(
       pool,
-      MAX_DAYS_IN_MEAL_PLAN,
+      dayCount,
       actorStats,
       generationSeed,
       recentlySuggested,
@@ -571,10 +668,7 @@ export const generateWeeklyPlan = mutation({
     let bestMatchInPool = 0;
     if (wantsLeftovers) {
       for (const p of pool) {
-        bestMatchInPool = Math.max(
-          bestMatchInPool,
-          p.leftoverMatchCount ?? 0,
-        );
+        bestMatchInPool = Math.max(bestMatchInPool, p.leftoverMatchCount ?? 0);
       }
     }
 
@@ -632,12 +726,22 @@ export const createBlankWeeklyPlan = mutation({
   args: {
     /** When omitted: shared if the user belongs to exactly one household; otherwise the new plan is private until they share or pass this field. */
     householdId: v.optional(v.id("households")),
+    startDate: v.optional(v.number()),
+    dayCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
     const now = Date.now();
-    const startDate = startOfDayMs(now);
-    const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
+    const { startDate, endDate } = resolveMealPlanWindow({
+      startDate: args.startDate,
+      dayCount: args.dayCount,
+      subscriptionTier: user.subscriptionTier,
+    });
+    await assertCanCreateAnotherPlanForUser(
+      ctx,
+      user._id,
+      user.subscriptionTier,
+    );
 
     const shareHouseholdId = await resolveDefaultHouseholdIdForSharing(
       ctx,
@@ -691,9 +795,7 @@ export const regenerateWeeklyPlan = mutation({
 
     let leftoverDocs: Doc<"ingredients">[] = [];
     if (wantsLeftovers && leftover.ids?.length) {
-      const got = await Promise.all(
-        leftover.ids.map((id) => ctx.db.get(id)),
-      );
+      const got = await Promise.all(leftover.ids.map((id) => ctx.db.get(id)));
       leftoverDocs = got.filter((d): d is Doc<"ingredients"> => d != null);
     }
     const normalisedPhraseTargets = normaliseLeftoverPhrasesList(
@@ -725,7 +827,9 @@ export const regenerateWeeklyPlan = mutation({
       generationVersion: 1,
       generatedAt: now,
       householdId: previousPlan.householdId,
-      ...(wantsLeftovers && leftover.ids ? { leftoverIngredientIds: leftover.ids } : {}),
+      ...(wantsLeftovers && leftover.ids
+        ? { leftoverIngredientIds: leftover.ids }
+        : {}),
       ...(wantsLeftovers && leftover.phrases
         ? { leftoverIngredientPhrases: leftover.phrases }
         : {}),
@@ -805,7 +909,8 @@ export const regenerateWeeklyPlan = mutation({
           );
           lockedPoolRecipes.push({
             ...base,
-            leftoverTargetCount: leftoverDocs.length + normalisedPhraseTargets.length,
+            leftoverTargetCount:
+              leftoverDocs.length + normalisedPhraseTargets.length,
             leftoverMatchCount: leftoverMatchKeys.length,
             leftoverMatchKeys,
           });

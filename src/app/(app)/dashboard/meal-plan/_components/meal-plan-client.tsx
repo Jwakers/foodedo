@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/app/constants";
+import { PremiumFeatureNotice } from "@/components/premium-feature-notice";
 import { LeftoverIngredientsPicker } from "@/components/recipes/leftover-ingredients-picker";
 import {
   AlertDialog,
@@ -41,26 +42,35 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
 import { pickPreferredMealPlanIdFromSummaries } from "@/lib/meal-plan-preference";
+import { navigateBackOr } from "@/lib/navigation";
 import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { canUseLeftoverIngredients } from "convex/lib/constants";
+import {
+  canCreateMultipleMealPlans,
+  canUseAdvancedMealPlanControls,
+  canUseLeftoverIngredients,
+  MAX_DAYS_IN_MEAL_PLAN,
+} from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
+  ArrowLeft,
   ArrowRight,
   CalendarPlus,
   CheckCircle2,
   Home,
+  Loader2,
   MoreVertical,
   ShoppingCart,
+  SlidersHorizontal,
   Sparkles,
   Trash2,
   UserMinus,
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
@@ -85,6 +95,20 @@ function mealPlanGenerateFailureReason(e: unknown): string {
   }
   return "unknown_error";
 }
+
+function mealPlanErrorMessage(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS/i.test(msg)) {
+    return "Multiple active meal plans are a premium feature. Upgrade to create another plan.";
+  }
+  if (/PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS/i.test(msg)) {
+    return "Leftover-ingredient management is a premium feature. Upgrade to enable it.";
+  }
+  if (/PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS/i.test(msg)) {
+    return "Custom start dates and day lengths are premium controls.";
+  }
+  return msg;
+}
 const MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY =
   "foodedo_onboarding_meal_plan_empty_viewed";
 
@@ -103,28 +127,39 @@ function formatPlanRangeShort(start: number | undefined, end: number): string {
   return fmt(end);
 }
 
-export default function MealPlanClient() {
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+type MealPlanClientProps = {
+  planId?: string;
+  generationOnly?: boolean;
+};
+
+export default function MealPlanClient({
+  planId,
+  generationOnly = false,
+}: MealPlanClientProps) {
   const emptyViewedTrackedRef = useRef(false);
 
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const planParam = searchParams.get("plan");
+  const planParam = planId ?? searchParams.get("plan");
 
   const localDayStartMs = startOfLocalDayMs(Date.now());
 
   const planSummaries = useQuery(api.mealPlans.getActiveMealPlanSummaries, {
     localDayStartMs,
   });
+  const ownedPlanCountForCreation = useQuery(
+    api.mealPlans.getOwnedUnreplacedPlanCountForCreation,
+  );
 
   const resolvedPlanId = useMemo(() => {
+    if (generationOnly) return null;
+    if (planParam) return planParam as Id<"mealPlans">;
     if (planSummaries === undefined) return undefined;
     if (planSummaries.length === 0) return null;
 
     const validIds = new Set(planSummaries.map((s) => s._id));
-    if (planParam && validIds.has(planParam as Id<"mealPlans">)) {
-      return planParam as Id<"mealPlans">;
-    }
     if (typeof window !== "undefined") {
       const last = sessionStorage.getItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY);
       if (last && validIds.has(last as Id<"mealPlans">)) {
@@ -132,28 +167,40 @@ export default function MealPlanClient() {
       }
     }
     return pickPreferredMealPlanIdFromSummaries(planSummaries, localDayStartMs);
-  }, [planSummaries, planParam, localDayStartMs]);
+  }, [generationOnly, planSummaries, planParam, localDayStartMs]);
 
   useEffect(() => {
+    if (generationOnly) return;
+    if (planId) {
+      if (resolvedPlanId && typeof window !== "undefined") {
+        sessionStorage.setItem(
+          MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+          resolvedPlanId,
+        );
+      }
+      return;
+    }
     if (planSummaries === undefined) return;
 
     if (planSummaries.length === 0) {
-      if (planParam) {
-        router.replace(pathname, { scroll: false });
-      }
       return;
     }
 
     if (resolvedPlanId && planParam !== resolvedPlanId) {
-      router.replace(`${pathname}?plan=${encodeURIComponent(resolvedPlanId)}`, {
-        scroll: false,
-      });
+      router.replace(ROUTES.mealPlanWithId(resolvedPlanId), { scroll: false });
     }
 
     if (resolvedPlanId && typeof window !== "undefined") {
       sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
     }
-  }, [planSummaries, planParam, resolvedPlanId, pathname, router]);
+  }, [
+    generationOnly,
+    planId,
+    planSummaries,
+    planParam,
+    resolvedPlanId,
+    router,
+  ]);
 
   useEffect(() => {
     if (planSummaries === undefined || planSummaries.length > 0) return;
@@ -256,9 +303,77 @@ export default function MealPlanClient() {
   const [mealPlanLeftoverPhrases, setMealPlanLeftoverPhrases] = useState<
     string[]
   >([]);
+  const entitlementsReady =
+    currentUser !== undefined && ownedPlanCountForCreation !== undefined;
   const canUseMealPlanLeftovers =
+    entitlementsReady &&
     currentUser != null &&
     canUseLeftoverIngredients(currentUser.subscriptionTier);
+  const hasActivePlan =
+    entitlementsReady && (ownedPlanCountForCreation ?? 0) > 0;
+  const blocksAdditionalPlansOnFreeTier =
+    entitlementsReady &&
+    currentUser != null &&
+    hasActivePlan &&
+    !canCreateMultipleMealPlans(currentUser.subscriptionTier);
+  const canUseAdvancedControls =
+    entitlementsReady &&
+    currentUser != null &&
+    canUseAdvancedMealPlanControls(currentUser.subscriptionTier);
+  const controlsLocked = !entitlementsReady || !canUseAdvancedControls;
+
+  const [dayOption, setDayOption] = useState<"3" | "5" | "7" | "custom">("7");
+  const [customDayCount, setCustomDayCount] = useState("7");
+  const [startDateOption, setStartDateOption] = useState<
+    "today" | "tomorrow" | "following" | "custom"
+  >("today");
+  const [customStartDate, setCustomStartDate] = useState("");
+
+  const selectedDayCount = useMemo(() => {
+    if (controlsLocked) return 7;
+    if (dayOption === "custom") {
+      const parsed = Number.parseInt(customDayCount, 10);
+      if (Number.isNaN(parsed)) return 7;
+      return Math.max(1, Math.min(MAX_DAYS_IN_MEAL_PLAN, parsed));
+    }
+    return Number.parseInt(dayOption, 10);
+  }, [controlsLocked, customDayCount, dayOption]);
+
+  const selectedStartDate = useMemo(() => {
+    const utcStartForLocalDate = (offsetDays: number): number => {
+      const local = new Date(localDayStartMs);
+      local.setDate(local.getDate() + offsetDays);
+      return Date.UTC(local.getFullYear(), local.getMonth(), local.getDate());
+    };
+
+    if (controlsLocked) return utcStartForLocalDate(0);
+    if (startDateOption === "today") return utcStartForLocalDate(0);
+    if (startDateOption === "tomorrow") return utcStartForLocalDate(1);
+    if (startDateOption === "following") return utcStartForLocalDate(2);
+    if (!customStartDate) return utcStartForLocalDate(0);
+
+    const [year, month, day] = customStartDate.split("-").map(Number);
+    if (
+      Number.isNaN(year) ||
+      Number.isNaN(month) ||
+      Number.isNaN(day) ||
+      year <= 0 ||
+      month <= 0 ||
+      day <= 0
+    ) {
+      return utcStartForLocalDate(0);
+    }
+    return Date.UTC(year, month - 1, day);
+  }, [controlsLocked, customStartDate, localDayStartMs, startDateOption]);
+
+  const followingDayLabel = useMemo(() => {
+    const followingDayMs = localDayStartMs + 2 * ONE_DAY_MS;
+    return new Date(followingDayMs).toLocaleDateString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }, [localDayStartMs]);
 
   useEffect(() => {
     if (currentUser === undefined) return;
@@ -279,12 +394,29 @@ export default function MealPlanClient() {
     );
   }, [currentPlan?.entries]);
 
+  const visiblePlanDays = useMemo(() => {
+    if (!currentPlan) return selectedDayCount;
+    if (currentPlan.startDate !== undefined) {
+      const computedDays =
+        Math.floor((currentPlan.endDate - currentPlan.startDate) / ONE_DAY_MS) +
+        1;
+      return Math.max(1, computedDays);
+    }
+    return selectedDayCount;
+  }, [currentPlan, selectedDayCount]);
+
   const emptySlotsCount = useMemo(
-    () => Math.max(0, 7 - (currentPlan?.entries?.length ?? 0)),
-    [currentPlan?.entries?.length],
+    () => Math.max(0, visiblePlanDays - (currentPlan?.entries?.length ?? 0)),
+    [currentPlan?.entries?.length, visiblePlanDays],
   );
 
   const handleGenerateWeek = useCallback(async () => {
+    if (blocksAdditionalPlansOnFreeTier) {
+      toast.error(
+        "Free users can only have one active meal plan at a time. Delete your existing plan or upgrade to create another.",
+      );
+      return;
+    }
     if (households === undefined) {
       toast.info("Loading households…");
       return;
@@ -298,6 +430,8 @@ export default function MealPlanClient() {
         householdId?: Id<"households">;
         leftoverIngredientIds?: Id<"ingredients">[];
         leftoverIngredientPhrases?: string[];
+        startDate?: number;
+        dayCount?: number;
       } =
         households.length > 1
           ? {
@@ -306,6 +440,8 @@ export default function MealPlanClient() {
                 households[0]!._id,
             }
           : {};
+      payload.startDate = selectedStartDate;
+      payload.dayCount = selectedDayCount;
       if (
         canUseMealPlanLeftovers &&
         (mealPlanLeftoverIds.length > 0 || mealPlanLeftoverPhrases.length > 0)
@@ -337,7 +473,7 @@ export default function MealPlanClient() {
         );
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Failed to generate plan";
+      const msg = mealPlanErrorMessage(e) || "Failed to generate plan";
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_GENERATE_FAILED, {
         error_reason: mealPlanGenerateFailureReason(e),
       });
@@ -363,9 +499,18 @@ export default function MealPlanClient() {
     mealPlanLeftoverIds,
     mealPlanLeftoverPhrases,
     router,
+    selectedDayCount,
+    selectedStartDate,
+    blocksAdditionalPlansOnFreeTier,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
+    if (blocksAdditionalPlansOnFreeTier) {
+      toast.error(
+        "Free users can only have one active meal plan at a time. Delete your existing plan or upgrade to create another.",
+      );
+      return;
+    }
     if (households === undefined) {
       toast.info("Loading households…");
       return;
@@ -380,7 +525,11 @@ export default function MealPlanClient() {
                 households[0]!._id,
             }
           : {};
-      const { planId } = await createBlankWeeklyPlan(payload);
+      const { planId } = await createBlankWeeklyPlan({
+        ...payload,
+        startDate: selectedStartDate,
+        dayCount: selectedDayCount,
+      });
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_BLANK_CREATED, {
         shared_with_household: households.length > 1,
       });
@@ -390,13 +539,19 @@ export default function MealPlanClient() {
       router.push(ROUTES.mealPlanWithId(planId));
       toast.success("Manual plan ready. Add your meals.");
     } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Failed to create manual plan",
-      );
+      toast.error(mealPlanErrorMessage(e) || "Failed to create manual plan");
     } finally {
       setIsGenerating(false);
     }
-  }, [createBlankWeeklyPlan, generateWeekHouseholdId, households, router]);
+  }, [
+    createBlankWeeklyPlan,
+    generateWeekHouseholdId,
+    households,
+    router,
+    selectedDayCount,
+    selectedStartDate,
+    blocksAdditionalPlansOnFreeTier,
+  ]);
 
   const handleRegenerateWeek = useCallback(async () => {
     if (!currentPlan) return;
@@ -671,15 +826,18 @@ export default function MealPlanClient() {
   }, [personalChalkboard, householdChalkboards, households]);
 
   useEffect(() => {
+    if (generationOnly) return;
     if (!resolvedPlanId || currentPlan === undefined) return;
     if (currentPlan === null && planParam) {
       router.replace(ROUTES.MEAL_PLAN, { scroll: false });
     }
-  }, [resolvedPlanId, currentPlan, router, planParam]);
+  }, [generationOnly, resolvedPlanId, currentPlan, router, planParam]);
 
   const isPlanListLoading =
-    planSummaries === undefined || resolvedPlanId === undefined;
+    planSummaries === undefined ||
+    (!generationOnly && resolvedPlanId === undefined);
   const isPlanDetailLoading =
+    !generationOnly &&
     resolvedPlanId !== null &&
     resolvedPlanId !== undefined &&
     currentPlan === undefined;
@@ -690,6 +848,272 @@ export default function MealPlanClient() {
         <Skeleton className="h-10 w-64 mb-4" />
         <Skeleton className="h-32 w-full mb-4" />
         <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
+
+  if (generationOnly) {
+    return (
+      <div className="bg-background w-full min-w-0 overflow-x-hidden">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+                Your Weekly Plan
+              </h1>
+              <p className="text-muted-foreground text-base sm:text-lg">
+                Pick your timing, then generate a dedicated meal plan page.
+              </p>
+            </div>
+          </div>
+          {planSummaries.length > 0 ? (
+            <Card className="mb-6 max-w-2xl mx-auto">
+              <CardContent className="p-5 space-y-3">
+                <h2 className="font-semibold text-lg">Your Meal Plans</h2>
+                <div className="space-y-2">
+                  {planSummaries.map((summary) => (
+                    <Button
+                      key={summary._id}
+                      variant="outline"
+                      className="w-full justify-between"
+                      onClick={() =>
+                        router.push(ROUTES.mealPlanWithId(summary._id))
+                      }
+                    >
+                      <span>
+                        {formatPlanRangeShort(
+                          summary.startDate,
+                          summary.endDate,
+                        )}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {summary.isFinalised ? "Saved" : "Draft"}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+          <Card className="mb-6 border-border/80 bg-muted/20">
+            <CardContent className="p-3 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <SlidersHorizontal
+                  className="size-4 shrink-0 text-primary"
+                  aria-hidden
+                />
+                <h2 className="text-base font-semibold text-foreground">
+                  Meal plan controls
+                </h2>
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] font-semibold uppercase"
+                >
+                  Pro
+                </Badge>
+              </div>
+              {controlsLocked ? (
+                <PremiumFeatureNotice
+                  title="Pro feature"
+                  description="You can preview these options now."
+                />
+              ) : null}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">Days</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(["3", "5", "7", "custom"] as const).map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      disabled={controlsLocked}
+                      onClick={() => setDayOption(option)}
+                      className={cn(
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
+                        dayOption === option
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-card text-muted-foreground",
+                        controlsLocked && "cursor-not-allowed opacity-60",
+                      )}
+                    >
+                      {option === "custom" ? "Custom" : `${option} days`}
+                    </button>
+                  ))}
+                </div>
+                {dayOption === "custom" ? (
+                  <div className="max-w-40">
+                    <Label htmlFor="custom-day-count" className="text-xs">
+                      Custom days (max 7)
+                    </Label>
+                    <input
+                      id="custom-day-count"
+                      type="number"
+                      min={1}
+                      max={MAX_DAYS_IN_MEAL_PLAN}
+                      placeholder="1-7"
+                      value={customDayCount}
+                      onChange={(e) => setCustomDayCount(e.target.value)}
+                      disabled={controlsLocked}
+                      className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">Starts</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(
+                    [
+                      ["today", "Today"],
+                      ["tomorrow", "Tomorrow"],
+                      ["following", followingDayLabel],
+                      ["custom", "Custom date"],
+                    ] as const
+                  ).map(([option, label]) => (
+                    <button
+                      key={option}
+                      type="button"
+                      disabled={controlsLocked}
+                      onClick={() => setStartDateOption(option)}
+                      className={cn(
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
+                        startDateOption === option
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-card text-muted-foreground",
+                        controlsLocked && "cursor-not-allowed opacity-60",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {startDateOption === "custom" ? (
+                  <div className="max-w-56">
+                    <Label htmlFor="custom-start-date" className="text-xs">
+                      Custom start date
+                    </Label>
+                    <input
+                      id="custom-start-date"
+                      type="date"
+                      title="Custom start date"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      disabled={controlsLocked}
+                      className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
+          <div className="max-w-2xl mx-auto mb-6 w-full">
+            <LeftoverIngredientsPicker
+              selectedIds={mealPlanLeftoverIds}
+              selectedPhrases={mealPlanLeftoverPhrases}
+              onSelectionChange={({ ingredientIds, phrases }) => {
+                setMealPlanLeftoverIds(ingredientIds);
+                setMealPlanLeftoverPhrases(phrases);
+              }}
+              canUseFeatures={canUseMealPlanLeftovers}
+              description="Optional: prioritise recipes that use ingredients you want to finish this week."
+            />
+          </div>
+          <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
+            <CardContent className="p-0 flex flex-col items-center">
+              <div className="size-16 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center mb-6">
+                <Sparkles className="size-8 text-primary" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+                Ready to eat better?
+              </h2>
+              <p className="text-muted-foreground mb-3 max-w-sm mx-auto">
+                We pick from the curated catalog plus your library so you get a
+                full week in seconds.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+                Prefer to pick every meal yourself? Start a manual plan with
+                empty days, then fill them in.
+              </p>
+              {households && households.length > 1 ? (
+                <div className="mb-4 w-full max-w-sm text-left space-y-1.5">
+                  <Label htmlFor="empty-gen-household">Household</Label>
+                  <Select
+                    value={generateWeekHouseholdId || households[0]?._id || ""}
+                    onValueChange={(v) =>
+                      setGenerateWeekHouseholdId(v as Id<"households">)
+                    }
+                  >
+                    <SelectTrigger id="empty-gen-household">
+                      <SelectValue placeholder="Select household" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {households.map((h) => (
+                        <SelectItem key={h._id} value={h._id}>
+                          {h.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+              <div className="flex w-full max-w-sm mx-auto flex-col gap-2 sm:flex-row sm:justify-center">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:flex-1"
+                  onClick={handleBlankWeek}
+                  disabled={
+                    isGenerating ||
+                    households === undefined ||
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
+                  }
+                >
+                  {isGenerating ? (
+                    <Loader2 className="size-5 mr-2 animate-spin" />
+                  ) : (
+                    <CalendarPlus className="size-5 mr-2" />
+                  )}
+                  Manual plan
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-full sm:flex-1"
+                  onClick={handleGenerateWeek}
+                  disabled={
+                    isGenerating ||
+                    households === undefined ||
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
+                  }
+                >
+                  {isGenerating ? (
+                    <Loader2 className="size-5 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-5 mr-2" />
+                  )}
+                  {isGenerating ? "Generating..." : "Generate My Week"}
+                  {!isGenerating ? (
+                    <ArrowRight className="size-5 ml-2" />
+                  ) : null}
+                </Button>
+              </div>
+              {blocksAdditionalPlansOnFreeTier ? (
+                <p className="mt-3 max-w-sm text-xs text-muted-foreground">
+                  Free users can only have one active meal plan at a time. If
+                  you want to create another meal plan, delete your existing one
+                  first, or{" "}
+                  <Link
+                    href={ROUTES.PRICING}
+                    className="underline underline-offset-4"
+                  >
+                    upgrade your account
+                  </Link>{" "}
+                  to enable multiple meal plans.
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -788,7 +1212,12 @@ export default function MealPlanClient() {
                   variant="outline"
                   className="w-full sm:flex-1"
                   onClick={handleBlankWeek}
-                  disabled={isGenerating || households === undefined}
+                  disabled={
+                    isGenerating ||
+                    households === undefined ||
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
+                  }
                 >
                   <CalendarPlus className="size-5 mr-2" />
                   Manual plan
@@ -797,7 +1226,12 @@ export default function MealPlanClient() {
                   size="lg"
                   className="w-full sm:flex-1"
                   onClick={handleGenerateWeek}
-                  disabled={isGenerating || households === undefined}
+                  disabled={
+                    isGenerating ||
+                    households === undefined ||
+                    blocksAdditionalPlansOnFreeTier ||
+                    !entitlementsReady
+                  }
                 >
                   Start Planning
                   <ArrowRight className="size-5 ml-2" />
@@ -837,74 +1271,18 @@ export default function MealPlanClient() {
           !isFinalised && currentPlan.isOwner ? "pb-36" : "pb-20",
         )}
       >
-        {/* Top bar: always show Generate meal plan so user can generate next week early */}
-        {currentPlan.isOwner && (
-          <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
-            {households && households.length > 1 ? (
-              <div className="flex flex-col gap-1.5 sm:max-w-xs">
-                <Label
-                  htmlFor="top-gen-household"
-                  className="text-xs text-muted-foreground"
-                >
-                  Next week · household
-                </Label>
-                <Select
-                  value={generateWeekHouseholdId || households[0]?._id || ""}
-                  onValueChange={(v) =>
-                    setGenerateWeekHouseholdId(v as Id<"households">)
-                  }
-                >
-                  <SelectTrigger id="top-gen-household" size="sm">
-                    <SelectValue placeholder="Household" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {households.map((h) => (
-                      <SelectItem key={h._id} value={h._id}>
-                        {h.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBlankWeek}
-                disabled={isGenerating || households === undefined}
-                className="shrink-0"
-              >
-                <CalendarPlus className="size-4" />
-                Manual plan
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateWeek}
-                disabled={isGenerating || households === undefined}
-                className="shrink-0"
-              >
-                <Sparkles className="size-4" />
-                Generate next plan
-              </Button>
-            </div>
-          </div>
-        )}
-        {currentPlan.isOwner && (
-          <div className="mb-4 max-w-2xl">
-            <LeftoverIngredientsPicker
-              selectedIds={mealPlanLeftoverIds}
-              selectedPhrases={mealPlanLeftoverPhrases}
-              onSelectionChange={({ ingredientIds, phrases }) => {
-                setMealPlanLeftoverIds(ingredientIds);
-                setMealPlanLeftoverPhrases(phrases);
-              }}
-              canUseFeatures={canUseMealPlanLeftovers}
-              description="Optional: prioritise recipes that use ingredients you want to finish this week. Applies when you generate or regenerate."
-            />
-          </div>
-        )}
+        <div className="mb-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => navigateBackOr(router, ROUTES.MEAL_PLAN)}
+            aria-label="Go back to meal plan generation"
+          >
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+        </div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6 min-w-0">
           <div className="min-w-0 overflow-hidden">
             <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 truncate">
@@ -1133,19 +1511,15 @@ export default function MealPlanClient() {
         </AlertDialog>
 
         {sharedHousehold && (
-          <Card className="mb-6 border-primary/25 bg-primary/5">
-            <CardContent className="py-4 px-4 flex gap-3 items-start">
+          <Card className="mb-4 py-4 border-primary/25 bg-primary/5">
+            <CardContent className="px-3 flex gap-2 items-center">
               <div className="mt-0.5 rounded-md bg-primary/15 p-1.5 shrink-0">
                 <Home className="size-4 text-primary" />
               </div>
-              <div className="min-w-0 space-y-1.5 text-sm">
-                <p className="font-medium text-foreground">
+              <div className="min-w-0 text-sm">
+                <p className="font-medium text-foreground leading-none">
                   Shared with{" "}
                   <span className="text-primary">{sharedHousehold.name}</span>
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  Everyone in this household can see this plan and shop from it,
-                  including new weeks you generate.{" "}
                 </p>
               </div>
             </CardContent>

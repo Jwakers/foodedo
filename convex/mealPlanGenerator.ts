@@ -73,10 +73,9 @@ export async function buildPool(
     options?.leftoverTargetPhrases,
   );
   const leftoverIdsForMatch = leftoverDocs.map((d) => d._id);
+  const totalLeftoverTargets = leftoverDocs.length + normalisedPhrases.length;
   const leftoverTargetCount =
-    leftoverDocs.length + normalisedPhrases.length > 0
-      ? leftoverDocs.length + normalisedPhrases.length
-      : undefined;
+    totalLeftoverTargets > 0 ? totalLeftoverTargets : undefined;
 
   const addIfEligible = (r: {
     _id: Id<"recipes">;

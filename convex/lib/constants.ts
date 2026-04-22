@@ -307,6 +307,26 @@ export function canGenerateRecipeHeroImageWithAI(
   return false;
 }
 
+/** Premium feature: create overlapping/multiple active meal plans. */
+export function canCreateMultipleMealPlans(
+  subscriptionTier: string | undefined,
+): boolean {
+  const tier = subscriptionTier ?? "free_user";
+  if (tier === "pro_user") return true;
+  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
+  return false;
+}
+
+/** Premium feature: advanced generation controls for start date and day count. */
+export function canUseAdvancedMealPlanControls(
+  subscriptionTier: string | undefined,
+): boolean {
+  const tier = subscriptionTier ?? "free_user";
+  if (tier === "pro_user") return true;
+  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
+  return false;
+}
+
 /** Rate limits for AI recipe image generation (same caps for all entitled tiers during beta). */
 export const RECIPE_AI_HERO_LIMITS = {
   MAX_SUCCEEDED_PER_24H: 5,

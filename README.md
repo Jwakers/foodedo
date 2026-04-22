@@ -40,10 +40,10 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Improve convex function call usage
 - [x] Remove rabbit meals from system recipes + anything else that might be considered too niche
 - [x] Plan in a premium feature that takes existing ingredients and helps you use them up in your next meal plan (do consider that premium features are free in beta)
-- [ ] Pro tier, public, recipe image generator (need to be very secure and careful on throttling + usage for this one)
-- [ ] Create the premium tier recipe generator (free in beta). We should track which images are AI generated and persist this data to help with preventative re-generation and feature abuse.
+- [x] Pro tier, public, recipe image generator (need to be very secure and careful on throttling + usage for this one)
 - [x] Improve the ingredient manager for superusers: uncategorised ingredients should be searchable, and subcategories should appear alongside categorised ingredients for at-a-glance visibility.
-- Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
+- [ ] Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
+- [ ] Take most popular organic search results in google search console and make sure we have landing pages or blogs to capitalise.
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 
 ### Strategic / growth
@@ -106,6 +106,7 @@ _Angle: looking for ~20 testers / feedback._
 
 - [x] Meal plans should be shared to households automatically.
 - [x] When opening the shopping list from the meal plan, Back/Cancel should return to the previous page (not default to recipe selection).
+- [x] Add basic pre-generation controls (number of meals, start date, duration) with UX-focused presets: duration — 3 days, 5 days, 1 week, Custom (max 7 days); start date — Today, Tomorrow, Day after, Custom.
 
 ### Chalkboard and UI friction
 
