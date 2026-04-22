@@ -9,12 +9,16 @@ type PremiumFeatureNoticeProps = {
   title: string;
   description: string;
   className?: string;
+  ctaLabel?: string;
+  ctaSuffix?: string;
 };
 
 export function PremiumFeatureNotice({
   title,
   description,
   className,
+  ctaLabel = "Upgrade your account",
+  ctaSuffix = "to take advantage of advanced features.",
 }: PremiumFeatureNoticeProps) {
   return (
     <div
@@ -30,9 +34,9 @@ export function PremiumFeatureNotice({
       <p className="mt-1 text-muted-foreground">
         {description}{" "}
         <Link className="underline underline-offset-4" href={ROUTES.PRICING}>
-          Upgrade your account
+          {ctaLabel}
         </Link>{" "}
-        to take advantage of advanced features.
+        {ctaSuffix}
       </p>
     </div>
   );

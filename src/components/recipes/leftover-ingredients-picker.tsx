@@ -143,8 +143,8 @@ export function LeftoverIngredientsPicker({
         <p className="text-sm text-muted-foreground">{description}</p>
         {locked ? (
           <PremiumFeatureNotice
-            title="Use up ingredients is premium"
-            description="You can preview this feature now."
+            title="Pro feature"
+            description="Use up ingredients is available on Pro."
           />
         ) : null}
 

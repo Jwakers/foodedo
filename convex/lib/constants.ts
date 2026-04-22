@@ -284,6 +284,13 @@ export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
  */
 export const BETA_FREE_INCLUDES_PREMIUM_FEATURES = true;
 
+function hasPremiumFeatureAccess(subscriptionTier: string | undefined): boolean {
+  const tier = subscriptionTier ?? "free_user";
+  if (tier === "pro_user") return true;
+  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
+  return false;
+}
+
 /** Max ingredients a user can select for “use up leftovers” flows. */
 export const LEFTOVER_INGREDIENTS_MAX = 10;
 
@@ -291,41 +298,36 @@ export const LEFTOVER_INGREDIENTS_MAX = 10;
 export function canUseLeftoverIngredients(
   subscriptionTier: string | undefined,
 ): boolean {
-  const tier = subscriptionTier ?? "free_user";
-  if (tier === "pro_user") return true;
-  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
-  return false;
+  return hasPremiumFeatureAccess(subscriptionTier);
 }
 
 /** Premium feature: AI-generated recipe image for user-owned recipes (same beta flag as leftovers). */
 export function canGenerateRecipeHeroImageWithAI(
   subscriptionTier: string | undefined,
 ): boolean {
-  const tier = subscriptionTier ?? "free_user";
-  if (tier === "pro_user") return true;
-  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
-  return false;
+  return hasPremiumFeatureAccess(subscriptionTier);
 }
 
 /** Premium feature: create overlapping/multiple active meal plans. */
 export function canCreateMultipleMealPlans(
   subscriptionTier: string | undefined,
 ): boolean {
-  const tier = subscriptionTier ?? "free_user";
-  if (tier === "pro_user") return true;
-  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
-  return false;
+  return hasPremiumFeatureAccess(subscriptionTier);
 }
 
 /** Premium feature: advanced generation controls for start date and day count. */
 export function canUseAdvancedMealPlanControls(
   subscriptionTier: string | undefined,
 ): boolean {
-  const tier = subscriptionTier ?? "free_user";
-  if (tier === "pro_user") return true;
-  if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
-  return false;
+  return hasPremiumFeatureAccess(subscriptionTier);
 }
+
+export const MEAL_PLAN_ERRORS = {
+  PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS: "PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS",
+  PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS: "PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS",
+  PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS:
+    "PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS",
+} as const;
 
 /** Rate limits for AI recipe image generation (same caps for all entitled tiers during beta). */
 export const RECIPE_AI_HERO_LIMITS = {
