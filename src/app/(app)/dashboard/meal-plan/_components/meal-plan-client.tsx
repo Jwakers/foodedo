@@ -47,10 +47,9 @@ import { cn, startOfLocalDayMs } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import {
-  canCreateMultipleMealPlans,
-  canUseAdvancedMealPlanControls,
-  canUseLeftoverIngredients,
+  BETA_FREE_INCLUDES_PREMIUM_FEATURES,
   MAX_DAYS_IN_MEAL_PLAN,
+  MEAL_PLAN_ERRORS,
 } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -98,13 +97,15 @@ function mealPlanGenerateFailureReason(e: unknown): string {
 
 function mealPlanErrorMessage(e: unknown): string {
   const msg = e instanceof Error ? e.message : String(e);
-  if (/PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS/i.test(msg)) {
+  if (msg.includes(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS)) {
     return "Multiple active meal plans are a premium feature. Upgrade to create another plan.";
   }
-  if (/PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS/i.test(msg)) {
+  if (msg.includes(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS)) {
     return "Leftover-ingredient management is a premium feature. Upgrade to enable it.";
   }
-  if (/PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS/i.test(msg)) {
+  if (
+    msg.includes(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS)
+  ) {
     return "Custom start dates and day lengths are premium controls.";
   }
   return msg;
@@ -134,6 +135,162 @@ type MealPlanClientProps = {
   generationOnly?: boolean;
 };
 
+type MealPlanSummary = NonNullable<
+  FunctionReturnType<typeof api.mealPlans.getActiveMealPlanSummaries>
+>[number];
+
+function useMealPlanRoutingState(args: {
+  generationOnly: boolean;
+  planId?: string;
+  planParam: string | null;
+  planSummaries: MealPlanSummary[] | undefined;
+  localDayStartMs: number;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const resolvedPlanId = useMemo(() => {
+    if (args.generationOnly) return null;
+    if (args.planParam) return args.planParam as Id<"mealPlans">;
+    if (args.planSummaries === undefined) return undefined;
+    if (args.planSummaries.length === 0) return null;
+
+    const validIds = new Set(args.planSummaries.map((s) => s._id));
+    if (typeof window !== "undefined") {
+      const last = sessionStorage.getItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY);
+      if (last && validIds.has(last as Id<"mealPlans">)) {
+        return last as Id<"mealPlans">;
+      }
+    }
+    return pickPreferredMealPlanIdFromSummaries(
+      args.planSummaries,
+      args.localDayStartMs,
+    );
+  }, [
+    args.generationOnly,
+    args.localDayStartMs,
+    args.planParam,
+    args.planSummaries,
+  ]);
+
+  useEffect(() => {
+    if (args.generationOnly) return;
+    if (args.planId) {
+      if (resolvedPlanId && typeof window !== "undefined") {
+        sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
+      }
+      return;
+    }
+    if (args.planSummaries === undefined) return;
+
+    if (args.planSummaries.length === 0) {
+      return;
+    }
+
+    if (resolvedPlanId && args.planParam !== resolvedPlanId) {
+      args.router.replace(ROUTES.mealPlanWithId(resolvedPlanId), { scroll: false });
+    }
+
+    if (resolvedPlanId && typeof window !== "undefined") {
+      sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
+    }
+  }, [
+    args.generationOnly,
+    args.planId,
+    args.planParam,
+    args.planSummaries,
+    args.router,
+    resolvedPlanId,
+  ]);
+
+  return resolvedPlanId;
+}
+
+type GenerationActionButtonsProps = {
+  isGenerating: boolean;
+  disabled: boolean;
+  onManual: () => void;
+  onGenerate: () => void;
+  showUpgradeHint: boolean;
+};
+
+function resolveMealPlanEntitlements(args: {
+  currentUser: FunctionReturnType<typeof api.users.current> | undefined;
+  ownedPlanCountForCreation: number | undefined;
+}) {
+  const subscriptionTier = args.currentUser?.subscriptionTier ?? "free_user";
+  const hasPremiumMealPlanAccess =
+    subscriptionTier === "pro_user" ||
+    (subscriptionTier === "free_user" && BETA_FREE_INCLUDES_PREMIUM_FEATURES);
+  const entitlementsReady =
+    args.currentUser !== undefined && args.ownedPlanCountForCreation !== undefined;
+  const canUseMealPlanLeftovers =
+    entitlementsReady && args.currentUser != null && hasPremiumMealPlanAccess;
+  const hasActivePlan =
+    entitlementsReady && (args.ownedPlanCountForCreation ?? 0) > 0;
+  const blocksAdditionalPlansOnFreeTier =
+    entitlementsReady &&
+    args.currentUser != null &&
+    hasActivePlan &&
+    !hasPremiumMealPlanAccess;
+  const canUseAdvancedControls =
+    entitlementsReady && args.currentUser != null && hasPremiumMealPlanAccess;
+
+  return {
+    entitlementsReady,
+    canUseMealPlanLeftovers,
+    blocksAdditionalPlansOnFreeTier,
+    canUseAdvancedControls,
+    controlsLocked: !entitlementsReady || !canUseAdvancedControls,
+  };
+}
+
+function GenerationActionButtons({
+  isGenerating,
+  disabled,
+  onManual,
+  onGenerate,
+  showUpgradeHint,
+}: GenerationActionButtonsProps) {
+  return (
+    <>
+      <div className="flex w-full max-w-sm mx-auto flex-col gap-2 sm:flex-row sm:justify-center">
+        <Button
+          size="lg"
+          variant="outline"
+          className="w-full sm:flex-1"
+          onClick={onManual}
+          disabled={disabled}
+        >
+          {isGenerating ? (
+            <Loader2 className="size-5 mr-2 animate-spin" />
+          ) : (
+            <CalendarPlus className="size-5 mr-2" />
+          )}
+          Manual plan
+        </Button>
+        <Button size="lg" className="w-full sm:flex-1" onClick={onGenerate} disabled={disabled}>
+          {isGenerating ? (
+            <Loader2 className="size-5 mr-2 animate-spin" />
+          ) : (
+            <Sparkles className="size-5 mr-2" />
+          )}
+          {isGenerating ? "Generating..." : "Generate My Week"}
+          {!isGenerating ? <ArrowRight className="size-5 ml-2" /> : null}
+        </Button>
+      </div>
+      {showUpgradeHint ? (
+        <p className="mt-3 max-w-sm text-xs text-muted-foreground">
+          Free users can only have one active meal plan at a time. If you want
+          to create another meal plan, delete your existing one first, or{" "}
+          <Link href={ROUTES.PRICING} className="underline underline-offset-4">
+            upgrade your account
+          </Link>{" "}
+          to enable multiple meal plans.
+        </p>
+      ) : null}
+    </>
+  );
+}
+
 export default function MealPlanClient({
   planId,
   generationOnly = false,
@@ -153,54 +310,14 @@ export default function MealPlanClient({
     api.mealPlans.getOwnedUnreplacedPlanCountForCreation,
   );
 
-  const resolvedPlanId = useMemo(() => {
-    if (generationOnly) return null;
-    if (planParam) return planParam as Id<"mealPlans">;
-    if (planSummaries === undefined) return undefined;
-    if (planSummaries.length === 0) return null;
-
-    const validIds = new Set(planSummaries.map((s) => s._id));
-    if (typeof window !== "undefined") {
-      const last = sessionStorage.getItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY);
-      if (last && validIds.has(last as Id<"mealPlans">)) {
-        return last as Id<"mealPlans">;
-      }
-    }
-    return pickPreferredMealPlanIdFromSummaries(planSummaries, localDayStartMs);
-  }, [generationOnly, planSummaries, planParam, localDayStartMs]);
-
-  useEffect(() => {
-    if (generationOnly) return;
-    if (planId) {
-      if (resolvedPlanId && typeof window !== "undefined") {
-        sessionStorage.setItem(
-          MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
-          resolvedPlanId,
-        );
-      }
-      return;
-    }
-    if (planSummaries === undefined) return;
-
-    if (planSummaries.length === 0) {
-      return;
-    }
-
-    if (resolvedPlanId && planParam !== resolvedPlanId) {
-      router.replace(ROUTES.mealPlanWithId(resolvedPlanId), { scroll: false });
-    }
-
-    if (resolvedPlanId && typeof window !== "undefined") {
-      sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
-    }
-  }, [
+  const resolvedPlanId = useMealPlanRoutingState({
     generationOnly,
     planId,
-    planSummaries,
     planParam,
-    resolvedPlanId,
+    planSummaries,
+    localDayStartMs,
     router,
-  ]);
+  });
 
   useEffect(() => {
     if (planSummaries === undefined || planSummaries.length > 0) return;
@@ -282,16 +399,6 @@ export default function MealPlanClient({
     Id<"households"> | ""
   >("");
 
-  useEffect(() => {
-    if (
-      households &&
-      households.length > 1 &&
-      generateWeekHouseholdId === "" &&
-      households[0]
-    ) {
-      setGenerateWeekHouseholdId(households[0]._id);
-    }
-  }, [households, generateWeekHouseholdId]);
   const [isFinalising, setIsFinalising] = useState(false);
   const [pickerState, setPickerState] = useState<{
     mode: "add" | "replace";
@@ -303,41 +410,38 @@ export default function MealPlanClient({
   const [mealPlanLeftoverPhrases, setMealPlanLeftoverPhrases] = useState<
     string[]
   >([]);
-  const entitlementsReady =
-    currentUser !== undefined && ownedPlanCountForCreation !== undefined;
-  const canUseMealPlanLeftovers =
-    entitlementsReady &&
-    currentUser != null &&
-    canUseLeftoverIngredients(currentUser.subscriptionTier);
-  const hasActivePlan =
-    entitlementsReady && (ownedPlanCountForCreation ?? 0) > 0;
-  const blocksAdditionalPlansOnFreeTier =
-    entitlementsReady &&
-    currentUser != null &&
-    hasActivePlan &&
-    !canCreateMultipleMealPlans(currentUser.subscriptionTier);
-  const canUseAdvancedControls =
-    entitlementsReady &&
-    currentUser != null &&
-    canUseAdvancedMealPlanControls(currentUser.subscriptionTier);
-  const controlsLocked = !entitlementsReady || !canUseAdvancedControls;
+  const {
+    entitlementsReady,
+    canUseMealPlanLeftovers,
+    blocksAdditionalPlansOnFreeTier,
+    controlsLocked,
+  } = resolveMealPlanEntitlements({
+    currentUser,
+    ownedPlanCountForCreation,
+  });
 
   const [dayOption, setDayOption] = useState<"3" | "5" | "7" | "custom">("7");
-  const [customDayCount, setCustomDayCount] = useState("7");
+  const [customDayCount, setCustomDayCount] = useState(
+    String(MAX_DAYS_IN_MEAL_PLAN),
+  );
   const [startDateOption, setStartDateOption] = useState<
     "today" | "tomorrow" | "following" | "custom"
   >("today");
   const [customStartDate, setCustomStartDate] = useState("");
 
   const selectedDayCount = useMemo(() => {
-    if (controlsLocked) return 7;
+    if (controlsLocked) return MAX_DAYS_IN_MEAL_PLAN;
     if (dayOption === "custom") {
       const parsed = Number.parseInt(customDayCount, 10);
-      if (Number.isNaN(parsed)) return 7;
+      if (Number.isNaN(parsed)) return MAX_DAYS_IN_MEAL_PLAN;
       return Math.max(1, Math.min(MAX_DAYS_IN_MEAL_PLAN, parsed));
     }
     return Number.parseInt(dayOption, 10);
   }, [controlsLocked, customDayCount, dayOption]);
+
+  const requiresHouseholdSelection = (households?.length ?? 0) > 1;
+  const missingRequiredHouseholdSelection =
+    requiresHouseholdSelection && generateWeekHouseholdId === "";
 
   const selectedStartDate = useMemo(() => {
     const utcStartForLocalDate = (offsetDays: number): number => {
@@ -421,6 +525,10 @@ export default function MealPlanClient({
       toast.info("Loading households…");
       return;
     }
+    if (requiresHouseholdSelection && generateWeekHouseholdId === "") {
+      toast.info("Select a household before generating your plan.");
+      return;
+    }
     trackEvent(ANALYTICS_EVENTS.ONBOARDING_GENERATE_WEEK_CLICKED, {
       surface: "meal_plan",
     });
@@ -432,14 +540,11 @@ export default function MealPlanClient({
         leftoverIngredientPhrases?: string[];
         startDate?: number;
         dayCount?: number;
-      } =
-        households.length > 1
-          ? {
-              householdId:
-                (generateWeekHouseholdId as Id<"households">) ||
-                households[0]!._id,
-            }
-          : {};
+      } = requiresHouseholdSelection
+        ? {
+            householdId: generateWeekHouseholdId as Id<"households">,
+          }
+        : {};
       payload.startDate = selectedStartDate;
       payload.dayCount = selectedDayCount;
       if (
@@ -502,6 +607,7 @@ export default function MealPlanClient({
     selectedDayCount,
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
+    requiresHouseholdSelection,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
@@ -515,16 +621,17 @@ export default function MealPlanClient({
       toast.info("Loading households…");
       return;
     }
+    if (requiresHouseholdSelection && generateWeekHouseholdId === "") {
+      toast.info("Select a household before creating a manual plan.");
+      return;
+    }
     setIsGenerating(true);
     try {
-      const payload =
-        households.length > 1
-          ? {
-              householdId:
-                (generateWeekHouseholdId as Id<"households">) ||
-                households[0]!._id,
-            }
-          : {};
+      const payload = requiresHouseholdSelection
+        ? {
+            householdId: generateWeekHouseholdId as Id<"households">,
+          }
+        : {};
       const { planId } = await createBlankWeeklyPlan({
         ...payload,
         startDate: selectedStartDate,
@@ -551,6 +658,7 @@ export default function MealPlanClient({
     selectedDayCount,
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
+    requiresHouseholdSelection,
   ]);
 
   const handleRegenerateWeek = useCallback(async () => {
@@ -920,36 +1028,46 @@ export default function MealPlanClient({
               ) : null}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Days</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div
+                  role="radiogroup"
+                  aria-label="Meal plan day options"
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                >
                   {(["3", "5", "7", "custom"] as const).map((option) => (
-                    <button
+                    <label
                       key={option}
-                      type="button"
-                      disabled={controlsLocked}
-                      onClick={() => setDayOption(option)}
                       className={cn(
-                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary/50 focus-within:ring-offset-2",
                         dayOption === option
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-card text-muted-foreground",
                         controlsLocked && "cursor-not-allowed opacity-60",
                       )}
                     >
+                      <input
+                        type="radio"
+                        name="day-option"
+                        value={option}
+                        checked={dayOption === option}
+                        onChange={() => setDayOption(option)}
+                        disabled={controlsLocked}
+                        className="peer sr-only"
+                      />
                       {option === "custom" ? "Custom" : `${option} days`}
-                    </button>
+                    </label>
                   ))}
                 </div>
                 {dayOption === "custom" ? (
                   <div className="max-w-40">
                     <Label htmlFor="custom-day-count" className="text-xs">
-                      Custom days (max 7)
+                      {`Custom days (max ${MAX_DAYS_IN_MEAL_PLAN})`}
                     </Label>
                     <input
                       id="custom-day-count"
                       type="number"
                       min={1}
                       max={MAX_DAYS_IN_MEAL_PLAN}
-                      placeholder="1-7"
+                      placeholder={`1-${MAX_DAYS_IN_MEAL_PLAN}`}
                       value={customDayCount}
                       onChange={(e) => setCustomDayCount(e.target.value)}
                       disabled={controlsLocked}
@@ -960,7 +1078,11 @@ export default function MealPlanClient({
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Starts</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div
+                  role="radiogroup"
+                  aria-label="Meal plan start date options"
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                >
                   {(
                     [
                       ["today", "Today"],
@@ -969,21 +1091,27 @@ export default function MealPlanClient({
                       ["custom", "Custom date"],
                     ] as const
                   ).map(([option, label]) => (
-                    <button
+                    <label
                       key={option}
-                      type="button"
-                      disabled={controlsLocked}
-                      onClick={() => setStartDateOption(option)}
                       className={cn(
-                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
+                        "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary/50 focus-within:ring-offset-2",
                         startDateOption === option
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-card text-muted-foreground",
                         controlsLocked && "cursor-not-allowed opacity-60",
                       )}
                     >
+                      <input
+                        type="radio"
+                        name="start-date-option"
+                        value={option}
+                        checked={startDateOption === option}
+                        onChange={() => setStartDateOption(option)}
+                        disabled={controlsLocked}
+                        className="peer sr-only"
+                      />
                       {label}
-                    </button>
+                    </label>
                   ))}
                 </div>
                 {startDateOption === "custom" ? (
@@ -1037,7 +1165,7 @@ export default function MealPlanClient({
                 <div className="mb-4 w-full max-w-sm text-left space-y-1.5">
                   <Label htmlFor="empty-gen-household">Household</Label>
                   <Select
-                    value={generateWeekHouseholdId || households[0]?._id || ""}
+                    value={generateWeekHouseholdId}
                     onValueChange={(v) =>
                       setGenerateWeekHouseholdId(v as Id<"households">)
                     }
@@ -1055,62 +1183,19 @@ export default function MealPlanClient({
                   </Select>
                 </div>
               ) : null}
-              <div className="flex w-full max-w-sm mx-auto flex-col gap-2 sm:flex-row sm:justify-center">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:flex-1"
-                  onClick={handleBlankWeek}
-                  disabled={
-                    isGenerating ||
-                    households === undefined ||
-                    blocksAdditionalPlansOnFreeTier ||
-                    !entitlementsReady
-                  }
-                >
-                  {isGenerating ? (
-                    <Loader2 className="size-5 mr-2 animate-spin" />
-                  ) : (
-                    <CalendarPlus className="size-5 mr-2" />
-                  )}
-                  Manual plan
-                </Button>
-                <Button
-                  size="lg"
-                  className="w-full sm:flex-1"
-                  onClick={handleGenerateWeek}
-                  disabled={
-                    isGenerating ||
-                    households === undefined ||
-                    blocksAdditionalPlansOnFreeTier ||
-                    !entitlementsReady
-                  }
-                >
-                  {isGenerating ? (
-                    <Loader2 className="size-5 mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="size-5 mr-2" />
-                  )}
-                  {isGenerating ? "Generating..." : "Generate My Week"}
-                  {!isGenerating ? (
-                    <ArrowRight className="size-5 ml-2" />
-                  ) : null}
-                </Button>
-              </div>
-              {blocksAdditionalPlansOnFreeTier ? (
-                <p className="mt-3 max-w-sm text-xs text-muted-foreground">
-                  Free users can only have one active meal plan at a time. If
-                  you want to create another meal plan, delete your existing one
-                  first, or{" "}
-                  <Link
-                    href={ROUTES.PRICING}
-                    className="underline underline-offset-4"
-                  >
-                    upgrade your account
-                  </Link>{" "}
-                  to enable multiple meal plans.
-                </p>
-              ) : null}
+              <GenerationActionButtons
+                isGenerating={isGenerating}
+                disabled={
+                  isGenerating ||
+                  households === undefined ||
+                    missingRequiredHouseholdSelection ||
+                  blocksAdditionalPlansOnFreeTier ||
+                  !entitlementsReady
+                }
+                onManual={handleBlankWeek}
+                onGenerate={handleGenerateWeek}
+                showUpgradeHint={blocksAdditionalPlansOnFreeTier}
+              />
             </CardContent>
           </Card>
         </div>
@@ -1118,7 +1203,7 @@ export default function MealPlanClient({
     );
   }
 
-  if (planSummaries.length === 0) {
+  if (planSummaries.length === 0 && resolvedPlanId === null) {
     return (
       <div className="bg-background w-full min-w-0 overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
@@ -1131,51 +1216,6 @@ export default function MealPlanClient({
                 One click fills the week from our catalog and recipes
                 you&apos;ve saved—then tweak or shop from there.
               </p>
-            </div>
-            <div className="flex flex-col gap-3 w-full sm:w-auto sm:items-end">
-              {households && households.length > 1 ? (
-                <div className="w-full sm:w-64 space-y-1.5">
-                  <Label htmlFor="empty-gen-household">Household</Label>
-                  <Select
-                    value={generateWeekHouseholdId || households[0]?._id || ""}
-                    onValueChange={(v) =>
-                      setGenerateWeekHouseholdId(v as Id<"households">)
-                    }
-                  >
-                    <SelectTrigger id="empty-gen-household">
-                      <SelectValue placeholder="Select household" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {households.map((h) => (
-                        <SelectItem key={h._id} value={h._id}>
-                          {h.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null}
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full shrink-0 sm:w-auto"
-                  onClick={handleBlankWeek}
-                  disabled={isGenerating || households === undefined}
-                >
-                  <CalendarPlus className="size-5 mr-2" />
-                  Manual plan
-                </Button>
-                <Button
-                  size="lg"
-                  className="w-full shrink-0 sm:w-auto"
-                  onClick={handleGenerateWeek}
-                  disabled={isGenerating || households === undefined}
-                >
-                  <Sparkles className="size-5 mr-2" />
-                  Generate My Week
-                </Button>
-              </div>
             </div>
           </div>
           <div className="max-w-2xl mx-auto mb-6 w-full">
@@ -1206,37 +1246,19 @@ export default function MealPlanClient({
                 Prefer to pick every meal yourself? Start a manual plan with
                 empty days, then fill them in.
               </p>
-              <div className="flex w-full max-w-sm mx-auto flex-col gap-2 sm:flex-row sm:justify-center">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:flex-1"
-                  onClick={handleBlankWeek}
-                  disabled={
-                    isGenerating ||
-                    households === undefined ||
-                    blocksAdditionalPlansOnFreeTier ||
-                    !entitlementsReady
-                  }
-                >
-                  <CalendarPlus className="size-5 mr-2" />
-                  Manual plan
-                </Button>
-                <Button
-                  size="lg"
-                  className="w-full sm:flex-1"
-                  onClick={handleGenerateWeek}
-                  disabled={
-                    isGenerating ||
-                    households === undefined ||
-                    blocksAdditionalPlansOnFreeTier ||
-                    !entitlementsReady
-                  }
-                >
-                  Start Planning
-                  <ArrowRight className="size-5 ml-2" />
-                </Button>
-              </div>
+              <GenerationActionButtons
+                isGenerating={isGenerating}
+                disabled={
+                  isGenerating ||
+                  households === undefined ||
+                    missingRequiredHouseholdSelection ||
+                  blocksAdditionalPlansOnFreeTier ||
+                  !entitlementsReady
+                }
+                onManual={handleBlankWeek}
+                onGenerate={handleGenerateWeek}
+                showUpgradeHint={blocksAdditionalPlansOnFreeTier}
+              />
             </CardContent>
           </Card>
         </div>
@@ -1533,21 +1555,33 @@ export default function MealPlanClient({
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full min-w-0 max-w-full">
-            {entriesSorted.map((entry) => (
-              <MealPlanCard
-                key={entry._id}
-                entry={entry}
-                isOwner={currentPlan.isOwner ?? false}
-                onLockToggle={() => handleLockToggle(entry)}
-                onSwitch={() => handleSwitchClick(entry)}
-                onRemove={() => handleRemoveEntry(entry._id)}
-                onChangeRecipe={
-                  currentPlan.isOwner && !isFinalised
-                    ? () => setPickerState({ mode: "replace", entry })
-                    : undefined
-                }
-              />
-            ))}
+            {entriesSorted.map((entry) => {
+              const cardEntry =
+                entry.recipe == null
+                  ? entry
+                  : {
+                      ...entry,
+                      recipe: {
+                        ...entry.recipe,
+                        category: entry.recipe.category ?? "",
+                      },
+                    };
+              return (
+                <MealPlanCard
+                  key={entry._id}
+                  entry={cardEntry}
+                  isOwner={currentPlan.isOwner ?? false}
+                  onLockToggle={() => handleLockToggle(entry)}
+                  onSwitch={() => handleSwitchClick(entry)}
+                  onRemove={() => handleRemoveEntry(entry._id)}
+                  onChangeRecipe={
+                    currentPlan.isOwner && !isFinalised
+                      ? () => setPickerState({ mode: "replace", entry })
+                      : undefined
+                  }
+                />
+              );
+            })}
             {Array.from({ length: emptySlotsCount }, (_, i) => (
               <EmptySlot
                 key={`empty-${i}`}

@@ -19,10 +19,6 @@ export function LeftoverIngredientsFilter() {
   const selectedCount =
     leftoverIngredientIds.length + leftoverIngredientPhrases.length;
 
-  if (!canUseLeftoverFeatures) {
-    return null;
-  }
-
   const panelId = "leftover-ingredients-filter-panel";
 
   return (

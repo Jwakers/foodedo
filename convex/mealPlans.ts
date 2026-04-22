@@ -12,6 +12,7 @@ import {
   canUseLeftoverIngredients,
   LEFTOVER_INGREDIENTS_MAX,
   MAX_DAYS_IN_MEAL_PLAN,
+  MEAL_PLAN_ERRORS,
   RECENTLY_SUGGESTED_DAYS,
 } from "./lib/constants";
 import {
@@ -82,6 +83,16 @@ function startOfDayMs(ms: number): number {
   return d.getTime();
 }
 
+function buildInclusiveWindow(
+  startDate: number,
+  dayCount: number,
+): { startDate: number; endDate: number } {
+  return {
+    startDate,
+    endDate: startOfDayMs(startDate + (dayCount - 1) * ONE_DAY_MS),
+  };
+}
+
 function resolveMealPlanWindow(args: {
   startDate?: number;
   dayCount?: number;
@@ -123,9 +134,7 @@ function resolveMealPlanWindow(args: {
     );
   }
 
-  const endDate = startOfDayMs(
-    requestedStart + (requestedDayCount - 1) * ONE_DAY_MS,
-  );
+  const { endDate } = buildInclusiveWindow(requestedStart, requestedDayCount);
   return {
     startDate: requestedStart,
     endDate,
@@ -148,7 +157,7 @@ async function assertCanCreateAnotherPlanForUser(
     .collect();
   const hasExisting = activeOwnedPlans.some((plan) => !plan.replacedByPlanId);
   if (hasExisting) {
-    throw new ConvexError("PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS");
+    throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS);
   }
 }
 
@@ -170,6 +179,37 @@ function effectivePlanStartMs(
   return plan.startDate ?? entryMinDate ?? plan.endDate;
 }
 
+function getPlanDayCount(plan: Doc<"mealPlans">): number {
+  const planStart = plan.startDate ?? plan.endDate;
+  return Math.max(1, Math.floor((plan.endDate - planStart) / ONE_DAY_MS) + 1);
+}
+
+function assertValidEntryPlacement(args: {
+  plan: Doc<"mealPlans">;
+  date: number;
+  order: number | undefined;
+}) {
+  const dateStart = startOfDayMs(args.date);
+  const { plan } = args;
+  if (plan.startDate !== undefined && dateStart < plan.startDate) {
+    throw new ConvexError("Date must be on or after the plan start date");
+  }
+  if (dateStart > plan.endDate) {
+    throw new ConvexError("Date must be on or before the plan end date");
+  }
+  if (args.order !== undefined) {
+    if (!Number.isInteger(args.order)) {
+      throw new ConvexError("Entry order must be an integer");
+    }
+    const planDayCount = getPlanDayCount(plan);
+    if (args.order < 0 || args.order >= planDayCount) {
+      throw new ConvexError(
+        `Entry order must be between 0 and ${planDayCount - 1}`,
+      );
+    }
+  }
+}
+
 type PlanWithEntryStats = {
   plan: Doc<"mealPlans">;
   entryCount: number;
@@ -183,22 +223,10 @@ type PlanWithEntryStats = {
  * plan window [planStart, planEndExclusive). Plan dates are UTC day starts;
  * localDayStartMs is the client's startOfLocalDayMs(now).
  */
-function planOverlapsLocalCalendarDay(
+function planOverlapsLocalDay(
   plan: Doc<"mealPlans">,
   entryMinDate: number | null,
   localDayStartMs: number,
-): boolean {
-  const planStart = effectivePlanStartMs(plan, entryMinDate);
-  const planEndExclusive = plan.endDate + ONE_DAY_MS;
-  const localEndExclusive = localDayStartMs + ONE_DAY_MS;
-  return localDayStartMs < planEndExclusive && localEndExclusive > planStart;
-}
-
-/** Whether any part of the user's local "today" still falls inside the plan. */
-function planStillActiveForLocalDay(
-  plan: Doc<"mealPlans">,
-  localDayStartMs: number,
-  entryMinDate: number | null,
 ): boolean {
   const planStart = effectivePlanStartMs(plan, entryMinDate);
   const planEndExclusive = plan.endDate + ONE_DAY_MS;
@@ -207,8 +235,23 @@ function planStillActiveForLocalDay(
 }
 
 /**
+ * Treat plans starting soon as relevant for selection/listing so users can
+ * immediately access newly-created plans that begin tomorrow/soon.
+ */
+function planIsRelevantForLocalDay(
+  plan: Doc<"mealPlans">,
+  entryMinDate: number | null,
+  localDayStartMs: number,
+): boolean {
+  if (planOverlapsLocalDay(plan, entryMinDate, localDayStartMs)) return true;
+  const planStart = effectivePlanStartMs(plan, entryMinDate);
+  const soonCutoff = localDayStartMs + (MAX_DAYS_IN_MEAL_PLAN - 1) * ONE_DAY_MS;
+  return planStart > localDayStartMs && planStart <= soonCutoff;
+}
+
+/**
  * Meal plans the user can see (index + dedupe) that are not superseded.
- * Overlap with “today” is applied after loading entry stats — see `planStillActiveForLocalDay`.
+ * Overlap with “today” is applied after loading entry stats.
  */
 async function collectCandidateMealPlansForUser(
   ctx: QueryCtx,
@@ -234,17 +277,18 @@ async function collectCandidateMealPlansForUser(
     .collect();
   const householdIds = memberships.map((m) => m.householdId);
 
-  const sharedPlans: Doc<"mealPlans">[] = [];
-  for (const householdId of householdIds) {
-    const plans = await ctx.db
-      .query("mealPlans")
-      .withIndex("by_household_and_endDate", (q) =>
-        q.eq("householdId", householdId).gte("endDate", indexGteEndDate),
-      )
-      .order("desc")
-      .collect();
-    sharedPlans.push(...plans);
-  }
+  const sharedPlanGroups = await Promise.all(
+    householdIds.map((householdId) =>
+      ctx.db
+        .query("mealPlans")
+        .withIndex("by_household_and_endDate", (q) =>
+          q.eq("householdId", householdId).gte("endDate", indexGteEndDate),
+        )
+        .order("desc")
+        .collect(),
+    ),
+  );
+  const sharedPlans = sharedPlanGroups.flat();
 
   const seenIds = new Set<Id<"mealPlans">>();
   const allPlans = [...ownedPlans, ...sharedPlans].filter((p) => {
@@ -261,22 +305,22 @@ async function loadPlanSummariesWithEntryStats(
   plans: Doc<"mealPlans">[],
   userId: Id<"users">,
 ): Promise<PlanWithEntryStats[]> {
-  const out: PlanWithEntryStats[] = [];
-  for (const p of plans) {
-    const entries = await ctx.db
-      .query("mealPlanEntries")
-      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", p._id))
-      .collect();
-    const dates = entries.map((e) => e.date);
-    out.push({
-      plan: p,
-      entryCount: entries.length,
-      entryMinDate: dates.length > 0 ? Math.min(...dates) : null,
-      entryMaxDate: dates.length > 0 ? Math.max(...dates) : null,
-      isOwner: p.userId === userId,
-    });
-  }
-  return out;
+  return Promise.all(
+    plans.map(async (p) => {
+      const entries = await ctx.db
+        .query("mealPlanEntries")
+        .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", p._id))
+        .collect();
+      const dates = entries.map((e) => e.date);
+      return {
+        plan: p,
+        entryCount: entries.length,
+        entryMinDate: dates.length > 0 ? Math.min(...dates) : null,
+        entryMaxDate: dates.length > 0 ? Math.max(...dates) : null,
+        isOwner: p.userId === userId,
+      };
+    }),
+  );
 }
 
 function pickPreferredPlanDoc(
@@ -288,7 +332,7 @@ function pickPreferredPlanDoc(
     const finalisedCovering = summaries.filter(
       (s) =>
         s.plan.isFinalised === true &&
-        planOverlapsLocalCalendarDay(s.plan, s.entryMinDate, localDayStartMs),
+        planOverlapsLocalDay(s.plan, s.entryMinDate, localDayStartMs),
     );
     if (finalisedCovering.length > 0) {
       finalisedCovering.sort(
@@ -366,16 +410,47 @@ async function buildEntriesWithRecipes(
     .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", mealPlanId))
     .collect();
 
+  type EntryRecipe = {
+    _id: Id<"recipes">;
+    title: string;
+    image: string | null;
+    ingredients: Doc<"recipes">["ingredients"];
+    prepTime: number;
+    cookTime: number | undefined;
+    totalTimeMinutes: number;
+    nutrition: Doc<"recipes">["nutrition"];
+    category: string;
+    primaryProtein: string | undefined;
+  };
+  const recipeCache = new Map<Id<"recipes">, EntryRecipe | null>();
+
   const entriesWithRecipes = await Promise.all(
     entries.map(async (entry) => {
-      const recipe = await ctx.db.get(entry.recipeId);
+      if (!recipeCache.has(entry.recipeId)) {
+        const recipe = await ctx.db.get(entry.recipeId);
+        if (!recipe) {
+          recipeCache.set(entry.recipeId, null);
+        } else {
+          const image = recipe.image ? await ctx.storage.getUrl(recipe.image) : null;
+          const totalTimeMinutes =
+            recipe.totalTimeMinutes ??
+            (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+          recipeCache.set(entry.recipeId, {
+            _id: recipe._id,
+            title: recipe.title,
+            image,
+            ingredients: recipe.ingredients,
+            prepTime: recipe.prepTime ?? 0,
+            cookTime: recipe.cookTime,
+            totalTimeMinutes,
+            nutrition: recipe.nutrition,
+            category: recipe.category ?? "",
+            primaryProtein: recipe.primaryProtein,
+          });
+        }
+      }
+      const recipe = recipeCache.get(entry.recipeId);
       if (!recipe) return { ...entry, recipe: null };
-      const image = recipe.image
-        ? await ctx.storage.getUrl(recipe.image)
-        : null;
-      const totalTimeMinutes =
-        recipe.totalTimeMinutes ??
-        (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
 
       const leftoverMatches =
         (leftoverDocs.length > 0 || phraseList.length > 0) && recipe.ingredients
@@ -391,11 +466,11 @@ async function buildEntriesWithRecipes(
         recipe: {
           _id: recipe._id,
           title: recipe.title,
-          image,
+          image: recipe.image,
           ingredients: recipe.ingredients,
-          prepTime: recipe.prepTime ?? 0,
+          prepTime: recipe.prepTime,
           cookTime: recipe.cookTime,
-          totalTimeMinutes,
+          totalTimeMinutes: recipe.totalTimeMinutes,
           nutrition: recipe.nutrition,
           category: recipe.category,
           primaryProtein: recipe.primaryProtein,
@@ -495,7 +570,7 @@ export const getCurrentMealPlan = query({
       user._id,
     );
     const activeSummaries = summaries.filter((s) =>
-      planStillActiveForLocalDay(s.plan, refLocalStart, s.entryMinDate),
+      planIsRelevantForLocalDay(s.plan, s.entryMinDate, refLocalStart),
     );
     if (activeSummaries.length === 0) return null;
 
@@ -542,7 +617,7 @@ export const getActiveMealPlanSummaries = query({
       user._id,
     );
     const activeSummaries = summaries.filter((s) =>
-      planStillActiveForLocalDay(s.plan, refLocalStart, s.entryMinDate),
+      planIsRelevantForLocalDay(s.plan, s.entryMinDate, refLocalStart),
     );
     if (activeSummaries.length === 0) return [];
 
@@ -632,7 +707,7 @@ export const generateWeeklyPlan = mutation({
     );
     const wantsLeftovers = leftover.wantsLeftovers;
     if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
-      throw new ConvexError("PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS");
+      throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS);
     }
 
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
@@ -790,7 +865,7 @@ export const regenerateWeeklyPlan = mutation({
     );
     const wantsLeftovers = leftover.wantsLeftovers;
     if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
-      throw new ConvexError("PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS");
+      throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS);
     }
 
     let leftoverDocs: Doc<"ingredients">[] = [];
@@ -808,13 +883,20 @@ export const regenerateWeeklyPlan = mutation({
       .collect();
 
     const locked = entries.filter((e) => e.isLocked === true);
-    const lockedSorted = [...locked].sort(
-      (a, b) => (a.order ?? 999) - (b.order ?? 999),
-    );
+    const lockedSorted = [...locked]
+      .filter(
+        (e) =>
+          Number.isInteger(e.order) &&
+          (e.order ?? -1) >= 0 &&
+          (e.order ?? MAX_DAYS_IN_MEAL_PLAN) < MAX_DAYS_IN_MEAL_PLAN,
+      )
+      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 
     const now = Date.now();
-    const startDate = startOfDayMs(now);
-    const endDate = startOfDayMs(now + MAX_DAYS_IN_MEAL_PLAN * ONE_DAY_MS);
+    const { startDate, endDate } = buildInclusiveWindow(
+      startOfDayMs(now),
+      MAX_DAYS_IN_MEAL_PLAN,
+    );
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
     const newPlanId = await ctx.db.insert("mealPlans", {
@@ -1041,13 +1123,8 @@ export const addEntry = mutation({
     if (plan.isFinalised) {
       throw new ConvexError("Cannot add meals to a finalised plan");
     }
+    assertValidEntryPlacement({ plan, date: args.date, order: args.order });
     const dateStart = startOfDayMs(args.date);
-    if (plan.startDate !== undefined && dateStart < plan.startDate) {
-      throw new ConvexError("Date must be on or after the plan start date");
-    }
-    if (dateStart > plan.endDate) {
-      throw new ConvexError("Date must be on or before the plan end date");
-    }
     const { canAccess } = await canAccessRecipe(ctx, user._id, args.recipeId);
     if (!canAccess) {
       throw new ConvexError("You do not have access to this recipe");
@@ -1103,13 +1180,12 @@ export const updateEntry = mutation({
       isLocked?: boolean;
     } = {};
     if (args.date !== undefined) {
+      assertValidEntryPlacement({
+        plan,
+        date: args.date,
+        order: args.order ?? entry.order,
+      });
       const dateStart = startOfDayMs(args.date);
-      if (plan.startDate !== undefined && dateStart < plan.startDate) {
-        throw new ConvexError("Date must be on or after the plan start date");
-      }
-      if (dateStart > plan.endDate) {
-        throw new ConvexError("Date must be on or before the plan end date");
-      }
       updates.date = dateStart;
     }
     if (args.recipeId !== undefined) {
@@ -1138,7 +1214,14 @@ export const updateEntry = mutation({
       updates.recipeId = args.recipeId;
     }
     if (args.mealLabel !== undefined) updates.mealLabel = args.mealLabel;
-    if (args.order !== undefined) updates.order = args.order;
+    if (args.order !== undefined) {
+      assertValidEntryPlacement({
+        plan,
+        date: args.date ?? entry.date,
+        order: args.order,
+      });
+      updates.order = args.order;
+    }
     if (args.isLocked !== undefined) updates.isLocked = args.isLocked;
     await ctx.db.patch(args.entryId, updates);
     await ctx.db.patch(entry.mealPlanId, { updatedAt: Date.now() });

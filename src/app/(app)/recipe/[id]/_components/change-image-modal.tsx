@@ -1,7 +1,7 @@
 "use client";
 
 import { runRecipeAiHeroImageJob } from "@/app/(app)/actions/run-recipe-ai-hero-image";
-import { ROUTES } from "@/app/constants";
+import { PremiumFeatureNotice } from "@/components/premium-feature-notice";
 import { ImageUploadArea } from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,8 +23,7 @@ import {
 } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
-import { Loader2, Lock, Sparkles, Upload } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Sparkles, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -277,21 +276,14 @@ export function ChangeImageModal({
                 </div>
               )}
 
-              {lockedAi && (
-                <div className="pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-lg bg-background/80 p-4 text-center backdrop-blur-[1px]">
-                  <Lock className="size-8 text-muted-foreground" aria-hidden />
-                  <p className="text-sm font-medium text-foreground">
-                    Premium feature — preview only
-                  </p>
-                  <p className="max-w-xs text-xs text-muted-foreground">
-                    See how AI recipe images will work. Subscribe to unlock when we
-                    leave beta.
-                  </p>
-                  <Button size="sm" asChild>
-                    <Link href={ROUTES.PRICING}>View plans</Link>
-                  </Button>
-                </div>
-              )}
+              {lockedAi ? (
+                <PremiumFeatureNotice
+                  className="absolute inset-3"
+                  title="Pro feature"
+                  description="AI recipe images are available on Pro."
+                  ctaLabel="Upgrade your account"
+                />
+              ) : null}
             </div>
 
             <DialogFooter>
