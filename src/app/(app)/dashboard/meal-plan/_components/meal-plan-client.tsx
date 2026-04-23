@@ -50,6 +50,7 @@ import {
   BETA_FREE_INCLUDES_PREMIUM_FEATURES,
   MAX_DAYS_IN_MEAL_PLAN,
   MEAL_PLAN_ERRORS,
+  QUICK_MEALS_MIN_MINUTES,
 } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -58,6 +59,7 @@ import {
   ArrowRight,
   CalendarPlus,
   CheckCircle2,
+  Clock3,
   Home,
   Loader2,
   MoreVertical,
@@ -66,10 +68,12 @@ import {
   Sparkles,
   Trash2,
   UserMinus,
+  UserRoundCheck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptySlot } from "./empty-slot";
@@ -108,6 +112,18 @@ function mealPlanErrorMessage(e: unknown): string {
   ) {
     return "Custom start dates and day lengths are premium controls.";
   }
+  if (msg.includes(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_HOUSEHOLD_PREFERENCES)) {
+    return "Household preference filtering is a premium feature.";
+  }
+  if (msg.includes(MEAL_PLAN_ERRORS.HOUSEHOLD_PREFERENCES_NO_RECIPES)) {
+    return "No recipes match the selected member preferences. Try toggling fewer members or loosening restrictions.";
+  }
+  if (msg.includes(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_QUICK_MEALS)) {
+    return "Quick meal targeting is a premium feature.";
+  }
+  if (msg.includes(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES)) {
+    return "Not enough recipes match that quick-meals preset. Try Automatic or a lighter preset.";
+  }
   return msg;
 }
 const MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY =
@@ -138,6 +154,81 @@ type MealPlanClientProps = {
 type MealPlanSummary = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getActiveMealPlanSummaries>
 >[number];
+
+type QuickMealsPresetId = "automatic" | "light" | "balanced" | "fast_focused";
+
+const QUICK_MEAL_PRESETS: Array<{
+  id: QuickMealsPresetId;
+  title: string;
+  description: string;
+  count?: number;
+  maxMinutes?: number;
+}> = [
+  {
+    id: "automatic",
+    title: "Automatic",
+    description: "Balanced speed for the week",
+  },
+  {
+    id: "light",
+    title: "Light",
+    description: "At least 2 meals under 45m",
+    count: 2,
+    maxMinutes: 45,
+  },
+  {
+    id: "balanced",
+    title: "Balanced",
+    description: "At least 3 meals under 40m",
+    count: 3,
+    maxMinutes: 40,
+  },
+  {
+    id: "fast_focused",
+    title: "Fast-focused",
+    description: "At least 4 meals under 35m",
+    count: 4,
+    maxMinutes: 35,
+  },
+];
+
+/** Shared header row for premium meal-plan generator sections (icon + title + Pro badge). */
+function MealPlanProSectionHeader({
+  icon,
+  title,
+}: {
+  icon: ReactNode;
+  title: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {icon}
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <Badge
+        variant="secondary"
+        className="text-[10px] font-semibold uppercase"
+      >
+        Pro
+      </Badge>
+    </div>
+  );
+}
+
+/** Maps quick-meals preset to mutation fields; clamps count to plan length. */
+function resolveQuickMealsPayloadFields(
+  presetId: QuickMealsPresetId,
+  selectedDayCount: number,
+): { quickMealsCount: number; quickMealsMaxMinutes: number } | null {
+  if (presetId === "automatic") return null;
+  const preset = QUICK_MEAL_PRESETS.find((p) => p.id === presetId);
+  const count = preset?.count;
+  const maxMinutes = preset?.maxMinutes;
+  if (count == null || maxMinutes == null) return null;
+  return {
+    quickMealsCount: Math.min(count, selectedDayCount),
+    quickMealsMaxMinutes: maxMinutes,
+  };
+}
 
 function useMealPlanRoutingState(args: {
   generationOnly: boolean;
@@ -175,7 +266,10 @@ function useMealPlanRoutingState(args: {
     if (args.generationOnly) return;
     if (args.planId) {
       if (resolvedPlanId && typeof window !== "undefined") {
-        sessionStorage.setItem(MEAL_PLAN_LAST_VIEWED_STORAGE_KEY, resolvedPlanId);
+        sessionStorage.setItem(
+          MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+          resolvedPlanId,
+        );
       }
       return;
     }
@@ -186,7 +280,9 @@ function useMealPlanRoutingState(args: {
     }
 
     if (resolvedPlanId && args.planParam !== resolvedPlanId) {
-      args.router.replace(ROUTES.mealPlanWithId(resolvedPlanId), { scroll: false });
+      args.router.replace(ROUTES.mealPlanWithId(resolvedPlanId), {
+        scroll: false,
+      });
     }
 
     if (resolvedPlanId && typeof window !== "undefined") {
@@ -221,7 +317,8 @@ function resolveMealPlanEntitlements(args: {
     subscriptionTier === "pro_user" ||
     (subscriptionTier === "free_user" && BETA_FREE_INCLUDES_PREMIUM_FEATURES);
   const entitlementsReady =
-    args.currentUser !== undefined && args.ownedPlanCountForCreation !== undefined;
+    args.currentUser !== undefined &&
+    args.ownedPlanCountForCreation !== undefined;
   const canUseMealPlanLeftovers =
     entitlementsReady && args.currentUser != null && hasPremiumMealPlanAccess;
   const hasActivePlan =
@@ -267,7 +364,12 @@ function GenerationActionButtons({
           )}
           Manual plan
         </Button>
-        <Button size="lg" className="w-full sm:flex-1" onClick={onGenerate} disabled={disabled}>
+        <Button
+          size="lg"
+          className="w-full sm:flex-1"
+          onClick={onGenerate}
+          disabled={disabled}
+        >
           {isGenerating ? (
             <Loader2 className="size-5 mr-2 animate-spin" />
           ) : (
@@ -288,6 +390,127 @@ function GenerationActionButtons({
         </p>
       ) : null}
     </>
+  );
+}
+
+type GenerationMember = NonNullable<
+  FunctionReturnType<typeof api.households.getGenerationMembersWithPreferences>
+>[number];
+
+function MemberPreferenceCards({
+  members,
+  includedMemberIds,
+  onToggle,
+}: {
+  members: GenerationMember[];
+  includedMemberIds: Set<Id<"users">>;
+  onToggle: (userId: Id<"users">) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {members.map((member) => {
+        const selected = includedMemberIds.has(member.userId);
+        return (
+          <button
+            type="button"
+            key={member.userId}
+            className={cn(
+              "rounded-lg border p-3 text-left transition-colors",
+              selected
+                ? "border-primary bg-primary/10"
+                : "border-border bg-card",
+            )}
+            onClick={() => onToggle(member.userId)}
+            aria-label={`Toggle ${member.name} preferences`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium">{member.name}</span>
+              <span
+                className={cn(
+                  "inline-flex size-4 items-center justify-center rounded border text-[10px]",
+                  selected
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-muted-foreground/40 text-transparent",
+                )}
+              >
+                ✓
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {member.allergyCount > 0
+                ? `${member.allergyCount} allergy rule${member.allergyCount === 1 ? "" : "s"}`
+                : "No allergy rules"}
+              {member.excludedProteinCount > 0
+                ? ` · ${member.excludedProteinCount} protein exclusion${member.excludedProteinCount === 1 ? "" : "s"}`
+                : ""}
+            </p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function QuickMealsPreferenceCard({
+  selectedPresetId,
+  onSelectPreset,
+  isPremiumEnabled,
+}: {
+  selectedPresetId: QuickMealsPresetId;
+  onSelectPreset: (presetId: QuickMealsPresetId) => void;
+  isPremiumEnabled: boolean;
+}) {
+  return (
+    <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
+      <CardContent className="p-3 space-y-3">
+        <MealPlanProSectionHeader
+          icon={<Clock3 className="size-4 shrink-0 text-primary" aria-hidden />}
+          title="Quick meals"
+        />
+        <p className="text-sm text-muted-foreground">
+          Pick a pace for faster meals this week. Presets guarantee a minimum;
+          the rest of the week is filled as usual.
+        </p>
+        {!isPremiumEnabled ? (
+          <PremiumFeatureNotice
+            title="Pro feature"
+            description="Quick meal targeting is a Pro feature."
+          />
+        ) : null}
+        <div
+          role="radiogroup"
+          aria-label="Quick meal preference presets"
+          className={cn(
+            "grid grid-cols-2 gap-2 sm:grid-cols-3",
+            !isPremiumEnabled && "pointer-events-none opacity-60",
+          )}
+        >
+          {QUICK_MEAL_PRESETS.map((preset) => (
+            <label
+              key={preset.id}
+              className={cn(
+                "rounded-lg border px-3 py-3 text-left text-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary/50 focus-within:ring-offset-2",
+                selectedPresetId === preset.id
+                  ? "border-primary bg-primary/10 text-foreground"
+                  : "border-border bg-card text-muted-foreground",
+              )}
+            >
+              <input
+                type="radio"
+                name="quick-meals-preset"
+                value={preset.id}
+                checked={selectedPresetId === preset.id}
+                onChange={() => onSelectPreset(preset.id)}
+                disabled={!isPremiumEnabled}
+                className="peer sr-only"
+              />
+              <div className="font-medium">{preset.title}</div>
+              <div className="mt-1 text-xs">{preset.description}</div>
+            </label>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -400,6 +623,9 @@ export default function MealPlanClient({
   >("");
 
   const [isFinalising, setIsFinalising] = useState(false);
+  const [includedMemberIds, setIncludedMemberIds] = useState<Set<Id<"users">>>(
+    new Set(),
+  );
   const [pickerState, setPickerState] = useState<{
     mode: "add" | "replace";
     entry?: CurrentPlan["entries"][number];
@@ -424,6 +650,8 @@ export default function MealPlanClient({
   const [customDayCount, setCustomDayCount] = useState(
     String(MAX_DAYS_IN_MEAL_PLAN),
   );
+  const [quickMealsPresetId, setQuickMealsPresetId] =
+    useState<QuickMealsPresetId>("automatic");
   const [startDateOption, setStartDateOption] = useState<
     "today" | "tomorrow" | "following" | "custom"
   >("today");
@@ -442,6 +670,17 @@ export default function MealPlanClient({
   const requiresHouseholdSelection = (households?.length ?? 0) > 1;
   const missingRequiredHouseholdSelection =
     requiresHouseholdSelection && generateWeekHouseholdId === "";
+  const effectiveGenerationHouseholdId = requiresHouseholdSelection
+    ? generateWeekHouseholdId || undefined
+    : households?.length === 1
+      ? households[0]?._id
+      : undefined;
+  const generationMembers = useQuery(
+    api.households.getGenerationMembersWithPreferences,
+    effectiveGenerationHouseholdId
+      ? { householdId: effectiveGenerationHouseholdId as Id<"households"> }
+      : "skip",
+  );
 
   const selectedStartDate = useMemo(() => {
     const utcStartForLocalDate = (offsetDays: number): number => {
@@ -478,6 +717,13 @@ export default function MealPlanClient({
       day: "numeric",
     });
   }, [localDayStartMs]);
+
+  useEffect(() => {
+    if (!generationMembers) return;
+    setIncludedMemberIds(
+      new Set(generationMembers.map((member) => member.userId)),
+    );
+  }, [generationMembers]);
 
   useEffect(() => {
     if (currentUser === undefined) return;
@@ -529,6 +775,15 @@ export default function MealPlanClient({
       toast.info("Select a household before generating your plan.");
       return;
     }
+    if (
+      canUseMealPlanLeftovers &&
+      generationMembers &&
+      generationMembers.length > 0 &&
+      includedMemberIds.size === 0
+    ) {
+      toast.info("Select at least one household member.");
+      return;
+    }
     trackEvent(ANALYTICS_EVENTS.ONBOARDING_GENERATE_WEEK_CLICKED, {
       surface: "meal_plan",
     });
@@ -540,6 +795,9 @@ export default function MealPlanClient({
         leftoverIngredientPhrases?: string[];
         startDate?: number;
         dayCount?: number;
+        includedMemberUserIds?: Id<"users">[];
+        quickMealsCount?: number;
+        quickMealsMaxMinutes?: number;
       } = requiresHouseholdSelection
         ? {
             householdId: generateWeekHouseholdId as Id<"households">,
@@ -556,6 +814,30 @@ export default function MealPlanClient({
         }
         if (mealPlanLeftoverPhrases.length > 0) {
           payload.leftoverIngredientPhrases = mealPlanLeftoverPhrases;
+        }
+      }
+      if (
+        canUseMealPlanLeftovers &&
+        generationMembers &&
+        generationMembers.length > 0
+      ) {
+        payload.includedMemberUserIds = Array.from(includedMemberIds);
+      }
+      if (canUseMealPlanLeftovers) {
+        const quickFields = resolveQuickMealsPayloadFields(
+          quickMealsPresetId,
+          selectedDayCount,
+        );
+        if (quickFields) {
+          if (quickFields.quickMealsMaxMinutes < QUICK_MEALS_MIN_MINUTES) {
+            toast.error(
+              `Quick meals max minutes must be at least ${QUICK_MEALS_MIN_MINUTES}.`,
+            );
+            setIsGenerating(false);
+            return;
+          }
+          payload.quickMealsCount = quickFields.quickMealsCount;
+          payload.quickMealsMaxMinutes = quickFields.quickMealsMaxMinutes;
         }
       }
       const result = await generateWeeklyPlan(payload);
@@ -603,11 +885,14 @@ export default function MealPlanClient({
     households,
     mealPlanLeftoverIds,
     mealPlanLeftoverPhrases,
+    generationMembers,
+    includedMemberIds,
     router,
     selectedDayCount,
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
     requiresHouseholdSelection,
+    quickMealsPresetId,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
@@ -1003,23 +1288,17 @@ export default function MealPlanClient({
               </CardContent>
             </Card>
           ) : null}
-          <Card className="mb-6 border-border/80 bg-muted/20">
+          <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
             <CardContent className="p-3 space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <SlidersHorizontal
-                  className="size-4 shrink-0 text-primary"
-                  aria-hidden
-                />
-                <h2 className="text-base font-semibold text-foreground">
-                  Meal plan controls
-                </h2>
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] font-semibold uppercase"
-                >
-                  Pro
-                </Badge>
-              </div>
+              <MealPlanProSectionHeader
+                icon={
+                  <SlidersHorizontal
+                    className="size-4 shrink-0 text-primary"
+                    aria-hidden
+                  />
+                }
+                title="Meal plan controls"
+              />
               {controlsLocked ? (
                 <PremiumFeatureNotice
                   title="Pro feature"
@@ -1133,6 +1412,11 @@ export default function MealPlanClient({
               </div>
             </CardContent>
           </Card>
+          <QuickMealsPreferenceCard
+            selectedPresetId={quickMealsPresetId}
+            onSelectPreset={setQuickMealsPresetId}
+            isPremiumEnabled={canUseMealPlanLeftovers}
+          />
           <div className="max-w-2xl mx-auto mb-6 w-full">
             <LeftoverIngredientsPicker
               selectedIds={mealPlanLeftoverIds}
@@ -1145,6 +1429,51 @@ export default function MealPlanClient({
               description="Optional: prioritise recipes that use ingredients you want to finish this week."
             />
           </div>
+          {effectiveGenerationHouseholdId &&
+          generationMembers &&
+          generationMembers.length > 0 ? (
+            <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
+              <CardContent className="p-3 space-y-3">
+                <MealPlanProSectionHeader
+                  icon={
+                    <UserRoundCheck
+                      className="size-4 shrink-0 text-primary"
+                      aria-hidden
+                    />
+                  }
+                  title="Include member preferences"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Selected members are included by default. Allergies are
+                  treated as hard exclusions.
+                </p>
+                {canUseMealPlanLeftovers ? (
+                  <MemberPreferenceCards
+                    members={generationMembers}
+                    includedMemberIds={includedMemberIds}
+                    onToggle={(userId) =>
+                      setIncludedMemberIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(userId)) next.delete(userId);
+                        else next.add(userId);
+                        return next;
+                      })
+                    }
+                  />
+                ) : (
+                  <PremiumFeatureNotice
+                    title="Pro feature"
+                    description="Member preference filtering is available on Pro."
+                  />
+                )}
+                {canUseMealPlanLeftovers && includedMemberIds.size === 0 ? (
+                  <p className="text-xs text-destructive">
+                    Select at least one member to generate a plan.
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
           <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
             <CardContent className="p-0 flex flex-col items-center">
               <div className="size-16 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center mb-6">
@@ -1188,7 +1517,10 @@ export default function MealPlanClient({
                 disabled={
                   isGenerating ||
                   households === undefined ||
-                    missingRequiredHouseholdSelection ||
+                  missingRequiredHouseholdSelection ||
+                  (canUseMealPlanLeftovers &&
+                    (generationMembers?.length ?? 0) > 0 &&
+                    includedMemberIds.size === 0) ||
                   blocksAdditionalPlansOnFreeTier ||
                   !entitlementsReady
                 }
@@ -1230,6 +1562,11 @@ export default function MealPlanClient({
               description="Optional: prioritise recipes that use ingredients you want to finish this week."
             />
           </div>
+          <QuickMealsPreferenceCard
+            selectedPresetId={quickMealsPresetId}
+            onSelectPreset={setQuickMealsPresetId}
+            isPremiumEnabled={canUseMealPlanLeftovers}
+          />
           <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
             <CardContent className="p-0 flex flex-col items-center">
               <div className="size-16 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center mb-6">
@@ -1251,7 +1588,10 @@ export default function MealPlanClient({
                 disabled={
                   isGenerating ||
                   households === undefined ||
-                    missingRequiredHouseholdSelection ||
+                  missingRequiredHouseholdSelection ||
+                  (canUseMealPlanLeftovers &&
+                    (generationMembers?.length ?? 0) > 0 &&
+                    includedMemberIds.size === 0) ||
                   blocksAdditionalPlansOnFreeTier ||
                   !entitlementsReady
                 }

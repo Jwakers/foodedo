@@ -25,10 +25,63 @@ import {
 } from "./lib/leftoverIngredients";
 import type { ActorType } from "./recipeBehaviourStats";
 
+export type GenerationPreferenceConstraints = {
+  allergyIngredientIds?: Id<"ingredients">[];
+  allergyPhrases?: string[];
+  excludedPrimaryProteins?: string[];
+};
+
+function normaliseText(s: string): string {
+  return s.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function recipeContainsAllergen(
+  recipe: {
+    ingredients?: Doc<"recipes">["ingredients"];
+  },
+  constraints: GenerationPreferenceConstraints,
+): boolean {
+  const allergyIdSet = new Set(constraints.allergyIngredientIds ?? []);
+  const allergyPhrases = (constraints.allergyPhrases ?? [])
+    .map(normaliseText)
+    .filter(Boolean);
+  if (allergyIdSet.size === 0 && allergyPhrases.length === 0) return false;
+
+  for (const line of recipe.ingredients ?? []) {
+    if (line.ingredientId && allergyIdSet.has(line.ingredientId)) return true;
+    const lineName = normaliseText(line.name ?? "");
+    if (!lineName) continue;
+    if (allergyPhrases.some((phrase) => lineName.includes(phrase))) return true;
+  }
+  return false;
+}
+
+export function recipePassesPreferenceConstraints(
+  recipe: {
+    primaryProtein?: string | null;
+    prepTime?: number | null;
+    cookTime?: number | null;
+    totalTimeMinutes?: number | null;
+    ingredients?: Doc<"recipes">["ingredients"];
+  },
+  constraints: GenerationPreferenceConstraints | undefined,
+): boolean {
+  if (!constraints) return true;
+  const excludedProteinSet = new Set(constraints.excludedPrimaryProteins ?? []);
+  if (recipe.primaryProtein && excludedProteinSet.has(recipe.primaryProtein)) {
+    return false;
+  }
+  if (recipeContainsAllergen(recipe, constraints)) return false;
+  return true;
+}
+
 /** Minimal recipe shape needed for scoring and constraints (Spec 3 Step 2, 5.2). */
 export type PoolRecipe = {
   _id: Id<"recipes">;
   primaryProtein?: string | null;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  totalTimeMinutes?: number | null;
   complexityTier?: string | null;
   cuisine?: string[] | null;
   editorialBias?: number | null;
@@ -57,6 +110,7 @@ export async function buildPool(
   options?: {
     leftoverTargetIds?: Id<"ingredients">[] | null;
     leftoverTargetPhrases?: string[] | null;
+    preferenceConstraints?: GenerationPreferenceConstraints;
   },
 ): Promise<PoolRecipe[]> {
   const pool: PoolRecipe[] = [];
@@ -81,6 +135,9 @@ export async function buildPool(
     _id: Id<"recipes">;
     category?: string | null;
     primaryProtein?: string | null;
+    prepTime?: number | null;
+    cookTime?: number | null;
+    totalTimeMinutes?: number | null;
     complexityTier?: string | null;
     cuisine?: string[] | null;
     editorialBias?: number | null;
@@ -92,6 +149,8 @@ export async function buildPool(
   }) => {
     if (seenIds.has(r._id)) return;
     if (!recipeIsInMealPlanGeneratorPool(r)) return;
+    if (!recipePassesPreferenceConstraints(r, options?.preferenceConstraints))
+      return;
     seenIds.add(r._id);
     let leftoverMatchKeys: string[] | undefined;
     let leftoverMatchCount: number | undefined;
@@ -107,6 +166,10 @@ export async function buildPool(
     pool.push({
       _id: r._id,
       primaryProtein: r.primaryProtein,
+      prepTime: (r as { prepTime?: number | null }).prepTime,
+      cookTime: (r as { cookTime?: number | null }).cookTime,
+      totalTimeMinutes: (r as { totalTimeMinutes?: number | null })
+        .totalTimeMinutes,
       complexityTier: r.complexityTier,
       cuisine: r.cuisine,
       editorialBias: r.editorialBias,
@@ -283,17 +346,16 @@ export function weight(
     }
   }
 
-  const libraryBoost = recipe.isSystem ? 1 : LIBRARY_MEAL_PLAN_WEIGHT_MULTIPLIER;
+  const libraryBoost = recipe.isSystem
+    ? 1
+    : LIBRARY_MEAL_PLAN_WEIGHT_MULTIPLIER;
   let w = score * bias * libraryBoost;
   if (
     recipe.leftoverTargetCount != null &&
     recipe.leftoverTargetCount > 0 &&
     novelCount > 0
   ) {
-    w *= leftoverWeightMultiplier(
-      novelCount,
-      recipe.leftoverTargetCount,
-    );
+    w *= leftoverWeightMultiplier(novelCount, recipe.leftoverTargetCount);
   }
   return w;
 }
@@ -308,7 +370,7 @@ function seededRandom(seed: string): () => number {
     state = Math.imul(31, state) + seed.charCodeAt(i);
     state = (state << 13) | (state >>> 19);
   }
-  state = (state >>> 0) || 1;
+  state = state >>> 0 || 1;
   return function next() {
     let t = (state += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -335,8 +397,9 @@ export function selectRecipes(
   const selected: PoolRecipe[] = [...alreadySelectedLocked];
   const result: Id<"recipes">[] = [];
   const rng = seededRandom(seed);
-  const coveredLeftoverTargetKeys =
-    coveredLeftoverKeysFromRecipes(alreadySelectedLocked);
+  const coveredLeftoverTargetKeys = coveredLeftoverKeysFromRecipes(
+    alreadySelectedLocked,
+  );
 
   const leftoverTargetTotal = sortedPool.find(
     (p) => p.leftoverTargetCount != null && p.leftoverTargetCount > 0,

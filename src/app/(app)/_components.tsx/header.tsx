@@ -37,6 +37,7 @@ import {
   MessageCircleQuestionMark,
   MessageSquare,
   Moon,
+  Settings2,
   Shield,
   ShoppingCart,
   Sparkles,
@@ -125,6 +126,26 @@ export function Header() {
                           <div className="font-medium">Home</div>
                           <div className="text-sm text-muted-foreground">
                             Dashboard
+                          </div>
+                        </div>
+                      </Link>
+                    </Button>
+                  </li>
+                  <li>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-auto"
+                      asChild
+                    >
+                      <Link
+                        href={ROUTES.PREFERENCES}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <Settings2 className="size-4 mr-3" />
+                        <div className="text-left">
+                          <div className="font-medium">Settings</div>
+                          <div className="text-sm text-muted-foreground">
+                            Preferences and account setup
                           </div>
                         </div>
                       </Link>

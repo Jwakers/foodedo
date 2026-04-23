@@ -9,8 +9,10 @@ import {
   leftoverWeightMultiplier,
 } from "./lib/leftoverIngredients";
 import {
+  recipePassesPreferenceConstraints,
   weight,
   type BehaviourStatsMap,
+  type GenerationPreferenceConstraints,
   type PoolRecipe,
 } from "./mealPlanGenerator";
 
@@ -111,6 +113,63 @@ function runTests(): boolean {
     const w = weight(open, stats, [locked], undefined, undefined, covered);
     const wFresh = weight(open, stats, []);
     assert.equal(w, wFresh / leftoverWeightMultiplier(1, 1));
+  });
+
+  test("preference constraints block allergen by canonical ingredient id", () => {
+    const constraints: GenerationPreferenceConstraints = {
+      allergyIngredientIds: [iid("peanut")],
+    };
+    const allowed = recipePassesPreferenceConstraints(
+      {
+        ingredients: [{ name: "Garlic", ingredientId: iid("garlic") }],
+      },
+      constraints,
+    );
+    const blocked = recipePassesPreferenceConstraints(
+      {
+        ingredients: [{ name: "Peanut butter", ingredientId: iid("peanut") }],
+      },
+      constraints,
+    );
+    assert.equal(allowed, true);
+    assert.equal(blocked, false);
+  });
+
+  test("preference constraints block allergen by phrase fallback", () => {
+    const constraints: GenerationPreferenceConstraints = {
+      allergyPhrases: ["shellfish"],
+    };
+    const blocked = recipePassesPreferenceConstraints(
+      {
+        ingredients: [{ name: "Mixed shellfish stock" }],
+      },
+      constraints,
+    );
+    assert.equal(blocked, false);
+  });
+
+  test("preference constraints apply protein exclusions", () => {
+    const constraints: GenerationPreferenceConstraints = {
+      excludedPrimaryProteins: ["fish"],
+    };
+    assert.equal(
+      recipePassesPreferenceConstraints(
+        {
+          primaryProtein: "fish",
+        },
+        constraints,
+      ),
+      false,
+    );
+    assert.equal(
+      recipePassesPreferenceConstraints(
+        {
+          primaryProtein: "chicken",
+        },
+        constraints,
+      ),
+      true,
+    );
   });
 
   return failed === 0;

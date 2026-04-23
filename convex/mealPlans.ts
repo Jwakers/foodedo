@@ -9,10 +9,14 @@ import {
 import {
   canCreateMultipleMealPlans,
   canUseAdvancedMealPlanControls,
+  canUseHouseholdPreferences,
   canUseLeftoverIngredients,
+  canUseQuickMealPreferences,
   LEFTOVER_INGREDIENTS_MAX,
   MAX_DAYS_IN_MEAL_PLAN,
   MEAL_PLAN_ERRORS,
+  PRIMARY_PROTEINS,
+  QUICK_MEALS_MIN_MINUTES,
   RECENTLY_SUGGESTED_DAYS,
 } from "./lib/constants";
 import {
@@ -70,6 +74,97 @@ function prepareLeftoverInputs(
     phrases: phrases.length ? phrases : undefined,
     totalCount,
     wantsLeftovers: totalCount > 0,
+  };
+}
+
+type UserPreferenceShape = NonNullable<Doc<"users">["preferences"]>;
+
+function normalisePreferencePhrase(raw: string): string {
+  return raw.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+async function resolveGenerationPreferenceConstraints(args: {
+  ctx: QueryCtx;
+  ownerUserId: Id<"users">;
+  householdId: Id<"households"> | undefined;
+  includedMemberUserIds: Id<"users">[] | undefined;
+  subscriptionTier: string | undefined;
+}): Promise<{
+  includedMemberUserIds: Id<"users">[] | undefined;
+  snapshot:
+    | {
+        allergyIngredientIds: Id<"ingredients">[];
+        allergyPhrases: string[];
+        excludedPrimaryProteins: (typeof PRIMARY_PROTEINS)[number][];
+      }
+    | undefined;
+}> {
+  const wantsPreferenceFiltering =
+    (args.includedMemberUserIds?.length ?? 0) > 0 &&
+    args.householdId !== undefined;
+  if (!wantsPreferenceFiltering) {
+    return { includedMemberUserIds: undefined, snapshot: undefined };
+  }
+  if (!canUseHouseholdPreferences(args.subscriptionTier)) {
+    throw new ConvexError(
+      MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_HOUSEHOLD_PREFERENCES,
+    );
+  }
+
+  const members = await args.ctx.db
+    .query("householdMembers")
+    .withIndex("by_household", (q) => q.eq("householdId", args.householdId!))
+    .collect();
+  const memberSet = new Set(members.map((member) => member.userId));
+  const uniqueSelected = Array.from(new Set(args.includedMemberUserIds ?? []));
+  const validSelected = uniqueSelected.filter((id) => memberSet.has(id));
+  if (!validSelected.includes(args.ownerUserId)) {
+    validSelected.unshift(args.ownerUserId);
+  }
+  if (validSelected.length === 0) {
+    return { includedMemberUserIds: undefined, snapshot: undefined };
+  }
+
+  const selectedUsers = await Promise.all(
+    validSelected.map((userId) => args.ctx.db.get(userId)),
+  );
+
+  const allergyIngredientIds = new Set<Id<"ingredients">>();
+  const allergyPhrases = new Set<string>();
+  const excludedPrimaryProteins = new Set<(typeof PRIMARY_PROTEINS)[number]>();
+
+  for (const user of selectedUsers) {
+    const prefs: UserPreferenceShape | undefined = user?.preferences;
+    if (!prefs) continue;
+    for (const id of prefs.allergyIngredientIds ?? [])
+      allergyIngredientIds.add(id);
+    for (const phrase of prefs.allergyPhrases ?? []) {
+      const normalized = normalisePreferencePhrase(phrase);
+      if (normalized) allergyPhrases.add(normalized);
+    }
+    for (const protein of prefs.excludedPrimaryProteins ?? []) {
+      if ((PRIMARY_PROTEINS as readonly string[]).includes(protein)) {
+        excludedPrimaryProteins.add(
+          protein as (typeof PRIMARY_PROTEINS)[number],
+        );
+      }
+    }
+  }
+
+  const snapshot = {
+    allergyIngredientIds: Array.from(allergyIngredientIds),
+    allergyPhrases: Array.from(allergyPhrases),
+    excludedPrimaryProteins: Array.from(excludedPrimaryProteins),
+  };
+
+  const hasAnyFilters =
+    snapshot.allergyIngredientIds.length > 0 ||
+    snapshot.allergyPhrases.length > 0 ||
+    snapshot.excludedPrimaryProteins.length > 0;
+
+  return {
+    includedMemberUserIds: validSelected,
+    snapshot: hasAnyFilters ? snapshot : undefined,
   };
 }
 
@@ -157,7 +252,9 @@ async function assertCanCreateAnotherPlanForUser(
     .collect();
   const hasExisting = activeOwnedPlans.some((plan) => !plan.replacedByPlanId);
   if (hasExisting) {
-    throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS);
+    throw new ConvexError(
+      MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS,
+    );
   }
 }
 
@@ -182,6 +279,16 @@ function effectivePlanStartMs(
 function getPlanDayCount(plan: Doc<"mealPlans">): number {
   const planStart = plan.startDate ?? plan.endDate;
   return Math.max(1, Math.floor((plan.endDate - planStart) / ONE_DAY_MS) + 1);
+}
+
+function resolveRecipeTotalTimeMinutes(recipe: {
+  totalTimeMinutes?: number | null;
+  prepTime?: number | null;
+  cookTime?: number | null;
+}): number {
+  return (
+    recipe.totalTimeMinutes ?? (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)
+  );
 }
 
 function assertValidEntryPlacement(args: {
@@ -431,7 +538,9 @@ async function buildEntriesWithRecipes(
         if (!recipe) {
           recipeCache.set(entry.recipeId, null);
         } else {
-          const image = recipe.image ? await ctx.storage.getUrl(recipe.image) : null;
+          const image = recipe.image
+            ? await ctx.storage.getUrl(recipe.image)
+            : null;
           const totalTimeMinutes =
             recipe.totalTimeMinutes ??
             (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
@@ -678,6 +787,9 @@ export const generateWeeklyPlan = mutation({
     leftoverIngredientPhrases: v.optional(v.array(v.string())),
     startDate: v.optional(v.number()),
     dayCount: v.optional(v.number()),
+    includedMemberUserIds: v.optional(v.array(v.id("users"))),
+    quickMealsCount: v.optional(v.number()),
+    quickMealsMaxMinutes: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -687,6 +799,31 @@ export const generateWeeklyPlan = mutation({
       dayCount: args.dayCount,
       subscriptionTier: user.subscriptionTier,
     });
+    const wantsQuickMeals = args.quickMealsCount !== undefined;
+    if (wantsQuickMeals && !canUseQuickMealPreferences(user.subscriptionTier)) {
+      throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_QUICK_MEALS);
+    }
+    if (wantsQuickMeals) {
+      if (
+        !Number.isInteger(args.quickMealsCount) ||
+        (args.quickMealsCount ?? 0) < 1
+      ) {
+        throw new ConvexError(
+          "quickMealsCount must be a positive whole number",
+        );
+      }
+      if ((args.quickMealsCount ?? 0) > dayCount) {
+        throw new ConvexError("quickMealsCount cannot exceed dayCount");
+      }
+      if (!Number.isInteger(args.quickMealsMaxMinutes)) {
+        throw new ConvexError("quickMealsMaxMinutes must be a whole number");
+      }
+      if ((args.quickMealsMaxMinutes ?? 0) < QUICK_MEALS_MIN_MINUTES) {
+        throw new ConvexError(
+          `quickMealsMaxMinutes must be at least ${QUICK_MEALS_MIN_MINUTES}`,
+        );
+      }
+    }
     await assertCanCreateAnotherPlanForUser(
       ctx,
       user._id,
@@ -698,6 +835,13 @@ export const generateWeeklyPlan = mutation({
       user._id,
       args.householdId,
     );
+    const preferenceConstraints = await resolveGenerationPreferenceConstraints({
+      ctx,
+      ownerUserId: user._id,
+      householdId: shareHouseholdId,
+      includedMemberUserIds: args.includedMemberUserIds,
+      subscriptionTier: user.subscriptionTier,
+    });
 
     const leftover = prepareLeftoverInputs(
       args.leftoverIngredientIds?.filter(Boolean) as
@@ -707,7 +851,9 @@ export const generateWeeklyPlan = mutation({
     );
     const wantsLeftovers = leftover.wantsLeftovers;
     if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
-      throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS);
+      throw new ConvexError(
+        MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS,
+      );
     }
 
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
@@ -718,6 +864,7 @@ export const generateWeeklyPlan = mutation({
     const pool = await buildPool(ctx, user._id, shareHouseholdId ?? null, {
       leftoverTargetIds: wantsLeftovers ? leftover.ids : undefined,
       leftoverTargetPhrases: wantsLeftovers ? leftover.phrases : undefined,
+      preferenceConstraints: preferenceConstraints.snapshot,
     });
     const recentlySuggested = await getRecentlySuggested(
       ctx,
@@ -727,16 +874,60 @@ export const generateWeeklyPlan = mutation({
     );
     const actorStats = await getBehaviourStatsForActor(ctx, actorType, actorId);
 
-    const selectedIds = selectRecipes(
-      pool,
-      dayCount,
-      actorStats,
-      generationSeed,
-      recentlySuggested,
-      [],
-    );
+    let selectedIds: Id<"recipes">[] = [];
+    if (
+      wantsQuickMeals &&
+      args.quickMealsCount !== undefined &&
+      args.quickMealsMaxMinutes !== undefined
+    ) {
+      const quickPool = pool.filter(
+        (recipe) =>
+          resolveRecipeTotalTimeMinutes(recipe) <= args.quickMealsMaxMinutes!,
+      );
+      if (quickPool.length < args.quickMealsCount) {
+        throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
+      }
+      const quickIds = selectRecipes(
+        quickPool,
+        args.quickMealsCount,
+        actorStats,
+        `${generationSeed}:quick`,
+        recentlySuggested,
+        [],
+      );
+      if (quickIds.length < args.quickMealsCount) {
+        throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
+      }
+      const quickIdSet = new Set(quickIds);
+      const remainderPool = pool.filter(
+        (recipe) => !quickIdSet.has(recipe._id),
+      );
+      const remainderIds = selectRecipes(
+        remainderPool,
+        dayCount - quickIds.length,
+        actorStats,
+        `${generationSeed}:remainder`,
+        new Set<Id<"recipes">>([...recentlySuggested, ...quickIds]),
+        quickPool.filter((recipe) => quickIdSet.has(recipe._id)),
+      );
+      selectedIds = [...quickIds, ...remainderIds];
+    } else {
+      selectedIds = selectRecipes(
+        pool,
+        dayCount,
+        actorStats,
+        generationSeed,
+        recentlySuggested,
+        [],
+      );
+    }
 
     if (selectedIds.length === 0) {
+      if (preferenceConstraints.snapshot) {
+        throw new ConvexError(
+          MEAL_PLAN_ERRORS.HOUSEHOLD_PREFERENCES_NO_RECIPES,
+        );
+      }
       throw new ConvexError("No recipes available to generate meal plan");
     }
 
@@ -762,6 +953,20 @@ export const generateWeeklyPlan = mutation({
         : {}),
       ...(wantsLeftovers && leftover.phrases
         ? { leftoverIngredientPhrases: leftover.phrases }
+        : {}),
+      ...(preferenceConstraints.includedMemberUserIds
+        ? { includedMemberUserIds: preferenceConstraints.includedMemberUserIds }
+        : {}),
+      ...(preferenceConstraints.snapshot
+        ? { preferenceFilterSnapshot: preferenceConstraints.snapshot }
+        : {}),
+      ...(wantsQuickMeals &&
+      args.quickMealsCount !== undefined &&
+      args.quickMealsMaxMinutes !== undefined
+        ? {
+            quickMealsCount: args.quickMealsCount,
+            quickMealsMaxMinutes: args.quickMealsMaxMinutes,
+          }
         : {}),
     });
 
@@ -865,7 +1070,9 @@ export const regenerateWeeklyPlan = mutation({
     );
     const wantsLeftovers = leftover.wantsLeftovers;
     if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
-      throw new ConvexError(MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS);
+      throw new ConvexError(
+        MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS,
+      );
     }
 
     let leftoverDocs: Doc<"ingredients">[] = [];

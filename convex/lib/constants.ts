@@ -153,6 +153,8 @@ export const PRIMARY_PROTEINS = [
   "chicken",
   "beef",
   "pork",
+  "duck",
+  "venison",
   "fish",
   "seafood",
   "vegetarian",
@@ -284,7 +286,9 @@ export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
  */
 export const BETA_FREE_INCLUDES_PREMIUM_FEATURES = true;
 
-function hasPremiumFeatureAccess(subscriptionTier: string | undefined): boolean {
+function hasPremiumFeatureAccess(
+  subscriptionTier: string | undefined,
+): boolean {
   const tier = subscriptionTier ?? "free_user";
   if (tier === "pro_user") return true;
   if (tier === "free_user") return BETA_FREE_INCLUDES_PREMIUM_FEATURES;
@@ -293,6 +297,10 @@ function hasPremiumFeatureAccess(subscriptionTier: string | undefined): boolean 
 
 /** Max ingredients a user can select for “use up leftovers” flows. */
 export const LEFTOVER_INGREDIENTS_MAX = 10;
+/** Max allergy ingredients/phrases a user can save in preferences. */
+export const USER_PREFERENCE_ALLERGY_TARGETS_MAX = 30;
+/** Max length for a single custom allergy phrase. */
+export const USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH = 60;
 
 /** Premium feature: search/rank recipes and boost meal-plan generation by leftover ingredients. */
 export function canUseLeftoverIngredients(
@@ -322,12 +330,35 @@ export function canUseAdvancedMealPlanControls(
   return hasPremiumFeatureAccess(subscriptionTier);
 }
 
+/** Premium feature: per-user preferences and household preference-aware generation. */
+export function canUseHouseholdPreferences(
+  subscriptionTier: string | undefined,
+): boolean {
+  return hasPremiumFeatureAccess(subscriptionTier);
+}
+
+/** Premium feature: generation-time quick-meal targeting. */
+export function canUseQuickMealPreferences(
+  subscriptionTier: string | undefined,
+): boolean {
+  return hasPremiumFeatureAccess(subscriptionTier);
+}
+
 export const MEAL_PLAN_ERRORS = {
   PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS: "PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS",
-  PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS: "PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS",
+  PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS:
+    "PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS",
   PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS:
     "PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS",
+  PREMIUM_REQUIRED_HOUSEHOLD_PREFERENCES:
+    "PREMIUM_REQUIRED_HOUSEHOLD_PREFERENCES",
+  HOUSEHOLD_PREFERENCES_NO_RECIPES: "HOUSEHOLD_PREFERENCES_NO_ELIGIBLE_RECIPES",
+  PREMIUM_REQUIRED_QUICK_MEALS: "PREMIUM_REQUIRED_QUICK_MEALS",
+  QUICK_MEALS_NO_RECIPES: "QUICK_MEALS_NO_ELIGIBLE_RECIPES",
 } as const;
+
+/** Minimum allowed max-minutes value for quick-meal targeting. */
+export const QUICK_MEALS_MIN_MINUTES = 30;
 
 /** Rate limits for AI recipe image generation (same caps for all entitled tiers during beta). */
 export const RECIPE_AI_HERO_LIMITS = {
