@@ -1,5 +1,5 @@
 import type { RecipeListItem } from "./types";
-import { getRecipeTotalMinutes } from "./recipe-time";
+import { isUnder30Minutes } from "./recipe-time";
 
 export const QUICK_FILTER_KEYS = [
   "vegetarian",
@@ -31,10 +31,7 @@ export const RECIPE_QUICK_FILTERS: readonly RecipeQuickFilterDefinition[] = [
   {
     key: "quick",
     label: "Quick",
-    matches: (recipe) => {
-      const total = getRecipeTotalMinutes(recipe);
-      return total > 0 && total < 30;
-    },
+    matches: (recipe) => isUnder30Minutes(recipe),
   },
   {
     key: "simple",

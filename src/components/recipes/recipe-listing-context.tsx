@@ -6,7 +6,7 @@ import {
   isRecipeQuickFilterKey,
   type RecipeQuickFilterKey,
 } from "./quick-filters";
-import { getRecipeTotalMinutes } from "./recipe-time";
+import { getRecipeTotalMinutes, isUnder30Minutes } from "./recipe-time";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
@@ -45,15 +45,18 @@ export function getCurrentTab(searchParams: {
 
 function matchesDuration(recipe: RecipeListItem, duration: string): boolean {
   if (duration === "all") return true;
-  const total = getRecipeTotalMinutes(recipe);
   switch (duration) {
     case "under-30":
       // Exclude total === 0: treat missing/zero time as unknown, not "under 30"
-      return total > 0 && total < 30;
-    case "30-60":
+      return isUnder30Minutes(recipe);
+    case "30-60": {
+      const total = getRecipeTotalMinutes(recipe);
       return total >= 30 && total <= 60;
-    case "60-plus":
+    }
+    case "60-plus": {
+      const total = getRecipeTotalMinutes(recipe);
       return total > 60;
+    }
     default:
       return true;
   }

@@ -6,3 +6,8 @@ export function getRecipeTotalMinutes(recipe: RecipeListItem): number {
   }
   return (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
 }
+
+export function isUnder30Minutes(recipe: RecipeListItem): boolean {
+  const total = getRecipeTotalMinutes(recipe);
+  return total > 0 && total < 30;
+}
