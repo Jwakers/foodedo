@@ -1444,8 +1444,15 @@ export default function MealPlanClient({
                   title="Include member preferences"
                 />
                 <p className="text-sm text-muted-foreground">
-                  Selected members are included by default. Allergies are
-                  treated as hard exclusions.
+                  Tap to exclude members from this plan. For anyone still
+                  included, we won&apos;t suggest recipes that use their listed{" "}
+                  <Link
+                    href={ROUTES.PREFERENCES}
+                    className="text-primary underline"
+                  >
+                    preferences and allergens
+                  </Link>
+                  .
                 </p>
                 {canUseMealPlanLeftovers ? (
                   <MemberPreferenceCards
