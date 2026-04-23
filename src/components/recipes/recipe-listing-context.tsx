@@ -1,6 +1,12 @@
 "use client";
 
 import type { RecipeListItem } from "./types";
+import {
+  getRecipeQuickFilter,
+  isRecipeQuickFilterKey,
+  type RecipeQuickFilterKey,
+} from "./quick-filters";
+import { getRecipeTotalMinutes, isUnder30Minutes } from "./recipe-time";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
@@ -37,24 +43,20 @@ export function getCurrentTab(searchParams: {
 // Filter helpers
 // ---------------------------------------------------------------------------
 
-function getRecipeTotalMinutes(recipe: RecipeListItem): number {
-  if (recipe.totalTimeMinutes != null && recipe.totalTimeMinutes > 0) {
-    return recipe.totalTimeMinutes;
-  }
-  return (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-}
-
 function matchesDuration(recipe: RecipeListItem, duration: string): boolean {
   if (duration === "all") return true;
-  const total = getRecipeTotalMinutes(recipe);
   switch (duration) {
     case "under-30":
       // Exclude total === 0: treat missing/zero time as unknown, not "under 30"
-      return total > 0 && total < 30;
-    case "30-60":
+      return isUnder30Minutes(recipe);
+    case "30-60": {
+      const total = getRecipeTotalMinutes(recipe);
       return total >= 30 && total <= 60;
-    case "60-plus":
+    }
+    case "60-plus": {
+      const total = getRecipeTotalMinutes(recipe);
       return total > 60;
+    }
     default:
       return true;
   }
@@ -66,7 +68,13 @@ function filterRecipes(
 ): RecipeListItem[] {
   if (!recipes) return [];
   const normalizedSearch = filterState.searchQuery.trim().toLowerCase();
+  const activeQuickFilters = filterState.selectedQuickFilters
+    .filter(isRecipeQuickFilterKey)
+    .map((key) => getRecipeQuickFilter(key));
   return recipes.filter((recipe) => {
+    const matchesQuickFilters =
+      activeQuickFilters.length === 0 ||
+      activeQuickFilters.some((filter) => filter.matches(recipe));
     const matchesSearch =
       recipe.title.toLowerCase().includes(normalizedSearch) ||
       (recipe.description ?? "").toLowerCase().includes(normalizedSearch);
@@ -84,6 +92,7 @@ function filterRecipes(
       filterState.selectedComplexity === "all" ||
       (recipe.complexityTier ?? "") === filterState.selectedComplexity;
     return (
+      matchesQuickFilters &&
       matchesSearch &&
       matchesCategory &&
       matchesProtein &&
@@ -103,6 +112,7 @@ export type RecipeListingFilterState = {
   selectedProtein: string;
   selectedDuration: string;
   selectedComplexity: string;
+  selectedQuickFilters: RecipeQuickFilterKey[];
 };
 
 export type LeftoverListingMeta = {
@@ -117,6 +127,7 @@ const initialFilterState: RecipeListingFilterState = {
   selectedProtein: "all",
   selectedDuration: "all",
   selectedComplexity: "all",
+  selectedQuickFilters: [],
 };
 
 export type RecipeListingContextValue = {
@@ -128,6 +139,7 @@ export type RecipeListingContextValue = {
   setSelectedProtein: (v: string) => void;
   setSelectedDuration: (v: string) => void;
   setSelectedComplexity: (v: string) => void;
+  toggleQuickFilter: (v: RecipeQuickFilterKey) => void;
   clearFilters: () => void;
   hasActiveFilters: boolean;
   isTabbedMode: boolean;
@@ -281,6 +293,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
     filterState.selectedProtein !== "all" ||
     filterState.selectedDuration !== "all" ||
     filterState.selectedComplexity !== "all" ||
+    filterState.selectedQuickFilters.length > 0 ||
     hasLeftoverTargets;
 
   const setLeftoverSelection = useCallback(
@@ -320,6 +333,22 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
     (v: string) => setFilterState((s) => ({ ...s, selectedComplexity: v })),
     [],
   );
+  const toggleQuickFilter = useCallback((v: RecipeQuickFilterKey) => {
+    setFilterState((s) => {
+      if (s.selectedQuickFilters.includes(v)) {
+        return {
+          ...s,
+          selectedQuickFilters: s.selectedQuickFilters.filter(
+            (key) => key !== v,
+          ),
+        };
+      }
+      return {
+        ...s,
+        selectedQuickFilters: [...s.selectedQuickFilters, v],
+      };
+    });
+  }, []);
 
   const value: RecipeListingContextValue = useMemo(
     () => ({
@@ -331,6 +360,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       setSelectedProtein,
       setSelectedDuration,
       setSelectedComplexity,
+      toggleQuickFilter,
       clearFilters,
       hasActiveFilters,
       isTabbedMode: isTabbed,
@@ -352,6 +382,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       setSelectedProtein,
       setSelectedDuration,
       setSelectedComplexity,
+      toggleQuickFilter,
       clearFilters,
       hasActiveFilters,
       isTabbed,

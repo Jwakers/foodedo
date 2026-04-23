@@ -1,1742 +1,1708 @@
-{
-  "recipes": [
-    {
-      "title": "Smoky Lentil Shepherd's Pie",
-      "description": "A hearty, deeply savoury lentil filling topped with crisp-edged mashed potatoes for a comforting vegan dinner.",
-      "prepTime": 20,
-      "cookTime": 45,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "green lentils",
-          "amount": 250,
-          "unit": "g",
-          "preparation": "rinsed"
-        },
-        {
-          "name": "potatoes",
-          "amount": 900,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "diced"
-        },
-        {
-          "name": "carrot",
-          "amount": 2,
-          "unit": "whole",
-          "preparation": "diced"
-        },
-        {
-          "name": "celery",
-          "amount": 2,
-          "unit": "stalk",
-          "preparation": "diced"
-        },
-        {
-          "name": "garlic",
-          "amount": 3,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "tomato puree",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "vegetable stock",
-          "amount": 600,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "frozen peas",
-          "amount": 150,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "thyme",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": "dried"
-        },
-        {
-          "name": "smoked paprika",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook lentils and potatoes",
-          "description": "Simmer the lentils in 500 ml vegetable stock for 25-30 minutes until tender but not collapsing. In a separate pan, boil potatoes until soft, drain well, then mash with 1 tbsp olive oil and a splash of hot water until smooth."
-        },
-        {
-          "title": "Build the savoury base",
-          "description": "Heat remaining olive oil in a deep pan, then cook onion, carrot, and celery for 8-10 minutes until sweet and lightly golden. Add garlic, smoked paprika, and thyme; cook for 1 minute to bloom the spices."
-        },
-        {
-          "title": "Reduce the filling",
-          "description": "Stir in tomato puree, then add cooked lentils, remaining stock, and peas. Simmer until thick and spoonable, reducing any excess liquid so the pie slices cleanly."
-        },
-        {
-          "title": "Assemble and bake",
-          "description": "Spread filling into a baking dish, top with mashed potato, rough up the surface with a fork for crispy peaks, and bake at 200C for 20-25 minutes until deeply golden."
-        }
-      ],
-      "nutrition": {
-        "calories": 640,
-        "protein": 24,
-        "fat": 17,
-        "carbohydrates": 95
+[
+  {
+    "title": "Smoky Lentil Shepherd's Pie",
+    "description": "A hearty, deeply savoury lentil filling topped with crisp-edged mashed potatoes for a comforting vegan dinner.",
+    "prepTime": 20,
+    "cookTime": 45,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "green lentils",
+        "amount": 250,
+        "unit": "g",
+        "preparation": "rinsed"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "british"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "potatoes",
+        "amount": 900,
+        "unit": "g",
+        "preparation": "cubed"
+      },
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "diced"
+      },
+      {
+        "name": "carrot",
+        "amount": 2,
+        "unit": "whole",
+        "preparation": "diced"
+      },
+      {
+        "name": "celery",
+        "amount": 2,
+        "unit": "stalk",
+        "preparation": "diced"
+      },
+      {
+        "name": "garlic",
+        "amount": 3,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "tomato puree",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "vegetable stock",
+        "amount": 600,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "frozen peas",
+        "amount": 150,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "thyme",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": "dried"
+      },
+      {
+        "name": "smoked paprika",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook lentils and potatoes",
+        "description": "Simmer the lentils in 500 ml vegetable stock for 25-30 minutes until tender but not collapsing. In a separate pan, boil potatoes until soft, drain well, then mash with 1 tbsp olive oil and a splash of hot water until smooth."
+      },
+      {
+        "title": "Build the savoury base",
+        "description": "Heat remaining olive oil in a deep pan, then cook onion, carrot, and celery for 8-10 minutes until sweet and lightly golden. Add garlic, smoked paprika, and thyme; cook for 1 minute to bloom the spices."
+      },
+      {
+        "title": "Reduce the filling",
+        "description": "Stir in tomato puree, then add cooked lentils, remaining stock, and peas. Simmer until thick and spoonable, reducing any excess liquid so the pie slices cleanly."
+      },
+      {
+        "title": "Assemble and bake",
+        "description": "Spread filling into a baking dish, top with mashed potato, rough up the surface with a fork for crispy peaks, and bake at 200C for 20-25 minutes until deeply golden."
+      }
+    ],
+    "nutrition": {
+      "calories": 640,
+      "protein": 24,
+      "fat": 17,
+      "carbohydrates": 95
     },
-    {
-      "title": "Creamy Coconut Chickpea Curry",
-      "description": "A rich, aromatic chickpea curry with spinach and tomatoes, finished with coconut milk for a balanced weeknight vegan curry.",
-      "prepTime": 15,
-      "cookTime": 30,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "chickpeas",
-          "amount": 2,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "finely chopped"
-        },
-        {
-          "name": "garlic",
-          "amount": 3,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "ginger",
-          "amount": 20,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "chopped tomatoes",
-          "amount": 1,
-          "unit": "can",
-          "preparation": null
-        },
-        {
-          "name": "coconut milk",
-          "amount": 400,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "spinach",
-          "amount": 120,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "curry powder",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "basmati rice",
-          "amount": 280,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "lime",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": null
-        }
-      ],
-      "method": [
-        {
-          "title": "Start the rice",
-          "description": "Cook the basmati rice according to packet instructions so it is ready when the curry finishes."
-        },
-        {
-          "title": "Build flavour base",
-          "description": "Heat olive oil in a deep pan and cook onion for 6-8 minutes until soft and lightly golden. Add garlic, ginger, curry powder, and cumin, cooking for 1 minute to toast the spices."
-        },
-        {
-          "title": "Simmer the curry",
-          "description": "Add chopped tomatoes, coconut milk, and chickpeas. Simmer for 12-15 minutes until the sauce thickens and tastes rounded; reduce a little further for a richer finish."
-        },
-        {
-          "title": "Finish and serve",
-          "description": "Stir in spinach until wilted, then squeeze in lime juice to balance the richness. Serve over rice."
-        }
-      ],
-      "nutrition": {
-        "calories": 700,
-        "protein": 21,
-        "fat": 24,
-        "carbohydrates": 94
+    "primaryProtein": "vegan",
+    "complexityTier": "moderate",
+    "cuisine": ["british"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Creamy Coconut Chickpea Curry",
+    "description": "A rich, aromatic chickpea curry with spinach and tomatoes, finished with coconut milk for a balanced weeknight vegan curry.",
+    "prepTime": 15,
+    "cookTime": 30,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "chickpeas",
+        "amount": 2,
+        "unit": "can",
+        "preparation": "drained"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "simple",
-      "cuisine": [
-        "indian"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "finely chopped"
+      },
+      {
+        "name": "garlic",
+        "amount": 3,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "ginger",
+        "amount": 20,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "chopped tomatoes",
+        "amount": 1,
+        "unit": "can",
+        "preparation": null
+      },
+      {
+        "name": "coconut milk",
+        "amount": 400,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "spinach",
+        "amount": 120,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "curry powder",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "basmati rice",
+        "amount": 280,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "lime",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": null
+      }
+    ],
+    "method": [
+      {
+        "title": "Start the rice",
+        "description": "Cook the basmati rice according to packet instructions so it is ready when the curry finishes."
+      },
+      {
+        "title": "Build flavour base",
+        "description": "Heat olive oil in a deep pan and cook onion for 6-8 minutes until soft and lightly golden. Add garlic, ginger, curry powder, and cumin, cooking for 1 minute to toast the spices."
+      },
+      {
+        "title": "Simmer the curry",
+        "description": "Add chopped tomatoes, coconut milk, and chickpeas. Simmer for 12-15 minutes until the sauce thickens and tastes rounded; reduce a little further for a richer finish."
+      },
+      {
+        "title": "Finish and serve",
+        "description": "Stir in spinach until wilted, then squeeze in lime juice to balance the richness. Serve over rice."
+      }
+    ],
+    "nutrition": {
+      "calories": 700,
+      "protein": 21,
+      "fat": 24,
+      "carbohydrates": 94
     },
-    {
-      "title": "Sticky Tofu and Broccoli Sesame Traybake",
-      "description": "Crisp tofu and charred broccoli roasted in a sticky sesame soy glaze for a low-effort, high-flavour vegan dinner.",
-      "prepTime": 15,
-      "cookTime": 30,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "firm tofu",
-          "amount": 500,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "broccoli",
-          "amount": 400,
-          "unit": "g",
-          "preparation": "chopped"
-        },
-        {
-          "name": "red onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "sliced"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "ginger",
-          "amount": 15,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "soy sauce",
-          "amount": 4,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "sesame oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "rice vinegar",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "maple syrup",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "cornflour",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "sesame seeds",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "rice noodles",
-          "amount": 250,
-          "unit": "g",
-          "preparation": null
-        }
-      ],
-      "method": [
-        {
-          "title": "Prep tofu and tray",
-          "description": "Pat tofu dry thoroughly, then toss with cornflour and half the sesame oil. Spread on a tray with broccoli and red onion."
-        },
-        {
-          "title": "Roast for colour",
-          "description": "Roast at 220C for 20-25 minutes, turning once, until tofu is crisp at the edges and broccoli is charred in spots."
-        },
-        {
-          "title": "Make sticky glaze",
-          "description": "Whisk soy sauce, rice vinegar, maple syrup, garlic, ginger, and remaining sesame oil in a small pan. Simmer briefly until glossy and slightly thickened."
-        },
-        {
-          "title": "Cook noodles and finish",
-          "description": "Cook rice noodles according to packet instructions. Toss roasted tofu and vegetables in the glaze, scatter sesame seeds, and serve over noodles."
-        }
-      ],
-      "nutrition": {
-        "calories": 620,
-        "protein": 27,
-        "fat": 20,
-        "carbohydrates": 79
+    "primaryProtein": "vegan",
+    "complexityTier": "simple",
+    "cuisine": ["indian"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Sticky Tofu and Broccoli Sesame Traybake",
+    "description": "Crisp tofu and charred broccoli roasted in a sticky sesame soy glaze for a low-effort, high-flavour vegan dinner.",
+    "prepTime": 15,
+    "cookTime": 30,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "firm tofu",
+        "amount": 500,
+        "unit": "g",
+        "preparation": "cubed"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "simple",
-      "cuisine": [
-        "chinese"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "broccoli",
+        "amount": 400,
+        "unit": "g",
+        "preparation": "chopped"
+      },
+      {
+        "name": "red onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "sliced"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "ginger",
+        "amount": 15,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "soy sauce",
+        "amount": 4,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "sesame oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "rice vinegar",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "maple syrup",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "cornflour",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "sesame seeds",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "rice noodles",
+        "amount": 250,
+        "unit": "g",
+        "preparation": null
+      }
+    ],
+    "method": [
+      {
+        "title": "Prep tofu and tray",
+        "description": "Pat tofu dry thoroughly, then toss with cornflour and half the sesame oil. Spread on a tray with broccoli and red onion."
+      },
+      {
+        "title": "Roast for colour",
+        "description": "Roast at 220C for 20-25 minutes, turning once, until tofu is crisp at the edges and broccoli is charred in spots."
+      },
+      {
+        "title": "Make sticky glaze",
+        "description": "Whisk soy sauce, rice vinegar, maple syrup, garlic, ginger, and remaining sesame oil in a small pan. Simmer briefly until glossy and slightly thickened."
+      },
+      {
+        "title": "Cook noodles and finish",
+        "description": "Cook rice noodles according to packet instructions. Toss roasted tofu and vegetables in the glaze, scatter sesame seeds, and serve over noodles."
+      }
+    ],
+    "nutrition": {
+      "calories": 620,
+      "protein": 27,
+      "fat": 20,
+      "carbohydrates": 79
     },
-    {
-      "title": "Harissa Cauliflower and Butter Bean Traybake",
-      "description": "Roasted cauliflower and butter beans with warming harissa, sweet peppers, and lemony herbs for a bold vegan one-pan dinner.",
-      "prepTime": 15,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "cauliflower",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "chopped"
-        },
-        {
-          "name": "butter beans",
-          "amount": 2,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "red pepper",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "sliced"
-        },
-        {
-          "name": "red onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "sliced"
-        },
-        {
-          "name": "harissa paste",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "smoked paprika",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "lemon",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "zested"
-        },
-        {
-          "name": "couscous",
-          "amount": 250,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "parsley",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Season the traybake",
-          "description": "Toss cauliflower, peppers, onion, and butter beans with olive oil, harissa, cumin, paprika, and lemon zest. Spread evenly in a large roasting tray."
-        },
-        {
-          "title": "Roast until caramelised",
-          "description": "Roast at 210C for 30-35 minutes, turning halfway. Let edges darken slightly to build depth and sweetness."
-        },
-        {
-          "title": "Prepare couscous",
-          "description": "Place couscous in a bowl, pour over boiling water to just cover, then cover and steam for 5 minutes. Fluff with a fork."
-        },
-        {
-          "title": "Finish and serve",
-          "description": "Squeeze lemon juice over the tray, fold through parsley, and serve over couscous."
-        }
-      ],
-      "nutrition": {
-        "calories": 560,
-        "protein": 20,
-        "fat": 18,
-        "carbohydrates": 74
+    "primaryProtein": "vegan",
+    "complexityTier": "simple",
+    "cuisine": ["chinese"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Harissa Cauliflower and Butter Bean Traybake",
+    "description": "Roasted cauliflower and butter beans with warming harissa, sweet peppers, and lemony herbs for a bold vegan one-pan dinner.",
+    "prepTime": 15,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "cauliflower",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "chopped"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "simple",
-      "cuisine": [
-        "middle_eastern"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "butter beans",
+        "amount": 2,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "red pepper",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "sliced"
+      },
+      {
+        "name": "red onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "sliced"
+      },
+      {
+        "name": "harissa paste",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "smoked paprika",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "lemon",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "zested"
+      },
+      {
+        "name": "couscous",
+        "amount": 250,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "parsley",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Season the traybake",
+        "description": "Toss cauliflower, peppers, onion, and butter beans with olive oil, harissa, cumin, paprika, and lemon zest. Spread evenly in a large roasting tray."
+      },
+      {
+        "title": "Roast until caramelised",
+        "description": "Roast at 210C for 30-35 minutes, turning halfway. Let edges darken slightly to build depth and sweetness."
+      },
+      {
+        "title": "Prepare couscous",
+        "description": "Place couscous in a bowl, pour over boiling water to just cover, then cover and steam for 5 minutes. Fluff with a fork."
+      },
+      {
+        "title": "Finish and serve",
+        "description": "Squeeze lemon juice over the tray, fold through parsley, and serve over couscous."
+      }
+    ],
+    "nutrition": {
+      "calories": 560,
+      "protein": 20,
+      "fat": 18,
+      "carbohydrates": 74
     },
-    {
-      "title": "Mushroom and Walnut Ragu with Spaghetti",
-      "description": "A rich vegan ragu with finely chopped mushrooms and walnuts for meaty texture, served with spaghetti.",
-      "prepTime": 20,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "mushrooms",
-          "amount": 500,
-          "unit": "g",
-          "preparation": "finely chopped"
-        },
-        {
-          "name": "walnuts",
-          "amount": 120,
-          "unit": "g",
-          "preparation": "chopped"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "diced"
-        },
-        {
-          "name": "carrot",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "finely diced"
-        },
-        {
-          "name": "celery",
-          "amount": 1,
-          "unit": "stalk",
-          "preparation": "finely diced"
-        },
-        {
-          "name": "garlic",
-          "amount": 3,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "chopped tomatoes",
-          "amount": 1,
-          "unit": "can",
-          "preparation": null
-        },
-        {
-          "name": "tomato puree",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "vegetable stock",
-          "amount": 250,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "spaghetti",
-          "amount": 320,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "oregano",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": "dried"
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook soffritto base",
-          "description": "Heat olive oil and cook onion, carrot, and celery for 8-10 minutes until soft and lightly sweet. Add garlic and oregano for 1 minute."
-        },
-        {
-          "title": "Brown mushrooms and walnuts",
-          "description": "Add mushrooms and cook on medium-high heat until their moisture evaporates and they begin to brown; this concentrates flavour. Stir in walnuts and toast briefly."
-        },
-        {
-          "title": "Simmer ragu",
-          "description": "Add tomato puree, chopped tomatoes, and stock. Simmer 15-20 minutes until thick and rich, stirring occasionally."
-        },
-        {
-          "title": "Boil pasta and combine",
-          "description": "Cook spaghetti until al dente, reserving a little pasta water. Toss with ragu, loosening with reserved water if needed for a silky finish."
-        }
-      ],
-      "nutrition": {
-        "calories": 760,
-        "protein": 23,
-        "fat": 30,
-        "carbohydrates": 94
+    "primaryProtein": "vegan",
+    "complexityTier": "simple",
+    "cuisine": ["middle_eastern"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Mushroom and Walnut Ragu with Spaghetti",
+    "description": "A rich vegan ragu with finely chopped mushrooms and walnuts for meaty texture, served with spaghetti.",
+    "prepTime": 20,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "mushrooms",
+        "amount": 500,
+        "unit": "g",
+        "preparation": "finely chopped"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "italian"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "walnuts",
+        "amount": 120,
+        "unit": "g",
+        "preparation": "chopped"
+      },
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "diced"
+      },
+      {
+        "name": "carrot",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "finely diced"
+      },
+      {
+        "name": "celery",
+        "amount": 1,
+        "unit": "stalk",
+        "preparation": "finely diced"
+      },
+      {
+        "name": "garlic",
+        "amount": 3,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "chopped tomatoes",
+        "amount": 1,
+        "unit": "can",
+        "preparation": null
+      },
+      {
+        "name": "tomato puree",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "vegetable stock",
+        "amount": 250,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "spaghetti",
+        "amount": 320,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "oregano",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": "dried"
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook soffritto base",
+        "description": "Heat olive oil and cook onion, carrot, and celery for 8-10 minutes until soft and lightly sweet. Add garlic and oregano for 1 minute."
+      },
+      {
+        "title": "Brown mushrooms and walnuts",
+        "description": "Add mushrooms and cook on medium-high heat until their moisture evaporates and they begin to brown; this concentrates flavour. Stir in walnuts and toast briefly."
+      },
+      {
+        "title": "Simmer ragu",
+        "description": "Add tomato puree, chopped tomatoes, and stock. Simmer 15-20 minutes until thick and rich, stirring occasionally."
+      },
+      {
+        "title": "Boil pasta and combine",
+        "description": "Cook spaghetti until al dente, reserving a little pasta water. Toss with ragu, loosening with reserved water if needed for a silky finish."
+      }
+    ],
+    "nutrition": {
+      "calories": 760,
+      "protein": 23,
+      "fat": 30,
+      "carbohydrates": 94
     },
-    {
-      "title": "Black Bean and Sweet Potato Enchilada Skillet",
-      "description": "A one-pan vegan enchilada-style bake with smoky black beans, sweet potato, and tortillas layered in a rich tomato sauce.",
-      "prepTime": 15,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "sweet potato",
-          "amount": 500,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "black beans",
-          "amount": 2,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "diced"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "chopped tomatoes",
-          "amount": 1,
-          "unit": "can",
-          "preparation": null
-        },
-        {
-          "name": "tomato puree",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "smoked paprika",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "oregano",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": "dried"
-        },
-        {
-          "name": "tortillas",
-          "amount": 4,
-          "unit": "piece",
-          "preparation": "sliced"
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "coriander",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Soften sweet potato",
-          "description": "Heat olive oil in an oven-safe pan and cook sweet potato for 8-10 minutes, stirring often, until starting to soften and colour."
-        },
-        {
-          "title": "Build the sauce",
-          "description": "Add onion and cook 5 minutes, then stir in garlic, cumin, paprika, and oregano for 1 minute. Add tomato puree, chopped tomatoes, and black beans, then simmer until thick."
-        },
-        {
-          "title": "Layer tortillas",
-          "description": "Fold sliced tortillas through the sauce so they soften and absorb flavour. If the mix is very thick, add a splash of water to keep it saucy."
-        },
-        {
-          "title": "Bake and finish",
-          "description": "Bake at 200C for 12-15 minutes until bubbling and slightly crisp on top. Finish with chopped coriander."
-        }
-      ],
-      "nutrition": {
-        "calories": 590,
-        "protein": 19,
-        "fat": 13,
-        "carbohydrates": 95
+    "primaryProtein": "vegan",
+    "complexityTier": "moderate",
+    "cuisine": ["italian"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Black Bean and Sweet Potato Enchilada Skillet",
+    "description": "A one-pan vegan enchilada-style bake with smoky black beans, sweet potato, and tortillas layered in a rich tomato sauce.",
+    "prepTime": 15,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "sweet potato",
+        "amount": 500,
+        "unit": "g",
+        "preparation": "cubed"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "simple",
-      "cuisine": [
-        "mexican"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "black beans",
+        "amount": 2,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "diced"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "chopped tomatoes",
+        "amount": 1,
+        "unit": "can",
+        "preparation": null
+      },
+      {
+        "name": "tomato puree",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "smoked paprika",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "oregano",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": "dried"
+      },
+      {
+        "name": "tortillas",
+        "amount": 4,
+        "unit": "piece",
+        "preparation": "sliced"
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "coriander",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Soften sweet potato",
+        "description": "Heat olive oil in an oven-safe pan and cook sweet potato for 8-10 minutes, stirring often, until starting to soften and colour."
+      },
+      {
+        "title": "Build the sauce",
+        "description": "Add onion and cook 5 minutes, then stir in garlic, cumin, paprika, and oregano for 1 minute. Add tomato puree, chopped tomatoes, and black beans, then simmer until thick."
+      },
+      {
+        "title": "Layer tortillas",
+        "description": "Fold sliced tortillas through the sauce so they soften and absorb flavour. If the mix is very thick, add a splash of water to keep it saucy."
+      },
+      {
+        "title": "Bake and finish",
+        "description": "Bake at 200C for 12-15 minutes until bubbling and slightly crisp on top. Finish with chopped coriander."
+      }
+    ],
+    "nutrition": {
+      "calories": 590,
+      "protein": 19,
+      "fat": 13,
+      "carbohydrates": 95
     },
-    {
-      "title": "Peanut Tofu Noodle Stir-Fry",
-      "description": "Crispy tofu and vegetables tossed with rice noodles in a punchy peanut-lime sauce.",
-      "prepTime": 20,
-      "cookTime": 20,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "firm tofu",
-          "amount": 450,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "rice noodles",
-          "amount": 250,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "red pepper",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "thinly sliced"
-        },
-        {
-          "name": "carrot",
-          "amount": 2,
-          "unit": "whole",
-          "preparation": "julienned"
-        },
-        {
-          "name": "spring onion",
-          "amount": 4,
-          "unit": "stalk",
-          "preparation": "sliced"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "ginger",
-          "amount": 15,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "peanut butter",
-          "amount": 4,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "soy sauce",
-          "amount": 3,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "lime",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": null
-        },
-        {
-          "name": "sesame oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "chilli flakes",
-          "amount": 0.5,
-          "unit": "tsp",
-          "preparation": null
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook noodles and prep sauce",
-          "description": "Cook rice noodles according to packet instructions, then rinse briefly and set aside. Whisk peanut butter, soy sauce, lime juice, chilli flakes, and a splash of hot water into a pourable sauce."
-        },
-        {
-          "title": "Crisp the tofu",
-          "description": "Heat sesame oil in a large wok and fry tofu until crisp on multiple sides. Cook in batches if needed to avoid steaming."
-        },
-        {
-          "title": "Stir-fry aromatics and veg",
-          "description": "Add garlic, ginger, carrot, and pepper to the wok, stir-frying over high heat for 3-4 minutes so vegetables stay vibrant and retain bite."
-        },
-        {
-          "title": "Combine and glaze",
-          "description": "Add noodles, tofu, and peanut sauce, tossing until everything is glossy and hot. Fold through spring onion just before serving."
-        }
-      ],
-      "nutrition": {
-        "calories": 680,
-        "protein": 26,
-        "fat": 27,
-        "carbohydrates": 81
+    "primaryProtein": "vegan",
+    "complexityTier": "simple",
+    "cuisine": ["mexican"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Peanut Tofu Noodle Stir-Fry",
+    "description": "Crispy tofu and vegetables tossed with rice noodles in a punchy peanut-lime sauce.",
+    "prepTime": 20,
+    "cookTime": 20,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "firm tofu",
+        "amount": 450,
+        "unit": "g",
+        "preparation": "cubed"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "thai"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "rice noodles",
+        "amount": 250,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "red pepper",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "thinly sliced"
+      },
+      {
+        "name": "carrot",
+        "amount": 2,
+        "unit": "whole",
+        "preparation": "julienned"
+      },
+      {
+        "name": "spring onion",
+        "amount": 4,
+        "unit": "stalk",
+        "preparation": "sliced"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "ginger",
+        "amount": 15,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "peanut butter",
+        "amount": 4,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "soy sauce",
+        "amount": 3,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "lime",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": null
+      },
+      {
+        "name": "sesame oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "chilli flakes",
+        "amount": 0.5,
+        "unit": "tsp",
+        "preparation": null
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook noodles and prep sauce",
+        "description": "Cook rice noodles according to packet instructions, then rinse briefly and set aside. Whisk peanut butter, soy sauce, lime juice, chilli flakes, and a splash of hot water into a pourable sauce."
+      },
+      {
+        "title": "Crisp the tofu",
+        "description": "Heat sesame oil in a large wok and fry tofu until crisp on multiple sides. Cook in batches if needed to avoid steaming."
+      },
+      {
+        "title": "Stir-fry aromatics and veg",
+        "description": "Add garlic, ginger, carrot, and pepper to the wok, stir-frying over high heat for 3-4 minutes so vegetables stay vibrant and retain bite."
+      },
+      {
+        "title": "Combine and glaze",
+        "description": "Add noodles, tofu, and peanut sauce, tossing until everything is glossy and hot. Fold through spring onion just before serving."
+      }
+    ],
+    "nutrition": {
+      "calories": 680,
+      "protein": 26,
+      "fat": 27,
+      "carbohydrates": 81
     },
-    {
-      "title": "Aubergine and Chickpea Tagine with Herby Couscous",
-      "description": "Soft aubergine and chickpeas simmered with warming spices and tomatoes, served over fluffy herby couscous.",
-      "prepTime": 20,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "aubergine",
-          "amount": 2,
-          "unit": "whole",
-          "preparation": "cubed"
-        },
-        {
-          "name": "chickpeas",
-          "amount": 2,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "sliced"
-        },
-        {
-          "name": "garlic",
-          "amount": 3,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "chopped tomatoes",
-          "amount": 1,
-          "unit": "can",
-          "preparation": null
-        },
-        {
-          "name": "vegetable stock",
-          "amount": 250,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "ground coriander",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "cinnamon",
-          "amount": 0.5,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "couscous",
-          "amount": 250,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "parsley",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Brown aubergine well",
-          "description": "Heat olive oil in a wide pan and cook aubergine until deeply golden on multiple sides; good browning prevents a watery finish."
-        },
-        {
-          "title": "Build tagine base",
-          "description": "Add onion and cook until softened, then add garlic and spices for 1 minute. Stir in chopped tomatoes, stock, and chickpeas."
-        },
-        {
-          "title": "Simmer for depth",
-          "description": "Cook uncovered for 18-20 minutes until aubergine is silky and sauce has reduced to a rich stew-like consistency."
-        },
-        {
-          "title": "Prepare couscous and serve",
-          "description": "Steam couscous with boiling water for 5 minutes, fluff, then fold through parsley. Spoon tagine over couscous."
-        }
-      ],
-      "nutrition": {
-        "calories": 570,
-        "protein": 18,
-        "fat": 17,
-        "carbohydrates": 87
+    "primaryProtein": "vegan",
+    "complexityTier": "moderate",
+    "cuisine": ["thai"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Aubergine and Chickpea Tagine with Herby Couscous",
+    "description": "Soft aubergine and chickpeas simmered with warming spices and tomatoes, served over fluffy herby couscous.",
+    "prepTime": 20,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "aubergine",
+        "amount": 2,
+        "unit": "whole",
+        "preparation": "cubed"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "african"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "chickpeas",
+        "amount": 2,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "sliced"
+      },
+      {
+        "name": "garlic",
+        "amount": 3,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "chopped tomatoes",
+        "amount": 1,
+        "unit": "can",
+        "preparation": null
+      },
+      {
+        "name": "vegetable stock",
+        "amount": 250,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "ground coriander",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "cinnamon",
+        "amount": 0.5,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "couscous",
+        "amount": 250,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "parsley",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Brown aubergine well",
+        "description": "Heat olive oil in a wide pan and cook aubergine until deeply golden on multiple sides; good browning prevents a watery finish."
+      },
+      {
+        "title": "Build tagine base",
+        "description": "Add onion and cook until softened, then add garlic and spices for 1 minute. Stir in chopped tomatoes, stock, and chickpeas."
+      },
+      {
+        "title": "Simmer for depth",
+        "description": "Cook uncovered for 18-20 minutes until aubergine is silky and sauce has reduced to a rich stew-like consistency."
+      },
+      {
+        "title": "Prepare couscous and serve",
+        "description": "Steam couscous with boiling water for 5 minutes, fluff, then fold through parsley. Spoon tagine over couscous."
+      }
+    ],
+    "nutrition": {
+      "calories": 570,
+      "protein": 18,
+      "fat": 17,
+      "carbohydrates": 87
     },
-    {
-      "title": "Gochujang Tempeh Rice Bowls",
-      "description": "Crispy tempeh coated in a spicy-sweet gochujang glaze with quick cucumber and steamed rice.",
-      "prepTime": 20,
-      "cookTime": 25,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "tempeh",
-          "amount": 400,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "basmati rice",
-          "amount": 280,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "cucumber",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "thinly sliced"
-        },
-        {
-          "name": "spring onion",
-          "amount": 4,
-          "unit": "stalk",
-          "preparation": "sliced"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "ginger",
-          "amount": 10,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "gochujang",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "soy sauce",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "rice vinegar",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "maple syrup",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "sesame oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "sesame seeds",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook rice and pickle cucumber",
-          "description": "Cook rice according to packet instructions. Toss cucumber with 1 tbsp rice vinegar and a pinch of salt, then set aside to lightly pickle."
-        },
-        {
-          "title": "Crisp the tempeh",
-          "description": "Steam tempeh for 5 minutes first if you prefer a milder taste, then pat dry. Fry in sesame oil until golden and crisp on the edges."
-        },
-        {
-          "title": "Make glaze",
-          "description": "Mix gochujang, soy sauce, maple syrup, remaining rice vinegar, garlic, and ginger. Add to the pan and cook until it clings to the tempeh."
-        },
-        {
-          "title": "Assemble bowls",
-          "description": "Serve glazed tempeh over rice with pickled cucumber, spring onion, and sesame seeds."
-        }
-      ],
-      "nutrition": {
-        "calories": 610,
-        "protein": 24,
-        "fat": 20,
-        "carbohydrates": 80
+    "primaryProtein": "vegan",
+    "complexityTier": "moderate",
+    "cuisine": ["african"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Gochujang Tempeh Rice Bowls",
+    "description": "Crispy tempeh coated in a spicy-sweet gochujang glaze with quick cucumber and steamed rice.",
+    "prepTime": 20,
+    "cookTime": 25,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "tempeh",
+        "amount": 400,
+        "unit": "g",
+        "preparation": "cubed"
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "simple",
-      "cuisine": [
-        "korean"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "basmati rice",
+        "amount": 280,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "cucumber",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "thinly sliced"
+      },
+      {
+        "name": "spring onion",
+        "amount": 4,
+        "unit": "stalk",
+        "preparation": "sliced"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "ginger",
+        "amount": 10,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "gochujang",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "soy sauce",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "rice vinegar",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "maple syrup",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "sesame oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "sesame seeds",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook rice and pickle cucumber",
+        "description": "Cook rice according to packet instructions. Toss cucumber with 1 tbsp rice vinegar and a pinch of salt, then set aside to lightly pickle."
+      },
+      {
+        "title": "Crisp the tempeh",
+        "description": "Steam tempeh for 5 minutes first if you prefer a milder taste, then pat dry. Fry in sesame oil until golden and crisp on the edges."
+      },
+      {
+        "title": "Make glaze",
+        "description": "Mix gochujang, soy sauce, maple syrup, remaining rice vinegar, garlic, and ginger. Add to the pan and cook until it clings to the tempeh."
+      },
+      {
+        "title": "Assemble bowls",
+        "description": "Serve glazed tempeh over rice with pickled cucumber, spring onion, and sesame seeds."
+      }
+    ],
+    "nutrition": {
+      "calories": 610,
+      "protein": 24,
+      "fat": 20,
+      "carbohydrates": 80
     },
-    {
-      "title": "Lemon White Bean and Spinach Risotto",
-      "description": "Creamy vegan risotto with white beans, spinach, and lemon for brightness and balance.",
-      "prepTime": 15,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "risotto rice",
-          "amount": 300,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "white beans",
-          "amount": 2,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "finely chopped"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "vegetable stock",
-          "amount": 1,
-          "unit": "l",
-          "preparation": null
-        },
-        {
-          "name": "spinach",
-          "amount": 120,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "nutritional yeast",
-          "amount": 3,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 2,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "lemon",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "zested"
-        },
-        {
-          "name": "parsley",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Start aromatics",
-          "description": "Warm stock in a separate pan. In a wide pot, cook onion in olive oil for 6-8 minutes until soft, then add garlic for 1 minute."
-        },
-        {
-          "title": "Toast rice and add stock gradually",
-          "description": "Stir in rice and cook 1-2 minutes until edges look translucent. Add warm stock a ladle at a time, stirring often and allowing each addition to absorb before the next."
-        },
-        {
-          "title": "Finish for creaminess",
-          "description": "After about 20 minutes, stir in beans, nutritional yeast, lemon zest, and spinach. Cook until rice is tender with a slight bite and the texture is loose and creamy."
-        },
-        {
-          "title": "Serve",
-          "description": "Fold through parsley and a squeeze of lemon juice just before serving for freshness."
-        }
-      ],
-      "nutrition": {
-        "calories": 620,
-        "protein": 20,
-        "fat": 16,
-        "carbohydrates": 95
+    "primaryProtein": "vegan",
+    "complexityTier": "simple",
+    "cuisine": ["korean"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Lemon White Bean and Spinach Risotto",
+    "description": "Creamy vegan risotto with white beans, spinach, and lemon for brightness and balance.",
+    "prepTime": 15,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "risotto rice",
+        "amount": 300,
+        "unit": "g",
+        "preparation": null
       },
-      "primaryProtein": "vegan",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "italian"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "white beans",
+        "amount": 2,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "finely chopped"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "vegetable stock",
+        "amount": 1,
+        "unit": "l",
+        "preparation": null
+      },
+      {
+        "name": "spinach",
+        "amount": 120,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "nutritional yeast",
+        "amount": 3,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 2,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "lemon",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "zested"
+      },
+      {
+        "name": "parsley",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Start aromatics",
+        "description": "Warm stock in a separate pan. In a wide pot, cook onion in olive oil for 6-8 minutes until soft, then add garlic for 1 minute."
+      },
+      {
+        "title": "Toast rice and add stock gradually",
+        "description": "Stir in rice and cook 1-2 minutes until edges look translucent. Add warm stock a ladle at a time, stirring often and allowing each addition to absorb before the next."
+      },
+      {
+        "title": "Finish for creaminess",
+        "description": "After about 20 minutes, stir in beans, nutritional yeast, lemon zest, and spinach. Cook until rice is tender with a slight bite and the texture is loose and creamy."
+      },
+      {
+        "title": "Serve",
+        "description": "Fold through parsley and a squeeze of lemon juice just before serving for freshness."
+      }
+    ],
+    "nutrition": {
+      "calories": 620,
+      "protein": 20,
+      "fat": 16,
+      "carbohydrates": 95
     },
-    {
-      "title": "Spinach and Ricotta Stuffed Shell Pasta Bake",
-      "description": "Tender pasta shells filled with lemony spinach ricotta, baked in tomato sauce until bubbling and golden.",
-      "prepTime": 20,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "pasta shells",
-          "amount": 320,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "ricotta",
-          "amount": 300,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "spinach",
-          "amount": 200,
-          "unit": "g",
-          "preparation": "chopped"
-        },
-        {
-          "name": "mozzarella",
-          "amount": 150,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "parmesan",
-          "amount": 40,
-          "unit": "g",
-          "preparation": "finely grated"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "chopped tomatoes",
-          "amount": 1,
-          "unit": "can",
-          "preparation": null
-        },
-        {
-          "name": "tomato puree",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "lemon",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "zested"
-        },
-        {
-          "name": "basil",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook shells and sauce",
-          "description": "Boil pasta shells until just under al dente, then drain. Meanwhile, simmer chopped tomatoes with tomato puree, half the garlic, and olive oil for 10 minutes."
-        },
-        {
-          "title": "Make filling",
-          "description": "Mix ricotta, spinach, lemon zest, remaining garlic, half the parmesan, and half the mozzarella until well combined."
-        },
-        {
-          "title": "Fill and assemble",
-          "description": "Spread tomato sauce in a baking dish. Fill each shell with ricotta mixture and nestle into the sauce."
-        },
-        {
-          "title": "Bake",
-          "description": "Top with remaining mozzarella and parmesan. Bake at 200C for 20 minutes until bubbling and lightly browned, then finish with basil."
-        }
-      ],
-      "nutrition": {
-        "calories": 790,
-        "protein": 38,
-        "fat": 31,
-        "carbohydrates": 88
+    "primaryProtein": "vegan",
+    "complexityTier": "moderate",
+    "cuisine": ["italian"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Spinach and Ricotta Stuffed Shell Pasta Bake",
+    "description": "Tender pasta shells filled with lemony spinach ricotta, baked in tomato sauce until bubbling and golden.",
+    "prepTime": 20,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "pasta shells",
+        "amount": 320,
+        "unit": "g",
+        "preparation": null
       },
-      "primaryProtein": "vegetarian",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "italian"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "ricotta",
+        "amount": 300,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "spinach",
+        "amount": 200,
+        "unit": "g",
+        "preparation": "chopped"
+      },
+      {
+        "name": "mozzarella",
+        "amount": 150,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "parmesan",
+        "amount": 40,
+        "unit": "g",
+        "preparation": "finely grated"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "chopped tomatoes",
+        "amount": 1,
+        "unit": "can",
+        "preparation": null
+      },
+      {
+        "name": "tomato puree",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "lemon",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "zested"
+      },
+      {
+        "name": "basil",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook shells and sauce",
+        "description": "Boil pasta shells until just under al dente, then drain. Meanwhile, simmer chopped tomatoes with tomato puree, half the garlic, and olive oil for 10 minutes."
+      },
+      {
+        "title": "Make filling",
+        "description": "Mix ricotta, spinach, lemon zest, remaining garlic, half the parmesan, and half the mozzarella until well combined."
+      },
+      {
+        "title": "Fill and assemble",
+        "description": "Spread tomato sauce in a baking dish. Fill each shell with ricotta mixture and nestle into the sauce."
+      },
+      {
+        "title": "Bake",
+        "description": "Top with remaining mozzarella and parmesan. Bake at 200C for 20 minutes until bubbling and lightly browned, then finish with basil."
+      }
+    ],
+    "nutrition": {
+      "calories": 790,
+      "protein": 38,
+      "fat": 31,
+      "carbohydrates": 88
     },
-    {
-      "title": "Paneer Tikka Pepper Traybake",
-      "description": "Oven-charred paneer and peppers in a spiced yogurt marinade, served with fragrant basmati rice.",
-      "prepTime": 20,
-      "cookTime": 30,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "paneer",
-          "amount": 450,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "greek yogurt",
-          "amount": 180,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "red pepper",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "cubed"
-        },
-        {
-          "name": "yellow pepper",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "cubed"
-        },
-        {
-          "name": "red onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "cubed"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "ginger",
-          "amount": 15,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "garam masala",
-          "amount": 2,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "smoked paprika",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "basmati rice",
-          "amount": 280,
-          "unit": "g",
-          "preparation": null
-        }
-      ],
-      "method": [
-        {
-          "title": "Marinate paneer and veg",
-          "description": "Mix yogurt, garlic, ginger, garam masala, cumin, paprika, and olive oil. Toss paneer, peppers, and onion in the marinade and leave for 10 minutes if time allows."
-        },
-        {
-          "title": "Roast for char",
-          "description": "Spread on a lined tray and roast at 220C for 20-25 minutes, turning once, until paneer edges are golden and vegetables are lightly charred."
-        },
-        {
-          "title": "Cook rice",
-          "description": "While the traybake roasts, cook basmati rice according to packet instructions."
-        },
-        {
-          "title": "Serve",
-          "description": "Serve paneer tikka and roasted vegetables over rice, spooning over tray juices for extra flavour."
-        }
-      ],
-      "nutrition": {
-        "calories": 760,
-        "protein": 34,
-        "fat": 32,
-        "carbohydrates": 79
+    "primaryProtein": "vegetarian",
+    "complexityTier": "moderate",
+    "cuisine": ["italian"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Paneer Tikka Pepper Traybake",
+    "description": "Oven-charred paneer and peppers in a spiced yogurt marinade, served with fragrant basmati rice.",
+    "prepTime": 20,
+    "cookTime": 30,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "paneer",
+        "amount": 450,
+        "unit": "g",
+        "preparation": "cubed"
       },
-      "primaryProtein": "vegetarian",
-      "complexityTier": "simple",
-      "cuisine": [
-        "indian"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "greek yogurt",
+        "amount": 180,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "red pepper",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "cubed"
+      },
+      {
+        "name": "yellow pepper",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "cubed"
+      },
+      {
+        "name": "red onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "cubed"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "ginger",
+        "amount": 15,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "garam masala",
+        "amount": 2,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "smoked paprika",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "basmati rice",
+        "amount": 280,
+        "unit": "g",
+        "preparation": null
+      }
+    ],
+    "method": [
+      {
+        "title": "Marinate paneer and veg",
+        "description": "Mix yogurt, garlic, ginger, garam masala, cumin, paprika, and olive oil. Toss paneer, peppers, and onion in the marinade and leave for 10 minutes if time allows."
+      },
+      {
+        "title": "Roast for char",
+        "description": "Spread on a lined tray and roast at 220C for 20-25 minutes, turning once, until paneer edges are golden and vegetables are lightly charred."
+      },
+      {
+        "title": "Cook rice",
+        "description": "While the traybake roasts, cook basmati rice according to packet instructions."
+      },
+      {
+        "title": "Serve",
+        "description": "Serve paneer tikka and roasted vegetables over rice, spooning over tray juices for extra flavour."
+      }
+    ],
+    "nutrition": {
+      "calories": 760,
+      "protein": 34,
+      "fat": 32,
+      "carbohydrates": 79
     },
-    {
-      "title": "Halloumi and Chickpea Shawarma Bowls",
-      "description": "Crisp halloumi, spiced chickpeas, and fluffy rice with a bright lemon-yogurt drizzle.",
-      "prepTime": 20,
-      "cookTime": 25,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "halloumi",
-          "amount": 300,
-          "unit": "g",
-          "preparation": "sliced"
-        },
-        {
-          "name": "chickpeas",
-          "amount": 1,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "basmati rice",
-          "amount": 280,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "cucumber",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "diced"
-        },
-        {
-          "name": "tomato",
-          "amount": 2,
-          "unit": "whole",
-          "preparation": "diced"
-        },
-        {
-          "name": "red onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "thinly sliced"
-        },
-        {
-          "name": "greek yogurt",
-          "amount": 200,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "lemon",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "zested"
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "smoked paprika",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "parsley",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook rice and season chickpeas",
-          "description": "Cook rice according to packet instructions. Toss chickpeas with cumin, smoked paprika, and half the olive oil."
-        },
-        {
-          "title": "Crisp halloumi and chickpeas",
-          "description": "Fry halloumi slices in a hot pan until golden on both sides. In the same pan, cook spiced chickpeas for 4-5 minutes until lightly crisp."
-        },
-        {
-          "title": "Prepare bowl elements",
-          "description": "Mix yogurt with lemon zest and juice for a sharp drizzle. Combine cucumber, tomato, red onion, and parsley for a fresh salad."
-        },
-        {
-          "title": "Assemble",
-          "description": "Build bowls with rice, salad, chickpeas, and halloumi, then spoon over lemon yogurt."
-        }
-      ],
-      "nutrition": {
-        "calories": 730,
-        "protein": 30,
-        "fat": 30,
-        "carbohydrates": 81
+    "primaryProtein": "vegetarian",
+    "complexityTier": "simple",
+    "cuisine": ["indian"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Halloumi and Chickpea Shawarma Bowls",
+    "description": "Crisp halloumi, spiced chickpeas, and fluffy rice with a bright lemon-yogurt drizzle.",
+    "prepTime": 20,
+    "cookTime": 25,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "halloumi",
+        "amount": 300,
+        "unit": "g",
+        "preparation": "sliced"
       },
-      "primaryProtein": "vegetarian",
-      "complexityTier": "simple",
-      "cuisine": [
-        "middle_eastern"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "chickpeas",
+        "amount": 1,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "basmati rice",
+        "amount": 280,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "cucumber",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "diced"
+      },
+      {
+        "name": "tomato",
+        "amount": 2,
+        "unit": "whole",
+        "preparation": "diced"
+      },
+      {
+        "name": "red onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "thinly sliced"
+      },
+      {
+        "name": "greek yogurt",
+        "amount": 200,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "lemon",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "zested"
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "smoked paprika",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "parsley",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook rice and season chickpeas",
+        "description": "Cook rice according to packet instructions. Toss chickpeas with cumin, smoked paprika, and half the olive oil."
+      },
+      {
+        "title": "Crisp halloumi and chickpeas",
+        "description": "Fry halloumi slices in a hot pan until golden on both sides. In the same pan, cook spiced chickpeas for 4-5 minutes until lightly crisp."
+      },
+      {
+        "title": "Prepare bowl elements",
+        "description": "Mix yogurt with lemon zest and juice for a sharp drizzle. Combine cucumber, tomato, red onion, and parsley for a fresh salad."
+      },
+      {
+        "title": "Assemble",
+        "description": "Build bowls with rice, salad, chickpeas, and halloumi, then spoon over lemon yogurt."
+      }
+    ],
+    "nutrition": {
+      "calories": 730,
+      "protein": 30,
+      "fat": 30,
+      "carbohydrates": 81
     },
-    {
-      "title": "Broccoli Cheddar Potato Frittata",
-      "description": "A filling oven-finished frittata with tender potatoes, broccoli, and mature cheddar for a fast vegetarian dinner.",
-      "prepTime": 15,
-      "cookTime": 30,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "eggs",
-          "amount": 8,
-          "unit": "whole",
-          "preparation": "beaten"
-        },
-        {
-          "name": "potatoes",
-          "amount": 400,
-          "unit": "g",
-          "preparation": "cubed"
-        },
-        {
-          "name": "broccoli",
-          "amount": 250,
-          "unit": "g",
-          "preparation": "chopped"
-        },
-        {
-          "name": "cheddar cheese",
-          "amount": 150,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "finely sliced"
-        },
-        {
-          "name": "milk",
-          "amount": 80,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "chives",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook potatoes and broccoli",
-          "description": "Boil potatoes for 8 minutes until almost tender, adding broccoli for the final 2 minutes. Drain well to avoid a watery frittata."
-        },
-        {
-          "title": "Start in pan",
-          "description": "Cook onion in olive oil in an ovenproof pan until soft and lightly golden. Add potatoes and broccoli to warm through."
-        },
-        {
-          "title": "Add egg mixture",
-          "description": "Whisk eggs, milk, and most of the cheddar, then pour into the pan. Cook over low heat for 3-4 minutes until edges set."
-        },
-        {
-          "title": "Finish under heat",
-          "description": "Scatter remaining cheddar on top and bake at 200C for 10-12 minutes until set in the centre. Rest 5 minutes before slicing; finish with chives."
-        }
-      ],
-      "nutrition": {
-        "calories": 650,
-        "protein": 34,
-        "fat": 39,
-        "carbohydrates": 37
+    "primaryProtein": "vegetarian",
+    "complexityTier": "simple",
+    "cuisine": ["middle_eastern"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Broccoli Cheddar Potato Frittata",
+    "description": "A filling oven-finished frittata with tender potatoes, broccoli, and mature cheddar for a fast vegetarian dinner.",
+    "prepTime": 15,
+    "cookTime": 30,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "eggs",
+        "amount": 8,
+        "unit": "whole",
+        "preparation": "beaten"
       },
-      "primaryProtein": "vegetarian",
-      "complexityTier": "simple",
-      "cuisine": [
-        "british"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "potatoes",
+        "amount": 400,
+        "unit": "g",
+        "preparation": "cubed"
+      },
+      {
+        "name": "broccoli",
+        "amount": 250,
+        "unit": "g",
+        "preparation": "chopped"
+      },
+      {
+        "name": "cheddar cheese",
+        "amount": 150,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "finely sliced"
+      },
+      {
+        "name": "milk",
+        "amount": 80,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "chives",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook potatoes and broccoli",
+        "description": "Boil potatoes for 8 minutes until almost tender, adding broccoli for the final 2 minutes. Drain well to avoid a watery frittata."
+      },
+      {
+        "title": "Start in pan",
+        "description": "Cook onion in olive oil in an ovenproof pan until soft and lightly golden. Add potatoes and broccoli to warm through."
+      },
+      {
+        "title": "Add egg mixture",
+        "description": "Whisk eggs, milk, and most of the cheddar, then pour into the pan. Cook over low heat for 3-4 minutes until edges set."
+      },
+      {
+        "title": "Finish under heat",
+        "description": "Scatter remaining cheddar on top and bake at 200C for 10-12 minutes until set in the centre. Rest 5 minutes before slicing; finish with chives."
+      }
+    ],
+    "nutrition": {
+      "calories": 650,
+      "protein": 34,
+      "fat": 39,
+      "carbohydrates": 37
     },
-    {
-      "title": "Mushroom and Leek Dijon Pasta Bake",
-      "description": "Creamy vegetarian pasta bake with caramelised mushrooms, sweet leeks, and a Dijon kick.",
-      "prepTime": 20,
-      "cookTime": 35,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "penne pasta",
-          "amount": 320,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "mushrooms",
-          "amount": 400,
-          "unit": "g",
-          "preparation": "sliced"
-        },
-        {
-          "name": "leek",
-          "amount": 2,
-          "unit": "whole",
-          "preparation": "sliced"
-        },
-        {
-          "name": "garlic",
-          "amount": 2,
-          "unit": "clove",
-          "preparation": "minced"
-        },
-        {
-          "name": "creme fraiche",
-          "amount": 200,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "cheddar cheese",
-          "amount": 120,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "parmesan",
-          "amount": 30,
-          "unit": "g",
-          "preparation": "finely grated"
-        },
-        {
-          "name": "dijon mustard",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "vegetable stock",
-          "amount": 150,
-          "unit": "ml",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "parsley",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Cook pasta",
-          "description": "Boil pasta until just under al dente, then drain, reserving a little cooking water."
-        },
-        {
-          "title": "Build flavourful base",
-          "description": "Cook mushrooms in olive oil on medium-high heat until browned and concentrated. Add leek and cook until soft, then stir in garlic."
-        },
-        {
-          "title": "Make creamy sauce",
-          "description": "Stir in stock, creme fraiche, and Dijon mustard, then simmer briefly. Add cheddar and half the parmesan until melted."
-        },
-        {
-          "title": "Bake",
-          "description": "Combine sauce with pasta, loosening with reserved pasta water if needed. Transfer to a baking dish, top with remaining parmesan, and bake at 200C for 15 minutes until bubbling and golden."
-        }
-      ],
-      "nutrition": {
-        "calories": 820,
-        "protein": 33,
-        "fat": 35,
-        "carbohydrates": 92
+    "primaryProtein": "vegetarian",
+    "complexityTier": "simple",
+    "cuisine": ["british"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Mushroom and Leek Dijon Pasta Bake",
+    "description": "Creamy vegetarian pasta bake with caramelised mushrooms, sweet leeks, and a Dijon kick.",
+    "prepTime": 20,
+    "cookTime": 35,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "penne pasta",
+        "amount": 320,
+        "unit": "g",
+        "preparation": null
       },
-      "primaryProtein": "vegetarian",
-      "complexityTier": "moderate",
-      "cuisine": [
-        "french"
-      ],
-      "updatedAt": 1776940868223
+      {
+        "name": "mushrooms",
+        "amount": 400,
+        "unit": "g",
+        "preparation": "sliced"
+      },
+      {
+        "name": "leek",
+        "amount": 2,
+        "unit": "whole",
+        "preparation": "sliced"
+      },
+      {
+        "name": "garlic",
+        "amount": 2,
+        "unit": "clove",
+        "preparation": "minced"
+      },
+      {
+        "name": "creme fraiche",
+        "amount": 200,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "cheddar cheese",
+        "amount": 120,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "parmesan",
+        "amount": 30,
+        "unit": "g",
+        "preparation": "finely grated"
+      },
+      {
+        "name": "dijon mustard",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "vegetable stock",
+        "amount": 150,
+        "unit": "ml",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "parsley",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Cook pasta",
+        "description": "Boil pasta until just under al dente, then drain, reserving a little cooking water."
+      },
+      {
+        "title": "Build flavourful base",
+        "description": "Cook mushrooms in olive oil on medium-high heat until browned and concentrated. Add leek and cook until soft, then stir in garlic."
+      },
+      {
+        "title": "Make creamy sauce",
+        "description": "Stir in stock, creme fraiche, and Dijon mustard, then simmer briefly. Add cheddar and half the parmesan until melted."
+      },
+      {
+        "title": "Bake",
+        "description": "Combine sauce with pasta, loosening with reserved pasta water if needed. Transfer to a baking dish, top with remaining parmesan, and bake at 200C for 15 minutes until bubbling and golden."
+      }
+    ],
+    "nutrition": {
+      "calories": 820,
+      "protein": 33,
+      "fat": 35,
+      "carbohydrates": 92
     },
-    {
-      "title": "Sweetcorn and Black Bean Quesadillas",
-      "description": "Golden vegetarian quesadillas filled with black beans, sweetcorn, and melted cheddar, served with a cooling lime yogurt.",
-      "prepTime": 15,
-      "cookTime": 20,
-      "serves": 4,
-      "category": "dinner",
-      "ingredients": [
-        {
-          "name": "tortillas",
-          "amount": 8,
-          "unit": "piece",
-          "preparation": null
-        },
-        {
-          "name": "black beans",
-          "amount": 1,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "sweetcorn",
-          "amount": 1,
-          "unit": "can",
-          "preparation": "drained"
-        },
-        {
-          "name": "cheddar cheese",
-          "amount": 220,
-          "unit": "g",
-          "preparation": "grated"
-        },
-        {
-          "name": "red onion",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "finely diced"
-        },
-        {
-          "name": "red pepper",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": "finely diced"
-        },
-        {
-          "name": "smoked paprika",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "ground cumin",
-          "amount": 1,
-          "unit": "tsp",
-          "preparation": null
-        },
-        {
-          "name": "greek yogurt",
-          "amount": 180,
-          "unit": "g",
-          "preparation": null
-        },
-        {
-          "name": "lime",
-          "amount": 1,
-          "unit": "whole",
-          "preparation": null
-        },
-        {
-          "name": "olive oil",
-          "amount": 1,
-          "unit": "tbsp",
-          "preparation": null
-        },
-        {
-          "name": "coriander",
-          "amount": 1,
-          "unit": "bunch",
-          "preparation": "chopped"
-        }
-      ],
-      "method": [
-        {
-          "title": "Make filling",
-          "description": "Mix black beans, sweetcorn, onion, pepper, smoked paprika, cumin, and half the cheddar. Lightly mash some beans so the filling holds together."
-        },
-        {
-          "title": "Assemble quesadillas",
-          "description": "Spread filling over half the tortillas, top with remaining cheddar, then cap with remaining tortillas."
-        },
-        {
-          "title": "Cook until crisp",
-          "description": "Cook in a lightly oiled pan over medium heat for 2-3 minutes per side until golden and cheese is fully melted."
-        },
-        {
-          "title": "Serve",
-          "description": "Mix yogurt with lime juice and serve alongside warm quesadillas with coriander scattered on top."
-        }
-      ],
-      "nutrition": {
-        "calories": 760,
-        "protein": 31,
-        "fat": 31,
-        "carbohydrates": 88
+    "primaryProtein": "vegetarian",
+    "complexityTier": "moderate",
+    "cuisine": ["french"],
+    "updatedAt": 1776940868223
+  },
+  {
+    "title": "Sweetcorn and Black Bean Quesadillas",
+    "description": "Golden vegetarian quesadillas filled with black beans, sweetcorn, and melted cheddar, served with a cooling lime yogurt.",
+    "prepTime": 15,
+    "cookTime": 20,
+    "serves": 4,
+    "category": "dinner",
+    "ingredients": [
+      {
+        "name": "tortillas",
+        "amount": 8,
+        "unit": "piece",
+        "preparation": null
       },
-      "primaryProtein": "vegetarian",
-      "complexityTier": "simple",
-      "cuisine": [
-        "mexican"
-      ],
-      "updatedAt": 1776940868223
-    }
-  ]
-}
+      {
+        "name": "black beans",
+        "amount": 1,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "sweetcorn",
+        "amount": 1,
+        "unit": "can",
+        "preparation": "drained"
+      },
+      {
+        "name": "cheddar cheese",
+        "amount": 220,
+        "unit": "g",
+        "preparation": "grated"
+      },
+      {
+        "name": "red onion",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "finely diced"
+      },
+      {
+        "name": "red pepper",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": "finely diced"
+      },
+      {
+        "name": "smoked paprika",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "ground cumin",
+        "amount": 1,
+        "unit": "tsp",
+        "preparation": null
+      },
+      {
+        "name": "greek yogurt",
+        "amount": 180,
+        "unit": "g",
+        "preparation": null
+      },
+      {
+        "name": "lime",
+        "amount": 1,
+        "unit": "whole",
+        "preparation": null
+      },
+      {
+        "name": "olive oil",
+        "amount": 1,
+        "unit": "tbsp",
+        "preparation": null
+      },
+      {
+        "name": "coriander",
+        "amount": 1,
+        "unit": "bunch",
+        "preparation": "chopped"
+      }
+    ],
+    "method": [
+      {
+        "title": "Make filling",
+        "description": "Mix black beans, sweetcorn, onion, pepper, smoked paprika, cumin, and half the cheddar. Lightly mash some beans so the filling holds together."
+      },
+      {
+        "title": "Assemble quesadillas",
+        "description": "Spread filling over half the tortillas, top with remaining cheddar, then cap with remaining tortillas."
+      },
+      {
+        "title": "Cook until crisp",
+        "description": "Cook in a lightly oiled pan over medium heat for 2-3 minutes per side until golden and cheese is fully melted."
+      },
+      {
+        "title": "Serve",
+        "description": "Mix yogurt with lime juice and serve alongside warm quesadillas with coriander scattered on top."
+      }
+    ],
+    "nutrition": {
+      "calories": 760,
+      "protein": 31,
+      "fat": 31,
+      "carbohydrates": 88
+    },
+    "primaryProtein": "vegetarian",
+    "complexityTier": "simple",
+    "cuisine": ["mexican"],
+    "updatedAt": 1776940868223
+  }
+]

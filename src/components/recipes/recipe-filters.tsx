@@ -16,6 +16,7 @@ import {
 } from "convex/lib/constants";
 import { Search } from "lucide-react";
 import { LeftoverIngredientsFilter } from "./leftover-ingredients-filter";
+import { RecipeQuickFilters } from "./recipe-quick-filters";
 import { useRecipeListing } from "./recipe-listing-context";
 
 const DURATION_OPTIONS = [
@@ -63,6 +64,7 @@ export function RecipeFilters() {
       </div>
 
       <div className="space-y-4">
+        <RecipeQuickFilters />
         <div className="space-y-2">
           <span className="text-sm font-medium text-foreground">Filter</span>
           <p className="text-sm text-muted-foreground">
