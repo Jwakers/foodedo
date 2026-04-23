@@ -27,7 +27,7 @@ type IngredientItem = {
   name: string;
   amount?: number;
   unit?: string;
-  preparation?: string;
+  preparation?: string | null;
   ingredientId?: string;
 };
 

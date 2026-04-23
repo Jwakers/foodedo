@@ -41,7 +41,7 @@ export function recipeLinesForMatcher(
     name: i.name,
     amount: i.amount,
     unit: i.unit,
-    preparation: i.preparation,
+    preparation: i.preparation ?? undefined,
     ingredientId: i.ingredientId,
   }));
 }

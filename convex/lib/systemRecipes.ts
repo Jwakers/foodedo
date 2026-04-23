@@ -13,7 +13,7 @@ type SystemRecipeIngredient = {
   name: string;
   amount?: number;
   unit?: Unit;
-  preparation?: PreparationOption;
+  preparation?: PreparationOption | null;
 };
 
 /** Method step shape for system recipe seed (matches recipes table). */

@@ -186,7 +186,7 @@ function aggregateIngredientsFromRecipes(
         combined.set(key, {
           name: ingredient.name,
           unit: ingredient.unit,
-          preparation: ingredient.preparation,
+          preparation: ingredient.preparation ?? undefined,
           amount: storedAmount,
           ingredientId: ingredient.ingredientId,
           amountEntries: entry ? [entry] : [],

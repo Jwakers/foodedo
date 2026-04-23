@@ -98,6 +98,7 @@ CRITICAL CONSTRAINTS:
    - prepTime (number) and cookTime (number, optional) - total time = prepTime + cookTime
    - complexityTier must be one of: "simple" | "moderate" | "complex"
    - ingredients[].preparation may be null (no prep needed) or a value from the allowed list
+   - updatedAt must be present on every recipe as a Unix epoch timestamp in milliseconds
 
 {
 recipes: [
@@ -108,6 +109,7 @@ prepTime: number,
 cookTime: number | null,
 serves: number,
 category: "dinner",
+updatedAt: number,
 ingredients: [
 {
 name: string,

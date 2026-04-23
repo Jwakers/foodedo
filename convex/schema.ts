@@ -84,7 +84,7 @@ export default defineSchema({
           name: v.string(),
           amount: v.optional(v.number()),
           unit: v.optional(unitsUnion),
-          preparation: v.optional(preparationUnion),
+          preparation: v.optional(v.union(preparationUnion, v.null())),
         }),
       ),
     ),

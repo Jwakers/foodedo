@@ -17,7 +17,7 @@ const baseIngredientSchema = z.object({
   name: z.string().min(1, "Ingredient name is required"),
   amount: z.number().positive("Amount must be greater than 0").optional(),
   unit: z.enum(UNITS_FLAT).optional(),
-  preparation: z.enum(PREPARATION_OPTIONS).optional(),
+  preparation: z.enum(PREPARATION_OPTIONS).nullable().optional(),
 });
 
 const baseMethodStepSchema = z.object({

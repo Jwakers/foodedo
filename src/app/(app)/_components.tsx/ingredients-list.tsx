@@ -2,7 +2,7 @@ type Ingredient = {
   name: string;
   amount?: number;
   unit?: string;
-  preparation?: string;
+  preparation?: string | null;
 };
 
 export function IngredientsList(props: { ingredients: Ingredient[] }) {

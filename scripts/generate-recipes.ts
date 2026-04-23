@@ -133,6 +133,7 @@ CRITICAL CONSTRAINTS:
 
 7. Schema Alignment:
    Output must strictly follow this shape:
+   - updatedAt must be present on every recipe as a Unix epoch timestamp in milliseconds
 
 {
 recipes: [
@@ -143,6 +144,7 @@ prepTime: number,
 cookTime: number,
 serves: number,
 category: "dinner",
+updatedAt: number,
 ingredients: [
 {
 name: string,
@@ -348,9 +350,13 @@ async function main(): Promise<void> {
       "oil",
       "vegetable oil",
     ]);
+    const batchUpdatedAt = Date.now();
     for (const recipe of data.recipes as {
       ingredients?: { name?: string }[];
+      updatedAt?: unknown;
     }[]) {
+      // Enforce schema-required timestamp in code (not only prompt text).
+      recipe.updatedAt = batchUpdatedAt;
       if (recipe.ingredients?.length) {
         recipe.ingredients = recipe.ingredients.filter(
           (ing) =>
