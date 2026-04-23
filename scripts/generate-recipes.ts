@@ -350,9 +350,13 @@ async function main(): Promise<void> {
       "oil",
       "vegetable oil",
     ]);
+    const batchUpdatedAt = Date.now();
     for (const recipe of data.recipes as {
       ingredients?: { name?: string }[];
+      updatedAt?: unknown;
     }[]) {
+      // Enforce schema-required timestamp in code (not only prompt text).
+      recipe.updatedAt = batchUpdatedAt;
       if (recipe.ingredients?.length) {
         recipe.ingredients = recipe.ingredients.filter(
           (ing) =>

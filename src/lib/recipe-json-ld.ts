@@ -16,7 +16,7 @@ type RecipeForJsonLd = {
     name: string;
     amount?: number;
     unit?: string;
-    preparation?: string;
+    preparation?: string | null;
   }>;
   method?: Array<{
     title: string;
@@ -48,7 +48,7 @@ function formatIngredient(ing: {
   name: string;
   amount?: number;
   unit?: string;
-  preparation?: string;
+  preparation?: string | null;
 }): string {
   const parts: string[] = [];
   if (ing.amount != null) parts.push(String(ing.amount));

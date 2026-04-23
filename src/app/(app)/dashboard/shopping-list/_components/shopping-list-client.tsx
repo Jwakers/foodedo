@@ -221,7 +221,7 @@ export default function ShoppingListClient() {
           name: item.name,
           amount: item.amountEntries?.[0]?.amount ?? item.amount ?? null,
           unit: item.amountEntries?.[0]?.unit ?? item.unit,
-          preparation: item.preparation,
+          preparation: item.preparation ?? undefined,
           ingredientId: item.ingredientId,
           amountEntries: item.amountEntries,
           ...(item.recipeIds?.length ? { recipeIds: item.recipeIds } : {}),
@@ -839,7 +839,7 @@ const buildShoppingListItems = (
 ): Array<{
   name: string;
   unit?: string;
-  preparation?: string;
+  preparation?: string | null;
   amount: number | string | null;
   ingredientId?: Id<"ingredients">;
   amountEntries: AmountEntry[];
@@ -850,7 +850,7 @@ const buildShoppingListItems = (
     {
       name: string;
       unit?: string;
-      preparation?: string;
+      preparation?: string | null;
       amount: number | string | null;
       ingredientId?: Id<"ingredients">;
       amountEntries: AmountEntry[];

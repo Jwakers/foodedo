@@ -29,7 +29,7 @@ export type DiscoverRecipeData = {
     name: string;
     amount?: number;
     unit?: string;
-    preparation?: string;
+    preparation?: string | null;
   }>;
   method?: Array<{
     title: string;

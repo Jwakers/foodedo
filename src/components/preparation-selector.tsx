@@ -5,7 +5,7 @@ import { titleCase } from "@/lib/utils";
 import { PREPARATION_OPTIONS } from "convex/lib/constants";
 
 type PreparationSelectorProps = {
-  value?: string;
+  value?: string | null;
   onValueChange: (value: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
@@ -31,7 +31,7 @@ export function PreparationSelector({
   return (
     <Combobox
       options={preparationOptions}
-      value={value}
+      value={value ?? undefined}
       onValueChange={onValueChange}
       placeholder={placeholder}
       searchPlaceholder={searchPlaceholder}

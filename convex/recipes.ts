@@ -785,7 +785,7 @@ export const createRecipe = mutation({
         name: v.string(),
         amount: v.optional(v.number()),
         unit: v.optional(unitsUnion),
-        preparation: v.optional(preparationUnion),
+        preparation: v.optional(v.union(preparationUnion, v.null())),
       }),
     ),
     method: v.array(
@@ -953,7 +953,7 @@ export const updateRecipe = mutation({
           name: v.string(),
           amount: v.optional(v.number()),
           unit: v.optional(unitsUnion),
-          preparation: v.optional(preparationUnion),
+          preparation: v.optional(v.union(preparationUnion, v.null())),
           ingredientId: v.optional(v.id("ingredients")),
         }),
       ),

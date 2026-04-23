@@ -55,7 +55,7 @@ function formatIngredient(ing: {
   name: string;
   amount?: number;
   unit?: string;
-  preparation?: string;
+  preparation?: string | null;
 }) {
   const parts = [ing.name];
   if (ing.amount != null) parts.unshift(String(ing.amount));
