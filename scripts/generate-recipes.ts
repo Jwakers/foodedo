@@ -133,6 +133,7 @@ CRITICAL CONSTRAINTS:
 
 7. Schema Alignment:
    Output must strictly follow this shape:
+   - updatedAt must be present on every recipe as a Unix epoch timestamp in milliseconds
 
 {
 recipes: [
@@ -143,6 +144,7 @@ prepTime: number,
 cookTime: number,
 serves: number,
 category: "dinner",
+updatedAt: number,
 ingredients: [
 {
 name: string,
