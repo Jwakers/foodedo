@@ -1,4 +1,5 @@
 import type { RecipeListItem } from "./types";
+import { getRecipeTotalMinutes } from "./recipe-time";
 
 export const QUICK_FILTER_KEYS = [
   "vegetarian",
@@ -15,13 +16,6 @@ export type RecipeQuickFilterDefinition = {
   label: string;
   matches: (recipe: RecipeListItem) => boolean;
 };
-
-function getRecipeTotalMinutes(recipe: RecipeListItem): number {
-  if (recipe.totalTimeMinutes != null && recipe.totalTimeMinutes > 0) {
-    return recipe.totalTimeMinutes;
-  }
-  return (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-}
 
 export const RECIPE_QUICK_FILTERS: readonly RecipeQuickFilterDefinition[] = [
   {
@@ -60,7 +54,7 @@ const quickFilterMap: Record<RecipeQuickFilterKey, RecipeQuickFilterDefinition> 
   ) as Record<RecipeQuickFilterKey, RecipeQuickFilterDefinition>;
 
 export function isRecipeQuickFilterKey(value: string): value is RecipeQuickFilterKey {
-  return value in quickFilterMap;
+  return Object.prototype.hasOwnProperty.call(quickFilterMap, value);
 }
 
 export function getRecipeQuickFilter(

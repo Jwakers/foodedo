@@ -6,6 +6,7 @@ import {
   isRecipeQuickFilterKey,
   type RecipeQuickFilterKey,
 } from "./quick-filters";
+import { getRecipeTotalMinutes } from "./recipe-time";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
@@ -41,13 +42,6 @@ export function getCurrentTab(searchParams: {
 // ---------------------------------------------------------------------------
 // Filter helpers
 // ---------------------------------------------------------------------------
-
-function getRecipeTotalMinutes(recipe: RecipeListItem): number {
-  if (recipe.totalTimeMinutes != null && recipe.totalTimeMinutes > 0) {
-    return recipe.totalTimeMinutes;
-  }
-  return (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-}
 
 function matchesDuration(recipe: RecipeListItem, duration: string): boolean {
   if (duration === "all") return true;

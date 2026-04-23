@@ -11,8 +11,14 @@ export function RecipeQuickFilters() {
 
   return (
     <div className="space-y-2">
-      <span className="text-sm font-medium text-foreground">Quick filters</span>
-      <div className="flex flex-wrap gap-2">
+      <span id="quick-filters-label" className="text-sm font-medium text-foreground">
+        Quick filters
+      </span>
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-labelledby="quick-filters-label"
+      >
         {RECIPE_QUICK_FILTERS.map((filter) => {
           const isActive = selectedFilters.includes(filter.key);
           return (
