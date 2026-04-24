@@ -40,7 +40,7 @@ const homeJsonLd = {
 
 export const metadata: Metadata = {
   /** Explicit homepage title for root URL crawlers. */
-  title: homeTitle,
+  title: { absolute: homeTitle },
   description: homeDescription,
   keywords: [
     APP_NAME,

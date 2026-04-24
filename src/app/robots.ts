@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         "/invite/",
         "/sign-in",
         "/sign-up",
-        "/ingest/",
+        "/ingest",
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
