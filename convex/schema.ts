@@ -276,6 +276,10 @@ export default defineSchema({
     householdId: v.optional(v.id("households")),
     // When true, only the owner can access (opt-out of household visibility)
     isPrivate: v.optional(v.boolean()),
+    // Draft/list-level serving target used to scale recipe-derived ingredient lines.
+    targetServings: v.optional(v.number()),
+    // Original serving target inherited when the list was created.
+    baseTargetServings: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_status", ["userId", "status"])
@@ -321,6 +325,17 @@ export default defineSchema({
         ),
       }),
     ),
+    // List-level serving scaling metadata for recipe-derived rows.
+    baseAmountEntries: v.optional(
+      v.array(
+        v.object({
+          amount: v.union(v.number(), v.string(), v.null()),
+          unit: v.optional(v.string()),
+        }),
+      ),
+    ),
+    // Rows manually edited by the user should not be auto-rescaled.
+    amountManuallyEdited: v.optional(v.boolean()),
   }).index("by_shopping_list", ["shoppingListId"]),
 
   mealPlans: defineTable({
@@ -352,6 +367,8 @@ export default defineSchema({
     /** Optional generation-time target: guarantee this many meals at or under max total minutes. */
     quickMealsCount: v.optional(v.number()),
     quickMealsMaxMinutes: v.optional(v.number()),
+    // Generation-time target servings used for downstream shopping-list defaults.
+    targetServings: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_endDate", ["userId", "endDate"])

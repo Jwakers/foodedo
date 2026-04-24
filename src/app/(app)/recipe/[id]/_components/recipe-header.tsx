@@ -3,6 +3,7 @@
 import { CATEGORY_COLORS } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ServingsStepper } from "@/components/servings-stepper";
 import {
   FormControl,
   FormField,
@@ -26,6 +27,8 @@ interface RecipeHeaderProps {
   isEditMode: boolean;
   canEdit: boolean;
   form: UseFormReturn<RecipeEditFormData>;
+  targetServings: number;
+  onTargetServingsChange: (value: number) => void;
 }
 
 export function RecipeHeader({
@@ -33,6 +36,8 @@ export function RecipeHeader({
   isEditMode,
   canEdit,
   form,
+  targetServings,
+  onTargetServingsChange,
 }: RecipeHeaderProps) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
@@ -153,7 +158,15 @@ export function RecipeHeader({
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="size-5" />
-          <span className="font-medium">Serves {recipe.serves}</span>
+          <span className="font-medium">Serves</span>
+          {isEditMode ? (
+            <span className="font-medium">{recipe.serves}</span>
+          ) : (
+            <ServingsStepper
+              value={targetServings}
+              onChange={onTargetServingsChange}
+            />
+          )}
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="size-5" />

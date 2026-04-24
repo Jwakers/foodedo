@@ -301,6 +301,9 @@ export const LEFTOVER_INGREDIENTS_MAX = 10;
 export const USER_PREFERENCE_ALLERGY_TARGETS_MAX = 30;
 /** Max length for a single custom allergy phrase. */
 export const USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH = 60;
+/** Allowed serving target bounds for generation/list/detail scaling controls. */
+export const TARGET_SERVINGS_MIN = 1;
+export const TARGET_SERVINGS_MAX = 20;
 
 /** Premium feature: search/rank recipes and boost meal-plan generation by leftover ingredients. */
 export function canUseLeftoverIngredients(
@@ -344,6 +347,17 @@ export function canUseQuickMealPreferences(
   return hasPremiumFeatureAccess(subscriptionTier);
 }
 
+/** Premium feature: serving/portion overrides for generation, lists, and recipe views. */
+export function canUseServingControl(
+  subscriptionTier: string | undefined,
+): boolean {
+  return hasPremiumFeatureAccess(subscriptionTier);
+}
+
+export function clampTargetServings(value: number): number {
+  return Math.min(Math.max(Math.round(value), TARGET_SERVINGS_MIN), TARGET_SERVINGS_MAX);
+}
+
 export const MEAL_PLAN_ERRORS = {
   PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS: "PREMIUM_REQUIRED_MULTIPLE_MEAL_PLANS",
   PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS:
@@ -355,6 +369,7 @@ export const MEAL_PLAN_ERRORS = {
   HOUSEHOLD_PREFERENCES_NO_RECIPES: "HOUSEHOLD_PREFERENCES_NO_ELIGIBLE_RECIPES",
   PREMIUM_REQUIRED_QUICK_MEALS: "PREMIUM_REQUIRED_QUICK_MEALS",
   QUICK_MEALS_NO_RECIPES: "QUICK_MEALS_NO_ELIGIBLE_RECIPES",
+  PREMIUM_REQUIRED_SERVING_CONTROL: "PREMIUM_REQUIRED_SERVING_CONTROL",
 } as const;
 
 /** Minimum allowed max-minutes value for quick-meal targeting. */

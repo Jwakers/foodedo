@@ -13,12 +13,17 @@ import {
 } from "./households";
 import { canAccessMealPlan } from "./mealPlans";
 import { normaliseNameForGrouping } from "./lib/ingredientGrouping";
+import { scaleAmountForServings, scaleNumericAmountForServings } from "./lib/servings";
 import { combineAmounts } from "./lib/unitConversion";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
   getUserSubscription,
 } from "./users";
+import {
+  canUseServingControl,
+  clampTargetServings,
+} from "./lib/constants";
 
 // ============================================================================
 // ACCESS HELPER
@@ -125,11 +130,37 @@ function getAggregationKey(ing: RecipeIngredient): string {
   return normaliseNameForGrouping(ing?.name ?? "") || "unnamed";
 }
 
+function resolveRecipeServingScale(
+  recipeServes: number | undefined,
+  targetServings: number | undefined,
+): number {
+  if (
+    targetServings === undefined ||
+    recipeServes === undefined ||
+    !Number.isFinite(recipeServes) ||
+    recipeServes <= 0
+  ) {
+    return 1;
+  }
+  return targetServings / recipeServes;
+}
+
+function scaleRawIngredientAmount(
+  rawAmount: number | string | null | undefined,
+  factor: number,
+  ingredientName?: string,
+  unit?: string,
+): number | string | null {
+  return scaleAmountForServings(rawAmount, factor, { ingredientName, unit });
+}
+
 function aggregateIngredientsFromRecipes(
   recipes: {
     _id: Id<"recipes">;
     ingredients?: Doc<"recipes">["ingredients"];
-  }[]
+    serves?: number;
+  }[],
+  targetServings?: number,
 ): {
   name: string;
   amount: number | string | null;
@@ -153,27 +184,17 @@ function aggregateIngredientsFromRecipes(
   >();
 
   for (const recipe of recipes) {
+    const servingScale = resolveRecipeServingScale(recipe.serves, targetServings);
     const ingredients = recipe.ingredients ?? [];
     for (const ingredient of ingredients) {
       if (!ingredient?.name) continue;
       const key = getAggregationKey(ingredient);
-      const rawAmount = ingredient.amount;
-      let amountValue: number | null = null;
-      let storedAmount: number | string | null = null;
-      if (rawAmount === undefined || rawAmount === null) {
-        storedAmount = null;
-      } else if (typeof rawAmount === "number") {
-        amountValue = Number.isFinite(rawAmount) ? rawAmount : null;
-        storedAmount = amountValue;
-      } else {
-        const trimmedAmount = String(rawAmount).trim();
-        if (trimmedAmount === "") {
-          storedAmount = null;
-        } else {
-          amountValue = Number(trimmedAmount);
-          storedAmount = Number.isFinite(amountValue) ? amountValue : trimmedAmount;
-        }
-      }
+      const storedAmount = scaleRawIngredientAmount(
+        ingredient.amount,
+        servingScale,
+        ingredient.name,
+        ingredient.unit,
+      );
 
       const hasAmountOrUnit =
         storedAmount != null || ingredient.unit !== undefined;
@@ -233,21 +254,17 @@ export type AggregatedShoppingLine = ReturnType<
   typeof aggregateIngredientsFromRecipes
 >[number];
 
-function roundScaledAmount(n: number): number {
-  return Math.round(n * 1000) / 1000;
-}
-
 function scaleAmountForLeftover(
   amount: number | string | null,
   factor: number,
 ): number | string | null {
   if (amount === null) return null;
   if (typeof amount === "number" && Number.isFinite(amount)) {
-    return roundScaledAmount(amount * factor);
+    return scaleNumericAmountForServings(amount, factor);
   }
   const parsed = Number(amount);
   if (Number.isFinite(parsed)) {
-    return roundScaledAmount(parsed * factor);
+    return scaleNumericAmountForServings(parsed, factor);
   }
   return amount;
 }
@@ -299,6 +316,22 @@ function scaledLineFromBaseline(
     amount: combined.amount ?? null,
     unit: combined.unit,
     amountEntries,
+  };
+}
+
+function scaleAmountEntriesForServings(
+  entries: Array<{ amount: number | string | null; unit?: string }>,
+  factor: number,
+) {
+  const scaled = entries.map((entry) => ({
+    amount: scaleAmountForLeftover(entry.amount, factor),
+    unit: entry.unit,
+  }));
+  const combined = combineAmountEntriesToDisplay(scaled);
+  return {
+    amount: combined.amount ?? null,
+    unit: combined.unit,
+    amountEntries: scaled,
   };
 }
 
@@ -713,12 +746,18 @@ export const createShoppingList = mutation({
     householdId: v.optional(v.id("households")),
     /** Owner-only list; no household sharing. */
     isPrivate: v.optional(v.boolean()),
+    targetServings: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!args.items?.length) {
       throw new ConvexError("Cannot create a shopping list with zero items.");
     }
     const user = await getCurrentUserOrThrow(ctx);
+    const canUseServingTarget = canUseServingControl(user.subscriptionTier);
+    const targetServings =
+      canUseServingTarget && args.targetServings !== undefined
+        ? clampTargetServings(args.targetServings)
+        : undefined;
     const subscription = await getUserSubscription(user, ctx);
 
     const activeLists = await ctx.db
@@ -763,6 +802,9 @@ export const createShoppingList = mutation({
       chalkboardItemIds: resolvedChalkboard.map((r) => r.id),
       ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
       ...(args.isPrivate === true && { isPrivate: true }),
+      ...(targetServings !== undefined
+        ? { targetServings, baseTargetServings: targetServings }
+        : {}),
     });
 
     // Recipe-derived lines
@@ -782,6 +824,8 @@ export const createShoppingList = mutation({
           order: i,
           ingredientId: item.ingredientId,
           amountEntries: entries,
+          baseAmountEntries: entries,
+          amountManuallyEdited: false,
           ...(item.recipeIds != null && item.recipeIds.length > 0 && { recipeIds: item.recipeIds }),
         });
       })
@@ -822,6 +866,7 @@ export const createShoppingListFromMealPlan = mutation({
   args: {
     mealPlanId: v.id("mealPlans"),
     chalkboardItemIds: v.array(v.id("chalkboardItems")),
+    targetServings: v.optional(v.number()),
     /** Per overlapping ingredient: optional override (defaults to full amount on the list if omitted). */
     leftoverIngredientChoices: v.optional(v.array(leftoverShoppingChoiceValidator)),
   },
@@ -833,6 +878,15 @@ export const createShoppingListFromMealPlan = mutation({
     if (!allowed) {
       throw new ConvexError("You do not have access to this meal plan");
     }
+    const canUseServingTarget = canUseServingControl(user.subscriptionTier);
+    const requestedTargetServings =
+      canUseServingTarget
+        ? (args.targetServings ?? plan.targetServings)
+        : undefined;
+    const resolvedTargetServings =
+      requestedTargetServings !== undefined
+        ? clampTargetServings(requestedTargetServings)
+        : undefined;
 
     const entries = await ctx.db
       .query("mealPlanEntries")
@@ -844,7 +898,10 @@ export const createShoppingListFromMealPlan = mutation({
     const validRecipes = recipes.filter(
       (r): r is NonNullable<typeof r> => r != null
     );
-    const items = aggregateIngredientsFromRecipes(validRecipes);
+    const items = aggregateIngredientsFromRecipes(
+      validRecipes,
+      resolvedTargetServings,
+    );
     const resolvedChalkboard = await resolveAccessibleChalkboardItems(
       ctx,
       user._id,
@@ -951,6 +1008,12 @@ export const createShoppingListFromMealPlan = mutation({
       chalkboardItemIds: resolvedChalkboard.map((r) => r.id),
       mealPlanId: args.mealPlanId,
       ...(plan.householdId !== undefined && { householdId: plan.householdId }),
+      ...(resolvedTargetServings !== undefined
+        ? {
+            targetServings: resolvedTargetServings,
+            baseTargetServings: resolvedTargetServings,
+          }
+        : {}),
     });
 
     let order = 0;
@@ -970,6 +1033,8 @@ export const createShoppingListFromMealPlan = mutation({
         order: order++,
         ingredientId: item.ingredientId,
         amountEntries: entries,
+        baseAmountEntries: entries,
+        amountManuallyEdited: false,
         recipeIds: item.recipeIds,
         ...(row.leftoverMeta
           ? {
@@ -1076,8 +1141,62 @@ export const updateItemAmount = mutation({
       updates.amountEntries = [{ amount: args.amount, unit: item.unit }];
     }
     await ctx.db.patch(args.itemId, updates);
+    await ctx.db.patch(args.itemId, { amountManuallyEdited: true });
 
     return { success: true };
+  },
+});
+
+export const updateDraftShoppingListTargetServings = mutation({
+  args: {
+    listId: v.id("shoppingLists"),
+    targetServings: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const list = await ctx.db.get(args.listId);
+    if (!list) throw new ConvexError("Shopping list not found");
+    const allowed = await canAccessShoppingList(ctx, user._id, list);
+    if (!allowed) throw new ConvexError("You do not have access to this shopping list");
+    if (list.status !== "draft") {
+      throw new ConvexError("Can only update servings in draft mode");
+    }
+    if (!canUseServingControl(user.subscriptionTier)) {
+      // Non-entitled callers should gracefully no-op to the current/default list behavior.
+      return {
+        success: true,
+        targetServings: list.targetServings ?? list.baseTargetServings ?? undefined,
+      };
+    }
+    const nextTarget = clampTargetServings(args.targetServings);
+    const baseTarget = clampTargetServings(
+      list.baseTargetServings ?? list.targetServings ?? nextTarget,
+    );
+    const ratio = nextTarget / baseTarget;
+    const items = await ctx.db
+      .query("shoppingListItems")
+      .withIndex("by_shopping_list", (q) => q.eq("shoppingListId", args.listId))
+      .collect();
+    for (const item of items) {
+      if (item.amountManuallyEdited === true) continue;
+      const baseEntries =
+        item.baseAmountEntries && item.baseAmountEntries.length > 0
+          ? item.baseAmountEntries
+          : item.amountEntries && item.amountEntries.length > 0
+            ? item.amountEntries
+            : [{ amount: item.amount, unit: item.unit }];
+      const scaled = scaleAmountEntriesForServings(baseEntries, ratio);
+      await ctx.db.patch(item._id, {
+        amount: scaled.amount,
+        unit: scaled.unit,
+        amountEntries: scaled.amountEntries,
+      });
+    }
+    await ctx.db.patch(args.listId, {
+      targetServings: nextTarget,
+      baseTargetServings: baseTarget,
+    });
+    return { success: true, targetServings: nextTarget };
   },
 });
 

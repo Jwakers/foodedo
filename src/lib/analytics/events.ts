@@ -37,6 +37,8 @@ export const ANALYTICS_EVENTS = {
   MEAL_PLAN_FINALISED: "meal_plan_finalised",
   MEAL_PLAN_SHARED_WITH_HOUSEHOLD: "meal_plan_shared_with_household",
   SHOPPING_LIST_GENERATED: "shopping_list_generated",
+  SERVINGS_TARGET_UPDATED: "servings_target_updated",
+  SERVINGS_TARGET_RESET: "servings_target_reset",
 } as const;
 
 export type AnalyticsEventName =

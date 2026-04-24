@@ -47,6 +47,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  TARGET_SERVINGS_MAX,
+  TARGET_SERVINGS_MIN,
+} from "convex/lib/constants";
 
 type ShoppingList = NonNullable<
   FunctionReturnType<typeof api.shoppingLists.getActiveShoppingList>
@@ -116,6 +120,10 @@ export default function ShoppingList({
   const [leftoverExcludedFromTripIds, setLeftoverExcludedFromTripIds] =
     useState<Set<Id<"shoppingListItems">>>(new Set());
   const [isConfirming, setIsConfirming] = useState(false);
+  const [draftTargetServings, setDraftTargetServings] = useState(
+    shoppingList.targetServings ?? TARGET_SERVINGS_MIN,
+  );
+  const [isUpdatingTargetServings, setIsUpdatingTargetServings] = useState(false);
 
   // Mutations
   const toggleItemChecked = useMutation(api.shoppingLists.toggleItemChecked);
@@ -124,6 +132,9 @@ export default function ShoppingList({
   const addChalkboardItems = useMutation(api.shoppingLists.addChalkboardItems);
   const trimDraftItemsAndFinaliseShoppingList = useMutation(
     api.shoppingLists.trimDraftItemsAndFinaliseShoppingList,
+  );
+  const updateDraftShoppingListTargetServings = useMutation(
+    api.shoppingLists.updateDraftShoppingListTargetServings,
   );
   const updateShoppingListSharing = useMutation(
     api.shoppingLists.updateShoppingListSharing,
@@ -444,6 +455,34 @@ export default function ShoppingList({
       setIsConfirming(false);
     }
   };
+
+  useEffect(() => {
+    setDraftTargetServings(shoppingList.targetServings ?? TARGET_SERVINGS_MIN);
+  }, [shoppingList.targetServings]);
+
+  const applyDraftTargetServings = useCallback(
+    async (nextValue: number) => {
+      const clamped = Math.max(
+        TARGET_SERVINGS_MIN,
+        Math.min(TARGET_SERVINGS_MAX, Math.round(nextValue)),
+      );
+      setDraftTargetServings(clamped);
+      setIsUpdatingTargetServings(true);
+      try {
+        await updateDraftShoppingListTargetServings({
+          listId: shoppingList._id,
+          targetServings: clamped,
+        });
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to update servings",
+        );
+      } finally {
+        setIsUpdatingTargetServings(false);
+      }
+    },
+    [shoppingList._id, updateDraftShoppingListTargetServings],
+  );
 
   const handleAddFromChalkboard = async () => {
     const itemsToAdd: Array<{
@@ -879,6 +918,44 @@ export default function ShoppingList({
             )}
 
             <div className="space-y-6">
+              {!isFinalised ? (
+                <div className="rounded-lg border border-border p-3 space-y-2">
+                  <Label>Servings for this list</Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        void applyDraftTargetServings(draftTargetServings - 1)
+                      }
+                      disabled={
+                        isUpdatingTargetServings ||
+                        draftTargetServings <= TARGET_SERVINGS_MIN
+                      }
+                    >
+                      <Minus className="size-4" />
+                    </Button>
+                    <div className="min-w-10 text-center font-medium tabular-nums">
+                      {draftTargetServings}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        void applyDraftTargetServings(draftTargetServings + 1)
+                      }
+                      disabled={
+                        isUpdatingTargetServings ||
+                        draftTargetServings >= TARGET_SERVINGS_MAX
+                      }
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
               {ingredientsByCategory.map(({ category, items }) => (
                 <div key={category}>
                   <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">

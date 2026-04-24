@@ -24,6 +24,7 @@ import type * as lib_leftoverIngredients from "../lib/leftoverIngredients.js";
 import type * as lib_recipeAiHeroImageQuota from "../lib/recipeAiHeroImageQuota.js";
 import type * as lib_recipePublicSlug from "../lib/recipePublicSlug.js";
 import type * as lib_recipeStepIngredientMatch from "../lib/recipeStepIngredientMatch.js";
+import type * as lib_servings from "../lib/servings.js";
 import type * as lib_systemRecipes from "../lib/systemRecipes.js";
 import type * as lib_unitConversion from "../lib/unitConversion.js";
 import type * as mealPlanGenerator from "../mealPlanGenerator.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   "lib/recipeAiHeroImageQuota": typeof lib_recipeAiHeroImageQuota;
   "lib/recipePublicSlug": typeof lib_recipePublicSlug;
   "lib/recipeStepIngredientMatch": typeof lib_recipeStepIngredientMatch;
+  "lib/servings": typeof lib_servings;
   "lib/systemRecipes": typeof lib_systemRecipes;
   "lib/unitConversion": typeof lib_unitConversion;
   mealPlanGenerator: typeof mealPlanGenerator;

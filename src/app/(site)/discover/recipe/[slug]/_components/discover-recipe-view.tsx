@@ -1,9 +1,12 @@
+"use client";
+
 import { IngredientsList } from "@/app/(app)/_components.tsx/ingredients-list";
 import { MethodList } from "@/app/(app)/_components.tsx/method-list";
 import { ROUTES } from "@/app/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ServingsStepper } from "@/components/servings-stepper";
 import { Separator } from "@/components/ui/separator";
 import { formatLabel, titleCase } from "@/lib/utils";
 import {
@@ -16,6 +19,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export type DiscoverRecipeData = {
   title: string;
@@ -53,6 +57,7 @@ export type DiscoverRecipeData = {
 export function DiscoverRecipeView({ recipe }: { recipe: DiscoverRecipeData }) {
   const totalMins = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
+  const [targetServings, setTargetServings] = useState(recipe.serves);
 
   return (
     <article className="min-h-screen bg-background">
@@ -117,7 +122,11 @@ export function DiscoverRecipeView({ recipe }: { recipe: DiscoverRecipeData }) {
             )}
             <span className="flex items-center gap-1.5">
               <Users className="size-4 shrink-0" aria-hidden />
-              Serves {recipe.serves}
+              Serves
+              <ServingsStepper
+                value={targetServings}
+                onChange={setTargetServings}
+              />
             </span>
           </div>
           {recipe.description && (
@@ -135,7 +144,11 @@ export function DiscoverRecipeView({ recipe }: { recipe: DiscoverRecipeData }) {
                 <CardTitle className="text-xl">Ingredients</CardTitle>
               </CardHeader>
               <CardContent>
-                <IngredientsList ingredients={recipe.ingredients} />
+                <IngredientsList
+                  ingredients={recipe.ingredients}
+                  sourceServings={recipe.serves}
+                  targetServings={targetServings}
+                />
               </CardContent>
             </Card>
           )}
