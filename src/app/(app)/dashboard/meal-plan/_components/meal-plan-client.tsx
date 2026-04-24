@@ -411,18 +411,22 @@ function MemberPreferenceCards({
       {members.map((member) => {
         const selected = includedMemberIds.has(member.userId);
         return (
-          <button
-            type="button"
+          <label
             key={member.userId}
             className={cn(
-              "rounded-lg border p-3 text-left transition-colors",
+              "block rounded-lg border p-3 text-left transition-colors cursor-pointer",
               selected
                 ? "border-primary bg-primary/10"
                 : "border-border bg-card",
             )}
-            onClick={() => onToggle(member.userId)}
-            aria-label={`Toggle ${member.name} preferences`}
           >
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={selected}
+              onChange={() => onToggle(member.userId)}
+              aria-label={`Include ${member.name} preferences`}
+            />
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium">{member.name}</span>
               <span
@@ -444,7 +448,7 @@ function MemberPreferenceCards({
                 ? ` · ${member.excludedProteinCount} protein exclusion${member.excludedProteinCount === 1 ? "" : "s"}`
                 : ""}
             </p>
-          </button>
+          </label>
         );
       })}
     </div>
@@ -828,11 +832,11 @@ export default function MealPlanClient({
         includedMemberUserIds?: Id<"users">[];
         quickMealsCount?: number;
         quickMealsMaxMinutes?: number;
-      } = requiresHouseholdSelection
-        ? {
-            householdId: generateWeekHouseholdId as Id<"households">,
-          }
-        : {};
+      } = {};
+      if (effectiveGenerationHouseholdId) {
+        payload.householdId =
+          effectiveGenerationHouseholdId as Id<"households">;
+      }
       payload.startDate = selectedStartDate;
       payload.dayCount = selectedDayCount;
       if (
@@ -1607,6 +1611,28 @@ export default function MealPlanClient({
             onSelectPreset={setQuickMealsPresetId}
             isPremiumEnabled={canUseMealPlanLeftovers}
           />
+          {households && households.length > 1 ? (
+            <div className="mb-4 w-full max-w-sm text-left space-y-1.5 mx-auto">
+              <Label htmlFor="empty-gen-household">Household</Label>
+              <Select
+                value={generateWeekHouseholdId}
+                onValueChange={(v) =>
+                  setGenerateWeekHouseholdId(v as Id<"households">)
+                }
+              >
+                <SelectTrigger id="empty-gen-household">
+                  <SelectValue placeholder="Select household" />
+                </SelectTrigger>
+                <SelectContent>
+                  {households.map((h) => (
+                    <SelectItem key={h._id} value={h._id}>
+                      {h.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
           <Card className="border-2 border-dashed border-muted-foreground/25 bg-card p-8 sm:p-10 text-center max-w-xl mx-auto">
             <CardContent className="p-0 flex flex-col items-center">
               <div className="size-16 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center mb-6">
