@@ -27,15 +27,12 @@ export function HowItPlansSection() {
   return (
     <section
       id="how-it-plans"
-      className="py-20 bg-background scroll-mt-20"
+      className="bg-background scroll-mt-20"
       aria-labelledby="how-it-plans-heading"
     >
-      <div className="container mx-auto px-4 max-w-5xl">
-        <div className="text-center mb-16">
-          <h2
-            id="how-it-plans-heading"
-            className="text-3xl font-bold mb-4"
-          >
+      <div className="container mx-auto px-4 py-10 sm:py-12 max-w-5xl">
+        <div className="text-center mb-6 sm:mb-10">
+          <h2 id="how-it-plans-heading" className="text-3xl font-bold mb-4">
             How it plans your week
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

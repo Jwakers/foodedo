@@ -2,8 +2,8 @@
 
 import { BalanceVarietySection } from "@/app/(site)/_components/balance-variety-section";
 import { ExampleWeekSection } from "@/app/(site)/_components/example-week-section";
-import type { HomepageShowcaseRecipe } from "@/lib/homepage-showcase-recipes";
 import { HowItPlansSection } from "@/app/(site)/_components/how-it-plans-section";
+import { MealPlanVideoSection } from "@/app/(site)/_components/meal-plan-video-section";
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { ProtectedAppCta } from "@/components/marketing/protected-app-cta";
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
+import type { HomepageShowcaseRecipe } from "@/lib/homepage-showcase-recipes";
 import { cn } from "@/lib/utils";
 import { SignUpButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
@@ -38,7 +39,7 @@ export default function HomeContent({
   showcaseRecipes = [],
 }: HomeContentProps) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-16">
       <PublicPageTracker
         event={ANALYTICS_EVENTS.LANDING_VIEWED}
         props={{ intent_topic: "home" }}
@@ -177,7 +178,7 @@ export default function HomeContent({
         </div>
 
         {/* Right: hero image, no text overlay */}
-        <div className="flex-1 relative flex items-center justify-center bg-muted/40 min-h-[50vh] lg:min-h-0 lg:pr-[max(1rem,calc((100vw-1200px)/2))] lg:pl-4">
+        <div className="flex-1 relative flex items-center justify-center bg-muted/40 lg:min-h-0 lg:pr-[max(1rem,calc((100vw-1200px)/2))] lg:pl-4">
           <div className="relative w-full max-w-2xl aspect-4/3 lg:aspect-6/5 mx-4 lg:mx-0">
             <div className="absolute inset-0 rounded-2xl lg:rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5 lg:shadow-2xl lg:-rotate-1">
               <Image
@@ -198,15 +199,17 @@ export default function HomeContent({
         </div>
       </section>
 
+      <MealPlanVideoSection />
+
       <ExampleWeekSection recipes={showcaseRecipes} />
 
       <HowItPlansSection />
       <BalanceVarietySection />
 
       {/* What feeds your plan */}
-      <section id="features" className="py-20 bg-muted/30 scroll-mt-20">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="text-center mb-16">
+      <section id="features" className="bg-muted/30 scroll-mt-20">
+        <div className="container mx-auto px-4 py-12 sm:py-16 max-w-5xl">
+          <div className="text-center mb-6 sm:mb-10">
             <h2 className="text-3xl font-bold mb-4">
               Everything that feeds your plan
             </h2>
@@ -268,9 +271,8 @@ export default function HomeContent({
                   Always forgetting pantry staples by Friday?
                 </h3>
                 <p className="text-muted-foreground">
-                  A shared chalkboard for &quot;need by end of week&quot;:
-                  milk, olive oil, tin foil. So the basics don&apos;t get
-                  missed.
+                  A shared chalkboard for &quot;need by end of week&quot;: milk,
+                  olive oil, tin foil. So the basics don&apos;t get missed.
                 </p>
                 <ProtectedAppCta
                   href={ROUTES.CHALKBOARD}
@@ -365,7 +367,7 @@ export default function HomeContent({
           </div>
 
           {/* 5. Household sharing, image left */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1 relative aspect-16/10 w-full rounded-lg overflow-hidden border border-border">
               <Image
                 src="/app-images/household-recipes.png"
@@ -399,8 +401,8 @@ export default function HomeContent({
       </section>
 
       {/* Why this helps */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4 text-center max-w-2xl">
+      <section className="bg-background">
+        <div className="container mx-auto px-4 py-10 sm:py-12 text-center max-w-2xl">
           <h2 className="text-2xl font-bold mb-4">
             No more end-of-week decision fatigue.
           </h2>
@@ -412,8 +414,8 @@ export default function HomeContent({
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4 text-center">
+      <section className="bg-muted/30">
+        <div className="container mx-auto px-4 py-12 sm:py-16 text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
               Get early access

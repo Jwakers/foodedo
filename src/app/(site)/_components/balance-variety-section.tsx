@@ -10,11 +10,8 @@ const BULLETS = [
 
 export function BalanceVarietySection() {
   return (
-    <section
-      className="py-16 bg-muted/30"
-      aria-labelledby="balance-variety-heading"
-    >
-      <div className="container mx-auto px-4 max-w-2xl">
+    <section className="bg-muted/30" aria-labelledby="balance-variety-heading">
+      <div className="container mx-auto px-4 py-10 sm:py-12 max-w-2xl">
         <div className="text-center mb-8">
           <h2
             id="balance-variety-heading"
