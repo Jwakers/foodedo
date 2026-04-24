@@ -2,7 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TARGET_SERVINGS_MAX, TARGET_SERVINGS_MIN } from "convex/lib/constants";
+import {
+  clampTargetServings,
+  TARGET_SERVINGS_MAX,
+  TARGET_SERVINGS_MIN,
+} from "convex/lib/constants";
 import { Minus, Plus } from "lucide-react";
 
 type ServingsStepperProps = {
@@ -12,20 +16,13 @@ type ServingsStepperProps = {
   className?: string;
 };
 
-function clampServings(value: number): number {
-  return Math.min(
-    TARGET_SERVINGS_MAX,
-    Math.max(TARGET_SERVINGS_MIN, Math.round(value)),
-  );
-}
-
 export function ServingsStepper({
   value,
   onChange,
   disabled = false,
   className,
 }: ServingsStepperProps) {
-  const clamped = clampServings(value);
+  const clamped = clampTargetServings(value);
   const canDecrement = !disabled && clamped > TARGET_SERVINGS_MIN;
   const canIncrement = !disabled && clamped < TARGET_SERVINGS_MAX;
 

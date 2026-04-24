@@ -458,10 +458,11 @@ export default function ShoppingList({
 
   useEffect(() => {
     setDraftTargetServings(shoppingList.targetServings ?? TARGET_SERVINGS_MIN);
-  }, [shoppingList.targetServings]);
+  }, [shoppingList._id, shoppingList.targetServings]);
 
   const applyDraftTargetServings = useCallback(
     async (nextValue: number) => {
+      const previousValue = draftTargetServings;
       const clamped = Math.max(
         TARGET_SERVINGS_MIN,
         Math.min(TARGET_SERVINGS_MAX, Math.round(nextValue)),
@@ -474,6 +475,7 @@ export default function ShoppingList({
           targetServings: clamped,
         });
       } catch (error) {
+        setDraftTargetServings(previousValue);
         toast.error(
           error instanceof Error ? error.message : "Failed to update servings",
         );
@@ -481,7 +483,7 @@ export default function ShoppingList({
         setIsUpdatingTargetServings(false);
       }
     },
-    [shoppingList._id, updateDraftShoppingListTargetServings],
+    [draftTargetServings, shoppingList._id, updateDraftShoppingListTargetServings],
   );
 
   const handleAddFromChalkboard = async () => {

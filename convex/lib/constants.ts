@@ -355,6 +355,7 @@ export function canUseServingControl(
 }
 
 export function clampTargetServings(value: number): number {
+  if (!Number.isFinite(value)) return TARGET_SERVINGS_MIN;
   return Math.min(Math.max(Math.round(value), TARGET_SERVINGS_MIN), TARGET_SERVINGS_MAX);
 }
 

@@ -36,6 +36,18 @@ function runTests(): boolean {
     assert.equal(clampTargetServings(7.2), 7);
   });
 
+  test("returns minimum for NaN", () => {
+    assert.equal(clampTargetServings(Number.NaN), TARGET_SERVINGS_MIN);
+  });
+
+  test("returns minimum for Infinity", () => {
+    assert.equal(clampTargetServings(Number.POSITIVE_INFINITY), TARGET_SERVINGS_MIN);
+  });
+
+  test("returns minimum for -Infinity", () => {
+    assert.equal(clampTargetServings(Number.NEGATIVE_INFINITY), TARGET_SERVINGS_MIN);
+  });
+
   if (failed > 0) {
     console.error(`\n❌ ${failed} test(s) failed`);
     return false;

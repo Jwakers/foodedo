@@ -1131,7 +1131,11 @@ export const updateItemAmount = mutation({
       throw new ConvexError("Can only update items in draft mode");
     }
 
-    const updates: { amount: number | string | null; amountEntries?: { amount: number | string | null; unit?: string }[] } = { amount: args.amount };
+    const updates: {
+      amount: number | string | null;
+      amountEntries?: { amount: number | string | null; unit?: string }[];
+      amountManuallyEdited: boolean;
+    } = { amount: args.amount, amountManuallyEdited: true };
     if (item.amountEntries && item.amountEntries.length > 0) {
       updates.amountEntries = [
         { ...item.amountEntries[0]!, amount: args.amount },
@@ -1141,7 +1145,6 @@ export const updateItemAmount = mutation({
       updates.amountEntries = [{ amount: args.amount, unit: item.unit }];
     }
     await ctx.db.patch(args.itemId, updates);
-    await ctx.db.patch(args.itemId, { amountManuallyEdited: true });
 
     return { success: true };
   },

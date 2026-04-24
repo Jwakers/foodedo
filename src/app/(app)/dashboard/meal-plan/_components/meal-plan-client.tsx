@@ -977,6 +977,7 @@ export default function MealPlanClient({
     blocksAdditionalPlansOnFreeTier,
     requiresHouseholdSelection,
     quickMealsPresetId,
+    targetServings,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
@@ -1032,6 +1033,7 @@ export default function MealPlanClient({
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
     requiresHouseholdSelection,
+    targetServings,
   ]);
 
   const handleRegenerateWeek = useCallback(async () => {

@@ -33,6 +33,10 @@ const ingredientFoodSubGroupUnion = v.union(
 const preferenceAllergyIngredientIdsValidator = v.array(v.id("ingredients"));
 const preferenceAllergyPhrasesValidator = v.array(v.string());
 const preferenceExcludedPrimaryProteinsValidator = v.array(primaryProteinUnion);
+const amountEntryValidator = v.object({
+  amount: v.union(v.number(), v.string(), v.null()),
+  unit: v.optional(v.string()),
+});
 
 export {
   categoriesUnion,
@@ -297,14 +301,7 @@ export default defineSchema({
     order: v.number(), // Preserve item order
     ingredientId: v.optional(v.id("ingredients")), // Canonical ingredient for grouping
     // List of (amount, unit) per use – when present, display these instead of combining
-    amountEntries: v.optional(
-      v.array(
-        v.object({
-          amount: v.union(v.number(), v.string(), v.null()),
-          unit: v.optional(v.string()),
-        }),
-      ),
-    ),
+    amountEntries: v.optional(v.array(amountEntryValidator)),
     // Recipe IDs this line came from (for dev-mode "from" links)
     recipeIds: v.optional(v.array(v.id("recipes"))),
     /** Meal-plan “already have” overlap: canonical ingredient + inclusion mode + baseline for edits */
@@ -317,23 +314,11 @@ export default defineSchema({
       v.object({
         amount: v.union(v.number(), v.string(), v.null()),
         unit: v.optional(v.string()),
-        amountEntries: v.array(
-          v.object({
-            amount: v.union(v.number(), v.string(), v.null()),
-            unit: v.optional(v.string()),
-          }),
-        ),
+        amountEntries: v.array(amountEntryValidator),
       }),
     ),
     // List-level serving scaling metadata for recipe-derived rows.
-    baseAmountEntries: v.optional(
-      v.array(
-        v.object({
-          amount: v.union(v.number(), v.string(), v.null()),
-          unit: v.optional(v.string()),
-        }),
-      ),
-    ),
+    baseAmountEntries: v.optional(v.array(amountEntryValidator)),
     // Rows manually edited by the user should not be auto-rescaled.
     amountManuallyEdited: v.optional(v.boolean()),
   }).index("by_shopping_list", ["shoppingListId"]),

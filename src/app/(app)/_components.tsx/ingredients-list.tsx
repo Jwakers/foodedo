@@ -34,14 +34,17 @@ export function IngredientsList(props: {
   return (
     <ul className="space-y-2">
       {props.ingredients.map((ingredient, index) => (
+        (() => {
+          const scaled = scaledAmount(ingredient, ratio);
+          const displayAmount =
+            scaled !== undefined ? scaled : ingredient.amount;
+          return (
         <li
           key={`${index}-${ingredient.name}-${ingredient.amount}-${ingredient.unit}`}
           className="space-x-1"
         >
-          {ingredient.amount !== undefined ? (
-            <span className="font-medium">
-              {scaledAmount(ingredient, ratio)}
-            </span>
+          {displayAmount !== undefined ? (
+            <span className="font-medium">{displayAmount}</span>
           ) : null}
           {ingredient.unit ? <span>{ingredient.unit}</span> : null}
           {ingredient.name ? (
@@ -53,6 +56,8 @@ export function IngredientsList(props: {
             </span>
           ) : null}
         </li>
+          );
+        })()
       ))}
     </ul>
   );
