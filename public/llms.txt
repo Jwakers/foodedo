@@ -1,0 +1,33 @@
+# Foodedo
+
+> Foodedo helps households plan weekly meals and shopping lists quickly, with curated recipes and flexible collaboration.
+
+This file provides a concise map of public pages for AI agents. Prefer these URLs for product, help, and policy information.
+
+## Core Product
+
+- [Homepage](https://foodedo.com/): Product overview, value proposition, and primary calls to action.
+- [Pricing](https://foodedo.com/pricing): Plans, feature differences, and upgrade path.
+- [Discover](https://foodedo.com/discover): Public recipe discovery experience and browse entry point.
+
+## Help and Onboarding
+
+- [Support Hub](https://foodedo.com/support): Central support landing page.
+- [How to Use](https://foodedo.com/support/how-to-use): Step-by-step usage guidance for key product flows.
+- [Contact Support](https://foodedo.com/support/contact): Support contact and assistance channel.
+- [FAQ](https://foodedo.com/faq): Frequently asked questions about product behavior and usage.
+
+## Content and Discovery
+
+- [Blog](https://foodedo.com/blog): Product updates, educational content, and launch-related posts.
+
+## Policies
+
+- [Privacy Policy](https://foodedo.com/privacy): Data handling, privacy practices, and user rights.
+- [Terms of Service](https://foodedo.com/terms): Terms governing product use.
+
+## Optional
+
+- [Family Meal Planning](https://foodedo.com/family-meal-planning): Public intent page focused on family planning use cases.
+- [Household Meal Planning](https://foodedo.com/household-meal-planning): Public intent page focused on shared household planning.
+- [Recipe to Shopping List](https://foodedo.com/recipe-to-shopping-list): Public intent page focused on converting recipe planning into shopping workflows.

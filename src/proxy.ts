@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   "/discover",
   "/discover/(.*)",
   "/invite(.*)",
+  "/robots.txt",
   "/sitemap(.*)",
 ]);
 

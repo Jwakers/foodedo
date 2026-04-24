@@ -1,9 +1,6 @@
 "use client";
 
 import { APP_NAME, ROUTES } from "@/app/constants";
-import { FAQ_SECTIONS_DATA } from "@/lib/faq-content";
-import { FAQ_SECTION_ACCENTS } from "@/lib/faq-section-accents";
-import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
@@ -12,6 +9,9 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FAQ_SECTIONS_DATA } from "@/lib/faq-content";
+import { FAQ_SECTION_ACCENTS } from "@/lib/faq-section-accents";
+import { cn } from "@/lib/utils";
 import { ArrowLeft, HelpCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -25,7 +25,10 @@ const DEFAULT_SECTION_ACCENT = {
   color: "bg-primary/10 text-primary",
 };
 
-export function FaqSectionsPanel({ backHref, backLabel }: FaqSectionsPanelProps) {
+export function FaqSectionsPanel({
+  backHref,
+  backLabel,
+}: FaqSectionsPanelProps) {
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
@@ -91,13 +94,15 @@ export function FaqSectionsPanel({ backHref, backLabel }: FaqSectionsPanelProps)
       <Card className="mt-8">
         <CardContent className="pt-6">
           <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Still have questions?</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Still have questions?
+            </h3>
             <p className="text-muted-foreground mb-4">
               Can&apos;t find the answer you&apos;re looking for? We&apos;re
               here to help!
             </p>
             <Button asChild>
-              <Link href={ROUTES.CONTACT}>Contact Support</Link>
+              <Link href={ROUTES.PUBLIC_SUPPORT_CONTACT}>Contact Support</Link>
             </Button>
           </div>
         </CardContent>
