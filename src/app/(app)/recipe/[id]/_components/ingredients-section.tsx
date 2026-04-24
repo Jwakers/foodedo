@@ -22,12 +22,14 @@ interface IngredientsSectionProps {
   recipe: Recipe;
   isEditMode: boolean;
   form?: UseFormReturn<RecipeEditFormData>;
+  targetServings?: number;
 }
 
 export function IngredientsSection({
   recipe,
   isEditMode,
   form,
+  targetServings,
 }: IngredientsSectionProps) {
   const { fields, append, remove } = useFieldArray({
     control: form?.control,
@@ -207,7 +209,11 @@ export function IngredientsSection({
         <CardTitle>Ingredients</CardTitle>
       </CardHeader>
       <CardContent>
-        <IngredientsList ingredients={recipe.ingredients} />
+          <IngredientsList
+            ingredients={recipe.ingredients}
+            sourceServings={recipe.serves}
+            targetServings={targetServings}
+          />
       </CardContent>
     </Card>
   );

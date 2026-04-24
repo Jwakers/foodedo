@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ServingsStepper } from "@/components/servings-stepper";
 import {
   Select,
   SelectContent,
@@ -47,6 +48,11 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  canUseServingControl,
+  TARGET_SERVINGS_MAX,
+  TARGET_SERVINGS_MIN,
+} from "convex/lib/constants";
 
 type ShoppingList = NonNullable<
   FunctionReturnType<typeof api.shoppingLists.getActiveShoppingList>
@@ -116,6 +122,10 @@ export default function ShoppingList({
   const [leftoverExcludedFromTripIds, setLeftoverExcludedFromTripIds] =
     useState<Set<Id<"shoppingListItems">>>(new Set());
   const [isConfirming, setIsConfirming] = useState(false);
+  const [draftTargetServings, setDraftTargetServings] = useState(
+    shoppingList.targetServings ?? TARGET_SERVINGS_MIN,
+  );
+  const [isUpdatingTargetServings, setIsUpdatingTargetServings] = useState(false);
 
   // Mutations
   const toggleItemChecked = useMutation(api.shoppingLists.toggleItemChecked);
@@ -124,6 +134,9 @@ export default function ShoppingList({
   const addChalkboardItems = useMutation(api.shoppingLists.addChalkboardItems);
   const trimDraftItemsAndFinaliseShoppingList = useMutation(
     api.shoppingLists.trimDraftItemsAndFinaliseShoppingList,
+  );
+  const updateDraftShoppingListTargetServings = useMutation(
+    api.shoppingLists.updateDraftShoppingListTargetServings,
   );
   const updateShoppingListSharing = useMutation(
     api.shoppingLists.updateShoppingListSharing,
@@ -161,6 +174,8 @@ export default function ShoppingList({
     api.ingredients.getByIds,
     ingredientIds.length > 0 ? { ids: ingredientIds } : "skip",
   );
+  const currentUser = useQuery(api.users.current);
+  const canControlServings = canUseServingControl(currentUser?.subscriptionTier);
   const isDev =
     process.env.NODE_ENV !== "production" ||
     process.env.NEXT_PUBLIC_SHOW_RECIPE_LINKS === "true";
@@ -444,6 +459,36 @@ export default function ShoppingList({
       setIsConfirming(false);
     }
   };
+
+  useEffect(() => {
+    setDraftTargetServings(shoppingList.targetServings ?? TARGET_SERVINGS_MIN);
+  }, [shoppingList._id, shoppingList.targetServings]);
+
+  const applyDraftTargetServings = useCallback(
+    async (nextValue: number) => {
+      const previousValue = draftTargetServings;
+      const clamped = Math.max(
+        TARGET_SERVINGS_MIN,
+        Math.min(TARGET_SERVINGS_MAX, Math.round(nextValue)),
+      );
+      setDraftTargetServings(clamped);
+      setIsUpdatingTargetServings(true);
+      try {
+        await updateDraftShoppingListTargetServings({
+          listId: shoppingList._id,
+          targetServings: clamped,
+        });
+      } catch (error) {
+        setDraftTargetServings(previousValue);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to update servings",
+        );
+      } finally {
+        setIsUpdatingTargetServings(false);
+      }
+    },
+    [draftTargetServings, shoppingList._id, updateDraftShoppingListTargetServings],
+  );
 
   const handleAddFromChalkboard = async () => {
     const itemsToAdd: Array<{
@@ -879,6 +924,21 @@ export default function ShoppingList({
             )}
 
             <div className="space-y-6">
+              {!isFinalised ? (
+                <div className="rounded-lg border border-border p-3 space-y-2">
+                  <Label>Servings for this list</Label>
+                  <ServingsStepper
+                    value={draftTargetServings}
+                    onChange={(newValue) => {
+                      if (!canControlServings) return;
+                      void applyDraftTargetServings(newValue);
+                    }}
+                    disabled={isUpdatingTargetServings || !canControlServings}
+                    min={TARGET_SERVINGS_MIN}
+                    max={TARGET_SERVINGS_MAX}
+                  />
+                </div>
+              ) : null}
               {ingredientsByCategory.map(({ category, items }) => (
                 <div key={category}>
                   <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">

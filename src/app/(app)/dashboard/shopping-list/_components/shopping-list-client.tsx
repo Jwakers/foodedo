@@ -34,8 +34,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
 import { navigateBackOr } from "@/lib/navigation";
 import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
+import { scaleAmountForServings } from "convex/lib/servings";
 import { isPantryStaple } from "@/lib/pantry-staples";
 import { combineAmounts } from "convex/lib/unitConversion";
+import {
+  TARGET_SERVINGS_MAX,
+  TARGET_SERVINGS_MIN,
+} from "convex/lib/constants";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -111,6 +116,7 @@ export default function ShoppingListClient() {
   >(new Set());
   /** When true, show recipe selection to create a new list (from list picker) */
   const [showRecipeSelection, setShowRecipeSelection] = useState(false);
+  const [targetServings, setTargetServings] = useState(TARGET_SERVINGS_MIN);
 
   // Combine user and household recipes into one list
   const allRecipes = useMemo(() => {
@@ -124,8 +130,8 @@ export default function ShoppingListClient() {
     [allRecipes, selectedRecipeIds],
   );
   const flatIngredients = useMemo(
-    () => buildShoppingListItems(selectedRecipes ?? []),
-    [selectedRecipes],
+    () => buildShoppingListItems(selectedRecipes ?? [], targetServings),
+    [selectedRecipes, targetServings],
   );
   const { mainItems, pantryItems } = useMemo(() => {
     const main: typeof flatIngredients = [];
@@ -227,6 +233,7 @@ export default function ShoppingListClient() {
           ...(item.recipeIds?.length ? { recipeIds: item.recipeIds } : {}),
         })),
         chalkboardItemIds: Array.from(selectedChalkboardItems),
+        targetServings,
         ...householdArg,
       });
       toast.success("Shopping list created!");
@@ -560,6 +567,29 @@ export default function ShoppingListClient() {
               {/* Generate Button */}
               {selectedRecipeIds.size > 0 && (
                 <div className="sticky bottom-nav z-10 mt-8 space-y-3 bg-background pt-2 pb-1">
+                  <div className="space-y-1">
+                    <Label htmlFor="custom-target-servings">
+                      Servings for this list
+                    </Label>
+                    <Input
+                      id="custom-target-servings"
+                      type="number"
+                      min={TARGET_SERVINGS_MIN}
+                      max={TARGET_SERVINGS_MAX}
+                      value={targetServings}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (!Number.isFinite(n)) return;
+                        setTargetServings(
+                          Math.max(
+                            TARGET_SERVINGS_MIN,
+                            Math.min(TARGET_SERVINGS_MAX, Math.round(n)),
+                          ),
+                        );
+                      }}
+                      className="w-28"
+                    />
+                  </div>
                   {households && households.length > 1 ? (
                     <div className="space-y-2">
                       <Label htmlFor="recipe-list-household">
@@ -836,6 +866,7 @@ type AmountEntry = { amount: number | string | null; unit?: string };
 
 const buildShoppingListItems = (
   recipes: Recipe[],
+  targetServings: number,
 ): Array<{
   name: string;
   unit?: string;
@@ -859,25 +890,17 @@ const buildShoppingListItems = (
   >();
 
   recipes.forEach((recipe) => {
+    const servingScale =
+      recipe.serves && recipe.serves > 0 ? targetServings / recipe.serves : 1;
     recipe.ingredients?.forEach((ingredient) => {
       if (!ingredient?.name) return;
 
       const key = getAggregationKey(ingredient);
-      const rawAmount = ingredient.amount;
-      let storedAmount: number | string | null = null;
-      if (rawAmount === undefined || rawAmount === null) {
-        storedAmount = null;
-      } else if (typeof rawAmount === "number") {
-        storedAmount = Number.isFinite(rawAmount) ? rawAmount : null;
-      } else {
-        const str = String(rawAmount).trim();
-        if (str === "") {
-          storedAmount = null;
-        } else {
-          const num = Number(str);
-          storedAmount = Number.isFinite(num) ? num : str;
-        }
-      }
+      const storedAmount = scaleAmountForServings(
+        ingredient.amount,
+        servingScale,
+        { ingredientName: ingredient.name, unit: ingredient.unit },
+      );
       const hasAmount = storedAmount != null;
       const hasUnit = Boolean(ingredient.unit?.trim());
       const entry: AmountEntry = {

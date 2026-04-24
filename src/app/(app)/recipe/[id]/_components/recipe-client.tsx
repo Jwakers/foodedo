@@ -62,6 +62,7 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCookModeOpen, setIsCookModeOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<Recipe | null>(null);
+  const [targetServings, setTargetServings] = useState(1);
 
   const recipe = useQuery(api.recipes.getRecipe, { recipeId });
   const user = useQuery(api.users.current);
@@ -69,6 +70,12 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
   useEffect(() => {
     cookParamConsumed.current = false;
   }, [recipeId]);
+
+  useEffect(() => {
+    if (recipe) {
+      setTargetServings(recipe.serves);
+    }
+  }, [recipe?._id, recipe?.serves]);
 
   useEffect(() => {
     const raw = searchParams.get(RECIPE_COOK_MODE_PARAM);
@@ -265,6 +272,8 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
                     isEditMode={isEditMode}
                     canEdit={canUseRecipeEditor}
                     form={form}
+                    targetServings={targetServings}
+                    onTargetServingsChange={setTargetServings}
                   />
 
                   <RecipeControls
@@ -291,6 +300,7 @@ export function RecipeClient({ recipeId }: RecipeClientProps) {
                       recipe={recipe}
                       isEditMode={isEditMode}
                       form={form}
+                      targetServings={targetServings}
                     />
                     <MethodSection
                       recipe={recipe}

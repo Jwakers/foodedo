@@ -12,6 +12,8 @@ import {
   canUseHouseholdPreferences,
   canUseLeftoverIngredients,
   canUseQuickMealPreferences,
+  canUseServingControl,
+  clampTargetServings,
   LEFTOVER_INGREDIENTS_MAX,
   MAX_DAYS_IN_MEAL_PLAN,
   MEAL_PLAN_ERRORS,
@@ -166,6 +168,20 @@ async function resolveGenerationPreferenceConstraints(args: {
     includedMemberUserIds: validSelected,
     snapshot: hasAnyFilters ? snapshot : undefined,
   };
+}
+
+function resolveDefaultTargetServings(args: {
+  requestedTargetServings: number | undefined;
+  includedMemberUserIds: Id<"users">[] | undefined;
+  subscriptionTier: string | undefined;
+}): number {
+  const canUseControl = canUseServingControl(args.subscriptionTier);
+  const includedCount = args.includedMemberUserIds?.length ?? 0;
+  if (canUseControl && args.requestedTargetServings !== undefined) {
+    return clampTargetServings(args.requestedTargetServings);
+  }
+  if (includedCount > 0) return clampTargetServings(includedCount);
+  return 1;
 }
 
 // ============================================================================
@@ -794,6 +810,7 @@ export const generateWeeklyPlan = mutation({
     startDate: v.optional(v.number()),
     dayCount: v.optional(v.number()),
     includedMemberUserIds: v.optional(v.array(v.id("users"))),
+    targetServings: v.optional(v.number()),
     quickMealsCount: v.optional(v.number()),
     quickMealsMaxMinutes: v.optional(v.number()),
   },
@@ -846,6 +863,11 @@ export const generateWeeklyPlan = mutation({
       ownerUserId: user._id,
       householdId: shareHouseholdId,
       includedMemberUserIds: args.includedMemberUserIds,
+      subscriptionTier: user.subscriptionTier,
+    });
+    const targetServings = resolveDefaultTargetServings({
+      requestedTargetServings: args.targetServings,
+      includedMemberUserIds: preferenceConstraints.includedMemberUserIds,
       subscriptionTier: user.subscriptionTier,
     });
 
@@ -977,6 +999,7 @@ export const generateWeeklyPlan = mutation({
             quickMealsMaxMinutes: args.quickMealsMaxMinutes,
           }
         : {}),
+      targetServings,
     });
 
     for (let i = 0; i < selectedIds.length; i++) {
@@ -1017,6 +1040,7 @@ export const createBlankWeeklyPlan = mutation({
     householdId: v.optional(v.id("households")),
     startDate: v.optional(v.number()),
     dayCount: v.optional(v.number()),
+    targetServings: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -1045,6 +1069,11 @@ export const createBlankWeeklyPlan = mutation({
       updatedAt: now,
       isGenerated: false,
       ...(shareHouseholdId !== undefined && { householdId: shareHouseholdId }),
+      targetServings: resolveDefaultTargetServings({
+        requestedTargetServings: args.targetServings,
+        includedMemberUserIds: undefined,
+        subscriptionTier: user.subscriptionTier,
+      }),
     });
 
     return { planId };
@@ -1059,6 +1088,7 @@ export const regenerateWeeklyPlan = mutation({
     previousPlanId: v.id("mealPlans"),
     leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
     leftoverIngredientPhrases: v.optional(v.array(v.string())),
+    targetServings: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -1144,6 +1174,11 @@ export const regenerateWeeklyPlan = mutation({
             quickMealsMaxMinutes: previousPlan.quickMealsMaxMinutes,
           }
         : {}),
+      targetServings: resolveDefaultTargetServings({
+        requestedTargetServings: args.targetServings,
+        includedMemberUserIds: previousPlan.includedMemberUserIds,
+        subscriptionTier: user.subscriptionTier,
+      }),
     });
 
     const actor = getActorForPlan(previousPlan);

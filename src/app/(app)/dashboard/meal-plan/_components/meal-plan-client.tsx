@@ -51,6 +51,8 @@ import {
   MAX_DAYS_IN_MEAL_PLAN,
   MEAL_PLAN_ERRORS,
   QUICK_MEALS_MIN_MINUTES,
+  TARGET_SERVINGS_MAX,
+  TARGET_SERVINGS_MIN,
 } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -58,6 +60,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CalendarPlus,
+  Check,
   CheckCircle2,
   Clock3,
   Home,
@@ -439,7 +442,7 @@ function MemberPreferenceCards({
                     : "border-muted-foreground/40 text-transparent",
                 )}
               >
-                ✓
+                <Check className="size-3" />
               </span>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -636,6 +639,8 @@ export default function MealPlanClient({
     useState(false);
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [targetServings, setTargetServings] = useState(1);
+  const [hasManualServingOverride, setHasManualServingOverride] = useState(false);
   /** When the user has multiple households, we default the picker so generation shares to a household; omitting would leave the new plan private. */
   const [generateWeekHouseholdId, setGenerateWeekHouseholdId] = useState<
     Id<"households"> | ""
@@ -645,6 +650,8 @@ export default function MealPlanClient({
   const [includedMemberIds, setIncludedMemberIds] = useState<Set<Id<"users">>>(
     new Set(),
   );
+  const [hasTouchedMemberSelection, setHasTouchedMemberSelection] =
+    useState(false);
   const memberSeedHouseholdRef = useRef<Id<"households"> | null>(null);
   const lastGenerationMemberIdsRef = useRef<Set<Id<"users">>>(new Set());
   const [pickerState, setPickerState] = useState<{
@@ -740,6 +747,10 @@ export default function MealPlanClient({
   }, [localDayStartMs]);
 
   useEffect(() => {
+    setHasTouchedMemberSelection(false);
+  }, [effectiveGenerationHouseholdId]);
+
+  useEffect(() => {
     if (!effectiveGenerationHouseholdId || !generationMembers) return;
     const currentMemberIds = new Set(
       generationMembers.map((member) => member.userId),
@@ -747,6 +758,10 @@ export default function MealPlanClient({
     setIncludedMemberIds((prev) => {
       if (memberSeedHouseholdRef.current !== effectiveGenerationHouseholdId) {
         memberSeedHouseholdRef.current = effectiveGenerationHouseholdId;
+        lastGenerationMemberIdsRef.current = currentMemberIds;
+        return new Set(currentMemberIds);
+      }
+      if (!hasTouchedMemberSelection && prev.size === 0) {
         lastGenerationMemberIdsRef.current = currentMemberIds;
         return new Set(currentMemberIds);
       }
@@ -764,7 +779,21 @@ export default function MealPlanClient({
       lastGenerationMemberIdsRef.current = currentMemberIds;
       return next;
     });
-  }, [effectiveGenerationHouseholdId, generationMembers]);
+  }, [
+    effectiveGenerationHouseholdId,
+    generationMembers,
+    hasTouchedMemberSelection,
+  ]);
+
+  useEffect(() => {
+    const memberDefault = Math.max(
+      TARGET_SERVINGS_MIN,
+      Math.min(TARGET_SERVINGS_MAX, includedMemberIds.size || 1),
+    );
+    if (!hasManualServingOverride) {
+      setTargetServings(memberDefault);
+    }
+  }, [includedMemberIds.size, hasManualServingOverride]);
 
   useEffect(() => {
     if (currentUser === undefined) return;
@@ -845,6 +874,7 @@ export default function MealPlanClient({
         startDate?: number;
         dayCount?: number;
         includedMemberUserIds?: Id<"users">[];
+        targetServings?: number;
         quickMealsCount?: number;
         quickMealsMaxMinutes?: number;
       } = {};
@@ -872,6 +902,10 @@ export default function MealPlanClient({
       ) {
         payload.includedMemberUserIds = Array.from(includedMemberIds);
       }
+      payload.targetServings = Math.max(
+        TARGET_SERVINGS_MIN,
+        Math.min(TARGET_SERVINGS_MAX, targetServings),
+      );
       if (canUseMealPlanLeftovers) {
         const quickFields = resolveQuickMealsPayloadFields(
           quickMealsPresetId,
@@ -943,6 +977,7 @@ export default function MealPlanClient({
     blocksAdditionalPlansOnFreeTier,
     requiresHouseholdSelection,
     quickMealsPresetId,
+    targetServings,
   ]);
 
   const handleBlankWeek = useCallback(async () => {
@@ -971,6 +1006,10 @@ export default function MealPlanClient({
         ...payload,
         startDate: selectedStartDate,
         dayCount: selectedDayCount,
+        targetServings: Math.max(
+          TARGET_SERVINGS_MIN,
+          Math.min(TARGET_SERVINGS_MAX, targetServings),
+        ),
       });
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_BLANK_CREATED, {
         shared_with_household: households.length > 1,
@@ -994,6 +1033,7 @@ export default function MealPlanClient({
     selectedStartDate,
     blocksAdditionalPlansOnFreeTier,
     requiresHouseholdSelection,
+    targetServings,
   ]);
 
   const handleRegenerateWeek = useCallback(async () => {
@@ -1002,6 +1042,13 @@ export default function MealPlanClient({
     try {
       const result = await regenerateWeeklyPlan({
         previousPlanId: currentPlan._id,
+        targetServings:
+          currentPlan.targetServings !== undefined
+            ? Math.max(
+                TARGET_SERVINGS_MIN,
+                Math.min(TARGET_SERVINGS_MAX, currentPlan.targetServings),
+              )
+            : undefined,
         ...(canUseMealPlanLeftovers &&
         (mealPlanLeftoverIds.length > 0 || mealPlanLeftoverPhrases.length > 0)
           ? {
@@ -1104,6 +1151,7 @@ export default function MealPlanClient({
       const { listId } = await createShoppingListFromMealPlan({
         mealPlanId: currentPlan._id,
         chalkboardItemIds: Array.from(selectedChalkboardIds),
+        targetServings: currentPlan.targetServings,
       });
       trackEvent(ANALYTICS_EVENTS.SHOPPING_LIST_GENERATED, {
         meal_count: currentPlan.entries?.length ?? 0,
@@ -1480,6 +1528,72 @@ export default function MealPlanClient({
               description="Optional: prioritise recipes that use ingredients you want to finish this week."
             />
           </div>
+          <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
+            <CardContent className="p-3">
+              <div className="rounded-lg border border-border p-3">
+                <Label htmlFor="target-servings" className="text-sm font-medium">
+                  Servings for this plan
+                </Label>
+                <div className="mt-2 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      setHasManualServingOverride(true);
+                      setTargetServings((prev) =>
+                        Math.max(TARGET_SERVINGS_MIN, prev - 1),
+                      );
+                    }}
+                  >
+                    -
+                  </Button>
+                  <input
+                    id="target-servings"
+                    type="number"
+                    title="Plan servings"
+                    placeholder="Servings"
+                    min={TARGET_SERVINGS_MIN}
+                    max={TARGET_SERVINGS_MAX}
+                    value={targetServings}
+                    onChange={(e) => {
+                      setHasManualServingOverride(true);
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n)) return;
+                      setTargetServings(
+                        Math.max(
+                          TARGET_SERVINGS_MIN,
+                          Math.min(TARGET_SERVINGS_MAX, Math.round(n)),
+                        ),
+                      );
+                    }}
+                    className="w-20 rounded-md border bg-background px-3 py-2 text-sm"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      setHasManualServingOverride(true);
+                      setTargetServings((prev) =>
+                        Math.min(TARGET_SERVINGS_MAX, prev + 1),
+                      );
+                    }}
+                  >
+                    +
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setHasManualServingOverride(false)}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           {effectiveGenerationHouseholdId &&
           generationMembers &&
           generationMembers.length > 0 ? (
@@ -1497,27 +1611,29 @@ export default function MealPlanClient({
                 <p className="text-sm text-muted-foreground">
                   Tap to exclude members from this plan. For anyone still
                   included, we won&apos;t suggest recipes that use their listed{" "}
-                  <Link
-                    href={ROUTES.PREFERENCES}
-                    className="text-primary underline"
-                  >
+                  <Link href="/dashboard/preferences" className="text-primary underline">
                     preferences and allergens
                   </Link>
                   .
                 </p>
                 {canUseMealPlanLeftovers ? (
-                  <MemberPreferenceCards
-                    members={generationMembers}
-                    includedMemberIds={includedMemberIds}
-                    onToggle={(userId) =>
-                      setIncludedMemberIds((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(userId)) next.delete(userId);
-                        else next.add(userId);
-                        return next;
-                      })
-                    }
-                  />
+                  <>
+                    <MemberPreferenceCards
+                      members={generationMembers}
+                      includedMemberIds={includedMemberIds}
+                      onToggle={(userId) =>
+                      {
+                        setHasTouchedMemberSelection(true);
+                        setIncludedMemberIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(userId)) next.delete(userId);
+                          else next.add(userId);
+                          return next;
+                        });
+                      }
+                      }
+                    />
+                  </>
                 ) : (
                   <PremiumFeatureNotice
                     title="Pro feature"
@@ -1569,59 +1685,6 @@ export default function MealPlanClient({
                     </SelectContent>
                   </Select>
                 </div>
-              ) : null}
-              {effectiveGenerationHouseholdId &&
-              generationMembers &&
-              generationMembers.length > 0 ? (
-                <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
-                  <CardContent className="p-3 space-y-3">
-                    <MealPlanProSectionHeader
-                      icon={
-                        <UserRoundCheck
-                          className="size-4 shrink-0 text-primary"
-                          aria-hidden
-                        />
-                      }
-                      title="Include member preferences"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Tap to exclude members from this plan. For anyone still
-                      included, we won&apos;t suggest recipes that use their
-                      listed{" "}
-                      <Link
-                        href={ROUTES.PREFERENCES}
-                        className="text-primary underline"
-                      >
-                        preferences and allergens
-                      </Link>
-                      .
-                    </p>
-                    {canUseMealPlanLeftovers ? (
-                      <MemberPreferenceCards
-                        members={generationMembers}
-                        includedMemberIds={includedMemberIds}
-                        onToggle={(userId) =>
-                          setIncludedMemberIds((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(userId)) next.delete(userId);
-                            else next.add(userId);
-                            return next;
-                          })
-                        }
-                      />
-                    ) : (
-                      <PremiumFeatureNotice
-                        title="Pro feature"
-                        description="Member preference filtering is available on Pro."
-                      />
-                    )}
-                    {canUseMealPlanLeftovers && includedMemberIds.size === 0 ? (
-                      <p className="text-xs text-destructive">
-                        Select at least one member to generate a plan.
-                      </p>
-                    ) : null}
-                  </CardContent>
-                </Card>
               ) : null}
               <GenerationActionButtons
                 isGenerating={isGenerating}

@@ -288,7 +288,6 @@ export const updateMyPreferences = mutation({
         `Invalid primary proteins: ${invalidProteins.join(", ")}`,
       );
     }
-
     await ctx.db.patch(user._id, {
       preferences: {
         allergyIngredientIds,
