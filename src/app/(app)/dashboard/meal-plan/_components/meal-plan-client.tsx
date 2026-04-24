@@ -1528,6 +1528,72 @@ export default function MealPlanClient({
               description="Optional: prioritise recipes that use ingredients you want to finish this week."
             />
           </div>
+          <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
+            <CardContent className="p-3">
+              <div className="rounded-lg border border-border p-3">
+                <Label htmlFor="target-servings" className="text-sm font-medium">
+                  Servings for this plan
+                </Label>
+                <div className="mt-2 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      setHasManualServingOverride(true);
+                      setTargetServings((prev) =>
+                        Math.max(TARGET_SERVINGS_MIN, prev - 1),
+                      );
+                    }}
+                  >
+                    -
+                  </Button>
+                  <input
+                    id="target-servings"
+                    type="number"
+                    title="Plan servings"
+                    placeholder="Servings"
+                    min={TARGET_SERVINGS_MIN}
+                    max={TARGET_SERVINGS_MAX}
+                    value={targetServings}
+                    onChange={(e) => {
+                      setHasManualServingOverride(true);
+                      const n = Number(e.target.value);
+                      if (!Number.isFinite(n)) return;
+                      setTargetServings(
+                        Math.max(
+                          TARGET_SERVINGS_MIN,
+                          Math.min(TARGET_SERVINGS_MAX, Math.round(n)),
+                        ),
+                      );
+                    }}
+                    className="w-20 rounded-md border bg-background px-3 py-2 text-sm"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      setHasManualServingOverride(true);
+                      setTargetServings((prev) =>
+                        Math.min(TARGET_SERVINGS_MAX, prev + 1),
+                      );
+                    }}
+                  >
+                    +
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setHasManualServingOverride(false)}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           {effectiveGenerationHouseholdId &&
           generationMembers &&
           generationMembers.length > 0 ? (
@@ -1574,68 +1640,6 @@ export default function MealPlanClient({
                     description="Member preference filtering is available on Pro."
                   />
                 )}
-                <div className="rounded-lg border border-border p-3">
-                  <Label htmlFor="target-servings" className="text-sm font-medium">
-                    Servings for this plan
-                  </Label>
-                  <div className="mt-2 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      onClick={() => {
-                        setHasManualServingOverride(true);
-                        setTargetServings((prev) =>
-                          Math.max(TARGET_SERVINGS_MIN, prev - 1),
-                        );
-                      }}
-                    >
-                      -
-                    </Button>
-                    <input
-                      id="target-servings"
-                      type="number"
-                      title="Plan servings"
-                      placeholder="Servings"
-                      min={TARGET_SERVINGS_MIN}
-                      max={TARGET_SERVINGS_MAX}
-                      value={targetServings}
-                      onChange={(e) => {
-                        setHasManualServingOverride(true);
-                        const n = Number(e.target.value);
-                        if (!Number.isFinite(n)) return;
-                        setTargetServings(
-                          Math.max(
-                            TARGET_SERVINGS_MIN,
-                            Math.min(TARGET_SERVINGS_MAX, Math.round(n)),
-                          ),
-                        );
-                      }}
-                      className="w-20 rounded-md border bg-background px-3 py-2 text-sm"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      onClick={() => {
-                        setHasManualServingOverride(true);
-                        setTargetServings((prev) =>
-                          Math.min(TARGET_SERVINGS_MAX, prev + 1),
-                        );
-                      }}
-                    >
-                      +
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setHasManualServingOverride(false)}
-                    >
-                      Reset
-                    </Button>
-                  </div>
-                </div>
                 {canUseMealPlanLeftovers && includedMemberIds.size === 0 ? (
                   <p className="text-xs text-destructive">
                     Select at least one member to generate a plan.

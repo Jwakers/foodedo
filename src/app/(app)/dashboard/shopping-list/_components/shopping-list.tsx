@@ -49,6 +49,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  canUseServingControl,
   TARGET_SERVINGS_MAX,
   TARGET_SERVINGS_MIN,
 } from "convex/lib/constants";
@@ -173,6 +174,8 @@ export default function ShoppingList({
     api.ingredients.getByIds,
     ingredientIds.length > 0 ? { ids: ingredientIds } : "skip",
   );
+  const currentUser = useQuery(api.users.current);
+  const canControlServings = canUseServingControl(currentUser?.subscriptionTier);
   const isDev =
     process.env.NODE_ENV !== "production" ||
     process.env.NEXT_PUBLIC_SHOW_RECIPE_LINKS === "true";
@@ -927,9 +930,10 @@ export default function ShoppingList({
                   <ServingsStepper
                     value={draftTargetServings}
                     onChange={(newValue) => {
+                      if (!canControlServings) return;
                       void applyDraftTargetServings(newValue);
                     }}
-                    disabled={isUpdatingTargetServings}
+                    disabled={isUpdatingTargetServings || !canControlServings}
                     min={TARGET_SERVINGS_MIN}
                     max={TARGET_SERVINGS_MAX}
                   />
