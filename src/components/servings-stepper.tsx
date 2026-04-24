@@ -13,6 +13,8 @@ type ServingsStepperProps = {
   value: number;
   onChange: (next: number) => void;
   disabled?: boolean;
+  min?: number;
+  max?: number;
   className?: string;
 };
 
@@ -20,11 +22,13 @@ export function ServingsStepper({
   value,
   onChange,
   disabled = false,
+  min = TARGET_SERVINGS_MIN,
+  max = TARGET_SERVINGS_MAX,
   className,
 }: ServingsStepperProps) {
-  const clamped = clampTargetServings(value);
-  const canDecrement = !disabled && clamped > TARGET_SERVINGS_MIN;
-  const canIncrement = !disabled && clamped < TARGET_SERVINGS_MAX;
+  const clamped = Math.min(max, Math.max(min, clampTargetServings(value)));
+  const canDecrement = !disabled && clamped > min;
+  const canIncrement = !disabled && clamped < max;
 
   return (
     <div className={cn("inline-flex items-center gap-2", className)}>

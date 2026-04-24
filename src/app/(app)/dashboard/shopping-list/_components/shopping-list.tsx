@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ServingsStepper } from "@/components/servings-stepper";
 import {
   Select,
   SelectContent,
@@ -923,39 +924,15 @@ export default function ShoppingList({
               {!isFinalised ? (
                 <div className="rounded-lg border border-border p-3 space-y-2">
                   <Label>Servings for this list</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        void applyDraftTargetServings(draftTargetServings - 1)
-                      }
-                      disabled={
-                        isUpdatingTargetServings ||
-                        draftTargetServings <= TARGET_SERVINGS_MIN
-                      }
-                    >
-                      <Minus className="size-4" />
-                    </Button>
-                    <div className="min-w-10 text-center font-medium tabular-nums">
-                      {draftTargetServings}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        void applyDraftTargetServings(draftTargetServings + 1)
-                      }
-                      disabled={
-                        isUpdatingTargetServings ||
-                        draftTargetServings >= TARGET_SERVINGS_MAX
-                      }
-                    >
-                      <Plus className="size-4" />
-                    </Button>
-                  </div>
+                  <ServingsStepper
+                    value={draftTargetServings}
+                    onChange={(newValue) => {
+                      void applyDraftTargetServings(newValue);
+                    }}
+                    disabled={isUpdatingTargetServings}
+                    min={TARGET_SERVINGS_MIN}
+                    max={TARGET_SERVINGS_MAX}
+                  />
                 </div>
               ) : null}
               {ingredientsByCategory.map(({ category, items }) => (

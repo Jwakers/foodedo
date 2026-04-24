@@ -1165,11 +1165,7 @@ export const updateDraftShoppingListTargetServings = mutation({
       throw new ConvexError("Can only update servings in draft mode");
     }
     if (!canUseServingControl(user.subscriptionTier)) {
-      // Non-entitled callers should gracefully no-op to the current/default list behavior.
-      return {
-        success: true,
-        targetServings: list.targetServings ?? list.baseTargetServings ?? undefined,
-      };
+      throw new ConvexError("serving_control_not_allowed");
     }
     const nextTarget = clampTargetServings(args.targetServings);
     const baseTarget = clampTargetServings(
