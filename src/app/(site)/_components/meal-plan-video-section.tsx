@@ -90,6 +90,7 @@ export function MealPlanVideoSection() {
                 preload="metadata"
                 playsInline
                 aria-label="Narrated walkthrough showing how to generate a meal plan in Foodedo"
+                aria-describedby="meal-plan-guide-transcript"
                 onPlay={() => {
                   if (hasTrackedPlayRef.current) return;
                   hasTrackedPlayRef.current = true;
@@ -100,8 +101,53 @@ export function MealPlanVideoSection() {
                 }}
               >
                 <source src="/meal-plan-guide.mp4" type="video/mp4" />
+                <track
+                  kind="captions"
+                  src="/meal-plan-guide.vtt"
+                  srcLang="en"
+                  label="English"
+                  default
+                />
                 Sorry, your browser does not support embedded videos.
               </video>
+              <details className="border-t border-border bg-background/60 px-4 py-3">
+                <summary className="cursor-pointer text-sm font-medium text-foreground">
+                  Read video transcript
+                </summary>
+                <div
+                  id="meal-plan-guide-transcript"
+                  className="mt-3 space-y-2 text-sm text-muted-foreground"
+                >
+                  <p>
+                    Planning your meals for the week doesn&apos;t need to take
+                    time. With Foodie-do, you can generate a full plan in
+                    seconds.
+                  </p>
+                  <p>Let&apos;s jump in.</p>
+                  <p>
+                    Once you&apos;re signed in, you&apos;ll land on your
+                    dashboard.
+                  </p>
+                  <p>From here, head to the meal planner.</p>
+                  <p>
+                    Choose your preferences - things like how many meals you
+                    want to plan.
+                  </p>
+                  <p>And generate your weekly plan in one click.</p>
+                  <p>
+                    Foodie-do creates a balanced, varied plan instantly - no
+                    repeats, no overthinking.
+                  </p>
+                  <p>You can quickly scan through each day.</p>
+                  <p>
+                    Not feeling something? Just swap it out for another recipe.
+                  </p>
+                  <p>Once you&apos;re happy, save your plan.</p>
+                  <p>
+                    And that&apos;s it - your week is planned and ready to go.
+                  </p>
+                </div>
+              </details>
             </div>
           </div>
         </div>

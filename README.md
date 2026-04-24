@@ -166,6 +166,7 @@ Context: Couples and households need flexible planning when preferences, allergi
 - [ ] **(Pro/Premium) Generation-time household profile toggles**: During meal plan generation, show card-like member selectors so users can include/exclude each household member's constraints (e.g., partner traveling, plan only for one person).
   - MVP: Toggle each member on/off for generation input.
   - V2: Save commonly used selector presets (e.g., "Both", "Just me").
+- [ ] **(Pro/Premium) Portion/serving control for meal plan shopping lists and recipes**:
 - [ ] **(Pro/Premium) Fast-prep meal constraints (count-based)**: Instead of day-specific slots, allow users to request a number of meals under a chosen prep-time limit in each generated plan.
   - MVP: Inputs for "number of fast meals" and "max prep time".
   - V2: Tune ranking to prioritize fast recipes earlier in the plan.
