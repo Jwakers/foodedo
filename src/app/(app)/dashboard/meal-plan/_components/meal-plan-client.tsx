@@ -302,7 +302,8 @@ function useMealPlanRoutingState(args: {
 
 type GenerationActionButtonsProps = {
   isGenerating: boolean;
-  disabled: boolean;
+  disabledManual: boolean;
+  disabledGenerate: boolean;
   onManual: () => void;
   onGenerate: () => void;
   showUpgradeHint: boolean;
@@ -342,7 +343,8 @@ function resolveMealPlanEntitlements(args: {
 
 function GenerationActionButtons({
   isGenerating,
-  disabled,
+  disabledManual,
+  disabledGenerate,
   onManual,
   onGenerate,
   showUpgradeHint,
@@ -355,7 +357,7 @@ function GenerationActionButtons({
           variant="outline"
           className="w-full sm:flex-1"
           onClick={onManual}
-          disabled={disabled}
+          disabled={disabledManual}
         >
           {isGenerating ? (
             <Loader2 className="size-5 mr-2 animate-spin" />
@@ -368,7 +370,7 @@ function GenerationActionButtons({
           size="lg"
           className="w-full sm:flex-1"
           onClick={onGenerate}
-          disabled={disabled}
+          disabled={disabledGenerate}
         >
           {isGenerating ? (
             <Loader2 className="size-5 mr-2 animate-spin" />
@@ -459,10 +461,12 @@ function QuickMealsPreferenceCard({
   selectedPresetId,
   onSelectPreset,
   isPremiumEnabled,
+  selectedDayCount,
 }: {
   selectedPresetId: QuickMealsPresetId;
   onSelectPreset: (presetId: QuickMealsPresetId) => void;
   isPremiumEnabled: boolean;
+  selectedDayCount: number;
 }) {
   return (
     <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
@@ -509,7 +513,18 @@ function QuickMealsPreferenceCard({
                 className="peer sr-only"
               />
               <div className="font-medium">{preset.title}</div>
-              <div className="mt-1 text-xs">{preset.description}</div>
+              <div className="mt-1 text-xs">
+                {preset.id === "automatic"
+                  ? preset.description
+                  : (() => {
+                      const resolved = resolveQuickMealsPayloadFields(
+                        preset.id,
+                        selectedDayCount,
+                      );
+                      if (!resolved) return preset.description;
+                      return `At least ${resolved.quickMealsCount} meal${resolved.quickMealsCount === 1 ? "" : "s"} under ${resolved.quickMealsMaxMinutes}m`;
+                    })()}
+              </div>
             </label>
           ))}
         </div>
@@ -1451,6 +1466,7 @@ export default function MealPlanClient({
             selectedPresetId={quickMealsPresetId}
             onSelectPreset={setQuickMealsPresetId}
             isPremiumEnabled={canUseMealPlanLeftovers}
+            selectedDayCount={selectedDayCount}
           />
           <div className="max-w-2xl mx-auto mb-6 w-full">
             <LeftoverIngredientsPicker
@@ -1554,9 +1570,69 @@ export default function MealPlanClient({
                   </Select>
                 </div>
               ) : null}
+              {effectiveGenerationHouseholdId &&
+              generationMembers &&
+              generationMembers.length > 0 ? (
+                <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
+                  <CardContent className="p-3 space-y-3">
+                    <MealPlanProSectionHeader
+                      icon={
+                        <UserRoundCheck
+                          className="size-4 shrink-0 text-primary"
+                          aria-hidden
+                        />
+                      }
+                      title="Include member preferences"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Tap to exclude members from this plan. For anyone still
+                      included, we won&apos;t suggest recipes that use their
+                      listed{" "}
+                      <Link
+                        href={ROUTES.PREFERENCES}
+                        className="text-primary underline"
+                      >
+                        preferences and allergens
+                      </Link>
+                      .
+                    </p>
+                    {canUseMealPlanLeftovers ? (
+                      <MemberPreferenceCards
+                        members={generationMembers}
+                        includedMemberIds={includedMemberIds}
+                        onToggle={(userId) =>
+                          setIncludedMemberIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(userId)) next.delete(userId);
+                            else next.add(userId);
+                            return next;
+                          })
+                        }
+                      />
+                    ) : (
+                      <PremiumFeatureNotice
+                        title="Pro feature"
+                        description="Member preference filtering is available on Pro."
+                      />
+                    )}
+                    {canUseMealPlanLeftovers && includedMemberIds.size === 0 ? (
+                      <p className="text-xs text-destructive">
+                        Select at least one member to generate a plan.
+                      </p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ) : null}
               <GenerationActionButtons
                 isGenerating={isGenerating}
-                disabled={
+                disabledManual={
+                  isGenerating ||
+                  households === undefined ||
+                  missingRequiredHouseholdSelection ||
+                  blocksAdditionalPlansOnFreeTier ||
+                  !entitlementsReady
+                }
+                disabledGenerate={
                   isGenerating ||
                   households === undefined ||
                   missingRequiredHouseholdSelection ||
@@ -1611,6 +1687,7 @@ export default function MealPlanClient({
             selectedPresetId={quickMealsPresetId}
             onSelectPreset={setQuickMealsPresetId}
             isPremiumEnabled={canUseMealPlanLeftovers}
+            selectedDayCount={selectedDayCount}
           />
           {households && households.length > 1 ? (
             <div className="mb-4 w-full max-w-sm text-left space-y-1.5 mx-auto">
@@ -1652,7 +1729,14 @@ export default function MealPlanClient({
               </p>
               <GenerationActionButtons
                 isGenerating={isGenerating}
-                disabled={
+                disabledManual={
+                  isGenerating ||
+                  households === undefined ||
+                  missingRequiredHouseholdSelection ||
+                  blocksAdditionalPlansOnFreeTier ||
+                  !entitlementsReady
+                }
+                disabledGenerate={
                   isGenerating ||
                   households === undefined ||
                   missingRequiredHouseholdSelection ||
