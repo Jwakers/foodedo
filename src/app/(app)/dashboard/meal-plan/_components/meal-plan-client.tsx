@@ -1560,7 +1560,8 @@ export default function MealPlanClient({
                   isGenerating ||
                   households === undefined ||
                   missingRequiredHouseholdSelection ||
-                  (effectiveGenerationHouseholdId &&
+                  (canUseMealPlanLeftovers &&
+                    effectiveGenerationHouseholdId &&
                     generationMembers === undefined) ||
                   (canUseMealPlanLeftovers &&
                     (generationMembers?.length ?? 0) > 0 &&
@@ -1655,7 +1656,8 @@ export default function MealPlanClient({
                   isGenerating ||
                   households === undefined ||
                   missingRequiredHouseholdSelection ||
-                  (effectiveGenerationHouseholdId &&
+                  (canUseMealPlanLeftovers &&
+                    effectiveGenerationHouseholdId &&
                     generationMembers === undefined) ||
                   (canUseMealPlanLeftovers &&
                     (generationMembers?.length ?? 0) > 0 &&
