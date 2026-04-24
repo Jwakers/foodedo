@@ -199,10 +199,10 @@ export function ExampleWeekSection({
 
   return (
     <section
-      className="py-16 sm:py-20 bg-muted/25"
+      className="bg-muted/25"
       aria-labelledby="example-week-heading"
     >
-      <div className="container mx-auto max-w-7xl px-4">
+      <div className="container mx-auto max-w-7xl px-4 py-10 sm:py-12">
         <Card className="overflow-hidden border-primary/20 bg-primary/4 shadow-sm">
           <CardContent className="p-5 sm:p-8">
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
