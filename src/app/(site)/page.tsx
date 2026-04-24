@@ -39,10 +39,8 @@ const homeJsonLd = {
 };
 
 export const metadata: Metadata = {
-  title: {
-    /** Avoid root layout template duplicating the brand (e.g. "Foodedo | Foodedo"). */
-    absolute: homeTitle,
-  },
+  /** Explicit homepage title for root URL crawlers. */
+  title: homeTitle,
   description: homeDescription,
   keywords: [
     APP_NAME,
