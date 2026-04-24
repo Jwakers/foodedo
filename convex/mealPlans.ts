@@ -285,10 +285,16 @@ function resolveRecipeTotalTimeMinutes(recipe: {
   totalTimeMinutes?: number | null;
   prepTime?: number | null;
   cookTime?: number | null;
-}): number {
-  return (
-    recipe.totalTimeMinutes ?? (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)
-  );
+}): number | null {
+  if (
+    recipe.totalTimeMinutes !== undefined &&
+    recipe.totalTimeMinutes !== null
+  ) {
+    return recipe.totalTimeMinutes;
+  }
+  if (recipe.prepTime === undefined || recipe.prepTime === null) return null;
+  if (recipe.cookTime === undefined || recipe.cookTime === null) return null;
+  return recipe.prepTime + recipe.cookTime;
 }
 
 function assertValidEntryPlacement(args: {
@@ -880,10 +886,10 @@ export const generateWeeklyPlan = mutation({
       args.quickMealsCount !== undefined &&
       args.quickMealsMaxMinutes !== undefined
     ) {
-      const quickPool = pool.filter(
-        (recipe) =>
-          resolveRecipeTotalTimeMinutes(recipe) <= args.quickMealsMaxMinutes!,
-      );
+      const quickPool = pool.filter((recipe) => {
+        const totalTime = resolveRecipeTotalTimeMinutes(recipe);
+        return totalTime !== null && totalTime <= args.quickMealsMaxMinutes!;
+      });
       if (quickPool.length < args.quickMealsCount) {
         throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
       }
@@ -910,6 +916,9 @@ export const generateWeeklyPlan = mutation({
         new Set<Id<"recipes">>([...recentlySuggested, ...quickIds]),
         quickPool.filter((recipe) => quickIdSet.has(recipe._id)),
       );
+      if (remainderIds.length !== dayCount - quickIds.length) {
+        throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
+      }
       selectedIds = [...quickIds, ...remainderIds];
     } else {
       selectedIds = selectRecipes(
@@ -1122,6 +1131,19 @@ export const regenerateWeeklyPlan = mutation({
       ...(wantsLeftovers && leftover.phrases
         ? { leftoverIngredientPhrases: leftover.phrases }
         : {}),
+      ...(previousPlan.includedMemberUserIds
+        ? { includedMemberUserIds: previousPlan.includedMemberUserIds }
+        : {}),
+      ...(previousPlan.preferenceFilterSnapshot
+        ? { preferenceFilterSnapshot: previousPlan.preferenceFilterSnapshot }
+        : {}),
+      ...(previousPlan.quickMealsCount !== undefined &&
+      previousPlan.quickMealsMaxMinutes !== undefined
+        ? {
+            quickMealsCount: previousPlan.quickMealsCount,
+            quickMealsMaxMinutes: previousPlan.quickMealsMaxMinutes,
+          }
+        : {}),
     });
 
     const actor = getActorForPlan(previousPlan);
@@ -1155,6 +1177,7 @@ export const regenerateWeeklyPlan = mutation({
         {
           leftoverTargetIds: wantsLeftovers ? leftover.ids : undefined,
           leftoverTargetPhrases: wantsLeftovers ? leftover.phrases : undefined,
+          preferenceConstraints: previousPlan.preferenceFilterSnapshot,
         },
       );
       if (wantsLeftovers) {
@@ -1208,14 +1231,66 @@ export const regenerateWeeklyPlan = mutation({
         }
       }
 
-      const newIds = selectRecipes(
-        pool,
-        toSelect,
-        actorStats,
-        generationSeed,
-        recentlySuggested,
-        lockedPoolRecipes,
-      );
+      let newIds: Id<"recipes">[] = [];
+      if (
+        previousPlan.quickMealsCount !== undefined &&
+        previousPlan.quickMealsMaxMinutes !== undefined
+      ) {
+        const quickTargetCount = Math.min(
+          previousPlan.quickMealsCount,
+          toSelect,
+        );
+        const quickPool = pool.filter((recipe) => {
+          const totalTime = resolveRecipeTotalTimeMinutes(recipe);
+          return (
+            totalTime !== null &&
+            totalTime <= previousPlan.quickMealsMaxMinutes!
+          );
+        });
+        if (quickPool.length < quickTargetCount) {
+          throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
+        }
+        const quickIds = selectRecipes(
+          quickPool,
+          quickTargetCount,
+          actorStats,
+          `${generationSeed}:quick`,
+          recentlySuggested,
+          lockedPoolRecipes,
+        );
+        if (quickIds.length < quickTargetCount) {
+          throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
+        }
+        const quickIdSet = new Set(quickIds);
+        const remainderPool = pool.filter(
+          (recipe) => !quickIdSet.has(recipe._id),
+        );
+        const remainderTarget = toSelect - quickIds.length;
+        const remainderIds = selectRecipes(
+          remainderPool,
+          remainderTarget,
+          actorStats,
+          `${generationSeed}:remainder`,
+          new Set<Id<"recipes">>([...recentlySuggested, ...quickIds]),
+          [
+            ...lockedPoolRecipes,
+            ...quickPool.filter((r) => quickIdSet.has(r._id)),
+          ],
+        );
+        if (remainderIds.length !== remainderTarget) {
+          throw new ConvexError(MEAL_PLAN_ERRORS.QUICK_MEALS_NO_RECIPES);
+        }
+        newIds = [...quickIds, ...remainderIds];
+      } else {
+        newIds = selectRecipes(
+          pool,
+          toSelect,
+          actorStats,
+          generationSeed,
+          recentlySuggested,
+          lockedPoolRecipes,
+        );
+      }
 
       for (let i = 0; i < newIds.length; i++) {
         const recipeId = newIds[i];

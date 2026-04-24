@@ -22,7 +22,7 @@ import {
   UserCog,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 function normalisePhrase(raw: string): string {
@@ -48,6 +48,7 @@ export default function PreferencesPage() {
     string[]
   >([]);
   const [isSaving, setIsSaving] = useState(false);
+  const initializedUserIdRef = useRef<string | null>(null);
 
   const canUsePremiumFeatures = useMemo(() => {
     const tier = currentUser?.subscriptionTier ?? "free_user";
@@ -63,10 +64,13 @@ export default function PreferencesPage() {
 
   useEffect(() => {
     if (!preferences) return;
+    const currentUserId = currentUser?._id ?? null;
+    if (initializedUserIdRef.current === currentUserId) return;
     setAllergyIngredientIds(preferences.allergyIngredientIds ?? []);
     setAllergyPhrases(preferences.allergyPhrases ?? []);
     setExcludedPrimaryProteins(preferences.excludedPrimaryProteins ?? []);
-  }, [preferences]);
+    initializedUserIdRef.current = currentUserId;
+  }, [preferences, currentUser?._id]);
 
   const searchResults = useQuery(
     api.ingredients.search,
@@ -137,10 +141,8 @@ export default function PreferencesPage() {
     }
   };
 
-  const hasAnyPreference =
-    allergyIngredientIds.length > 0 ||
-    allergyPhrases.length > 0 ||
-    excludedPrimaryProteins.length > 0;
+  const hasAnyAllergyPreference =
+    allergyIngredientIds.length > 0 || allergyPhrases.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-5xl">
@@ -317,7 +319,7 @@ export default function PreferencesPage() {
                     </button>
                   </Badge>
                 ))}
-                {!hasAnyPreference ? (
+                {!hasAnyAllergyPreference ? (
                   <p className="text-sm text-muted-foreground">
                     No restrictions set.
                   </p>

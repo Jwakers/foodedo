@@ -7,6 +7,7 @@ import {
   query,
   QueryCtx,
 } from "./_generated/server";
+import { canUseHouseholdPreferences } from "./lib/constants";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -335,6 +336,9 @@ export const getGenerationMembersWithPreferences = query({
     if (!isMember) {
       throw new ConvexError("You are not a member of this household");
     }
+    const canSeePreferenceSummary = canUseHouseholdPreferences(
+      user.subscriptionTier,
+    );
 
     const memberships = await ctx.db
       .query("householdMembers")
@@ -345,10 +349,13 @@ export const getGenerationMembersWithPreferences = query({
       memberships.map(async (membership) => {
         const memberUser = await ctx.db.get(membership.userId);
         if (!memberUser) return null;
+        const summary = canSeePreferenceSummary
+          ? buildPreferenceSummary(memberUser.preferences)
+          : { hasAny: false, allergyCount: 0, excludedProteinCount: 0 };
         return {
           userId: memberUser._id,
           name: memberUser.name,
-          ...buildPreferenceSummary(memberUser.preferences),
+          ...summary,
         };
       }),
     );

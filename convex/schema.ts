@@ -30,6 +30,9 @@ const ingredientFoodGroupUnion = v.union(
 const ingredientFoodSubGroupUnion = v.union(
   ...INGREDIENT_FOOD_SUB_GROUPS.map(v.literal),
 );
+const preferenceAllergyIngredientIdsValidator = v.array(v.id("ingredients"));
+const preferenceAllergyPhrasesValidator = v.array(v.string());
+const preferenceExcludedPrimaryProteinsValidator = v.array(primaryProteinUnion);
 
 export {
   categoriesUnion,
@@ -63,9 +66,13 @@ export default defineSchema({
     lastSubscriptionSync: v.optional(v.number()), // timestamp of last sync
     preferences: v.optional(
       v.object({
-        allergyIngredientIds: v.optional(v.array(v.id("ingredients"))),
-        allergyPhrases: v.optional(v.array(v.string())),
-        excludedPrimaryProteins: v.optional(v.array(primaryProteinUnion)),
+        allergyIngredientIds: v.optional(
+          preferenceAllergyIngredientIdsValidator,
+        ),
+        allergyPhrases: v.optional(preferenceAllergyPhrasesValidator),
+        excludedPrimaryProteins: v.optional(
+          preferenceExcludedPrimaryProteinsValidator,
+        ),
       }),
     ),
   }).index("byExternalId", ["externalId"]),
@@ -337,9 +344,9 @@ export default defineSchema({
     /** Snapshot of generation-time aggregated preference constraints for audit/debug. */
     preferenceFilterSnapshot: v.optional(
       v.object({
-        allergyIngredientIds: v.array(v.id("ingredients")),
-        allergyPhrases: v.array(v.string()),
-        excludedPrimaryProteins: v.array(primaryProteinUnion),
+        allergyIngredientIds: preferenceAllergyIngredientIdsValidator,
+        allergyPhrases: preferenceAllergyPhrasesValidator,
+        excludedPrimaryProteins: preferenceExcludedPrimaryProteinsValidator,
       }),
     ),
     /** Optional generation-time target: guarantee this many meals at or under max total minutes. */

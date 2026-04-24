@@ -626,6 +626,8 @@ export default function MealPlanClient({
   const [includedMemberIds, setIncludedMemberIds] = useState<Set<Id<"users">>>(
     new Set(),
   );
+  const memberSeedHouseholdRef = useRef<Id<"households"> | null>(null);
+  const lastGenerationMemberIdsRef = useRef<Set<Id<"users">>>(new Set());
   const [pickerState, setPickerState] = useState<{
     mode: "add" | "replace";
     entry?: CurrentPlan["entries"][number];
@@ -719,11 +721,31 @@ export default function MealPlanClient({
   }, [localDayStartMs]);
 
   useEffect(() => {
-    if (!generationMembers) return;
-    setIncludedMemberIds(
-      new Set(generationMembers.map((member) => member.userId)),
+    if (!effectiveGenerationHouseholdId || !generationMembers) return;
+    const currentMemberIds = new Set(
+      generationMembers.map((member) => member.userId),
     );
-  }, [generationMembers]);
+    setIncludedMemberIds((prev) => {
+      if (memberSeedHouseholdRef.current !== effectiveGenerationHouseholdId) {
+        memberSeedHouseholdRef.current = effectiveGenerationHouseholdId;
+        lastGenerationMemberIdsRef.current = currentMemberIds;
+        return new Set(currentMemberIds);
+      }
+      const next = new Set(prev);
+      for (const id of currentMemberIds) {
+        if (!lastGenerationMemberIdsRef.current.has(id)) {
+          next.add(id);
+        }
+      }
+      for (const id of lastGenerationMemberIdsRef.current) {
+        if (!currentMemberIds.has(id)) {
+          next.delete(id);
+        }
+      }
+      lastGenerationMemberIdsRef.current = currentMemberIds;
+      return next;
+    });
+  }, [effectiveGenerationHouseholdId, generationMembers]);
 
   useEffect(() => {
     if (currentUser === undefined) return;
@@ -773,6 +795,14 @@ export default function MealPlanClient({
     }
     if (requiresHouseholdSelection && generateWeekHouseholdId === "") {
       toast.info("Select a household before generating your plan.");
+      return;
+    }
+    if (
+      effectiveGenerationHouseholdId &&
+      canUseMealPlanLeftovers &&
+      generationMembers === undefined
+    ) {
+      toast.info("Loading household members, please wait.");
       return;
     }
     if (
@@ -887,6 +917,7 @@ export default function MealPlanClient({
     mealPlanLeftoverPhrases,
     generationMembers,
     includedMemberIds,
+    effectiveGenerationHouseholdId,
     router,
     selectedDayCount,
     selectedStartDate,
