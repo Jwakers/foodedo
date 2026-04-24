@@ -35,6 +35,7 @@ export const ROUTES = {
   shoppingListWithId: (listId: string) =>
     `/dashboard/shopping-list?listId=${listId}`,
   HOUSEHOLDS: "/dashboard/households",
+  PREFERENCES: "/dashboard/preferences",
   DISCOVER: "/discover",
   /** Public SEO intent landing pages (indexable). @see docs/GROWTH.md */
   FAMILY_MEAL_PLANNING: "/family-meal-planning",

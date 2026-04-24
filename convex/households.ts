@@ -7,11 +7,39 @@ import {
   query,
   QueryCtx,
 } from "./_generated/server";
+import { canUseHouseholdPreferences } from "./lib/constants";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
   getUserSubscription,
 } from "./users";
+
+function buildPreferenceSummary(
+  prefs:
+    | {
+        allergyIngredientIds?: Id<"ingredients">[];
+        allergyPhrases?: string[];
+        excludedPrimaryProteins?: string[];
+      }
+    | undefined,
+) {
+  if (!prefs) {
+    return {
+      hasAny: false,
+      allergyCount: 0,
+      excludedProteinCount: 0,
+    };
+  }
+  const allergyCount =
+    (prefs.allergyIngredientIds?.length ?? 0) +
+    (prefs.allergyPhrases?.length ?? 0);
+  return {
+    hasAny:
+      allergyCount > 0 || (prefs.excludedPrimaryProteins?.length ?? 0) > 0,
+    allergyCount,
+    excludedProteinCount: prefs.excludedPrimaryProteins?.length ?? 0,
+  };
+}
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -23,12 +51,12 @@ import {
 export async function isHouseholdOwner(
   ctx: QueryCtx,
   userId: Id<"users">,
-  householdId: Id<"households">
+  householdId: Id<"households">,
 ): Promise<boolean> {
   const membership = await ctx.db
     .query("householdMembers")
     .withIndex("by_user_and_household", (q) =>
-      q.eq("userId", userId).eq("householdId", householdId)
+      q.eq("userId", userId).eq("householdId", householdId),
     )
     .unique();
 
@@ -41,12 +69,12 @@ export async function isHouseholdOwner(
 export async function isHouseholdMember(
   ctx: QueryCtx,
   userId: Id<"users">,
-  householdId: Id<"households">
+  householdId: Id<"households">,
 ): Promise<boolean> {
   const membership = await ctx.db
     .query("householdMembers")
     .withIndex("by_user_and_household", (q) =>
-      q.eq("userId", userId).eq("householdId", householdId)
+      q.eq("userId", userId).eq("householdId", householdId),
     )
     .unique();
 
@@ -70,9 +98,7 @@ export async function resolveDefaultHouseholdIdForSharing(
     .collect();
 
   if (explicitHouseholdId !== undefined) {
-    const ok = memberships.some(
-      (m) => m.householdId === explicitHouseholdId
-    );
+    const ok = memberships.some((m) => m.householdId === explicitHouseholdId);
     if (!ok) {
       throw new ConvexError("You are not a member of that household");
     }
@@ -90,7 +116,7 @@ export async function resolveDefaultHouseholdIdForSharing(
 export async function canAccessRecipe(
   ctx: QueryCtx,
   userId: Id<"users">,
-  recipeId: Id<"recipes">
+  recipeId: Id<"recipes">,
 ): Promise<{ canAccess: boolean; isOwner: boolean }> {
   const recipe = await ctx.db.get(recipeId);
   if (!recipe) {
@@ -119,10 +145,10 @@ export async function canAccessRecipe(
       ctx.db
         .query("householdRecipes")
         .withIndex("by_household_and_recipe", (q) =>
-          q.eq("householdId", householdId).eq("recipeId", recipeId)
+          q.eq("householdId", householdId).eq("recipeId", recipeId),
         )
-        .unique()
-    )
+        .unique(),
+    ),
   );
 
   if (sharedRecipes.some((recipe) => recipe != null)) {
@@ -139,7 +165,7 @@ function generateInvitationToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-    ""
+    "",
   );
 }
 
@@ -150,7 +176,7 @@ async function enrichSharedRecipe(
   ctx: QueryCtx,
   shared: Doc<"householdRecipes">,
   userId: Id<"users">,
-  includeHouseholdId?: boolean
+  includeHouseholdId?: boolean,
 ) {
   const recipe = await ctx.db.get(shared.recipeId);
   if (!recipe) return null;
@@ -234,7 +260,7 @@ export const getUserHouseholds = query({
         const memberCount = await ctx.db
           .query("householdMembers")
           .withIndex("by_household", (q) =>
-            q.eq("householdId", membership.householdId)
+            q.eq("householdId", membership.householdId),
           )
           .collect();
 
@@ -242,7 +268,7 @@ export const getUserHouseholds = query({
         const recipeCount = await ctx.db
           .query("householdRecipes")
           .withIndex("by_household", (q) =>
-            q.eq("householdId", membership.householdId)
+            q.eq("householdId", membership.householdId),
           )
           .collect();
 
@@ -252,7 +278,7 @@ export const getUserHouseholds = query({
           memberCount: memberCount.length,
           recipeCount: recipeCount.length,
         };
-      })
+      }),
     );
 
     return households.filter((h) => h !== null);
@@ -292,10 +318,51 @@ export const getHouseholdMembers = query({
           role: membership.role,
           joinedAt: membership.joinedAt,
         };
-      })
+      }),
     );
 
     return members.filter((m) => m !== null);
+  },
+});
+
+/** Members available as preference contributors when generating a household meal plan. */
+export const getGenerationMembersWithPreferences = query({
+  args: {
+    householdId: v.id("households"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const isMember = await isHouseholdMember(ctx, user._id, args.householdId);
+    if (!isMember) {
+      throw new ConvexError("You are not a member of this household");
+    }
+    const canSeePreferenceSummary = canUseHouseholdPreferences(
+      user.subscriptionTier,
+    );
+
+    const memberships = await ctx.db
+      .query("householdMembers")
+      .withIndex("by_household", (q) => q.eq("householdId", args.householdId))
+      .collect();
+
+    const members = await Promise.all(
+      memberships.map(async (membership) => {
+        const memberUser = await ctx.db.get(membership.userId);
+        if (!memberUser) return null;
+        const summary = canSeePreferenceSummary
+          ? buildPreferenceSummary(memberUser.preferences)
+          : { hasAny: false, allergyCount: 0, excludedProteinCount: 0 };
+        return {
+          userId: memberUser._id,
+          name: memberUser.name,
+          ...summary,
+        };
+      }),
+    );
+
+    return members.filter(
+      (member): member is NonNullable<typeof member> => !!member,
+    );
   },
 });
 
@@ -374,8 +441,8 @@ export const getHouseholdRecipes = query({
 
     const recipes = await Promise.all(
       sharedRecipes.map((shared) =>
-        enrichSharedRecipe(ctx, shared, user._id, false)
-      )
+        enrichSharedRecipe(ctx, shared, user._id, false),
+      ),
     );
 
     return recipes.filter((r): r is NonNullable<typeof r> => r !== null);
@@ -404,19 +471,19 @@ export const getAllHouseholdRecipes = query({
       const sharedRecipes = await ctx.db
         .query("householdRecipes")
         .withIndex("by_household", (q) =>
-          q.eq("householdId", membership.householdId)
+          q.eq("householdId", membership.householdId),
         )
         .collect();
 
       const recipes = await Promise.all(
         sharedRecipes.map((shared) =>
-          enrichSharedRecipe(ctx, shared, user._id, true)
-        )
+          enrichSharedRecipe(ctx, shared, user._id, true),
+        ),
       );
 
       // Filter out null recipes and recipes owned by the current user
       const validRecipes = recipes.filter(
-        (r): r is NonNullable<typeof r> => r !== null && !r.isOwner
+        (r): r is NonNullable<typeof r> => r !== null && !r.isOwner,
       );
 
       allRecipes.push(...validRecipes);
@@ -456,11 +523,7 @@ export const getHouseholdsByRecipeId = query({
 
       const filtered: typeof householdRecipes = [];
       for (const hr of householdRecipes) {
-        const isMember = await isHouseholdMember(
-          ctx,
-          user._id,
-          hr.householdId
-        );
+        const isMember = await isHouseholdMember(ctx, user._id, hr.householdId);
         if (isMember) {
           filtered.push(hr);
         }
@@ -520,7 +583,7 @@ export const createHousehold = mutation({
       memberships.length >= subscription.maxHouseholds
     ) {
       throw new ConvexError(
-        `You've reached the limit of ${subscription.maxHouseholds} household${subscription.maxHouseholds === 1 ? "" : "s"} on this plan.`
+        `You've reached the limit of ${subscription.maxHouseholds} household${subscription.maxHouseholds === 1 ? "" : "s"} on this plan.`,
       );
     }
 
@@ -560,7 +623,7 @@ export const updateHousehold = mutation({
     const isOwner = await isHouseholdOwner(ctx, user._id, args.householdId);
     if (!isOwner) {
       throw new ConvexError(
-        "Only the household owner can update the household"
+        "Only the household owner can update the household",
       );
     }
 
@@ -589,7 +652,7 @@ export const deleteHousehold = mutation({
     const isOwner = await isHouseholdOwner(ctx, user._id, args.householdId);
     if (!isOwner) {
       throw new ConvexError(
-        "Only the household owner can delete the household"
+        "Only the household owner can delete the household",
       );
     }
 
@@ -668,7 +731,7 @@ export const createInvitationLink = mutation({
       internal.households.deleteInvitationLink,
       {
         invitationId,
-      }
+      },
     );
 
     return { invitationId, token };
@@ -712,7 +775,7 @@ export const acceptInvitationByToken = mutation({
     // Check if already used (consumed) - single-use only
     if (invitation.status === "accepted") {
       throw new ConvexError(
-        "This invitation has already been used. Each invitation link can only be used once."
+        "This invitation has already been used. Each invitation link can only be used once.",
       );
     }
 
@@ -729,7 +792,7 @@ export const acceptInvitationByToken = mutation({
     const existingMembership = await ctx.db
       .query("householdMembers")
       .withIndex("by_user_and_household", (q) =>
-        q.eq("userId", user._id).eq("householdId", invitation.householdId)
+        q.eq("userId", user._id).eq("householdId", invitation.householdId),
       )
       .unique();
 
@@ -809,7 +872,7 @@ export const leaveHousehold = mutation({
     const membership = await ctx.db
       .query("householdMembers")
       .withIndex("by_user_and_household", (q) =>
-        q.eq("userId", user._id).eq("householdId", args.householdId)
+        q.eq("userId", user._id).eq("householdId", args.householdId),
       )
       .unique();
 
@@ -819,7 +882,7 @@ export const leaveHousehold = mutation({
 
     if (membership.role === "owner") {
       throw new ConvexError(
-        "The household owner cannot leave. Delete the household instead."
+        "The household owner cannot leave. Delete the household instead.",
       );
     }
 
@@ -860,7 +923,7 @@ export const shareRecipeToHousehold = mutation({
     const existingShare = await ctx.db
       .query("householdRecipes")
       .withIndex("by_household_and_recipe", (q) =>
-        q.eq("householdId", args.householdId).eq("recipeId", args.recipeId)
+        q.eq("householdId", args.householdId).eq("recipeId", args.recipeId),
       )
       .unique();
 
@@ -894,7 +957,7 @@ export const unshareRecipeFromHousehold = mutation({
     const sharedRecipe = await ctx.db
       .query("householdRecipes")
       .withIndex("by_household_and_recipe", (q) =>
-        q.eq("householdId", args.householdId).eq("recipeId", args.recipeId)
+        q.eq("householdId", args.householdId).eq("recipeId", args.recipeId),
       )
       .unique();
 
@@ -908,7 +971,7 @@ export const unshareRecipeFromHousehold = mutation({
 
     if (!isOwner && !isSharer) {
       throw new ConvexError(
-        "Only the household owner or the person who shared the recipe can unshare it"
+        "Only the household owner or the person who shared the recipe can unshare it",
       );
     }
 

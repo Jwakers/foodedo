@@ -5,11 +5,20 @@ import { Doc } from "./_generated/dataModel";
 import {
   internalAction,
   internalMutation,
+  mutation,
   MutationCtx,
   query,
   QueryCtx,
 } from "./_generated/server";
-import { PLANS, SUBSCRIPTION_TIERS } from "./lib/constants";
+import {
+  canUseHouseholdPreferences,
+  MEAL_PLAN_ERRORS,
+  PLANS,
+  PRIMARY_PROTEINS,
+  SUBSCRIPTION_TIERS,
+  USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH,
+  USER_PREFERENCE_ALLERGY_TARGETS_MAX,
+} from "./lib/constants";
 
 export const current = query({
   args: {},
@@ -209,5 +218,85 @@ export const syncUserWithClerk = internalAction({
     } catch (error) {
       console.error(`Error syncing user ${externalId} with Clerk:`, error);
     }
+  },
+});
+
+function normalisePreferencePhrase(raw: string): string {
+  return raw.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export const getMyPreferences = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    return (
+      user.preferences ?? {
+        allergyIngredientIds: [],
+        allergyPhrases: [],
+        excludedPrimaryProteins: [],
+      }
+    );
+  },
+});
+
+export const updateMyPreferences = mutation({
+  args: {
+    allergyIngredientIds: v.optional(v.array(v.id("ingredients"))),
+    allergyPhrases: v.optional(v.array(v.string())),
+    excludedPrimaryProteins: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    if (!canUseHouseholdPreferences(user.subscriptionTier)) {
+      throw new ConvexError(
+        MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_HOUSEHOLD_PREFERENCES,
+      );
+    }
+
+    const allergyIngredientIds = Array.from(
+      new Set(args.allergyIngredientIds ?? []),
+    );
+    const allergyPhrases = Array.from(
+      new Set(
+        (args.allergyPhrases ?? [])
+          .map(normalisePreferencePhrase)
+          .filter(Boolean)
+          .filter(
+            (phrase) =>
+              phrase.length <= USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH,
+          ),
+      ),
+    );
+
+    if (
+      allergyIngredientIds.length + allergyPhrases.length >
+      USER_PREFERENCE_ALLERGY_TARGETS_MAX
+    ) {
+      throw new ConvexError(
+        `At most ${USER_PREFERENCE_ALLERGY_TARGETS_MAX} allergy targets are allowed`,
+      );
+    }
+
+    const excludedPrimaryProteins = Array.from(
+      new Set(args.excludedPrimaryProteins ?? []),
+    ) as (typeof PRIMARY_PROTEINS)[number][];
+    const invalidProteins = excludedPrimaryProteins.filter(
+      (protein) => !(PRIMARY_PROTEINS as readonly string[]).includes(protein),
+    );
+    if (invalidProteins.length > 0) {
+      throw new ConvexError(
+        `Invalid primary proteins: ${invalidProteins.join(", ")}`,
+      );
+    }
+
+    await ctx.db.patch(user._id, {
+      preferences: {
+        allergyIngredientIds,
+        allergyPhrases,
+        excludedPrimaryProteins,
+      },
+    });
+
+    return { success: true };
   },
 });

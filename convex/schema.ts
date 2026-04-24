@@ -30,6 +30,9 @@ const ingredientFoodGroupUnion = v.union(
 const ingredientFoodSubGroupUnion = v.union(
   ...INGREDIENT_FOOD_SUB_GROUPS.map(v.literal),
 );
+const preferenceAllergyIngredientIdsValidator = v.array(v.id("ingredients"));
+const preferenceAllergyPhrasesValidator = v.array(v.string());
+const preferenceExcludedPrimaryProteinsValidator = v.array(primaryProteinUnion);
 
 export {
   categoriesUnion,
@@ -61,6 +64,17 @@ export default defineSchema({
     subscriptionStatus: v.optional(v.string()), // active, canceled, etc.
     subscriptionId: v.optional(v.string()), // Clerk subscription ID
     lastSubscriptionSync: v.optional(v.number()), // timestamp of last sync
+    preferences: v.optional(
+      v.object({
+        allergyIngredientIds: v.optional(
+          preferenceAllergyIngredientIdsValidator,
+        ),
+        allergyPhrases: v.optional(preferenceAllergyPhrasesValidator),
+        excludedPrimaryProteins: v.optional(
+          preferenceExcludedPrimaryProteinsValidator,
+        ),
+      }),
+    ),
   }).index("byExternalId", ["externalId"]),
 
   recipes: defineTable({
@@ -325,6 +339,19 @@ export default defineSchema({
     leftoverIngredientIds: v.optional(v.array(v.id("ingredients"))),
     /** Free-text targets (no catalog row); matched with fuzzy line matching. */
     leftoverIngredientPhrases: v.optional(v.array(v.string())),
+    /** Household members included when generation aggregated profile constraints. */
+    includedMemberUserIds: v.optional(v.array(v.id("users"))),
+    /** Snapshot of generation-time aggregated preference constraints for audit/debug. */
+    preferenceFilterSnapshot: v.optional(
+      v.object({
+        allergyIngredientIds: preferenceAllergyIngredientIdsValidator,
+        allergyPhrases: preferenceAllergyPhrasesValidator,
+        excludedPrimaryProteins: preferenceExcludedPrimaryProteinsValidator,
+      }),
+    ),
+    /** Optional generation-time target: guarantee this many meals at or under max total minutes. */
+    quickMealsCount: v.optional(v.number()),
+    quickMealsMaxMinutes: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_endDate", ["userId", "endDate"])
