@@ -12,6 +12,8 @@ import type { Id } from "convex/_generated/dataModel";
 import {
   BETA_FREE_INCLUDES_PREMIUM_FEATURES,
   PRIMARY_PROTEINS,
+  USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH,
+  USER_PREFERENCE_ALLERGY_TARGETS_MAX,
 } from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
 import {
@@ -102,9 +104,13 @@ export default function PreferencesPage() {
     });
   };
 
+  const allergyTargetCount = allergyIngredientIds.length + allergyPhrases.length;
+
   const addAllergyPhrase = () => {
     const phrase = normalisePhrase(searchQuery);
     if (!phrase) return;
+    if (phrase.length > USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH) return;
+    if (allergyTargetCount >= USER_PREFERENCE_ALLERGY_TARGETS_MAX) return;
     if (allergyPhrases.includes(phrase)) return;
     setAllergyPhrases((prev) => [...prev, phrase]);
     setSearchQuery("");
@@ -114,10 +120,13 @@ export default function PreferencesPage() {
   const canAddCustomPhrase = useMemo(() => {
     const phrase = normalisePhrase(searchQuery);
     if (!phrase) return false;
+    if (phrase.length > USER_PREFERENCE_ALLERGY_PHRASE_MAX_LENGTH) return false;
+    if (allergyTargetCount >= USER_PREFERENCE_ALLERGY_TARGETS_MAX) return false;
     return !allergyPhrases.includes(phrase);
-  }, [allergyPhrases, searchQuery]);
+  }, [allergyPhrases, searchQuery, allergyTargetCount]);
 
   const addAllergyIngredient = (ingredientId: Id<"ingredients">) => {
+    if (allergyTargetCount >= USER_PREFERENCE_ALLERGY_TARGETS_MAX) return;
     if (allergyIngredientIds.includes(ingredientId)) return;
     setAllergyIngredientIds((prev) => [...prev, ingredientId]);
     setSearchQuery("");
@@ -230,6 +239,7 @@ export default function PreferencesPage() {
                 <Label htmlFor="allergy-search">Search allergy items</Label>
                 <Input
                   id="allergy-search"
+                  disabled={!canUsePremiumFeatures}
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onKeyDown={(event) => {
@@ -248,6 +258,7 @@ export default function PreferencesPage() {
                     {canAddCustomPhrase ? (
                       <button
                         type="button"
+                        disabled={!canUsePremiumFeatures}
                         className="w-full border-b px-3 py-2 text-left text-sm font-medium text-primary hover:bg-accent"
                         onClick={addAllergyPhrase}
                       >
@@ -258,6 +269,7 @@ export default function PreferencesPage() {
                       <button
                         key={row._id}
                         type="button"
+                        disabled={!canUsePremiumFeatures}
                         className="w-full px-3 py-2 text-left text-sm hover:bg-accent"
                         onClick={() => addAllergyIngredient(row._id)}
                       >
@@ -274,6 +286,7 @@ export default function PreferencesPage() {
                       type="button"
                       variant="secondary"
                       size="sm"
+                      disabled={!canUsePremiumFeatures}
                       onClick={addAllergyPhrase}
                     >
                       Add “{searchQuery.trim()}” as allergy
@@ -293,7 +306,7 @@ export default function PreferencesPage() {
                           prev.filter((x) => x !== id),
                         )
                       }
-                      aria-label="Remove ingredient"
+                      aria-label={`Remove ${ingredientLabels.get(id) ?? "ingredient"}`}
                     >
                       <X className="size-3" />
                     </button>
@@ -313,7 +326,7 @@ export default function PreferencesPage() {
                           prev.filter((x) => x !== phrase),
                         )
                       }
-                      aria-label="Remove phrase"
+                      aria-label={`Remove ${phrase}`}
                     >
                       <X className="size-3" />
                     </button>
@@ -352,6 +365,7 @@ export default function PreferencesPage() {
                     <button
                       key={protein}
                       type="button"
+                      disabled={!canUsePremiumFeatures}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-sm transition-colors",
                         active
