@@ -1526,8 +1526,52 @@ export const addEntry = mutation({
     if (plan.isFinalised) {
       throw new ConvexError("Cannot add meals to a finalised plan");
     }
-    assertValidEntryPlacement({ plan, date: args.date, order: args.order });
+    const entries = await ctx.db
+      .query("mealPlanEntries")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
+      .collect();
+    if (entries.length >= MAX_DAYS_IN_MEAL_PLAN) {
+      throw new ConvexError(
+        `Meal plans cannot exceed ${MAX_DAYS_IN_MEAL_PLAN} meals.`,
+      );
+    }
+
+    if (args.order !== undefined && !Number.isInteger(args.order)) {
+      throw new ConvexError("Entry order must be an integer");
+    }
+
+    const requestedOrder = args.order ?? entries.length;
+    if (requestedOrder < 0) {
+      throw new ConvexError("Entry order must be at least 0");
+    }
+
     const dateStart = startOfDayMs(args.date);
+    const planStart = plan.startDate ?? plan.endDate;
+    const currentDayCount = getPlanDayCount(plan);
+    const requiredDayCount = Math.max(
+      currentDayCount,
+      requestedOrder + 1,
+      Math.floor((dateStart - planStart) / ONE_DAY_MS) + 1,
+    );
+    if (requiredDayCount > MAX_DAYS_IN_MEAL_PLAN) {
+      throw new ConvexError(
+        `Meal plans cannot exceed ${MAX_DAYS_IN_MEAL_PLAN} meals.`,
+      );
+    }
+
+    const nextEndDate = startOfDayMs(
+      planStart + (requiredDayCount - 1) * ONE_DAY_MS,
+    );
+    const planForPlacement =
+      requiredDayCount > currentDayCount
+        ? { ...plan, startDate: planStart, endDate: nextEndDate }
+        : plan;
+    assertValidEntryPlacement({
+      plan: planForPlacement,
+      date: dateStart,
+      order: requestedOrder,
+    });
+
     const { canAccess } = await canAccessRecipe(ctx, user._id, args.recipeId);
     if (!canAccess) {
       throw new ConvexError("You do not have access to this recipe");
@@ -1540,9 +1584,14 @@ export const addEntry = mutation({
       date: dateStart,
       recipeId: args.recipeId,
       mealLabel: args.mealLabel,
-      order: args.order,
+      order: requestedOrder,
     });
-    await ctx.db.patch(args.mealPlanId, { updatedAt: Date.now() });
+    await ctx.db.patch(args.mealPlanId, {
+      ...(requiredDayCount > currentDayCount
+        ? { startDate: planStart, endDate: nextEndDate }
+        : {}),
+      updatedAt: Date.now(),
+    });
     return { success: true };
   },
 });

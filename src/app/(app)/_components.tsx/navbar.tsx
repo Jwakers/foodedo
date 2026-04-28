@@ -22,6 +22,9 @@ export function Navbar() {
   const { currentPlan } = useCurrentMealPlan();
   const showPlanWeekFab =
     currentPlan !== undefined && currentPlan === null;
+  const mealsHref = currentPlan
+    ? ROUTES.mealPlanWithId(currentPlan._id)
+    : ROUTES.MEAL_PLAN;
 
   useLayoutEffect(() => {
     const nav = navRef.current;
@@ -64,7 +67,7 @@ export function Navbar() {
           </Link>
 
           {/* Meal planning */}
-          <Link href={ROUTES.MEAL_PLAN}>
+          <Link href={mealsHref}>
             <Button
               variant="ghost"
               className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
