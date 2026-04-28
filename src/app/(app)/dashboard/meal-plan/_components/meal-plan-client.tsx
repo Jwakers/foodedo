@@ -687,6 +687,8 @@ export default function MealPlanClient({
   const [pickerState, setPickerState] = useState<{
     mode: "add" | "replace";
     entry?: CurrentPlan["entries"][number];
+    targetDate?: number;
+    targetOrder?: number;
   } | null>(null);
   const [mealPlanLeftoverIds, setMealPlanLeftoverIds] = useState<
     Id<"ingredients">[]
@@ -1337,12 +1339,14 @@ export default function MealPlanClient({
       if (!currentPlan || !pickerState) return;
       try {
         if (pickerState.mode === "add") {
-          const date = currentPlan.startDate ?? currentPlan.endDate;
+          const date =
+            pickerState.targetDate ?? (currentPlan.startDate ?? currentPlan.endDate);
+          const order = pickerState.targetOrder ?? (currentPlan.entries?.length ?? 0);
           await addEntry({
             mealPlanId: currentPlan._id,
             date,
             recipeId,
-            order: currentPlan.entries?.length ?? 0,
+            order,
           });
           toast.success("Meal added");
         } else if (pickerState.entry) {
@@ -1901,6 +1905,32 @@ export default function MealPlanClient({
   }
 
   const mealCount = currentPlan.entries?.length ?? 0;
+  const addMealTarget = useMemo(() => {
+    const planStart = currentPlan.startDate ?? currentPlan.endDate;
+    const planDayCount = Math.max(
+      1,
+      Math.floor((currentPlan.endDate - planStart) / ONE_DAY_MS) + 1,
+    );
+    const usedOrders = new Set(
+      (currentPlan.entries ?? [])
+        .map((entry) => entry.order)
+        .filter((order): order is number => Number.isInteger(order)),
+    );
+    let targetOrder: number | undefined;
+    for (let i = 0; i < Math.min(MAX_DAYS_IN_MEAL_PLAN, planDayCount); i++) {
+      if (!usedOrders.has(i)) {
+        targetOrder = i;
+        break;
+      }
+    }
+    if (targetOrder === undefined) {
+      targetOrder = currentPlan.entries?.length ?? 0;
+    }
+    return {
+      targetOrder,
+      targetDate: planStart + targetOrder * ONE_DAY_MS,
+    };
+  }, [currentPlan]);
   const sharedHousehold = currentPlan.householdId
     ? households?.find((h) => h._id === currentPlan.householdId)
     : null;
@@ -2236,7 +2266,13 @@ export default function MealPlanClient({
             })}
             {canShowAddAnotherMeal ? (
               <EmptySlot
-                onAdd={() => setPickerState({ mode: "add" })}
+                onAdd={() =>
+                  setPickerState({
+                    mode: "add",
+                    targetDate: addMealTarget.targetDate,
+                    targetOrder: addMealTarget.targetOrder,
+                  })
+                }
                 label="Add another meal"
                 compact
               />
