@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
@@ -100,6 +101,18 @@ async function resolveMethodImageUrls(
       }
       return { ...step, imageUrl: undefined };
     }),
+  );
+}
+
+async function attachRecipeImageUrls(
+  ctx: QueryCtx,
+  recipes: Doc<"recipes">[],
+): Promise<Array<Omit<Doc<"recipes">, "image"> & { image: string | null }>> {
+  return Promise.all(
+    recipes.map(async (recipe) => ({
+      ...recipe,
+      image: recipe.image ? await ctx.storage.getUrl(recipe.image) : null,
+    })),
   );
 }
 
@@ -274,12 +287,34 @@ export const getAllUserRecipes = query({
       .order("desc")
       .collect();
 
-    return await Promise.all(
-      recipes.map(async (recipe) => ({
-        ...recipe,
-        image: recipe.image ? await ctx.storage.getUrl(recipe.image) : null,
-      })),
-    );
+    return attachRecipeImageUrls(ctx, recipes);
+  },
+});
+
+export const listUserRecipesPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return {
+        page: [],
+        continueCursor: "",
+        isDone: true,
+      };
+    }
+
+    const result = await ctx.db
+      .query("recipes")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    return {
+      ...result,
+      page: await attachRecipeImageUrls(ctx, result.page),
+    };
   },
 });
 
@@ -322,17 +357,30 @@ export const getSystemRecipes = query({
       .withIndex("by_source", (q) => q.eq("source", "system"))
       .collect();
 
-    const withUrls = await Promise.all(
-      recipes.map(async (r) => ({
-        ...r,
-        image: r.image ? await ctx.storage.getUrl(r.image) : null,
-      })),
-    );
+    const withUrls = await attachRecipeImageUrls(ctx, recipes);
 
     withUrls.sort((a, b) =>
       a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
     );
     return withUrls;
+  },
+});
+
+export const listSystemRecipesPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const result = await ctx.db
+      .query("recipes")
+      .withIndex("by_source_and_title", (q) => q.eq("source", "system"))
+      .order("asc")
+      .paginate(args.paginationOpts);
+
+    return {
+      ...result,
+      page: await attachRecipeImageUrls(ctx, result.page),
+    };
   },
 });
 

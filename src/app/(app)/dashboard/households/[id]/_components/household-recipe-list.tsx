@@ -33,11 +33,17 @@ import type { Recipe } from "../page";
 interface HouseholdRecipeListProps {
   recipes: Recipe[];
   householdId: Id<"households">;
+  canLoadMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
 }
 
 export function HouseholdRecipeList({
   recipes,
   householdId,
+  canLoadMore,
+  loadingMore,
+  onLoadMore,
 }: HouseholdRecipeListProps) {
   const [recipeToUnshare, setRecipeToUnshare] = useState<Recipe | null>(null);
   const [isUnsharing, setIsUnsharing] = useState(false);
@@ -148,6 +154,18 @@ export function HouseholdRecipeList({
           </Card>
         ))}
       </div>
+      {(canLoadMore || loadingMore) && (
+        <div className="mt-6 flex justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onLoadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading more..." : "Load more recipes"}
+          </Button>
+        </div>
+      )}
 
       <AlertDialog
         open={recipeToUnshare !== null}

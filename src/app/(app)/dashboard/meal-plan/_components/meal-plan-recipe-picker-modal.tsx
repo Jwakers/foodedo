@@ -55,7 +55,7 @@ import {
   PRIMARY_PROTEINS,
   RECIPE_CATEGORIES,
 } from "convex/lib/constants";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { ChefHat, Clock, Search, SlidersHorizontal, Users, X } from "lucide-react";
 import Image from "next/image";
@@ -69,14 +69,14 @@ type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
 type UserRecipe = FunctionReturnType<
-  typeof api.recipes.getAllUserRecipes
->[number];
+  typeof api.recipes.listUserRecipesPaginated
+>["page"][number];
 type HouseholdRecipe = FunctionReturnType<
   typeof api.households.getAllHouseholdRecipes
 >[number];
 type SystemRecipe = FunctionReturnType<
-  typeof api.recipes.getSystemRecipes
->[number];
+  typeof api.recipes.listSystemRecipesPaginated
+>["page"][number];
 
 /** Normalised recipe for list display; source indicates which tab it came from. */
 type PickerRecipe = RecipeListItem & {
@@ -195,10 +195,37 @@ export function MealPlanRecipePickerModal({
     initialRecipeCoreFilterState,
   );
 
-  // Load all recipe sources in parallel
-  const userRecipes = useQuery(api.recipes.getAllUserRecipes);
+  // Load recipe sources in parallel (household-all remains non-paginated in phase 1)
+  const {
+    results: userRecipes,
+    status: userRecipesStatus,
+    loadMore: loadMoreUserRecipes,
+  } = usePaginatedQuery(
+    api.recipes.listUserRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
   const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
-  const systemRecipes = useQuery(api.recipes.getSystemRecipes);
+  const {
+    results: systemRecipes,
+    status: systemRecipesStatus,
+    loadMore: loadMoreSystemRecipes,
+  } = usePaginatedQuery(
+    api.recipes.listSystemRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
+  const isUserRecipesInitialLoading =
+    userRecipesStatus === "LoadingFirstPage" && userRecipes.length === 0;
+  const isSystemRecipesInitialLoading =
+    systemRecipesStatus === "LoadingFirstPage" && systemRecipes.length === 0;
+  const canLoadMoreUserRecipes =
+    userRecipesStatus === "CanLoadMore" || userRecipesStatus === "LoadingMore";
+  const isLoadingMoreUserRecipes = userRecipesStatus === "LoadingMore";
+  const canLoadMoreSystemRecipes =
+    systemRecipesStatus === "CanLoadMore" ||
+    systemRecipesStatus === "LoadingMore";
+  const isLoadingMoreSystemRecipes = systemRecipesStatus === "LoadingMore";
 
   // My recipes: user + household merged and deduped (user takes precedence)
   const myRecipesNormalized = useMemo(
@@ -495,7 +522,7 @@ export function MealPlanRecipePickerModal({
               data-vaul-no-drag
               className="h-full overflow-y-auto overscroll-contain px-4 pb-6 pt-3"
             >
-              {userRecipes === undefined || householdRecipes === undefined ? (
+              {isUserRecipesInitialLoading || householdRecipes === undefined ? (
                 <RecipeListSkeleton />
               ) : filteredMy.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
@@ -515,6 +542,20 @@ export function MealPlanRecipePickerModal({
                   ))}
                 </div>
               )}
+              {canLoadMoreUserRecipes && (
+                <div className="mt-4 flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => loadMoreUserRecipes(20)}
+                    disabled={isLoadingMoreUserRecipes}
+                  >
+                    {isLoadingMoreUserRecipes
+                      ? "Loading more..."
+                      : "Load more recipes"}
+                  </Button>
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -524,7 +565,7 @@ export function MealPlanRecipePickerModal({
               data-vaul-no-drag
               className="h-full overflow-y-auto overscroll-contain px-4 pb-6 pt-3"
             >
-              {systemRecipes === undefined ? (
+              {isSystemRecipesInitialLoading ? (
                 <RecipeListSkeleton />
               ) : filteredDiscover.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
@@ -545,6 +586,20 @@ export function MealPlanRecipePickerModal({
                   ))}
                 </div>
               )}
+              {canLoadMoreSystemRecipes && (
+                <div className="mt-4 flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => loadMoreSystemRecipes(20)}
+                    disabled={isLoadingMoreSystemRecipes}
+                  >
+                    {isLoadingMoreSystemRecipes
+                      ? "Loading more..."
+                      : "Load more recipes"}
+                  </Button>
+                </div>
+              )}
             </div>
           </TabsContent>
           <TabsContent value={TAB_ALL} className="mt-0 min-h-0 flex-1">
@@ -552,9 +607,9 @@ export function MealPlanRecipePickerModal({
               data-vaul-no-drag
               className="h-full overflow-y-auto overscroll-contain px-4 pb-6 pt-3"
             >
-              {userRecipes === undefined ||
+              {isUserRecipesInitialLoading ||
               householdRecipes === undefined ||
-              systemRecipes === undefined ? (
+              isSystemRecipesInitialLoading ? (
                 <RecipeListSkeleton />
               ) : filteredAll.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
@@ -572,6 +627,29 @@ export function MealPlanRecipePickerModal({
                       replaceEntryId={replaceEntry?.recipeId}
                     />
                   ))}
+                </div>
+              )}
+              {(canLoadMoreUserRecipes || canLoadMoreSystemRecipes) && (
+                <div className="mt-4 flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (userRecipesStatus === "CanLoadMore") {
+                        loadMoreUserRecipes(20);
+                      }
+                      if (systemRecipesStatus === "CanLoadMore") {
+                        loadMoreSystemRecipes(20);
+                      }
+                    }}
+                    disabled={
+                      isLoadingMoreUserRecipes || isLoadingMoreSystemRecipes
+                    }
+                  >
+                    {isLoadingMoreUserRecipes || isLoadingMoreSystemRecipes
+                      ? "Loading more..."
+                      : "Load more recipes"}
+                  </Button>
                 </div>
               )}
             </div>

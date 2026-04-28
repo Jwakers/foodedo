@@ -106,6 +106,7 @@ _Angle: looking for ~20 testers / feedback._
 - [ ] Fix the “frozen WebView” state when the app sits idle for a while.
 - [x] Meal picker on mobile for meal plan: add safe area inset for the close button.
 - [x] Overflow on sign-in page on iPhone.
+- [ ] Horizontal scrolling in the desktop dashboard navigation menu
 
 ### Meal plan, sharing, and shopping
 

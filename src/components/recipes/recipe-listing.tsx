@@ -206,3 +206,32 @@ export function RecipeGrid({
     </div>
   );
 }
+
+type RecipeLoadMoreProps = {
+  canLoadMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
+  className?: string;
+};
+
+export function RecipeLoadMore({
+  canLoadMore,
+  loadingMore,
+  onLoadMore,
+  className,
+}: RecipeLoadMoreProps) {
+  if (!canLoadMore && !loadingMore) return null;
+
+  return (
+    <div className={className ?? "mt-8 flex justify-center"}>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onLoadMore}
+        disabled={loadingMore}
+      >
+        {loadingMore ? "Loading more..." : "Load more recipes"}
+      </Button>
+    </div>
+  );
+}
