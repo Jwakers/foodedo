@@ -1,21 +1,19 @@
 import { PublicPageTracker } from "@/components/analytics/public-page-tracker";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import type { AnalyticsEventName } from "@/lib/analytics/events";
 import { buildFaqJsonLdFromPairs } from "@/lib/faq-json-ld";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { IntentPageDefinition } from "@/lib/seo-intent-data";
+import { intentPathToTopic } from "./intent-topic";
 import { IntentLandingBody } from "./intent-landing-body";
 
 type IntentLandingPageWrapperProps = {
   intent: IntentPageDefinition;
   secondaryHref: string;
   secondaryLabel: string;
-  analyticsEvent?: string;
+  analyticsEvent?: AnalyticsEventName;
 };
-
-function intentPathToTopic(path: string): string {
-  return path.replace(/^\//, "").replaceAll("/", "_").replaceAll("-", "_");
-}
 
 export function IntentLandingPageWrapper({
   intent,

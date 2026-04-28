@@ -43,7 +43,10 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Pro tier, public, recipe image generator (need to be very secure and careful on throttling + usage for this one)
 - [x] Improve the ingredient manager for superusers: uncategorised ingredients should be searchable, and subcategories should appear alongside categorised ingredients for at-a-glance visibility.
 - [x] Add more vegan and vegetarian options. Make sure these can be filtered too.
-- [ ] Take most popular organic search results in google search console and make sure we have landing pages or blogs to capitalise.
+- [x] Take most popular organic search results in google search console and make sure we have landing pages or blogs to capitalise.
+- [ ] Better search and filtering for meal plan recipe select
+- [ ] If there is a current meal plan, the meals button should take you there instead
+- [ ] Manual meal selection UI card does not work on n android
 - [ ] Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 
