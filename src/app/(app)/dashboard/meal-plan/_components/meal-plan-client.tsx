@@ -2003,8 +2003,14 @@ export default function MealPlanClient({
             ) : null}
           </div>
           <div className="flex flex-wrap gap-2 items-center min-w-0 shrink-0">
+            <Button variant="outline" asChild>
+              <Link href={ROUTES.MEAL_PLAN} aria-label="Create a new meal plan">
+                <CalendarPlus className="size-4" />
+                New plan
+              </Link>
+            </Button>
             {hasList && firstListId ? (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" asChild>
                 <Link href={ROUTES.shoppingListWithId(firstListId)}>
                   <ShoppingCart className="size-4 " />
                   Shopping List
@@ -2026,7 +2032,6 @@ export default function MealPlanClient({
                   <Button
                     type="button"
                     variant="default"
-                    size="sm"
                     onClick={() => setShowUnshareConfirmDialog(true)}
                     aria-label="Stop sharing this meal plan with your household"
                   >
@@ -2039,7 +2044,6 @@ export default function MealPlanClient({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
                     onClick={() => setShowShareDialog(true)}
                     aria-label="Share this meal plan with a household"
                   >
