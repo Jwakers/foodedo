@@ -1,13 +1,16 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  TAB_ALL,
   TAB_DISCOVER,
-  TAB_MY_RECIPES,
   TAB_PARAM,
   useRecipeListing,
 } from "./recipe-listing-context";
+import {
+  RecipeSourceSwitcher,
+  type RecipeSourceSwitchValue,
+} from "./recipe-source-switcher";
 
 export function RecipeTabSwitcher() {
   const { isTabbedMode, currentTab } = useRecipeListing();
@@ -19,23 +22,26 @@ export function RecipeTabSwitcher() {
 
   const value = currentTab;
 
-  const onValueChange = (tab: string) => {
+  const onValueChange = (tab: RecipeSourceSwitchValue) => {
     const params = new URLSearchParams(searchParams.toString());
     if (tab === TAB_DISCOVER) {
       params.set(TAB_PARAM, TAB_DISCOVER);
+    } else if (tab === TAB_ALL) {
+      params.set(TAB_PARAM, TAB_ALL);
     } else {
       params.delete(TAB_PARAM);
     }
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname);
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
   };
 
   return (
-    <Tabs value={value} onValueChange={onValueChange} className="mt-6">
-      <TabsList className="w-fit">
-        <TabsTrigger value={TAB_MY_RECIPES}>My Recipes</TabsTrigger>
-        <TabsTrigger value={TAB_DISCOVER}>Discover</TabsTrigger>
-      </TabsList>
-    </Tabs>
+    <RecipeSourceSwitcher
+      value={value}
+      onValueChange={onValueChange}
+      className="mt-6"
+    />
   );
 }

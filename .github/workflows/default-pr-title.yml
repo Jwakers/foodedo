@@ -1,0 +1,30 @@
+name: Default PR title prefix
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  ensure-title-prefix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set temporary PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const temporaryTitle = "@coderabbitai";
+            const pr = context.payload.pull_request;
+            const currentTitle = (pr?.title ?? "").trim();
+
+            if (!currentTitle) return;
+            if (currentTitle === temporaryTitle) return;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              title: temporaryTitle,
+            });

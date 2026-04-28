@@ -24,10 +24,25 @@ export function Navbar() {
     currentPlan !== undefined && currentPlan === null;
 
   useLayoutEffect(() => {
-    document.body.style.setProperty(
-      "--nav-height",
-      `${navRef.current?.clientHeight}px`,
-    );
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const syncNavHeight = () => {
+      document.body.style.setProperty("--nav-height", `${nav.offsetHeight}px`);
+    };
+
+    syncNavHeight();
+
+    const observer = new ResizeObserver(syncNavHeight);
+    observer.observe(nav);
+    window.addEventListener("resize", syncNavHeight);
+    window.addEventListener("orientationchange", syncNavHeight);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", syncNavHeight);
+      window.removeEventListener("orientationchange", syncNavHeight);
+    };
   }, []);
 
   return (

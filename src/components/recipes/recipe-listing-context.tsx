@@ -2,11 +2,13 @@
 
 import type { RecipeListItem } from "./types";
 import {
-  getRecipeQuickFilter,
-  isRecipeQuickFilterKey,
+  applyRecipeCoreFilters,
+  initialRecipeCoreFilterState,
+  type RecipeCoreFilterState,
+} from "./recipe-filter-utils";
+import {
   type RecipeQuickFilterKey,
 } from "./quick-filters";
-import { getRecipeTotalMinutes, isUnder30Minutes } from "./recipe-time";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
@@ -28,92 +30,46 @@ import { useSearchParams } from "next/navigation";
 export const TAB_PARAM = "tab";
 export const TAB_DISCOVER = "discover";
 export const TAB_MY_RECIPES = "my-recipes";
+export const TAB_ALL = "all";
 
-export type RecipeListingTab = "my-recipes" | "discover";
+export type RecipeListingTab = "my-recipes" | "discover" | "all";
 
 export function getCurrentTab(searchParams: {
   get(key: string): string | null;
 }): RecipeListingTab {
-  return searchParams.get(TAB_PARAM) === TAB_DISCOVER
-    ? TAB_DISCOVER
-    : TAB_MY_RECIPES;
+  const rawTab = searchParams.get(TAB_PARAM);
+  if (rawTab === TAB_DISCOVER) return TAB_DISCOVER;
+  if (rawTab === TAB_ALL) return TAB_ALL;
+  return TAB_MY_RECIPES;
 }
 
-// ---------------------------------------------------------------------------
-// Filter helpers
-// ---------------------------------------------------------------------------
-
-function matchesDuration(recipe: RecipeListItem, duration: string): boolean {
-  if (duration === "all") return true;
-  switch (duration) {
-    case "under-30":
-      // Exclude total === 0: treat missing/zero time as unknown, not "under 30"
-      return isUnder30Minutes(recipe);
-    case "30-60": {
-      const total = getRecipeTotalMinutes(recipe);
-      return total >= 30 && total <= 60;
-    }
-    case "60-plus": {
-      const total = getRecipeTotalMinutes(recipe);
-      return total > 60;
-    }
-    default:
-      return true;
+function mergeRecipeLists(
+  first: RecipeListItem[] | undefined,
+  second: RecipeListItem[] | undefined,
+): RecipeListItem[] | undefined {
+  if (!first && !second) return undefined;
+  const out: RecipeListItem[] = [];
+  const seen = new Set<string>();
+  for (const recipe of first ?? []) {
+    const id = String(recipe._id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(recipe);
   }
-}
-
-function filterRecipes(
-  recipes: RecipeListItem[] | undefined,
-  filterState: RecipeListingFilterState,
-): RecipeListItem[] {
-  if (!recipes) return [];
-  const normalizedSearch = filterState.searchQuery.trim().toLowerCase();
-  const activeQuickFilters = filterState.selectedQuickFilters
-    .filter(isRecipeQuickFilterKey)
-    .map((key) => getRecipeQuickFilter(key));
-  return recipes.filter((recipe) => {
-    const matchesQuickFilters =
-      activeQuickFilters.length === 0 ||
-      activeQuickFilters.some((filter) => filter.matches(recipe));
-    const matchesSearch =
-      recipe.title.toLowerCase().includes(normalizedSearch) ||
-      (recipe.description ?? "").toLowerCase().includes(normalizedSearch);
-    const matchesCategory =
-      filterState.selectedCategory === "all" ||
-      recipe.category === filterState.selectedCategory;
-    const matchesProtein =
-      filterState.selectedProtein === "all" ||
-      (recipe.primaryProtein ?? "other") === filterState.selectedProtein;
-    const matchesDurationFilter = matchesDuration(
-      recipe,
-      filterState.selectedDuration,
-    );
-    const matchesComplexity =
-      filterState.selectedComplexity === "all" ||
-      (recipe.complexityTier ?? "") === filterState.selectedComplexity;
-    return (
-      matchesQuickFilters &&
-      matchesSearch &&
-      matchesCategory &&
-      matchesProtein &&
-      matchesDurationFilter &&
-      matchesComplexity
-    );
-  });
+  for (const recipe of second ?? []) {
+    const id = String(recipe._id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(recipe);
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type RecipeListingFilterState = {
-  searchQuery: string;
-  selectedCategory: string;
-  selectedProtein: string;
-  selectedDuration: string;
-  selectedComplexity: string;
-  selectedQuickFilters: RecipeQuickFilterKey[];
-};
+export type RecipeListingFilterState = RecipeCoreFilterState;
 
 export type LeftoverListingMeta = {
   bestMatchCount: number;
@@ -121,14 +77,8 @@ export type LeftoverListingMeta = {
   hasAnyMatch: boolean;
 };
 
-const initialFilterState: RecipeListingFilterState = {
-  searchQuery: "",
-  selectedCategory: "all",
-  selectedProtein: "all",
-  selectedDuration: "all",
-  selectedComplexity: "all",
-  selectedQuickFilters: [],
-};
+const initialFilterState: RecipeListingFilterState =
+  initialRecipeCoreFilterState;
 
 export type RecipeListingContextValue = {
   recipes: RecipeListItem[] | undefined;
@@ -189,6 +139,36 @@ function isTabbedProps(
   return "myRecipes" in p && "systemRecipes" in p;
 }
 
+function getRecipesForTab(
+  props: RecipeListingProviderProps,
+  currentTab: RecipeListingTab | null,
+  options?: {
+    useLeftover?: boolean;
+    leftoverSource?: RecipeListItem[];
+  },
+): RecipeListItem[] | undefined {
+  if (options?.useLeftover) {
+    const from = options.leftoverSource ?? [];
+    const discover = from.filter((recipe) => recipe.source === "system");
+    const mine = from.filter((recipe) => recipe.source !== "system");
+    if (!isTabbedProps(props)) {
+      return discover;
+    }
+    if (currentTab === TAB_DISCOVER) return discover;
+    if (currentTab === TAB_ALL) return mergeRecipeLists(mine, discover);
+    return mine;
+  }
+
+  if (isTabbedProps(props)) {
+    if (currentTab === TAB_DISCOVER) return props.systemRecipes;
+    if (currentTab === TAB_ALL) {
+      return mergeRecipeLists(props.myRecipes, props.systemRecipes);
+    }
+    return props.myRecipes;
+  }
+  return props.recipes;
+}
+
 export function RecipeListingProvider(props: RecipeListingProviderProps) {
   const searchParams = useSearchParams();
   const [filterState, setFilterState] =
@@ -230,22 +210,13 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
 
   const recipes: RecipeListItem[] | undefined = useMemo(() => {
     if (!hasLeftoverTargets || !canUseLeftoverFeatures) {
-      if (isTabbedProps(props)) {
-        return currentTab === "discover"
-          ? props.systemRecipes
-          : props.myRecipes;
-      }
-      return props.recipes;
+      return getRecipesForTab(props, currentTab);
     }
     if (leftoverSearch === undefined) return undefined;
-    const from = leftoverSearch.recipes;
-    if (!isTabbedProps(props)) {
-      return from.filter((r) => r.source === "system") as RecipeListItem[];
-    }
-    if (currentTab === "discover") {
-      return from.filter((r) => r.source === "system") as RecipeListItem[];
-    }
-    return from.filter((r) => r.source !== "system") as RecipeListItem[];
+    return getRecipesForTab(props, currentTab, {
+      useLeftover: true,
+      leftoverSource: leftoverSearch.recipes as RecipeListItem[],
+    });
   }, [
     props,
     currentTab,
@@ -255,12 +226,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
   ]);
 
   const baseRecipesForTab: RecipeListItem[] | undefined = useMemo(() => {
-    if (isTabbedProps(props)) {
-      return currentTab === "discover"
-        ? props.systemRecipes
-        : props.myRecipes;
-    }
-    return props.recipes;
+    return getRecipesForTab(props, currentTab);
   }, [props, currentTab]);
 
   const leftoverListingMeta = useMemo((): LeftoverListingMeta | null => {
@@ -283,7 +249,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
   ]);
 
   const filteredRecipes = useMemo(
-    () => filterRecipes(recipes, filterState),
+    () => applyRecipeCoreFilters(recipes, filterState),
     [recipes, filterState],
   );
 
@@ -365,7 +331,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       hasActiveFilters,
       isTabbedMode: isTabbed,
       currentTab,
-      optimizeImage: isTabbed ? currentTab === "discover" : true,
+      optimizeImage: isTabbed ? currentTab === TAB_DISCOVER : true,
       leftoverIngredientIds,
       leftoverIngredientPhrases,
       setLeftoverSelection,

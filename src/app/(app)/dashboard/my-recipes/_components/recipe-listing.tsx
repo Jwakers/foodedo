@@ -5,6 +5,8 @@ import {
   getCurrentTab,
   RecipeListingLayout,
   RecipeListingProvider,
+  TAB_ALL,
+  TAB_DISCOVER,
   TAB_MY_RECIPES,
 } from "@/components/recipes";
 import { LimitIndicator } from "@/components/limit-indicator";
@@ -53,6 +55,7 @@ export default function RecipeListingPage() {
   const subscription = useSubscription();
 
   const isMyRecipesTab = currentTab === TAB_MY_RECIPES;
+  const isDiscoverTab = currentTab === TAB_DISCOVER;
   const showEmptyState =
     isMyRecipesTab && recipes && recipes.length === 0;
 
@@ -62,7 +65,11 @@ export default function RecipeListingPage() {
         <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">
-              {isMyRecipesTab ? "My Recipes" : "Discover"}
+              {isMyRecipesTab
+                ? "My Recipes"
+                : isDiscoverTab
+                  ? "Discover"
+                  : "All Recipes"}
             </h1>
             {isMyRecipesTab ? (
               <p className="text-muted-foreground text-lg">
@@ -76,7 +83,9 @@ export default function RecipeListingPage() {
               </p>
             ) : (
               <p className="text-muted-foreground text-lg">
-                Browse our curated recipes.
+                {currentTab === TAB_ALL
+                  ? "Browse your recipes alongside curated discover recipes."
+                  : "Browse our curated recipes."}
               </p>
             )}
           </div>
