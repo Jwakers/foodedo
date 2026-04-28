@@ -1905,7 +1905,7 @@ export default function MealPlanClient({
   }
 
   const mealCount = currentPlan.entries?.length ?? 0;
-  const addMealTarget = useMemo(() => {
+  const addMealTarget = (() => {
     const planStart = currentPlan.startDate ?? currentPlan.endDate;
     const planDayCount = Math.max(
       1,
@@ -1930,7 +1930,7 @@ export default function MealPlanClient({
       targetOrder,
       targetDate: planStart + targetOrder * ONE_DAY_MS,
     };
-  }, [currentPlan]);
+  })();
   const sharedHousehold = currentPlan.householdId
     ? households?.find((h) => h._id === currentPlan.householdId)
     : null;
