@@ -14,6 +14,7 @@ import {
   type RecipeListingTab,
 } from "@/components/recipes";
 import { RECIPE_QUICK_FILTERS } from "@/components/recipes/quick-filters";
+import { RecipeLoadMore } from "@/components/recipes/recipe-listing";
 import { LimitIndicator } from "@/components/limit-indicator";
 import {
   Accordion,
@@ -944,20 +945,12 @@ export default function ShoppingListClient() {
                   ))}
                 </div>
               )}
-              {canLoadMoreActiveTab ? (
-                <div className="mt-6 mb-20 flex justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMoreActiveTab}
-                  >
-                    {isLoadingMoreActiveTab
-                      ? "Loading more..."
-                      : "Load more recipes"}
-                  </Button>
-                </div>
-              ) : null}
+              <RecipeLoadMore
+                canLoadMore={canLoadMoreActiveTab}
+                loadingMore={isLoadingMoreActiveTab}
+                onLoadMore={handleLoadMore}
+                className="mt-6 mb-20"
+              />
 
               {/* Generate Button */}
               {selectedRecipeIds.size > 0 && (
