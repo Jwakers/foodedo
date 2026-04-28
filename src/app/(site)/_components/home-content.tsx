@@ -238,6 +238,37 @@ export default function HomeContent({
                   library over time, then generate a shopping list from the plan
                   and check items off as you go.
                 </p>
+                <p className="text-sm text-muted-foreground">
+                  New here? Read{" "}
+                  <Link
+                    href={ROUTES.RECIPE_TO_SHOPPING_LIST}
+                    className="text-primary underline underline-offset-4 hover:text-primary/85"
+                  >
+                    how to turn recipes into one shopping list
+                  </Link>
+                  {" or "}
+                  <Link
+                    href={ROUTES.COMBINE_RECIPES_INTO_ONE_GROCERY_LIST}
+                    className="text-primary underline underline-offset-4 hover:text-primary/85"
+                  >
+                    combine multiple recipes into one grocery list
+                  </Link>
+                  {", "}
+                  <Link
+                    href={ROUTES.HOW_TO_CREATE_A_WEEKLY_MEAL_PLAN_FAST}
+                    className="text-primary underline underline-offset-4 hover:text-primary/85"
+                  >
+                    plan your week quickly
+                  </Link>
+                  {", or "}
+                  <Link
+                    href={ROUTES.HOW_TO_PLAN_VARIED_MEALS_FOR_THE_WEEK}
+                    className="text-primary underline underline-offset-4 hover:text-primary/85"
+                  >
+                    keep meals varied
+                  </Link>
+                  {"."}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   <ProtectedAppCta
                     href={ROUTES.MEAL_PLAN}
@@ -296,6 +327,23 @@ export default function HomeContent({
                 Paste a URL and we pull the recipe into {APP_NAME}. Straight to
                 the point every time: no life stories, no endless scroll. Then
                 save it and tweak it to make it yours.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Want the full guide? See our{" "}
+                <Link
+                  href={ROUTES.HOW_TO_MAKE_A_SHOPPING_LIST_FROM_RECIPES}
+                  className="text-primary underline underline-offset-4 hover:text-primary/85"
+                >
+                  step-by-step guide from recipes to list
+                </Link>
+                , plus{" "}
+                <Link
+                  href={ROUTES.MEAL_PLANNING_FOR_BUSY_WEEKNIGHTS}
+                  className="text-primary underline underline-offset-4 hover:text-primary/85"
+                >
+                  meal planning for busy weeknights
+                </Link>
+                .
               </p>
               <ProtectedAppCta
                 href={ROUTES.IMPORT_RECIPE}

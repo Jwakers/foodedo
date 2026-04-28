@@ -41,6 +41,18 @@ export const ROUTES = {
   FAMILY_MEAL_PLANNING: "/family-meal-planning",
   RECIPE_TO_SHOPPING_LIST: "/recipe-to-shopping-list",
   HOUSEHOLD_MEAL_PLANNING: "/household-meal-planning",
+  HOW_TO_MAKE_A_SHOPPING_LIST_FROM_RECIPES:
+    "/how-to-make-a-shopping-list-from-recipes",
+  COMBINE_RECIPES_INTO_ONE_GROCERY_LIST:
+    "/combine-recipes-into-one-grocery-list",
+  MEAL_PLANNER_WITH_GROCERY_LIST: "/meal-planner-with-grocery-list",
+  HOW_TO_CREATE_A_WEEKLY_MEAL_PLAN_FAST:
+    "/how-to-create-a-weekly-meal-plan-fast",
+  HOW_TO_PLAN_VARIED_MEALS_FOR_THE_WEEK:
+    "/how-to-plan-varied-meals-for-the-week",
+  MEAL_PLANNING_FOR_BUSY_WEEKNIGHTS: "/meal-planning-for-busy-weeknights",
+  MEAL_PLAN_VS_SHOPPING_LIST_WHAT_YOU_NEED:
+    "/meal-plan-vs-shopping-list-what-you-need",
   /** Public help hub and docs (crawlable; no login required). */
   PUBLIC_SUPPORT: "/support",
   PUBLIC_SUPPORT_HOW_TO: "/support/how-to-use",
