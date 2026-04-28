@@ -12,7 +12,7 @@ Use this single doc to track baselines, weekly reviews, and the **finish state**
 
 **Baseline instructions:** After your analytics tool has at least 7 days of data, record the first row. If traffic is very low, still record zeros—comparability matters more than magnitude.
 
-## Intent map (three entry pages)
+## Intent map (ten entry pages)
 
 These URLs are the primary SEO/AEO targets for this phase. Content and metadata live in the app; this table is the editorial source of truth.
 
@@ -120,7 +120,7 @@ Detailed click-by-click setup: `docs/POSTHOG_DASHBOARDS.md`.
 ## Known finish state (this phase is “done” when)
 
 - [ ] Scoreboard has **3+ weeks** of comparable metrics.
-- [ ] Three intent URLs are live, indexable, with metadata + FAQ JSON-LD + CTAs.
+- [ ] Ten intent URLs are live, indexable, with metadata + FAQ JSON-LD + CTAs.
 - [ ] Public support hub at `/support` (and how-to + contact) is live and linked from the marketing footer.
 - [ ] You have completed at least **3 weekly reviews** with written notes in the table or Notes column.
 - [ ] You can name **one repeatable acquisition play** (even small) backed by your numbers.

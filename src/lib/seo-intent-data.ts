@@ -6,18 +6,19 @@
 import { ROUTES } from "@/app/constants";
 
 export type IntentFaqItem = { question: string; answer: string };
+export type RelatedGuide = { href: string; label: string };
 
 export type IntentPageDefinition = {
   /** URL path without domain, e.g. /family-meal-planning */
   path: string;
   metaTitle: string;
   metaDescription: string;
-  keywords?: string[];
+  keywords?: ReadonlyArray<string>;
   h1: string;
   intro: string;
   sections: ReadonlyArray<{ heading: string; body: string }>;
   faq: ReadonlyArray<IntentFaqItem>;
-  relatedGuides?: ReadonlyArray<{ href: string; label: string }>;
+  relatedGuides?: ReadonlyArray<RelatedGuide>;
 };
 
 export const INTENT_FAMILY_MEAL_PLANNING: IntentPageDefinition = {

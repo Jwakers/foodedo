@@ -29,34 +29,34 @@ const blogCanonical = `${getSiteBaseUrl()}${ROUTES.BLOG}`;
 const SEO_GUIDES = [
   {
     title: "How to Turn Recipes Into One Grocery List",
-    href: "/blog/how-to-turn-recipes-into-one-grocery-list",
+    slug: "how-to-turn-recipes-into-one-grocery-list",
     excerpt:
       "A practical recipe-to-list guide for creating one weekly grocery list.",
   },
   {
     title: "How to Combine Ingredients From Multiple Recipes",
-    href: "/blog/how-to-combine-ingredients-from-multiple-recipes",
+    slug: "how-to-combine-ingredients-from-multiple-recipes",
     excerpt:
       "Plan several meals and combine ingredients into one shopping-ready list.",
   },
   {
     title: "Weekly Meal Plan + Shopping List Guide",
-    href: "/blog/weekly-meal-plan-and-shopping-list-guide",
+    slug: "weekly-meal-plan-and-shopping-list-guide",
     excerpt: "A repeatable weekly planning rhythm for households and families.",
   },
   {
     title: "How to Build a Weekly Meal Plan in 15 Minutes",
-    href: "/blog/how-to-build-a-weekly-meal-plan-in-15-minutes",
+    slug: "how-to-build-a-weekly-meal-plan-in-15-minutes",
     excerpt: "A quick routine for planning dinners when time is tight.",
   },
   {
     title: "How to Keep Meals Varied Without Overthinking It",
-    href: "/blog/how-to-keep-meals-varied-without-overthinking-it",
+    slug: "how-to-keep-meals-varied-without-overthinking-it",
     excerpt: "Avoid repeating the same meals with a simple weekly mix.",
   },
   {
     title: "Recipe App vs Meal Planner vs Grocery List App",
-    href: "/blog/recipe-app-vs-meal-planner-vs-grocery-list-app",
+    slug: "recipe-app-vs-meal-planner-vs-grocery-list-app",
     excerpt:
       "Compare tools and see why connected planning + shopping is easier.",
   },
@@ -121,8 +121,8 @@ export default async function BlogPage() {
             </h2>
             <ul className="grid gap-4 sm:grid-cols-2">
               {SEO_GUIDES.map((guide) => (
-                <li key={guide.href}>
-                  <Link href={guide.href}>
+                <li key={guide.slug}>
+                  <Link href={`${ROUTES.BLOG}/${guide.slug}`}>
                     <Card className="h-full transition-colors hover:bg-muted/50">
                       <CardContent className="p-4">
                         <h3 className="text-lg font-semibold">{guide.title}</h3>

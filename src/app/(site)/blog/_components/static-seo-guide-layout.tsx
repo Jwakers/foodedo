@@ -29,7 +29,7 @@ export function buildStaticGuideMetadata({
   description,
   canonicalPath,
 }: StaticGuideMetadataOptions): Metadata {
-  const canonicalUrl = `${getSiteBaseUrl()}${canonicalPath}`;
+  const canonicalUrl = new URL(canonicalPath, getSiteBaseUrl()).toString();
 
   return {
     title: `${title} | ${APP_NAME}`,
