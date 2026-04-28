@@ -3,6 +3,7 @@
 import { ROUTES } from "@/app/constants";
 import {
   getCurrentTab,
+  RecipeLoadMore,
   RecipeListingLayout,
   RecipeListingProvider,
   TAB_ALL,
@@ -13,7 +14,7 @@ import { LimitIndicator } from "@/components/limit-indicator";
 import { Button } from "@/components/ui/button";
 import useSubscription from "@/lib/hooks/use-subscription";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -50,14 +51,70 @@ export default function RecipeListingPage() {
   const searchParams = useSearchParams();
   const currentTab = getCurrentTab(searchParams);
 
-  const recipes = useQuery(api.recipes.getAllUserRecipes);
-  const systemRecipes = useQuery(api.recipes.getSystemRecipes);
+  const {
+    results: recipes,
+    status: myRecipesStatus,
+    loadMore: loadMoreMyRecipes,
+  } = usePaginatedQuery(
+    api.recipes.listUserRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
+  const {
+    results: systemRecipes,
+    status: systemRecipesStatus,
+    loadMore: loadMoreSystemRecipes,
+  } = usePaginatedQuery(
+    api.recipes.listSystemRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
   const subscription = useSubscription();
+  const isMyRecipesInitialLoading =
+    myRecipesStatus === "LoadingFirstPage" && recipes.length === 0;
+  const isSystemRecipesInitialLoading =
+    systemRecipesStatus === "LoadingFirstPage" && systemRecipes.length === 0;
 
   const isMyRecipesTab = currentTab === TAB_MY_RECIPES;
   const isDiscoverTab = currentTab === TAB_DISCOVER;
   const showEmptyState =
-    isMyRecipesTab && recipes && recipes.length === 0;
+    isMyRecipesTab && !isMyRecipesInitialLoading && recipes.length === 0;
+  const canLoadMoreMyRecipes = myRecipesStatus === "CanLoadMore";
+  const canLoadMoreSystemRecipes = systemRecipesStatus === "CanLoadMore";
+  const canLoadMoreCurrentTab =
+    currentTab === TAB_MY_RECIPES
+      ? canLoadMoreMyRecipes
+      : currentTab === TAB_DISCOVER
+        ? canLoadMoreSystemRecipes
+        : canLoadMoreMyRecipes || canLoadMoreSystemRecipes;
+  const isLoadingMoreCurrentTab =
+    currentTab === TAB_MY_RECIPES
+      ? myRecipesStatus === "LoadingMore"
+      : currentTab === TAB_DISCOVER
+        ? systemRecipesStatus === "LoadingMore"
+        : myRecipesStatus === "LoadingMore" ||
+          systemRecipesStatus === "LoadingMore";
+
+  const handleLoadMore = () => {
+    if (currentTab === TAB_MY_RECIPES) {
+      if (canLoadMoreMyRecipes) {
+        loadMoreMyRecipes(20);
+      }
+      return;
+    }
+    if (currentTab === TAB_DISCOVER) {
+      if (canLoadMoreSystemRecipes) {
+        loadMoreSystemRecipes(20);
+      }
+      return;
+    }
+    if (canLoadMoreMyRecipes) {
+      loadMoreMyRecipes(20);
+    }
+    if (canLoadMoreSystemRecipes) {
+      loadMoreSystemRecipes(20);
+    }
+  };
 
   return (
     <div className="bg-background">
@@ -122,12 +179,21 @@ export default function RecipeListingPage() {
         {showEmptyState ? (
           <EmptyState setAddRecipeDrawerOpen={setShowAddRecipeDrawer} />
         ) : (
-          <RecipeListingProvider
-            myRecipes={recipes}
-            systemRecipes={systemRecipes}
-          >
-            <RecipeListingLayout />
-          </RecipeListingProvider>
+          <>
+            <RecipeListingProvider
+              myRecipes={isMyRecipesInitialLoading ? undefined : recipes}
+              systemRecipes={
+                isSystemRecipesInitialLoading ? undefined : systemRecipes
+              }
+            >
+              <RecipeListingLayout />
+            </RecipeListingProvider>
+            <RecipeLoadMore
+              canLoadMore={canLoadMoreCurrentTab}
+              loadingMore={isLoadingMoreCurrentTab}
+              onLoadMore={handleLoadMore}
+            />
+          </>
         )}
 
         <AddRecipeDrawer

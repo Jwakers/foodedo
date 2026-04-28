@@ -5,7 +5,7 @@ import { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { FunctionReturnType } from "convex/server";
 import { ArrowLeft, Settings, UserPlus } from "lucide-react";
 import Link from "next/link";
@@ -21,8 +21,8 @@ interface HouseholdDetailPageProps {
 }
 
 export type Recipe = FunctionReturnType<
-  typeof api.households.getHouseholdRecipes
->[number];
+  typeof api.households.listHouseholdRecipesPaginated
+>["page"][number];
 
 export default function HouseholdDetailPage({
   params,
@@ -32,15 +32,25 @@ export default function HouseholdDetailPage({
   const members = useQuery(api.households.getHouseholdMembers, {
     householdId: id,
   });
-  const recipes = useQuery(api.households.getHouseholdRecipes, {
-    householdId: id,
-  });
+  const {
+    results: recipes,
+    status: recipesStatus,
+    loadMore: loadMoreRecipes,
+  } = usePaginatedQuery(
+    api.households.listHouseholdRecipesPaginated,
+    { householdId: id },
+    { initialNumItems: 20 },
+  );
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const isRecipesInitialLoading =
+    recipesStatus === "LoadingFirstPage" && recipes.length === 0;
+  const canLoadMoreRecipes = recipesStatus === "CanLoadMore";
+  const loadingMoreRecipes = recipesStatus === "LoadingMore";
 
   if (
     household === undefined ||
     members === undefined ||
-    recipes === undefined
+    isRecipesInitialLoading
   ) {
     return (
       <div className="container mx-auto py-8">
@@ -85,7 +95,7 @@ export default function HouseholdDetailPage({
             </h1>
             <p className="text-muted-foreground mt-1">
               {members.length} {members.length === 1 ? "member" : "members"} •{" "}
-              {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"}
+              {recipes.length} loaded {recipes.length === 1 ? "recipe" : "recipes"}
             </p>
           </div>
         </div>
@@ -113,7 +123,13 @@ export default function HouseholdDetailPage({
         </TabsList>
 
         <TabsContent value="recipes" className="space-y-4">
-          <HouseholdRecipeList recipes={recipes} householdId={id} />
+          <HouseholdRecipeList
+            recipes={recipes}
+            householdId={id}
+            canLoadMore={canLoadMoreRecipes}
+            loadingMore={loadingMoreRecipes}
+            onLoadMore={() => loadMoreRecipes(20)}
+          />
         </TabsContent>
 
         <TabsContent value="members" className="space-y-4">

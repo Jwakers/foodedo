@@ -5,10 +5,11 @@ import {
   RecipeListingProvider,
   useRecipeListing,
 } from "@/components/recipes/recipe-listing-context";
+import { RecipeLoadMore } from "@/components/recipes/recipe-listing";
 import { Button } from "@/components/ui/button";
 import { DiscoverRecipeGrid } from "./discover-recipe-grid";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 
 function DiscoverLoadingSkeleton() {
   return (
@@ -116,19 +117,29 @@ function DiscoverRecipeListing() {
 }
 
 export default function DiscoverRecipesClient() {
-  const recipes = useQuery(api.recipes.getSystemRecipes);
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.recipes.listSystemRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
+  const isInitialLoading = status === "LoadingFirstPage" && results.length === 0;
 
-  if (recipes === undefined) {
+  if (isInitialLoading) {
     return <DiscoverLoadingSkeleton />;
   }
 
   return (
-    <RecipeListingProvider recipes={recipes}>
+    <RecipeListingProvider recipes={results}>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <RecipeFilters />
         </div>
         <DiscoverRecipeListing />
+        <RecipeLoadMore
+          canLoadMore={status === "CanLoadMore"}
+          loadingMore={status === "LoadingMore"}
+          onLoadMore={() => loadMore(20)}
+        />
       </div>
     </RecipeListingProvider>
   );

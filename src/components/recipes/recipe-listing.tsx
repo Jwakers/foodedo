@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { RecipeListItem } from "./types";
 import { LoadingState, RecipeCard } from "./recipe-card";
 import { RecipeFilters } from "./recipe-filters";
@@ -203,6 +204,35 @@ export function RecipeGrid({
           leftoverTargetCount={leftoverListingMeta?.targetCount}
         />
       ))}
+    </div>
+  );
+}
+
+type RecipeLoadMoreProps = {
+  canLoadMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
+  className?: string;
+};
+
+export function RecipeLoadMore({
+  canLoadMore,
+  loadingMore,
+  onLoadMore,
+  className,
+}: RecipeLoadMoreProps) {
+  if (!canLoadMore && !loadingMore) return null;
+
+  return (
+    <div className={cn("mt-8 flex justify-center", className)}>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onLoadMore}
+        disabled={loadingMore}
+      >
+        {loadingMore ? "Loading more..." : "Load more recipes"}
+      </Button>
     </div>
   );
 }

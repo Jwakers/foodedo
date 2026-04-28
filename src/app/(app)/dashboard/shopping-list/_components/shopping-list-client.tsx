@@ -1,6 +1,20 @@
 "use client";
 
 import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
+import {
+  applyRecipeCoreFilters,
+  initialRecipeCoreFilterState,
+  type RecipeCoreFilterState,
+} from "@/components/recipes/recipe-filter-utils";
+import {
+  RecipeSourceSwitcher,
+  TAB_ALL,
+  TAB_DISCOVER,
+  TAB_MY_RECIPES,
+  type RecipeListingTab,
+} from "@/components/recipes";
+import { RECIPE_QUICK_FILTERS } from "@/components/recipes/quick-filters";
+import { RecipeLoadMore } from "@/components/recipes/recipe-listing";
 import { LimitIndicator } from "@/components/limit-indicator";
 import {
   Accordion,
@@ -38,13 +52,15 @@ import { scaleAmountForServings } from "convex/lib/servings";
 import { isPantryStaple } from "@/lib/pantry-staples";
 import { combineAmounts } from "convex/lib/unitConversion";
 import {
-  TARGET_SERVINGS_MAX,
   TARGET_SERVINGS_MIN,
+  COMPLEXITY_TIERS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
 } from "convex/lib/constants";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
   AlertCircle,
@@ -58,8 +74,10 @@ import {
   ListChecks,
   Plus,
   Search,
+  SlidersHorizontal,
   ShoppingCart,
   Users,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,19 +87,95 @@ import { toast } from "sonner";
 import ShoppingList from "./shopping-list";
 
 type UserRecipe = FunctionReturnType<
-  typeof api.recipes.getAllUserRecipes
->[number];
+  typeof api.recipes.listUserRecipesPaginated
+>["page"][number];
 type HouseholdRecipe = FunctionReturnType<
   typeof api.households.getAllHouseholdRecipes
 >[number];
-type Recipe = UserRecipe | HouseholdRecipe;
+type SystemRecipe = FunctionReturnType<
+  typeof api.recipes.listSystemRecipesPaginated
+>["page"][number];
+type SelectionSource = "user" | "household" | "discover";
+type Recipe = (UserRecipe | HouseholdRecipe | SystemRecipe) & {
+  selectionSource: SelectionSource;
+};
+
+const DURATION_OPTIONS = [
+  { value: "all", label: "Any duration" },
+  { value: "under-30", label: "Under 30 min" },
+  { value: "30-60", label: "30-60 min" },
+  { value: "60-plus", label: "60+ min" },
+] as const;
+
+function hasActiveFilters(filterState: RecipeCoreFilterState): boolean {
+  return (
+    filterState.searchQuery.trim() !== "" ||
+    filterState.selectedCategory !== "all" ||
+    filterState.selectedProtein !== "all" ||
+    filterState.selectedDuration !== "all" ||
+    filterState.selectedComplexity !== "all" ||
+    filterState.selectedQuickFilters.length > 0
+  );
+}
+
+function mergeMyRecipes(
+  userRecipes: UserRecipe[],
+  householdRecipes: HouseholdRecipe[],
+): Recipe[] {
+  const byId = new Map<Id<"recipes">, Recipe>();
+  userRecipes.forEach((recipe) => {
+    byId.set(recipe._id, {
+      ...recipe,
+      selectionSource: "user",
+    });
+  });
+  householdRecipes.forEach((recipe) => {
+    if (!byId.has(recipe._id)) {
+      byId.set(recipe._id, {
+        ...recipe,
+        selectionSource: "household",
+      });
+    }
+  });
+  return Array.from(byId.values());
+}
+
+function mergeRecipeSources(first: Recipe[], second: Recipe[]): Recipe[] {
+  const byId = new Map<Id<"recipes">, Recipe>();
+  first.forEach((recipe) => {
+    byId.set(recipe._id, recipe);
+  });
+  second.forEach((recipe) => {
+    if (!byId.has(recipe._id)) {
+      byId.set(recipe._id, recipe);
+    }
+  });
+  return Array.from(byId.values());
+}
 
 export default function ShoppingListClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const listIdFromUrl = searchParams.get("listId");
 
-  const userRecipes = useQuery(api.recipes.getAllUserRecipes);
+  const {
+    results: userRecipes,
+    status: userRecipesStatus,
+    loadMore: loadMoreUserRecipes,
+  } = usePaginatedQuery(
+    api.recipes.listUserRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
+  const {
+    results: systemRecipes,
+    status: systemRecipesStatus,
+    loadMore: loadMoreSystemRecipes,
+  } = usePaginatedQuery(
+    api.recipes.listSystemRecipesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
   const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
   const households = useQuery(api.households.getUserHouseholds);
   const accessibleLists = useQuery(
@@ -110,20 +204,48 @@ export default function ShoppingListClient() {
     return activeShoppingList ?? null;
   }, [listIdFromUrl, listFromUrl, accessibleLists, activeShoppingList]);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [tab, setTab] = useState<RecipeListingTab>(TAB_MY_RECIPES);
+  const [myFilters, setMyFilters] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
+  const [discoverFilters, setDiscoverFilters] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
+  const [allFilters, setAllFilters] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<
     Set<Id<"recipes">>
   >(new Set());
   /** When true, show recipe selection to create a new list (from list picker) */
   const [showRecipeSelection, setShowRecipeSelection] = useState(false);
-  const [targetServings, setTargetServings] = useState(TARGET_SERVINGS_MIN);
-
-  // Combine user and household recipes into one list
-  const allRecipes = useMemo(() => {
-    const user = userRecipes || [];
-    const household = householdRecipes || [];
-    return [...user, ...household];
-  }, [userRecipes, householdRecipes]);
+  const myRecipes = useMemo(
+    () => mergeMyRecipes(userRecipes ?? [], householdRecipes ?? []),
+    [userRecipes, householdRecipes],
+  );
+  const discoverRecipes = useMemo(
+    () =>
+      (systemRecipes ?? []).map((recipe) => ({
+        ...recipe,
+        selectionSource: "discover" as const,
+      })),
+    [systemRecipes],
+  );
+  const allRecipes = useMemo(
+    () => mergeRecipeSources(myRecipes, discoverRecipes),
+    [myRecipes, discoverRecipes],
+  );
+  const targetServings = useMemo(() => {
+    const selected = allRecipes.filter((recipe) => selectedRecipeIds.has(recipe._id));
+    if (selected.length === 0) {
+      return TARGET_SERVINGS_MIN;
+    }
+    const totalServes = selected.reduce(
+      (sum, recipe) => sum + (recipe.serves ?? TARGET_SERVINGS_MIN),
+      0,
+    );
+    return Math.max(TARGET_SERVINGS_MIN, Math.round(totalServes / selected.length));
+  }, [allRecipes, selectedRecipeIds]);
 
   const selectedRecipes = useMemo(
     () => allRecipes.filter((r) => selectedRecipeIds.has(r._id)) || [],
@@ -146,6 +268,27 @@ export default function ShoppingListClient() {
     return { mainItems: main, pantryItems: pantry };
   }, [flatIngredients]);
   const [showDoneDialog, setShowDoneDialog] = useState(false);
+  const isUserRecipesInitialLoading =
+    userRecipesStatus === "LoadingFirstPage" && userRecipes.length === 0;
+  const isSystemRecipesInitialLoading =
+    systemRecipesStatus === "LoadingFirstPage" && systemRecipes.length === 0;
+  const canLoadMoreUserRecipes =
+    userRecipesStatus === "CanLoadMore" || userRecipesStatus === "LoadingMore";
+  const isLoadingMoreUserRecipes = userRecipesStatus === "LoadingMore";
+  const canLoadMoreSystemRecipes =
+    systemRecipesStatus === "CanLoadMore" ||
+    systemRecipesStatus === "LoadingMore";
+  const isLoadingMoreSystemRecipes = systemRecipesStatus === "LoadingMore";
+  const canLoadMoreActiveTab =
+    (tab === TAB_MY_RECIPES && canLoadMoreUserRecipes) ||
+    (tab === TAB_DISCOVER && canLoadMoreSystemRecipes) ||
+    (tab === TAB_ALL && (canLoadMoreUserRecipes || canLoadMoreSystemRecipes));
+  const isLoadingMoreActiveTab =
+    tab === TAB_MY_RECIPES
+      ? isLoadingMoreUserRecipes
+      : tab === TAB_DISCOVER
+        ? isLoadingMoreSystemRecipes
+        : isLoadingMoreUserRecipes || isLoadingMoreSystemRecipes;
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
   >(new Set());
@@ -175,17 +318,76 @@ export default function ShoppingListClient() {
   );
   const deleteShoppingList = useMutation(api.shoppingLists.deleteShoppingList);
 
-  // Filter recipes based on search
-  const filteredRecipes = useMemo(
-    () =>
-      allRecipes.filter((recipe) => {
-        const matchesSearch =
-          recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          recipe.description?.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesSearch;
-      }),
-    [allRecipes, searchQuery],
+  const filteredMyRecipes = useMemo(
+    () => applyRecipeCoreFilters(myRecipes, myFilters),
+    [myRecipes, myFilters],
   );
+  const filteredDiscoverRecipes = useMemo(
+    () => applyRecipeCoreFilters(discoverRecipes, discoverFilters),
+    [discoverRecipes, discoverFilters],
+  );
+  const filteredAllRecipes = useMemo(
+    () => applyRecipeCoreFilters(allRecipes, allFilters),
+    [allRecipes, allFilters],
+  );
+  const activeFilters =
+    tab === TAB_MY_RECIPES
+      ? myFilters
+      : tab === TAB_DISCOVER
+        ? discoverFilters
+        : allFilters;
+  const activeFilteredRecipes =
+    tab === TAB_MY_RECIPES
+      ? filteredMyRecipes
+      : tab === TAB_DISCOVER
+        ? filteredDiscoverRecipes
+        : filteredAllRecipes;
+  const activeBaseRecipes =
+    tab === TAB_MY_RECIPES
+      ? myRecipes
+      : tab === TAB_DISCOVER
+        ? discoverRecipes
+        : allRecipes;
+  const setActiveFilters = (
+    updater: (prev: RecipeCoreFilterState) => RecipeCoreFilterState,
+  ) => {
+    if (tab === TAB_MY_RECIPES) {
+      setMyFilters(updater);
+      return;
+    }
+    if (tab === TAB_DISCOVER) {
+      setDiscoverFilters(updater);
+      return;
+    }
+    setAllFilters(updater);
+  };
+  const clearActiveFilters = () => {
+    if (tab === TAB_MY_RECIPES) {
+      setMyFilters(initialRecipeCoreFilterState);
+      return;
+    }
+    if (tab === TAB_DISCOVER) {
+      setDiscoverFilters(initialRecipeCoreFilterState);
+      return;
+    }
+    setAllFilters(initialRecipeCoreFilterState);
+  };
+  const handleLoadMore = () => {
+    if (tab === TAB_MY_RECIPES) {
+      if (userRecipesStatus === "CanLoadMore") loadMoreUserRecipes(20);
+      return;
+    }
+    if (tab === TAB_DISCOVER) {
+      if (systemRecipesStatus === "CanLoadMore") loadMoreSystemRecipes(20);
+      return;
+    }
+    if (userRecipesStatus === "CanLoadMore") {
+      loadMoreUserRecipes(20);
+    }
+    if (systemRecipesStatus === "CanLoadMore") {
+      loadMoreSystemRecipes(20);
+    }
+  };
 
   const handleToggleRecipe = (recipeId: Id<"recipes">) => {
     setSelectedRecipeIds((prev) => {
@@ -505,17 +707,191 @@ export default function ShoppingListClient() {
                   </CardContent>
                 </Card>
 
-                {/* Search and Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search recipes..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+                <div className="space-y-4">
+                  <RecipeSourceSwitcher value={tab} onValueChange={setTab} compact />
+
+                  <Accordion type="single" collapsible>
+                    <AccordionItem value="filters" className="rounded-xl border px-4">
+                      <AccordionTrigger className="py-3 text-sm hover:no-underline">
+                        <span className="inline-flex items-center gap-2">
+                          <SlidersHorizontal className="size-4 text-muted-foreground" />
+                          Search and filters
+                          {hasActiveFilters(activeFilters) ? (
+                            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+                              Active
+                            </span>
+                          ) : null}
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 pt-1">
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              placeholder="Search by title or description"
+                              value={activeFilters.searchQuery}
+                              onChange={(e) =>
+                                setActiveFilters((prev) => ({
+                                  ...prev,
+                                  searchQuery: e.target.value,
+                                }))
+                              }
+                              className="pl-9"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                              <SlidersHorizontal className="size-3.5" />
+                              Core filters
+                            </div>
+                            {hasActiveFilters(activeFilters) && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-xs"
+                                onClick={clearActiveFilters}
+                              >
+                                <X className="size-3.5" />
+                                Clear
+                              </Button>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {RECIPE_QUICK_FILTERS.map((filter) => {
+                              const isActive = activeFilters.selectedQuickFilters.includes(
+                                filter.key,
+                              );
+                              return (
+                                <Button
+                                  key={filter.key}
+                                  type="button"
+                                  size="sm"
+                                  variant={isActive ? "default" : "outline"}
+                                  className="h-8 rounded-full px-3 text-xs"
+                                  aria-pressed={isActive}
+                                  onClick={() =>
+                                    setActiveFilters((prev) => {
+                                      if (
+                                        prev.selectedQuickFilters.includes(
+                                          filter.key,
+                                        )
+                                      ) {
+                                        return {
+                                          ...prev,
+                                          selectedQuickFilters:
+                                            prev.selectedQuickFilters.filter(
+                                              (key) => key !== filter.key,
+                                            ),
+                                        };
+                                      }
+                                      return {
+                                        ...prev,
+                                        selectedQuickFilters: [
+                                          ...prev.selectedQuickFilters,
+                                          filter.key,
+                                        ],
+                                      };
+                                    })
+                                  }
+                                >
+                                  {filter.label}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Select
+                              value={activeFilters.selectedProtein}
+                              onValueChange={(value) =>
+                                setActiveFilters((prev) => ({
+                                  ...prev,
+                                  selectedProtein: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="Protein" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All proteins</SelectItem>
+                                {PRIMARY_PROTEINS.filter(
+                                  (protein) =>
+                                    protein !== "none" && protein !== "other",
+                                ).map((protein) => (
+                                  <SelectItem key={protein} value={protein}>
+                                    {titleCase(protein)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select
+                              value={activeFilters.selectedCategory}
+                              onValueChange={(value) =>
+                                setActiveFilters((prev) => ({
+                                  ...prev,
+                                  selectedCategory: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="Category" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All categories</SelectItem>
+                                {RECIPE_CATEGORIES.map((category) => (
+                                  <SelectItem key={category} value={category}>
+                                    {titleCase(category)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select
+                              value={activeFilters.selectedDuration}
+                              onValueChange={(value) =>
+                                setActiveFilters((prev) => ({
+                                  ...prev,
+                                  selectedDuration: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="Duration" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DURATION_OPTIONS.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select
+                              value={activeFilters.selectedComplexity}
+                              onValueChange={(value) =>
+                                setActiveFilters((prev) => ({
+                                  ...prev,
+                                  selectedComplexity: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="Complexity" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Any complexity</SelectItem>
+                                {COMPLEXITY_TIERS.map((tier) => (
+                                  <SelectItem key={tier} value={tier}>
+                                    {titleCase(tier)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
 
                 {/* Selected Recipes Summary */}
@@ -523,37 +899,43 @@ export default function ShoppingListClient() {
               </div>
 
               {/* Recipe List */}
-              {userRecipes === undefined || householdRecipes === undefined ? (
+              {(tab === TAB_MY_RECIPES &&
+                (isUserRecipesInitialLoading || householdRecipes === undefined)) ||
+              (tab === TAB_DISCOVER && isSystemRecipesInitialLoading) ||
+              (tab === TAB_ALL &&
+                (isUserRecipesInitialLoading ||
+                  isSystemRecipesInitialLoading ||
+                  householdRecipes === undefined)) ? (
                 <LoadingState />
-              ) : filteredRecipes.length === 0 ? (
+              ) : activeFilteredRecipes.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="size-24 bg-muted rounded-full flex items-center justify-center mb-6 mx-auto">
                     <ChefHat className="size-12 text-muted-foreground" />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">
-                    {allRecipes.length === 0
+                    {activeBaseRecipes.length === 0
                       ? "No recipes yet"
-                      : "No recipes match your search"}
+                      : "No recipes match your filters"}
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    {allRecipes.length === 0 ? (
+                    {activeBaseRecipes.length === 0 ? (
                       <>
                         Start by creating some recipes, then come back here to
                         generate your shopping list.
                       </>
                     ) : (
-                      <>Try adjusting your search terms to find recipes.</>
+                      <>Try adjusting your filters to find recipes.</>
                     )}
                   </p>
-                  {allRecipes.length === 0 && (
+                  {activeBaseRecipes.length === 0 && (
                     <Button asChild size="lg">
                       <Link href={ROUTES.MY_RECIPES}>Go to My Recipes</Link>
                     </Button>
                   )}
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {filteredRecipes.map((recipe) => (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {activeFilteredRecipes.map((recipe) => (
                     <RecipeSelectionCard
                       key={recipe._id}
                       recipe={recipe}
@@ -563,33 +945,16 @@ export default function ShoppingListClient() {
                   ))}
                 </div>
               )}
+              <RecipeLoadMore
+                canLoadMore={canLoadMoreActiveTab}
+                loadingMore={isLoadingMoreActiveTab}
+                onLoadMore={handleLoadMore}
+                className="mt-6 mb-20"
+              />
 
               {/* Generate Button */}
               {selectedRecipeIds.size > 0 && (
-                <div className="sticky bottom-nav z-10 mt-8 space-y-3 bg-background pt-2 pb-1">
-                  <div className="space-y-1">
-                    <Label htmlFor="custom-target-servings">
-                      Servings for this list
-                    </Label>
-                    <Input
-                      id="custom-target-servings"
-                      type="number"
-                      min={TARGET_SERVINGS_MIN}
-                      max={TARGET_SERVINGS_MAX}
-                      value={targetServings}
-                      onChange={(e) => {
-                        const n = Number(e.target.value);
-                        if (!Number.isFinite(n)) return;
-                        setTargetServings(
-                          Math.max(
-                            TARGET_SERVINGS_MIN,
-                            Math.min(TARGET_SERVINGS_MAX, Math.round(n)),
-                          ),
-                        );
-                      }}
-                      className="w-28"
-                    />
-                  </div>
+                <div className="sticky bottom-nav z-10 mt-8 space-y-3 pt-2 pb-1">
                   {households && households.length > 1 ? (
                     <div className="space-y-2">
                       <Label htmlFor="recipe-list-household">
@@ -619,7 +984,7 @@ export default function ShoppingListClient() {
                   ) : null}
                   <Button
                     size="lg"
-                    className="w-full shadow-lg"
+                    className="w-full shadow-xl"
                     onClick={handleGenerateList}
                     disabled={households === undefined}
                   >
@@ -664,152 +1029,102 @@ function RecipeSelectionCard({
   isSelected: boolean;
   onToggle: (recipeId: Id<"recipes">) => void;
 }) {
-  const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+  const totalTime =
+    recipe.totalTimeMinutes ?? (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ||
     CATEGORY_COLORS.main;
-  const ingredientCount = recipe.ingredients?.length || 0;
   const isHouseholdRecipe =
     "householdId" in recipe && recipe.householdId !== null;
+  const isDiscoverRecipe = recipe.selectionSource === "discover";
 
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:shadow-lg",
-        isSelected && "ring-2 ring-primary shadow-xl",
+        "group relative overflow-hidden transition-all duration-300 hover:shadow-lg pt-0 cursor-pointer",
+        isSelected && "ring-2 ring-primary shadow-xl border-primary",
       )}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      onClick={() => onToggle(recipe._id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onToggle(recipe._id);
+        }
+      }}
     >
-      <div className="flex flex-col">
-        {/* Main content area - clickable for selection */}
-        <div
-          className="flex gap-4 p-4 cursor-pointer"
-          onClick={() => onToggle(recipe._id)}
-        >
-          {/* Recipe Image */}
-          <div
-            className={cn(
-              "relative size-24 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 transition-all duration-300",
-              isSelected && "ring-2 ring-primary/50",
-            )}
-          >
-            {recipe.image && (
-              <Image
-                src={recipe.image}
-                alt={recipe.title}
-                fill
-                sizes="96px"
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                unoptimized
-              />
-            )}
-            {!recipe.image && (
-              <div className="flex items-center justify-center h-full w-full">
-                <ChefHat className="size-10 text-muted-foreground" />
-              </div>
-            )}
-            {isSelected && (
-              <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                <div className="bg-primary text-primary-foreground rounded-full p-1">
-                  <Check className="size-4" />
-                </div>
-              </div>
-            )}
+      <div className="relative aspect-16/10 w-full overflow-hidden bg-muted">
+        {recipe.image ? (
+          <Image
+            src={recipe.image}
+            alt={recipe.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            unoptimized
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <ChefHat className="size-10 text-muted-foreground" />
           </div>
-
-          {/* Recipe Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                    {recipe.title}
-                  </h3>
-                  {isHouseholdRecipe && (
-                    <Badge variant="outline" className="shrink-0">
-                      <Home className="size-3 mr-1" />
-                      Household
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <Badge
-                variant="secondary"
-                className={cn(categoryColor, "border-0 shrink-0")}
-              >
-                {categoryLabel}
-              </Badge>
-            </div>
-
-            {recipe.description && (
-              <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-                {recipe.description}
-              </p>
-            )}
-
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="size-4" />
-                <span className="font-medium">{totalTime}min</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="size-4" />
-                <span className="font-medium">{recipe.serves}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <ListChecks className="size-4 text-primary" />
-                <span className="font-medium text-primary">
-                  {ingredientCount} ingredients
-                </span>
-              </div>
-            </div>
+        )}
+        {isSelected && (
+          <div className="absolute right-2 top-2 rounded-full bg-primary text-primary-foreground p-1 shadow">
+            <Check className="size-4" />
           </div>
-        </div>
-
-        {/* Ingredients preview section */}
-        <Accordion type="single" collapsible className="border-t">
-          <AccordionItem value="ingredients" className="border-0">
-            <AccordionTrigger
-              className="px-4 py-3 text-xs font-medium hover:no-underline hover:bg-muted/50 transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Preview Ingredients
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 pt-0">
-              <div className="space-y-1.5 bg-muted/30 p-3 rounded-md">
-                {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                  recipe.ingredients.map((ingredient, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                      {ingredient.amount !== undefined && (
-                        <span className="font-medium">{ingredient.amount}</span>
-                      )}
-                      {ingredient.unit && (
-                        <span className="text-muted-foreground">
-                          {ingredient.unit}
-                        </span>
-                      )}
-                      <span>{ingredient.name}</span>
-                      {ingredient.preparation && (
-                        <span className="text-muted-foreground text-xs">
-                          ({ingredient.preparation})
-                        </span>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    No ingredients listed
-                  </p>
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        )}
       </div>
+
+      <CardContent className="p-3">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <h3 className="line-clamp-2 font-semibold leading-tight group-hover:text-primary transition-colors">
+            {recipe.title}
+          </h3>
+          {isHouseholdRecipe && (
+            <Badge variant="outline" className="shrink-0">
+              <Home className="size-3 mr-1" />
+              Household
+            </Badge>
+          )}
+          {isDiscoverRecipe && (
+            <Badge variant="outline" className="shrink-0">
+              Discover
+            </Badge>
+          )}
+        </div>
+        <div className="mb-2 flex items-center justify-between">
+          <Badge
+            variant="secondary"
+            className={cn(categoryColor, "border-0 shrink-0")}
+          >
+            {categoryLabel}
+          </Badge>
+        </div>
+        {recipe.description && (
+          <p className="line-clamp-2 text-xs text-muted-foreground mb-2">
+            {recipe.description}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          {totalTime > 0 && (
+            <span className="flex items-center gap-1">
+              <Clock className="size-3.5" />
+              {totalTime} min
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Users className="size-3.5" />
+            Serves {recipe.serves}
+          </span>
+          <span className="flex items-center gap-1">
+            <ListChecks className="size-3.5 text-primary" />
+            {(recipe.ingredients ?? []).length} ingredients
+          </span>
+        </div>
+      </CardContent>
     </Card>
   );
 }

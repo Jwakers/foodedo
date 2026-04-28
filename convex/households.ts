@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { internal } from "./_generated/api";
 import { Doc, Id } from "./_generated/dataModel";
 import {
@@ -446,6 +447,38 @@ export const getHouseholdRecipes = query({
     );
 
     return recipes.filter((r): r is NonNullable<typeof r> => r !== null);
+  },
+});
+
+export const listHouseholdRecipesPaginated = query({
+  args: {
+    householdId: v.id("households"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const isMember = await isHouseholdMember(ctx, user._id, args.householdId);
+    if (!isMember) {
+      throw new ConvexError("You are not a member of this household");
+    }
+
+    const result = await ctx.db
+      .query("householdRecipes")
+      .withIndex("by_household_and_sharedAt", (q) =>
+        q.eq("householdId", args.householdId),
+      )
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    const recipes = await Promise.all(
+      result.page.map((shared) => enrichSharedRecipe(ctx, shared, user._id, false)),
+    );
+
+    return {
+      ...result,
+      page: recipes.filter((r): r is NonNullable<typeof r> => r !== null),
+    };
   },
 });
 

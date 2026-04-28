@@ -155,6 +155,7 @@ export default defineSchema({
     .index("by_user_and_category", ["userId", "category"])
     .index("by_user_updatedAt", ["userId", "updatedAt"])
     .index("by_source", ["source"])
+    .index("by_source_and_title", ["source", "title"])
     .index("by_cuisine", ["cuisine"])
     .index("by_primaryProtein", ["primaryProtein"])
     .index("by_complexityTier", ["complexityTier"])
@@ -250,6 +251,7 @@ export default defineSchema({
     sharedAt: v.number(),
   })
     .index("by_household", ["householdId"])
+    .index("by_household_and_sharedAt", ["householdId", "sharedAt"])
     .index("by_recipe", ["recipeId"])
     .index("by_household_and_recipe", ["householdId", "recipeId"]),
 
