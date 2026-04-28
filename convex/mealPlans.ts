@@ -776,11 +776,13 @@ export const getActiveMealPlanSummaries = query({
  * unreplaced plans with endDate >= today (UTC day start).
  */
 export const getOwnedUnreplacedPlanCountForCreation = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    localDayStartMs: v.number(),
+  },
+  handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return 0;
-    const today = startOfDayMs(Date.now());
+    const today = startOfDayMs(args.localDayStartMs);
     const ownedPlans = await ctx.db
       .query("mealPlans")
       .withIndex("by_user_and_endDate", (q) =>

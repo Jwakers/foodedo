@@ -581,6 +581,7 @@ export default function MealPlanClient({
   });
   const ownedPlanCountForCreation = useQuery(
     api.mealPlans.getOwnedUnreplacedPlanCountForCreation,
+    { localDayStartMs },
   );
 
   const resolvedPlanId = useMealPlanRoutingState({
