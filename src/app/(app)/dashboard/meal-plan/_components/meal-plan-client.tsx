@@ -890,7 +890,7 @@ export default function MealPlanClient({
     const entryCount = currentPlan?.entries?.length ?? 0;
     const draftPlanDayCount = currentPlan
       ? ((currentPlan as { dayCount?: number }).dayCount ??
-        currentPlan.entries.length)
+        visiblePlanDays)
       : 7;
     const displaySlotTarget = currentPlan?.isFinalised
       ? visiblePlanDays

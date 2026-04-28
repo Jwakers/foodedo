@@ -983,7 +983,10 @@ export const generateWeeklyPlan = mutation({
         selectedIds = recencyRelaxedAttempt.selectedIds;
         selectedPool = fullPreferencePool;
         fallbackStage = "recency_relaxed";
-      } else if (preferenceConstraints.snapshot) {
+      } else if (
+        preferenceConstraints.snapshot &&
+        preferenceConstraints.snapshot.excludedPrimaryProteins.length > 0
+      ) {
         const allergiesOnlyConstraints = {
           allergyIngredientIds:
             preferenceConstraints.snapshot.allergyIngredientIds,
@@ -1649,9 +1652,9 @@ export const finaliseMealPlan = mutation({
       .collect();
 
     const planDayCount = getPlanDayCount(plan);
-    if (entries.length > planDayCount) {
+    if (entries.length !== planDayCount) {
       throw new ConvexError(
-        "This plan has more meals than available days. Remove extras or increase plan days before saving.",
+        `This plan must have exactly ${planDayCount} meals before finalising.`,
       );
     }
 
