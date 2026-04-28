@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { RecipeListItem } from "./types";
 import { LoadingState, RecipeCard } from "./recipe-card";
 import { RecipeFilters } from "./recipe-filters";
@@ -223,7 +224,7 @@ export function RecipeLoadMore({
   if (!canLoadMore && !loadingMore) return null;
 
   return (
-    <div className={className ?? "mt-8 flex justify-center"}>
+    <div className={cn("mt-8 flex justify-center", className)}>
       <Button
         type="button"
         variant="outline"

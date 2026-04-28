@@ -95,7 +95,7 @@ export default function HouseholdDetailPage({
             </h1>
             <p className="text-muted-foreground mt-1">
               {members.length} {members.length === 1 ? "member" : "members"} •{" "}
-              {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"}
+              {recipes.length} loaded {recipes.length === 1 ? "recipe" : "recipes"}
             </p>
           </div>
         </div>

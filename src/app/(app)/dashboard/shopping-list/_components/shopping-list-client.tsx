@@ -218,8 +218,6 @@ export default function ShoppingListClient() {
   >(new Set());
   /** When true, show recipe selection to create a new list (from list picker) */
   const [showRecipeSelection, setShowRecipeSelection] = useState(false);
-  const targetServings = TARGET_SERVINGS_MIN;
-
   const myRecipes = useMemo(
     () => mergeMyRecipes(userRecipes ?? [], householdRecipes ?? []),
     [userRecipes, householdRecipes],
@@ -236,6 +234,17 @@ export default function ShoppingListClient() {
     () => mergeRecipeSources(myRecipes, discoverRecipes),
     [myRecipes, discoverRecipes],
   );
+  const targetServings = useMemo(() => {
+    const selected = allRecipes.filter((recipe) => selectedRecipeIds.has(recipe._id));
+    if (selected.length === 0) {
+      return TARGET_SERVINGS_MIN;
+    }
+    const totalServes = selected.reduce(
+      (sum, recipe) => sum + (recipe.serves ?? TARGET_SERVINGS_MIN),
+      0,
+    );
+    return Math.max(TARGET_SERVINGS_MIN, Math.round(totalServes / selected.length));
+  }, [allRecipes, selectedRecipeIds]);
 
   const selectedRecipes = useMemo(
     () => allRecipes.filter((r) => selectedRecipeIds.has(r._id)) || [],
@@ -274,7 +283,11 @@ export default function ShoppingListClient() {
     (tab === TAB_DISCOVER && canLoadMoreSystemRecipes) ||
     (tab === TAB_ALL && (canLoadMoreUserRecipes || canLoadMoreSystemRecipes));
   const isLoadingMoreActiveTab =
-    isLoadingMoreUserRecipes || isLoadingMoreSystemRecipes;
+    tab === TAB_MY_RECIPES
+      ? isLoadingMoreUserRecipes
+      : tab === TAB_DISCOVER
+        ? isLoadingMoreSystemRecipes
+        : isLoadingMoreUserRecipes || isLoadingMoreSystemRecipes;
   const [selectedChalkboardItems, setSelectedChalkboardItems] = useState<
     Set<Id<"chalkboardItems">>
   >(new Set());
@@ -1039,7 +1052,16 @@ function RecipeSelectionCard({
         "group relative overflow-hidden transition-all duration-300 hover:shadow-lg pt-0 cursor-pointer",
         isSelected && "ring-2 ring-primary shadow-xl border-primary",
       )}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
       onClick={() => onToggle(recipe._id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onToggle(recipe._id);
+        }
+      }}
     >
       <div className="relative aspect-16/10 w-full overflow-hidden bg-muted">
         {recipe.image ? (
