@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 // Still revalidate periodically when Next's caching layer applies.
 export const revalidate = 3600;
+const STATIC_LAST_MODIFIED = new Date("2026-04-28T00:00:00.000Z");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteBaseUrl();
@@ -21,79 +22,157 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 1,
     },
     {
       url: `${baseUrl}${ROUTES.DISCOVER}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${baseUrl}${ROUTES.BLOG}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}${ROUTES.FAQ}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.75,
     },
     {
       url: `${baseUrl}${ROUTES.PRICING}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.85,
     },
     {
       url: `${baseUrl}${ROUTES.PUBLIC_SUPPORT}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.72,
     },
     {
       url: `${baseUrl}${ROUTES.PUBLIC_SUPPORT_HOW_TO}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}${ROUTES.PUBLIC_SUPPORT_CONTACT}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "monthly",
       priority: 0.55,
     },
     {
       url: `${baseUrl}${ROUTES.FAMILY_MEAL_PLANNING}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.88,
     },
     {
       url: `${baseUrl}${ROUTES.RECIPE_TO_SHOPPING_LIST}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.88,
     },
     {
       url: `${baseUrl}${ROUTES.HOUSEHOLD_MEAL_PLANNING}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "weekly",
       priority: 0.88,
     },
     {
+      url: `${baseUrl}${ROUTES.HOW_TO_MAKE_A_SHOPPING_LIST_FROM_RECIPES}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.86,
+    },
+    {
+      url: `${baseUrl}${ROUTES.COMBINE_RECIPES_INTO_ONE_GROCERY_LIST}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.86,
+    },
+    {
+      url: `${baseUrl}${ROUTES.MEAL_PLANNER_WITH_GROCERY_LIST}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.86,
+    },
+    {
+      url: `${baseUrl}${ROUTES.HOW_TO_CREATE_A_WEEKLY_MEAL_PLAN_FAST}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.84,
+    },
+    {
+      url: `${baseUrl}${ROUTES.HOW_TO_PLAN_VARIED_MEALS_FOR_THE_WEEK}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.84,
+    },
+    {
+      url: `${baseUrl}${ROUTES.MEAL_PLANNING_FOR_BUSY_WEEKNIGHTS}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.84,
+    },
+    {
+      url: `${baseUrl}${ROUTES.MEAL_PLAN_VS_SHOPPING_LIST_WHAT_YOU_NEED}`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.82,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-turn-recipes-into-one-grocery-list`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.72,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-combine-ingredients-from-multiple-recipes`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.72,
+    },
+    {
+      url: `${baseUrl}/blog/weekly-meal-plan-and-shopping-list-guide`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.72,
+    },
+    {
+      url: `${baseUrl}/blog/recipe-app-vs-meal-planner-vs-grocery-list-app`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-build-a-weekly-meal-plan-in-15-minutes`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.72,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-keep-meals-varied-without-overthinking-it`,
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: "weekly",
+      priority: 0.72,
+    },
+    {
       url: `${baseUrl}${ROUTES.PRIVACY}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}${ROUTES.TERMS}`,
-      lastModified: new Date(),
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: "monthly",
       priority: 0.5,
     },

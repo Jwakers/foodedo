@@ -1,19 +1,21 @@
 import { ROUTES } from "@/app/constants";
 import { IntentLandingPageWrapper } from "@/components/seo/intent-landing-page-wrapper";
-import { INTENT_RECIPE_TO_SHOPPING_LIST } from "@/lib/seo-intent-data";
+import {
+  INTENT_MEAL_PLANNING_FOR_BUSY_WEEKNIGHTS,
+} from "@/lib/seo-intent-data";
 import { buildIntentPageMetadata } from "@/lib/seo-intent-metadata";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = buildIntentPageMetadata(
-  INTENT_RECIPE_TO_SHOPPING_LIST,
+  INTENT_MEAL_PLANNING_FOR_BUSY_WEEKNIGHTS,
 );
 
-export default function RecipeToShoppingListPage() {
+export default function MealPlanningForBusyWeeknightsPage() {
   return (
     <IntentLandingPageWrapper
-      intent={INTENT_RECIPE_TO_SHOPPING_LIST}
-      secondaryHref={ROUTES.FAQ}
-      secondaryLabel="Read the FAQ"
+      intent={INTENT_MEAL_PLANNING_FOR_BUSY_WEEKNIGHTS}
+      secondaryHref={ROUTES.HOUSEHOLD_MEAL_PLANNING}
+      secondaryLabel="See household meal planning"
     />
   );
 }

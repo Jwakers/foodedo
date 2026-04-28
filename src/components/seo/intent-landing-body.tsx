@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { IntentPageDefinition } from "@/lib/seo-intent-data";
 import { IntentLandingActions } from "./intent-landing-actions";
+import Link from "next/link";
 
 type IntentLandingBodyProps = {
   intent: IntentPageDefinition;
@@ -65,6 +66,26 @@ export function IntentLandingBody({
           ))}
         </dl>
       </section>
+
+      {intent.relatedGuides?.length ? (
+        <section className="mt-12 pt-8 border-t" aria-labelledby="related-guides">
+          <h2 id="related-guides" className="text-2xl font-semibold text-foreground">
+            More to explore
+          </h2>
+          <ul className="mt-4 space-y-2">
+            {intent.relatedGuides.map((guide, index) => (
+              <li key={`${guide.href}-${index}`}>
+                <Link
+                  href={guide.href}
+                  className="text-primary underline underline-offset-4 hover:text-primary/85"
+                >
+                  {guide.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <footer className="mt-12 pt-8 border-t">
         <p className="text-sm text-muted-foreground mb-4">

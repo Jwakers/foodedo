@@ -2,6 +2,7 @@
 
 import { APP_NAME, ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
+import { intentPathToTopic } from "@/components/seo/intent-topic";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackEvent } from "@/lib/analytics/posthog-client";
 import { SignUpButton } from "@clerk/nextjs";
@@ -27,6 +28,8 @@ export function IntentLandingActions({
   secondaryHref,
   secondaryLabel,
 }: IntentLandingActionsProps) {
+  const normalizedIntentTopic = intentPathToTopic(intentTopic);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -37,7 +40,7 @@ export function IntentLandingActions({
               onClick={() => {
                 trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
                   cta_type: "dashboard_primary",
-                  intent_topic: intentTopic,
+                  intent_topic: normalizedIntentTopic,
                 });
               }}
             >
@@ -57,11 +60,11 @@ export function IntentLandingActions({
               onClick={() => {
                 trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
                   cta_type: "signup_primary",
-                  intent_topic: intentTopic,
+                  intent_topic: normalizedIntentTopic,
                 });
                 trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
                   source_surface: "intent_landing",
-                  intent_topic: intentTopic,
+                  intent_topic: normalizedIntentTopic,
                 });
               }}
             >
@@ -76,12 +79,12 @@ export function IntentLandingActions({
             onClick={() => {
               trackEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
                 cta_type: "secondary_link",
-                intent_topic: intentTopic,
+                intent_topic: normalizedIntentTopic,
                 target_href: secondaryHref,
               });
               trackEvent(ANALYTICS_EVENTS.SECONDARY_ACTION_TAKEN, {
                 action_name: "intent_secondary_click",
-                intent_topic: intentTopic,
+                intent_topic: normalizedIntentTopic,
                 target_href: secondaryHref,
               });
             }}

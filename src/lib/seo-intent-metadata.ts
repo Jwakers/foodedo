@@ -33,6 +33,6 @@ export function buildIntentPageMetadata(
       title: intent.metaTitle,
       description: intent.metaDescription,
     },
-    keywords: intent.keywords ?? defaultKeywords,
+    keywords: intent.keywords ? [...intent.keywords] : defaultKeywords,
   };
 }
