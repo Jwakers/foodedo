@@ -46,9 +46,9 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [x] Take most popular organic search results in google search console and make sure we have landing pages or blogs to capitalise.
 - [x] Better search and filtering for meal plan recipe select
 - [ ] If there is a current meal plan, the meals button should take you there instead
-- [ ] Manual meal selection UI card does not work on n android
+- [ ] Manual meal selection UI card does not work on android
 - [ ] Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
-- [ ] In any and all recipe listings results should be paginated to a sensible amount both front and back end
+- [ ] Paginate recipe listings in both UI and API responses; define page size and an offset or cursor strategy.
 - [ ] **Super-user recipe generation**: a repeatable flow (UI and/or AI) to propose and land **system-quality** recipes—constraints, meal balance, technique fit, and Convex seed workflow—as codified in [`docs/RECIPE_AUTHORING_METHODOLOGY.md`](docs/RECIPE_AUTHORING_METHODOLOGY.md). Complements batch-style prompts in [`docs/RECIPE-GENERATION-PROMPT.md`](docs/RECIPE-GENERATION-PROMPT.md).
 
 ### Strategic / growth

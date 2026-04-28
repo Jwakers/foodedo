@@ -839,6 +839,7 @@ export default function MealPlanClient({
   }, [currentPlan, canUseMealPlanLeftovers, currentUser]);
 
   useEffect(() => {
+    setGenerationFallbackStage(null);
     if (generationOnly || !currentPlan) return;
     if (typeof window === "undefined") return;
 
@@ -859,6 +860,8 @@ export default function MealPlanClient({
       ) {
         setGenerationFallbackStage(parsed.stage);
         sessionStorage.removeItem(MEAL_PLAN_GENERATION_FALLBACK_NOTICE_SESSION_KEY);
+      } else if (parsed.planId !== currentPlan._id) {
+        setGenerationFallbackStage(null);
       }
     } catch {
       sessionStorage.removeItem(MEAL_PLAN_GENERATION_FALLBACK_NOTICE_SESSION_KEY);
@@ -885,9 +888,15 @@ export default function MealPlanClient({
 
   const emptySlotsCount = useMemo(() => {
     const entryCount = currentPlan?.entries?.length ?? 0;
-    const displaySlotTarget = currentPlan?.isFinalised ? visiblePlanDays : 7;
+    const draftPlanDayCount = currentPlan
+      ? ((currentPlan as { dayCount?: number }).dayCount ??
+        currentPlan.entries.length)
+      : 7;
+    const displaySlotTarget = currentPlan?.isFinalised
+      ? visiblePlanDays
+      : Math.max(1, draftPlanDayCount);
     return Math.max(0, displaySlotTarget - entryCount);
-  }, [currentPlan?.entries?.length, currentPlan?.isFinalised, visiblePlanDays]);
+  }, [currentPlan, visiblePlanDays]);
 
   const handleGenerateWeek = useCallback(async () => {
     if (blocksAdditionalPlansOnFreeTier) {

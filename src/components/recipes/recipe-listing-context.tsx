@@ -139,6 +139,36 @@ function isTabbedProps(
   return "myRecipes" in p && "systemRecipes" in p;
 }
 
+function getRecipesForTab(
+  props: RecipeListingProviderProps,
+  currentTab: RecipeListingTab | null,
+  options?: {
+    useLeftover?: boolean;
+    leftoverSource?: RecipeListItem[];
+  },
+): RecipeListItem[] | undefined {
+  if (options?.useLeftover) {
+    const from = options.leftoverSource ?? [];
+    const discover = from.filter((recipe) => recipe.source === "system");
+    const mine = from.filter((recipe) => recipe.source !== "system");
+    if (!isTabbedProps(props)) {
+      return discover;
+    }
+    if (currentTab === TAB_DISCOVER) return discover;
+    if (currentTab === TAB_ALL) return mergeRecipeLists(mine, discover);
+    return mine;
+  }
+
+  if (isTabbedProps(props)) {
+    if (currentTab === TAB_DISCOVER) return props.systemRecipes;
+    if (currentTab === TAB_ALL) {
+      return mergeRecipeLists(props.myRecipes, props.systemRecipes);
+    }
+    return props.myRecipes;
+  }
+  return props.recipes;
+}
+
 export function RecipeListingProvider(props: RecipeListingProviderProps) {
   const searchParams = useSearchParams();
   const [filterState, setFilterState] =
@@ -180,30 +210,13 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
 
   const recipes: RecipeListItem[] | undefined = useMemo(() => {
     if (!hasLeftoverTargets || !canUseLeftoverFeatures) {
-      if (isTabbedProps(props)) {
-        if (currentTab === TAB_DISCOVER) return props.systemRecipes;
-        if (currentTab === TAB_ALL) {
-          return mergeRecipeLists(props.myRecipes, props.systemRecipes);
-        }
-        return props.myRecipes;
-      }
-      return props.recipes;
+      return getRecipesForTab(props, currentTab);
     }
     if (leftoverSearch === undefined) return undefined;
-    const from = leftoverSearch.recipes;
-    if (!isTabbedProps(props)) {
-      return from.filter((r) => r.source === "system") as RecipeListItem[];
-    }
-    if (currentTab === TAB_DISCOVER) {
-      return from.filter((r) => r.source === "system") as RecipeListItem[];
-    }
-    if (currentTab === TAB_ALL) {
-      return mergeRecipeLists(
-        from.filter((r) => r.source !== "system") as RecipeListItem[],
-        from.filter((r) => r.source === "system") as RecipeListItem[],
-      );
-    }
-    return from.filter((r) => r.source !== "system") as RecipeListItem[];
+    return getRecipesForTab(props, currentTab, {
+      useLeftover: true,
+      leftoverSource: leftoverSearch.recipes as RecipeListItem[],
+    });
   }, [
     props,
     currentTab,
@@ -213,14 +226,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
   ]);
 
   const baseRecipesForTab: RecipeListItem[] | undefined = useMemo(() => {
-    if (isTabbedProps(props)) {
-      if (currentTab === TAB_DISCOVER) return props.systemRecipes;
-      if (currentTab === TAB_ALL) {
-        return mergeRecipeLists(props.myRecipes, props.systemRecipes);
-      }
-      return props.myRecipes;
-    }
-    return props.recipes;
+    return getRecipesForTab(props, currentTab);
   }, [props, currentTab]);
 
   const leftoverListingMeta = useMemo((): LeftoverListingMeta | null => {

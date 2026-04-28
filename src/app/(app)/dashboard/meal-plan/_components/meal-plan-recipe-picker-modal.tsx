@@ -592,7 +592,8 @@ function PickerRecipeCard({
   onSelect: () => void;
   replaceEntryId?: Id<"recipes">;
 }) {
-  const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+  const totalTime =
+    recipe.totalTimeMinutes ?? (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const categoryLabel = titleCase(recipe.category);
   const categoryColor =
     CATEGORY_COLORS[recipe.category as keyof typeof CATEGORY_COLORS] ?? "";

@@ -951,7 +951,7 @@ export const generateWeeklyPlan = mutation({
         excludeRecency,
         [],
       );
-      if (selectedIds.length === 0) {
+      if (selectedIds.length !== dayCount) {
         return { selectedIds: [], failureReason: "selection" };
       }
       return { selectedIds };

@@ -44,7 +44,7 @@ export function matchesRecipeDuration(
       return total > 60;
     }
     default:
-      return true;
+      return false;
   }
 }
 

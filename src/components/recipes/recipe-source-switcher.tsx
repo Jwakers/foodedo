@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { KeyboardEvent } from "react";
+import { useRef, type KeyboardEvent } from "react";
 import { TAB_ALL, TAB_DISCOVER, TAB_MY_RECIPES } from "./recipe-listing-context";
 
 export type RecipeSourceSwitchValue =
@@ -29,6 +29,8 @@ export function RecipeSourceSwitcher({
   className?: string;
   compact?: boolean;
 }) {
+  const buttonsRef = useRef<Array<HTMLButtonElement | null>>([]);
+
   const handleKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
     index: number,
@@ -45,16 +47,19 @@ export function RecipeSourceSwitcher({
     event.preventDefault();
     if (key === "Home") {
       onValueChange(SOURCE_OPTIONS[0].value);
+      buttonsRef.current[0]?.focus();
       return;
     }
     if (key === "End") {
       onValueChange(SOURCE_OPTIONS[SOURCE_OPTIONS.length - 1].value);
+      buttonsRef.current[SOURCE_OPTIONS.length - 1]?.focus();
       return;
     }
     const direction = key === "ArrowRight" ? 1 : -1;
     const nextIndex =
       (index + direction + SOURCE_OPTIONS.length) % SOURCE_OPTIONS.length;
     onValueChange(SOURCE_OPTIONS[nextIndex].value);
+    buttonsRef.current[nextIndex]?.focus();
   };
 
   return (
@@ -72,6 +77,9 @@ export function RecipeSourceSwitcher({
           <button
             key={option.value}
             type="button"
+            ref={(el) => {
+              buttonsRef.current[index] = el;
+            }}
             onClick={() => onValueChange(option.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             className={cn(

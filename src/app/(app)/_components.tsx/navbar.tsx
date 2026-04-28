@@ -28,7 +28,7 @@ export function Navbar() {
     if (!nav) return;
 
     const syncNavHeight = () => {
-      document.body.style.setProperty("--nav-height", `${nav.clientHeight}px`);
+      document.body.style.setProperty("--nav-height", `${nav.offsetHeight}px`);
     };
 
     syncNavHeight();
