@@ -876,29 +876,6 @@ export default function MealPlanClient({
     );
   }, [currentPlan?.entries]);
 
-  const visiblePlanDays = useMemo(() => {
-    if (!currentPlan) return selectedDayCount;
-    if (currentPlan.startDate !== undefined) {
-      const computedDays =
-        Math.floor((currentPlan.endDate - currentPlan.startDate) / ONE_DAY_MS) +
-        1;
-      return Math.max(1, computedDays);
-    }
-    return selectedDayCount;
-  }, [currentPlan, selectedDayCount]);
-
-  const emptySlotsCount = useMemo(() => {
-    const entryCount = currentPlan?.entries?.length ?? 0;
-    const draftPlanDayCount = currentPlan
-      ? ((currentPlan as { dayCount?: number }).dayCount ??
-        visiblePlanDays)
-      : 7;
-    const displaySlotTarget = currentPlan?.isFinalised
-      ? visiblePlanDays
-      : Math.max(1, draftPlanDayCount);
-    return Math.max(0, displaySlotTarget - entryCount);
-  }, [currentPlan, visiblePlanDays]);
-
   const handleGenerateWeek = useCallback(async () => {
     if (blocksAdditionalPlansOnFreeTier) {
       toast.error(
@@ -1931,6 +1908,10 @@ export default function MealPlanClient({
   const firstListId = listsForPlan?.[0]?._id;
 
   const isFinalised = currentPlan.isFinalised === true;
+  const canShowAddAnotherMeal =
+    currentPlan.isOwner &&
+    !isFinalised &&
+    mealCount < MAX_DAYS_IN_MEAL_PLAN;
 
   return (
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
@@ -2253,16 +2234,13 @@ export default function MealPlanClient({
                 />
               );
             })}
-            {Array.from({ length: emptySlotsCount }, (_, i) => (
+            {canShowAddAnotherMeal ? (
               <EmptySlot
-                key={`empty-${i}`}
-                onAdd={
-                  currentPlan.isOwner && !isFinalised
-                    ? () => setPickerState({ mode: "add" })
-                    : undefined
-                }
+                onAdd={() => setPickerState({ mode: "add" })}
+                label="Add another meal"
+                compact
               />
-            ))}
+            ) : null}
           </div>
         )}
 
