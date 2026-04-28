@@ -48,10 +48,10 @@ export function matchesRecipeDuration(
   }
 }
 
-export function applyRecipeCoreFilters(
-  recipes: RecipeListItem[] | undefined,
+export function applyRecipeCoreFilters<T extends RecipeListItem>(
+  recipes: T[] | undefined,
   filterState: RecipeCoreFilterState,
-): RecipeListItem[] {
+): T[] {
   if (!recipes) return [];
   const normalizedSearch = filterState.searchQuery.trim().toLowerCase();
   const activeQuickFilters = filterState.selectedQuickFilters
