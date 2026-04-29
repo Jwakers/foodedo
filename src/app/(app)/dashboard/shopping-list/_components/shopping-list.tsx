@@ -108,6 +108,60 @@ function namesEqual(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
+function LeftoverNumericAmountInput({
+  itemId,
+  amount,
+  disabled,
+  onCommit,
+}: {
+  itemId: Id<"shoppingListItems">;
+  amount: number;
+  disabled: boolean;
+  onCommit: (itemId: Id<"shoppingListItems">, newAmount: number) => void;
+}) {
+  const [amountDraft, setAmountDraft] = useState(
+    Number.isFinite(amount) ? String(amount) : "",
+  );
+
+  useEffect(() => {
+    setAmountDraft(Number.isFinite(amount) ? String(amount) : "");
+  }, [itemId, amount]);
+
+  const commitDraft = useCallback(() => {
+    const next = amountDraft.trim();
+    if (next === "") {
+      onCommit(itemId, 0);
+      return;
+    }
+    const parsed = Number(next);
+    if (!Number.isFinite(parsed)) return;
+    onCommit(itemId, Math.max(0, parsed));
+  }, [amountDraft, itemId, onCommit]);
+
+  return (
+    <Input
+      type="number"
+      min={0}
+      step="any"
+      className="h-8 w-28 font-medium tabular-nums"
+      value={amountDraft}
+      disabled={disabled}
+      onChange={(e) => {
+        setAmountDraft(e.target.value);
+      }}
+      onBlur={() => {
+        commitDraft();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          commitDraft();
+          (e.currentTarget as HTMLInputElement).blur();
+        }
+      }}
+    />
+  );
+}
+
 interface ShoppingListProps {
   shoppingList: ShoppingList;
   /** For in-app sharing controls (owner only); distinct from chalkboard household query below. */
@@ -159,6 +213,9 @@ export default function ShoppingList({
   );
   const updateDraftShoppingListTargetServings = useMutation(
     api.shoppingLists.updateDraftShoppingListTargetServings,
+  );
+  const updateMealPlanLeftoverShoppingItem = useMutation(
+    api.shoppingLists.updateMealPlanLeftoverShoppingItem,
   );
   const updateShoppingListSharing = useMutation(
     api.shoppingLists.updateShoppingListSharing,
@@ -432,6 +489,37 @@ export default function ShoppingList({
   ) => {
     void commitItemAmount(itemId, Math.max(0, newAmount));
   };
+
+  const applyLeftoverPreset = useCallback(
+    async (item: ShoppingListItem, scale: number) => {
+      if (
+        item.mealPlanLeftoverIngredientId !== undefined &&
+        item.leftoverBaseline !== undefined
+      ) {
+        try {
+          if (scale >= 1) {
+            await updateMealPlanLeftoverShoppingItem({
+              itemId: item._id,
+              mode: "full",
+            });
+          } else {
+            await updateMealPlanLeftoverShoppingItem({
+              itemId: item._id,
+              mode: "reduced",
+              reducedScale: Math.max(0, scale),
+            });
+          }
+        } catch (error) {
+          console.error("Failed to apply leftover preset:", error);
+          toast.error("Failed to update amount");
+        }
+        return;
+      }
+      const current = finiteNumberOrNull(item.amount) ?? 0;
+      void commitItemAmount(item._id, Math.max(0, current * scale));
+    },
+    [commitItemAmount, updateMealPlanLeftoverShoppingItem],
+  );
 
   const handleRemoveItem = async (itemId: Id<"shoppingListItems">) => {
     try {
@@ -1067,31 +1155,11 @@ export default function ShoppingList({
                                 Buy this trip:
                               </span>
                               {typeof first.amount === "number" ? (
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  step="any"
-                                  className="h-8 w-28 font-medium tabular-nums"
-                                  value={
-                                    Number.isFinite(first.amount)
-                                      ? first.amount
-                                      : ""
-                                  }
+                                <LeftoverNumericAmountInput
+                                  itemId={item._id}
+                                  amount={first.amount}
                                   disabled={excluded}
-                                  onChange={(e) => {
-                                    const raw = e.target.value;
-                                    if (raw === "") {
-                                      void handleAmountChange(item._id, 0);
-                                      return;
-                                    }
-                                    const n = Number(raw);
-                                    if (Number.isFinite(n)) {
-                                      void handleAmountChange(
-                                        item._id,
-                                        Math.max(0, n),
-                                      );
-                                    }
-                                  }}
+                                  onCommit={handleAmountChange}
                                 />
                               ) : (
                                 <Input
@@ -1127,7 +1195,7 @@ export default function ShoppingList({
                                     className="h-7 px-2 text-xs"
                                     disabled={excluded}
                                     onClick={() =>
-                                      void handleAmountChange(item._id, 0)
+                                      void applyLeftoverPreset(item, 0)
                                     }
                                   >
                                     0%
@@ -1139,10 +1207,7 @@ export default function ShoppingList({
                                     className="h-7 px-2 text-xs"
                                     disabled={excluded}
                                     onClick={() =>
-                                      void handleAmountChange(
-                                        item._id,
-                                        Math.max(0, presetBase * 0.5),
-                                      )
+                                      void applyLeftoverPreset(item, 0.5)
                                     }
                                   >
                                     50%
@@ -1154,10 +1219,7 @@ export default function ShoppingList({
                                     className="h-7 px-2 text-xs"
                                     disabled={excluded}
                                     onClick={() =>
-                                      void handleAmountChange(
-                                        item._id,
-                                        Math.max(0, presetBase),
-                                      )
+                                      void applyLeftoverPreset(item, 1)
                                     }
                                   >
                                     100%

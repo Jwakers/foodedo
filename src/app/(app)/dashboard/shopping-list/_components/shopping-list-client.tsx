@@ -82,7 +82,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import ShoppingList from "./shopping-list";
 
@@ -255,18 +255,26 @@ export default function ShoppingListClient() {
     () => buildShoppingListItems(selectedRecipes ?? [], targetServings),
     [selectedRecipes, targetServings],
   );
+  const getCanonicalKey = useCallback(
+    (item: (typeof flatIngredients)[number]) =>
+      (item.name ?? "").trim().toLowerCase(),
+    [],
+  );
   const { mainItems, pantryItems } = useMemo(() => {
     const main: typeof flatIngredients = [];
     const pantry: typeof flatIngredients = [];
     for (const item of flatIngredients) {
-      if (isPantryStaple(item.name)) {
+      if (
+        !item.addedFromChalkboard &&
+        isPantryStaple(getCanonicalKey(item))
+      ) {
         pantry.push(item);
       } else {
         main.push(item);
       }
     }
     return { mainItems: main, pantryItems: pantry };
-  }, [flatIngredients]);
+  }, [flatIngredients, getCanonicalKey]);
   const [showDoneDialog, setShowDoneDialog] = useState(false);
   const isUserRecipesInitialLoading =
     userRecipesStatus === "LoadingFirstPage" && userRecipes.length === 0;
@@ -1188,6 +1196,7 @@ const buildShoppingListItems = (
   preparation?: string | null;
   amount: number | string | null;
   ingredientId?: Id<"ingredients">;
+  addedFromChalkboard?: boolean;
   amountEntries: AmountEntry[];
   recipeIds: Id<"recipes">[];
 }> => {
