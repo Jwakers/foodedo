@@ -90,7 +90,7 @@ function weeklyTotalEntriesForLeftoverItem(item: ShoppingListItem) {
   if (baseline) {
     return [{ amount: baseline.amount, unit: baseline.unit }];
   }
-  return normalizedAmountEntries(item);
+  return null;
 }
 
 function finiteNumberOrNull(value: number | string | null | undefined) {
@@ -1161,19 +1161,20 @@ export default function ShoppingList({
                       const buyUnitLabel = (first.unit ?? "").trim();
                       const weeklyTotalEntries =
                         weeklyTotalEntriesForLeftoverItem(item);
-                      const weeklyTotalSummary =
-                        amountLinesFromEntries(weeklyTotalEntries);
+                      const weeklyTotalSummary = weeklyTotalEntries
+                        ? amountLinesFromEntries(weeklyTotalEntries)
+                        : [];
                       const weeklyTotalFromBaseline = finiteNumberOrNull(
                         item.leftoverBaseline?.amount,
                       );
                       const weeklyTotalFromSingleEntry =
-                        weeklyTotalEntries.length === 1
+                        weeklyTotalEntries && weeklyTotalEntries.length === 1
                           ? finiteNumberOrNull(weeklyTotalEntries[0]?.amount)
                           : null;
                       const weeklyTotalNumeric =
                         weeklyTotalFromBaseline ?? weeklyTotalFromSingleEntry;
                       const presetBase =
-                        weeklyTotalNumeric ?? finiteNumberOrNull(first.amount);
+                        weeklyTotalNumeric ?? weeklyTotalFromSingleEntry;
                       const restSummary = rest
                         .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
                         .filter(Boolean);
@@ -1218,9 +1219,10 @@ export default function ShoppingList({
                               <p className="text-xs text-muted-foreground shrink-0">
                                 Weekly total:{" "}
                                 <span className="font-medium text-foreground">
-                                  {weeklyTotalSummary.length > 0
+                                  {weeklyTotalEntries &&
+                                  weeklyTotalSummary.length > 0
                                     ? weeklyTotalSummary.join(" + ")
-                                    : "Not specified"}
+                                    : "Unavailable"}
                                 </span>
                               </p>
                             </div>
@@ -1267,7 +1269,7 @@ export default function ShoppingList({
                                   {buyUnitLabel}
                                 </span>
                               ) : null}
-                              {presetBase != null ? (
+                              {weeklyTotalEntries && presetBase != null ? (
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Button
                                     type="button"
