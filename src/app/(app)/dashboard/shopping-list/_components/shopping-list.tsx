@@ -533,6 +533,66 @@ export default function ShoppingList({
     [commitItemAmount, updateMealPlanLeftoverShoppingItem],
   );
 
+  const applyManualLeftoverAmount = useCallback(
+    async (
+      item: ShoppingListItem,
+      nextAmount: number | string | null,
+      baselineAmount: number | null,
+    ) => {
+      const fallbackToDirectAmount = async () => {
+        await commitItemAmount(item._id, nextAmount);
+      };
+
+      if (
+        item.mealPlanLeftoverIngredientId === undefined ||
+        item.leftoverBaseline === undefined
+      ) {
+        await fallbackToDirectAmount();
+        return;
+      }
+
+      const numericNext = finiteNumberOrNull(nextAmount);
+      if (numericNext == null) {
+        await fallbackToDirectAmount();
+        return;
+      }
+
+      try {
+        if (baselineAmount != null && baselineAmount > 0) {
+          const scale = Math.max(0, numericNext / baselineAmount);
+          if (Math.abs(scale - 1) < 1e-6) {
+            await updateMealPlanLeftoverShoppingItem({
+              itemId: item._id,
+              mode: "full",
+            });
+          } else {
+            await updateMealPlanLeftoverShoppingItem({
+              itemId: item._id,
+              mode: "reduced",
+              reducedScale: scale,
+            });
+          }
+          return;
+        }
+
+        if (baselineAmount === 0 && numericNext === 0) {
+          await updateMealPlanLeftoverShoppingItem({
+            itemId: item._id,
+            mode: "reduced",
+            reducedScale: 0,
+          });
+          return;
+        }
+
+        await fallbackToDirectAmount();
+      } catch (error) {
+        console.error("Failed to apply leftover manual amount:", error);
+        toast.error("Failed to update amount");
+      }
+    },
+    [commitItemAmount, updateMealPlanLeftoverShoppingItem],
+  );
+
   const handleRemoveItem = async (itemId: Id<"shoppingListItems">) => {
     try {
       await removeItem({ itemId });
@@ -1173,7 +1233,13 @@ export default function ShoppingList({
                                   itemId={item._id}
                                   amount={first.amount}
                                   disabled={excluded}
-                                  onCommit={handleAmountChange}
+                                  onCommit={(_itemId, newAmount) => {
+                                    void applyManualLeftoverAmount(
+                                      item,
+                                      Math.max(0, newAmount),
+                                      presetBase,
+                                    );
+                                  }}
                                 />
                               ) : (
                                 <Input
@@ -1188,9 +1254,10 @@ export default function ShoppingList({
                                   disabled={excluded}
                                   onBlur={(e) => {
                                     const v = e.target.value.trim();
-                                    void commitItemAmount(
-                                      item._id,
-                                      v === "" ? null : v,
+                                    void applyManualLeftoverAmount(
+                                      item,
+                                      v === "" ? 0 : v,
+                                      presetBase,
                                     );
                                   }}
                                 />
