@@ -841,6 +841,7 @@ export const createShoppingList = mutation({
           amount: null,
           checked: false,
           order: baseOrder + j,
+          addedFromChalkboard: true,
         })
       )
     );
@@ -1060,6 +1061,7 @@ export const createShoppingListFromMealPlan = mutation({
           amount: null,
           checked: false,
           order: baseOrder + j,
+          addedFromChalkboard: true,
         })
       )
     );
@@ -1359,6 +1361,7 @@ export const addChalkboardItems = mutation({
           amount: null,
           checked: false,
           order: maxOrder,
+          addedFromChalkboard: true,
         });
       })
     );
