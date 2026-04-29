@@ -1,3 +1,4 @@
+import { ServingsStepper } from "@/components/servings-stepper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ServingsStepper } from "@/components/servings-stepper";
 import {
   Select,
   SelectContent,
@@ -31,9 +31,14 @@ import {
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
+import {
+  canUseServingControl,
+  TARGET_SERVINGS_MAX,
+  TARGET_SERVINGS_MIN,
+} from "convex/lib/constants";
 import { useMutation, useQuery } from "convex/react";
-import { ConvexError } from "convex/values";
 import type { FunctionReturnType } from "convex/server";
+import { ConvexError } from "convex/values";
 import {
   ArrowLeft,
   Check,
@@ -48,11 +53,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  canUseServingControl,
-  TARGET_SERVINGS_MAX,
-  TARGET_SERVINGS_MIN,
-} from "convex/lib/constants";
 
 type ShoppingList = NonNullable<
   FunctionReturnType<typeof api.shoppingLists.getActiveShoppingList>
@@ -119,6 +119,7 @@ function LeftoverNumericAmountInput({
   disabled: boolean;
   onCommit: (itemId: Id<"shoppingListItems">, newAmount: number) => void;
 }) {
+  const committedByEnterRef = useRef(false);
   const [amountDraft, setAmountDraft] = useState(
     Number.isFinite(amount) ? String(amount) : "",
   );
@@ -150,10 +151,15 @@ function LeftoverNumericAmountInput({
         setAmountDraft(e.target.value);
       }}
       onBlur={() => {
+        if (committedByEnterRef.current) {
+          committedByEnterRef.current = false;
+          return;
+        }
         commitDraft();
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
+          committedByEnterRef.current = true;
           commitDraft();
           (e.currentTarget as HTMLInputElement).blur();
         }
@@ -201,7 +207,8 @@ export default function ShoppingList({
   const [draftTargetServings, setDraftTargetServings] = useState(
     shoppingList.targetServings ?? TARGET_SERVINGS_MIN,
   );
-  const [isUpdatingTargetServings, setIsUpdatingTargetServings] = useState(false);
+  const [isUpdatingTargetServings, setIsUpdatingTargetServings] =
+    useState(false);
 
   // Mutations
   const toggleItemChecked = useMutation(api.shoppingLists.toggleItemChecked);
@@ -254,7 +261,9 @@ export default function ShoppingList({
     ingredientIds.length > 0 ? { ids: ingredientIds } : "skip",
   );
   const currentUser = useQuery(api.users.current);
-  const canControlServings = canUseServingControl(currentUser?.subscriptionTier);
+  const canControlServings = canUseServingControl(
+    currentUser?.subscriptionTier,
+  );
   const isDev =
     process.env.NODE_ENV !== "production" ||
     process.env.NEXT_PUBLIC_SHOW_RECIPE_LINKS === "true";
@@ -287,9 +296,15 @@ export default function ShoppingList({
   };
   const getAmountLines = (item: (typeof shoppingList.items)[number]) =>
     amountLinesFromEntries(normalizedAmountEntries(item));
-  const renderChalkboardBadge = (item: ShoppingListItem) =>
+  const renderChalkboardBadge = (
+    item: ShoppingListItem,
+    options?: { className?: string },
+  ) =>
     item.addedFromChalkboard ? (
-      <Badge variant="secondary" className="ml-2 text-[10px] leading-4">
+      <Badge
+        variant="secondary"
+        className={cn("text-[10px] leading-4", options?.className)}
+      >
         Chalkboard item
       </Badge>
     ) : null;
@@ -469,10 +484,7 @@ export default function ShoppingList({
   const availableChalkboardItemsCount = getAvailableChalkboardCount();
 
   const commitItemAmount = useCallback(
-    async (
-      itemId: Id<"shoppingListItems">,
-      amount: number | string | null,
-    ) => {
+    async (itemId: Id<"shoppingListItems">, amount: number | string | null) => {
       try {
         await updateItemAmount({ itemId, amount });
       } catch (error) {
@@ -603,7 +615,11 @@ export default function ShoppingList({
         setIsUpdatingTargetServings(false);
       }
     },
-    [draftTargetServings, shoppingList._id, updateDraftShoppingListTargetServings],
+    [
+      draftTargetServings,
+      shoppingList._id,
+      updateDraftShoppingListTargetServings,
+    ],
   );
 
   const handleAddFromChalkboard = async () => {
@@ -752,7 +768,7 @@ export default function ShoppingList({
                               <> ({getOriginalRecipeName(item)})</>
                             )}
                         </span>
-                        {renderChalkboardBadge(item)}
+                        {renderChalkboardBadge(item, { className: "ml-2" })}
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
                             {getAmountLines(item).join(", ")}
@@ -786,7 +802,7 @@ export default function ShoppingList({
                         <span className={cn(item.checked && "line-through")}>
                           {getDisplayName(item)}
                         </span>
-                        {renderChalkboardBadge(item)}
+                        {renderChalkboardBadge(item, { className: "ml-2" })}
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
                             {getAmountLines(item).join(", ")}
@@ -825,7 +841,7 @@ export default function ShoppingList({
                               <> ({getOriginalRecipeName(item)})</>
                             )}
                         </span>
-                        {renderChalkboardBadge(item)}
+                        {renderChalkboardBadge(item, { className: "ml-2" })}
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
                             {getAmountLines(item).join(", ")}
@@ -911,7 +927,9 @@ export default function ShoppingList({
                           listId: shoppingList._id,
                           visibility: "owner_only",
                         });
-                        toast.success("Household sharing removed from this list");
+                        toast.success(
+                          "Household sharing removed from this list",
+                        );
                         return;
                       }
                       const prefix = "household:";
@@ -962,8 +980,8 @@ export default function ShoppingList({
                 {shoppingList.mealPlanId ? (
                   <p className="text-xs text-muted-foreground pt-1">
                     Linked to a meal plan: &quot;Only me&quot; isn&apos;t
-                    available (the link must stay meaningful for the plan).
-                    Use &quot;Not shared via household&quot; to stop household
+                    available (the link must stay meaningful for the plan). Use
+                    &quot;Not shared via household&quot; to stop household
                     visibility; people who can open the plan may still see this
                     list.
                   </p>
@@ -1083,9 +1101,8 @@ export default function ShoppingList({
                       const buyUnitLabel = (first.unit ?? "").trim();
                       const weeklyTotalEntries =
                         weeklyTotalEntriesForLeftoverItem(item);
-                      const weeklyTotalSummary = amountLinesFromEntries(
-                        weeklyTotalEntries,
-                      );
+                      const weeklyTotalSummary =
+                        amountLinesFromEntries(weeklyTotalEntries);
                       const weeklyTotalFromBaseline = finiteNumberOrNull(
                         item.leftoverBaseline?.amount,
                       );
@@ -1098,10 +1115,7 @@ export default function ShoppingList({
                       const presetBase =
                         weeklyTotalNumeric ?? finiteNumberOrNull(first.amount);
                       const restSummary = rest
-                        .map(
-                          (e) =>
-                            `${e.amount ?? ""} ${e.unit ?? ""}`.trim(),
-                        )
+                        .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
                         .filter(Boolean);
                       return (
                         <li
@@ -1255,10 +1269,10 @@ export default function ShoppingList({
                         ingredientsMap={ingredientsMap}
                         getDisplayName={getDisplayName}
                         getOriginalRecipeName={getOriginalRecipeName}
-                        getAmountLines={getAmountLines}
                         onAmountChange={handleAmountChange}
                         onRemove={handleRemoveItem}
                         onToggleChecked={handleCheckItem}
+                        renderChalkboardBadge={renderChalkboardBadge}
                       />
                     ))}
                   </div>
@@ -1609,10 +1623,10 @@ function ShoppingListScreenItemRow({
   ingredientsMap,
   getDisplayName,
   getOriginalRecipeName,
-  getAmountLines,
   onAmountChange,
   onRemove,
   onToggleChecked,
+  renderChalkboardBadge,
 }: {
   item: ShoppingListItem;
   isFinalised: boolean;
@@ -1620,10 +1634,13 @@ function ShoppingListScreenItemRow({
   ingredientsMap: Record<Id<"ingredients">, Doc<"ingredients">> | undefined;
   getDisplayName: (item: ShoppingListItem) => string;
   getOriginalRecipeName: (item: ShoppingListItem) => string;
-  getAmountLines: (item: ShoppingListItem) => string[];
   onAmountChange: (itemId: Id<"shoppingListItems">, newAmount: number) => void;
   onRemove: (itemId: Id<"shoppingListItems">) => void;
   onToggleChecked: (itemId: Id<"shoppingListItems">) => void;
+  renderChalkboardBadge: (
+    item: ShoppingListItem,
+    options?: { className?: string },
+  ) => React.ReactNode;
 }) {
   return (
     <div
@@ -1660,11 +1677,7 @@ function ShoppingListScreenItemRow({
                 </span>
               )}
           </p>
-          {item.addedFromChalkboard ? (
-            <Badge variant="secondary" className="text-[10px] leading-4">
-              Chalkboard item
-            </Badge>
-          ) : null}
+          {renderChalkboardBadge(item)}
         </div>
 
         {(() => {
