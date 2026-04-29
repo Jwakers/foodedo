@@ -323,6 +323,8 @@ export default defineSchema({
     baseAmountEntries: v.optional(v.array(amountEntryValidator)),
     // Rows manually edited by the user should not be auto-rescaled.
     amountManuallyEdited: v.optional(v.boolean()),
+    // User opted to include this via chalkboard and it should never be pantry-default excluded.
+    addedFromChalkboard: v.optional(v.boolean()),
   }).index("by_shopping_list", ["shoppingListId"]),
 
   mealPlans: defineTable({

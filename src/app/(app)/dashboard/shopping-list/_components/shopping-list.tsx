@@ -208,10 +208,16 @@ export default function ShoppingList({
   };
   const getAmountLines = (item: (typeof shoppingList.items)[number]) =>
     amountLinesFromEntries(normalizedAmountEntries(item));
+  const renderChalkboardBadge = (item: ShoppingListItem) =>
+    item.addedFromChalkboard ? (
+      <Badge variant="secondary" className="ml-2 text-[10px] leading-4">
+        Chalkboard item
+      </Badge>
+    ) : null;
   const { mainShoppingItems, pantryStapleItems, mealPlanLeftoverItems } =
     useMemo(() => {
       const staple = (item: ShoppingListItem) =>
-        isPantryStaple(getCanonicalKey(item));
+        !item.addedFromChalkboard && isPantryStaple(getCanonicalKey(item));
       const main: ShoppingListItem[] = [];
       const pantry: ShoppingListItem[] = [];
       const leftover: ShoppingListItem[] = [];
@@ -636,6 +642,7 @@ export default function ShoppingList({
                               <> ({getOriginalRecipeName(item)})</>
                             )}
                         </span>
+                        {renderChalkboardBadge(item)}
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
                             {getAmountLines(item).join(", ")}
@@ -669,6 +676,7 @@ export default function ShoppingList({
                         <span className={cn(item.checked && "line-through")}>
                           {getDisplayName(item)}
                         </span>
+                        {renderChalkboardBadge(item)}
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
                             {getAmountLines(item).join(", ")}
@@ -707,6 +715,7 @@ export default function ShoppingList({
                               <> ({getOriginalRecipeName(item)})</>
                             )}
                         </span>
+                        {renderChalkboardBadge(item)}
                         {getAmountLines(item).length > 0 && (
                           <span className="ml-2">
                             {getAmountLines(item).join(", ")}
@@ -1028,6 +1037,7 @@ export default function ShoppingList({
                                     </span>
                                   )}
                               </span>
+                              {renderChalkboardBadge(item)}
                             </label>
                             <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0 sm:justify-end">
                               {typeof first.amount === "number" ? (
@@ -1167,6 +1177,7 @@ export default function ShoppingList({
                                   </span>
                                 )}
                             </span>
+                            {renderChalkboardBadge(item)}
                             {amtSummary ? (
                               <span className="text-xs text-muted-foreground mt-1 block">
                                 {amtSummary}
@@ -1489,6 +1500,11 @@ function ShoppingListScreenItemRow({
                 </span>
               )}
           </p>
+          {item.addedFromChalkboard ? (
+            <Badge variant="secondary" className="text-[10px] leading-4">
+              Chalkboard item
+            </Badge>
+          ) : null}
         </div>
 
         {(() => {
