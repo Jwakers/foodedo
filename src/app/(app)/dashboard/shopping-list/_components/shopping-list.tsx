@@ -82,6 +82,28 @@ function firstAmountEntryForItem(item: ShoppingListItem) {
   return { first, rest: entries.slice(1) };
 }
 
+function weeklyTotalEntriesForLeftoverItem(item: ShoppingListItem) {
+  const baseline = item.leftoverBaseline;
+  if (baseline?.amountEntries && baseline.amountEntries.length > 0) {
+    return baseline.amountEntries;
+  }
+  if (baseline) {
+    return [{ amount: baseline.amount, unit: baseline.unit }];
+  }
+  return normalizedAmountEntries(item);
+}
+
+function finiteNumberOrNull(value: number | string | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
 function namesEqual(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
@@ -948,34 +970,10 @@ export default function ShoppingList({
                   />
                 </div>
               ) : null}
-              {ingredientsByCategory.map(({ category, items }) => (
-                <div key={category}>
-                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                    {category}
-                  </h4>
-                  <div className="space-y-2">
-                    {items.map((item) => (
-                      <ShoppingListScreenItemRow
-                        key={item._id}
-                        item={item}
-                        isFinalised={isFinalised}
-                        isDev={isDev}
-                        ingredientsMap={ingredientsMap}
-                        getDisplayName={getDisplayName}
-                        getOriginalRecipeName={getOriginalRecipeName}
-                        getAmountLines={getAmountLines}
-                        onAmountChange={handleAmountChange}
-                        onRemove={handleRemoveItem}
-                        onToggleChecked={handleCheckItem}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
               {!isFinalised && mealPlanLeftoverItems.length > 0 ? (
                 <div
                   className={cn(
-                    "border-t border-border pt-6 space-y-4 rounded-lg border p-4",
+                    "space-y-4 rounded-lg border p-4",
                     "border-amber-500/35 bg-amber-500/5",
                   )}
                 >
@@ -984,9 +982,8 @@ export default function ShoppingList({
                       Already have (from your meal plan)
                     </h4>
                     <p className="text-xs text-muted-foreground">
-                      Check what you need on this shop trip. Edit the amount
-                      (e.g. grams) for each line — change it to whatever you
-                      actually need to buy.
+                      Weekly total is shown first for each ingredient. Set how
+                      much to buy this trip with quick presets or manual edits.
                     </p>
                   </div>
                   <ul className="space-y-3">
@@ -995,7 +992,23 @@ export default function ShoppingList({
                         item._id,
                       );
                       const { first, rest } = firstAmountEntryForItem(item);
-                      const unitLabel = (first.unit ?? "").trim();
+                      const buyUnitLabel = (first.unit ?? "").trim();
+                      const weeklyTotalEntries =
+                        weeklyTotalEntriesForLeftoverItem(item);
+                      const weeklyTotalSummary = amountLinesFromEntries(
+                        weeklyTotalEntries,
+                      );
+                      const weeklyTotalFromBaseline = finiteNumberOrNull(
+                        item.leftoverBaseline?.amount,
+                      );
+                      const weeklyTotalFromSingleEntry =
+                        weeklyTotalEntries.length === 1
+                          ? finiteNumberOrNull(weeklyTotalEntries[0]?.amount)
+                          : null;
+                      const weeklyTotalNumeric =
+                        weeklyTotalFromBaseline ?? weeklyTotalFromSingleEntry;
+                      const presetBase =
+                        weeklyTotalNumeric ?? finiteNumberOrNull(first.amount);
                       const restSummary = rest
                         .map(
                           (e) =>
@@ -1012,34 +1025,47 @@ export default function ShoppingList({
                               : "border-primary/35 bg-primary/5",
                           )}
                         >
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
-                            <label className="flex cursor-pointer items-start gap-2 shrink-0">
-                              <Checkbox
-                                checked={!excluded}
-                                onCheckedChange={(v) => {
-                                  setLeftoverExcludedFromTripIds((prev) => {
-                                    const next = new Set(prev);
-                                    if (v === true) next.delete(item._id);
-                                    else next.add(item._id);
-                                    return next;
-                                  });
-                                }}
-                                className="size-4 mt-0.5 shrink-0"
-                              />
-                              <span className="text-sm font-medium capitalize leading-snug">
-                                {getDisplayName(item)}
-                                {isDev &&
-                                  item.ingredientId &&
-                                  ingredientsMap?.[item.ingredientId] && (
-                                    <span className="text-muted-foreground font-normal normal-case">
-                                      {" "}
-                                      ({getOriginalRecipeName(item)})
-                                    </span>
-                                  )}
+                          <div className="flex flex-col gap-3">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <label className="flex cursor-pointer items-start gap-2 min-w-0">
+                                <Checkbox
+                                  checked={!excluded}
+                                  onCheckedChange={(v) => {
+                                    setLeftoverExcludedFromTripIds((prev) => {
+                                      const next = new Set(prev);
+                                      if (v === true) next.delete(item._id);
+                                      else next.add(item._id);
+                                      return next;
+                                    });
+                                  }}
+                                  className="size-4 mt-0.5 shrink-0"
+                                />
+                                <span className="text-sm font-medium capitalize leading-snug">
+                                  {getDisplayName(item)}
+                                  {isDev &&
+                                    item.ingredientId &&
+                                    ingredientsMap?.[item.ingredientId] && (
+                                      <span className="text-muted-foreground font-normal normal-case">
+                                        {" "}
+                                        ({getOriginalRecipeName(item)})
+                                      </span>
+                                    )}
+                                </span>
+                                {renderChalkboardBadge(item)}
+                              </label>
+                              <p className="text-xs text-muted-foreground shrink-0">
+                                Weekly total:{" "}
+                                <span className="font-medium text-foreground">
+                                  {weeklyTotalSummary.length > 0
+                                    ? weeklyTotalSummary.join(" + ")
+                                    : "Not specified"}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs text-muted-foreground">
+                                Buy this trip:
                               </span>
-                              {renderChalkboardBadge(item)}
-                            </label>
-                            <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0 sm:justify-end">
                               {typeof first.amount === "number" ? (
                                 <Input
                                   type="number"
@@ -1051,6 +1077,7 @@ export default function ShoppingList({
                                       ? first.amount
                                       : ""
                                   }
+                                  disabled={excluded}
                                   onChange={(e) => {
                                     const raw = e.target.value;
                                     if (raw === "") {
@@ -1076,6 +1103,7 @@ export default function ShoppingList({
                                       ? String(first.amount)
                                       : ""
                                   }
+                                  disabled={excluded}
                                   onBlur={(e) => {
                                     const v = e.target.value.trim();
                                     void commitItemAmount(
@@ -1085,16 +1113,62 @@ export default function ShoppingList({
                                   }}
                                 />
                               )}
-                              {unitLabel ? (
+                              {buyUnitLabel ? (
                                 <span className="text-sm text-muted-foreground shrink-0">
-                                  {unitLabel}
+                                  {buyUnitLabel}
                                 </span>
+                              ) : null}
+                              {presetBase != null ? (
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    disabled={excluded}
+                                    onClick={() =>
+                                      void handleAmountChange(item._id, 0)
+                                    }
+                                  >
+                                    0%
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    disabled={excluded}
+                                    onClick={() =>
+                                      void handleAmountChange(
+                                        item._id,
+                                        Math.max(0, presetBase * 0.5),
+                                      )
+                                    }
+                                  >
+                                    50%
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    disabled={excluded}
+                                    onClick={() =>
+                                      void handleAmountChange(
+                                        item._id,
+                                        Math.max(0, presetBase),
+                                      )
+                                    }
+                                  >
+                                    100%
+                                  </Button>
+                                </div>
                               ) : null}
                             </div>
                           </div>
                           {restSummary.length > 0 ? (
                             <p className="text-[11px] text-muted-foreground mt-2 pl-6 sm:pl-0">
-                              Also in this week&apos;s total:{" "}
+                              Extra split amounts on this row:{" "}
                               {restSummary.join(" · ")}
                             </p>
                           ) : null}
@@ -1104,6 +1178,30 @@ export default function ShoppingList({
                   </ul>
                 </div>
               ) : null}
+              {ingredientsByCategory.map(({ category, items }) => (
+                <div key={category}>
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {category}
+                  </h4>
+                  <div className="space-y-2">
+                    {items.map((item) => (
+                      <ShoppingListScreenItemRow
+                        key={item._id}
+                        item={item}
+                        isFinalised={isFinalised}
+                        isDev={isDev}
+                        ingredientsMap={ingredientsMap}
+                        getDisplayName={getDisplayName}
+                        getOriginalRecipeName={getOriginalRecipeName}
+                        getAmountLines={getAmountLines}
+                        onAmountChange={handleAmountChange}
+                        onRemove={handleRemoveItem}
+                        onToggleChecked={handleCheckItem}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
               {!isFinalised && pantryStapleItems.length > 0 ? (
                 <div className="border-t border-border pt-6 space-y-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
