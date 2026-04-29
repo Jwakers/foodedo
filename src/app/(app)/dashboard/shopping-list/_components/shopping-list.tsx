@@ -1173,8 +1173,7 @@ export default function ShoppingList({
                           : null;
                       const weeklyTotalNumeric =
                         weeklyTotalFromBaseline ?? weeklyTotalFromSingleEntry;
-                      const presetBase =
-                        weeklyTotalNumeric ?? weeklyTotalFromSingleEntry;
+                      const presetBase = weeklyTotalNumeric;
                       const restSummary = rest
                         .map((e) => `${e.amount ?? ""} ${e.unit ?? ""}`.trim())
                         .filter(Boolean);
