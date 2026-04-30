@@ -1775,6 +1775,19 @@ export const updatePlanDateWindow = mutation({
         MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS,
       );
     }
+
+    if (plan.isFinalised) {
+      const existingStartDate = startOfDayMs(plan.startDate ?? plan.endDate);
+      const requestedStartDate = startOfDayMs(args.startDate);
+      const existingDayCount = getPlanDayCount(plan);
+      if (
+        requestedStartDate !== existingStartDate ||
+        args.dayCount !== existingDayCount
+      ) {
+        throw new ConvexError(MEAL_PLAN_ERRORS.PREVENT_EDIT_FINALISED_PLAN);
+      }
+    }
+
     const { startDate, endDate, dayCount } = validateMealPlanWindow({
       startDate: args.startDate,
       dayCount: args.dayCount,

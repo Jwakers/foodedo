@@ -266,7 +266,18 @@ export function MealPlanDayView({
     order: number,
   ) => void;
 }) {
-  const planStartDate = startOfDayMs(plan.startDate ?? plan.endDate);
+  const earliestEntryDate = useMemo(() => {
+    const entries = plan.entries ?? [];
+    if (entries.length === 0) return undefined;
+    let minDate = entries[0]!.date;
+    for (const entry of entries) {
+      if (entry.date < minDate) minDate = entry.date;
+    }
+    return startOfDayMs(minDate);
+  }, [plan.entries]);
+  const planStartDate = startOfDayMs(
+    plan.startDate ?? earliestEntryDate ?? plan.endDate,
+  );
   const inferredDayCount = Math.floor((plan.endDate - planStartDate) / ONE_DAY_MS) + 1;
   const dayCount = Math.max(1, Math.min(MAX_PLAN_DAYS, inferredDayCount));
   const dayDates = useMemo(
@@ -334,15 +345,15 @@ export function MealPlanDayView({
       if (!data?.entry) return;
       const entryId = data.entry._id as Id<"mealPlanEntries">;
       const maxOrderForDay = Math.max(0, dayCapacity - 1);
-      const destinationIndex = Math.max(
+      const desiredIndex = Math.max(
         0,
-        Math.min(placement?.order ?? entriesInDay.length, maxOrderForDay),
+        placement?.order ?? entriesInDay.length,
       );
-      let newOrder = destinationIndex;
+      let newOrder = Math.max(0, Math.min(desiredIndex, maxOrderForDay));
       if (data.fromDayIndex === toDayIndex) {
         const lengthWithoutSource = Math.max(0, dayCapacity - 1);
         const adjustedIndex =
-          data.fromOrder < destinationIndex ? destinationIndex - 1 : destinationIndex;
+          data.fromOrder < desiredIndex ? desiredIndex - 1 : desiredIndex;
         newOrder = Math.max(0, Math.min(adjustedIndex, lengthWithoutSource));
       }
       onMoveEntry(entryId, newDate, Math.max(0, newOrder));
