@@ -1770,6 +1770,11 @@ export const updatePlanDateWindow = mutation({
     if (plan.userId !== user._id) {
       throw new ConvexError("Only the plan owner can edit plan dates");
     }
+    if (!canUseAdvancedMealPlanControls(user.subscriptionTier)) {
+      throw new ConvexError(
+        MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS,
+      );
+    }
     const { startDate, endDate, dayCount } = validateMealPlanWindow({
       startDate: args.startDate,
       dayCount: args.dayCount,
@@ -1783,12 +1788,19 @@ export const updatePlanDateWindow = mutation({
     let autoMovedMealCount = 0;
     for (const entry of entries) {
       const entryDate = startOfDayMs(entry.date);
-      if (entryDate >= startDate && entryDate <= endDate) continue;
-      autoMovedMealCount += 1;
+      const isDateOutsideWindow = entryDate < startDate || entryDate > endDate;
+      const currentOrder = entry.order ?? 0;
+      const needsOrderClamp = currentOrder >= dayCount;
+      if (!isDateOutsideWindow && !needsOrderClamp) continue;
+
+      if (isDateOutsideWindow) autoMovedMealCount += 1;
       await ctx.db.patch(entry._id, {
-        date: endDate,
-        // Keep orders valid for the new window; user can fine-tune after save.
-        order: fallbackOrder,
+        ...(isDateOutsideWindow ? { date: endDate } : {}),
+        ...(needsOrderClamp
+          ? { order: fallbackOrder }
+          : isDateOutsideWindow
+            ? { order: fallbackOrder }
+            : {}),
       });
     }
 

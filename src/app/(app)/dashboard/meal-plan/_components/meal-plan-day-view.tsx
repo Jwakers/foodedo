@@ -327,18 +327,20 @@ export function MealPlanDayView({
         return;
       const newDate = dayDates[toDayIndex];
       const entriesInDay = entriesByDay.get(newDate) ?? [];
+      const dayCapacity = dayDates.length;
       const data = source.data as
         | { entry: EntryLike; fromDayIndex: number; fromOrder: number }
         | undefined;
       if (!data?.entry) return;
       const entryId = data.entry._id as Id<"mealPlanEntries">;
+      const maxOrderForDay = Math.max(0, dayCapacity - 1);
       const destinationIndex = Math.max(
         0,
-        Math.min(placement?.order ?? entriesInDay.length, entriesInDay.length),
+        Math.min(placement?.order ?? entriesInDay.length, maxOrderForDay),
       );
       let newOrder = destinationIndex;
       if (data.fromDayIndex === toDayIndex) {
-        const lengthWithoutSource = Math.max(0, entriesInDay.length - 1);
+        const lengthWithoutSource = Math.max(0, dayCapacity - 1);
         const adjustedIndex =
           data.fromOrder < destinationIndex ? destinationIndex - 1 : destinationIndex;
         newOrder = Math.max(0, Math.min(adjustedIndex, lengthWithoutSource));
