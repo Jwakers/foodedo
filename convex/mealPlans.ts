@@ -777,11 +777,14 @@ export const getActiveMealPlanSummaries = query({
  */
 export const getOwnedUnreplacedPlanCountForCreation = query({
   args: {
-    localDayStartMs: v.number(),
+    localDayStartMs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return 0;
+    // During client hot-reloads or transitional renders, this query can be
+    // invoked without args. Treat as "not ready" instead of throwing.
+    if (args.localDayStartMs === undefined) return 0;
     const today = startOfDayMs(args.localDayStartMs);
     const ownedPlans = await ctx.db
       .query("mealPlans")
@@ -1734,6 +1737,61 @@ export const finaliseMealPlan = mutation({
       updatedAt: Date.now(),
     });
     return { success: true };
+  },
+});
+
+/**
+ * Update a meal plan window by setting startDate and dayCount (endDate inferred).
+ * Owner only. Existing entries must remain inside the new date range.
+ */
+export const updatePlanDateWindow = mutation({
+  args: {
+    mealPlanId: v.id("mealPlans"),
+    startDate: v.number(),
+    dayCount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const plan = await ctx.db.get(args.mealPlanId);
+    if (!plan) throw new ConvexError("Meal plan not found");
+    if (plan.userId !== user._id) {
+      throw new ConvexError("Only the plan owner can edit plan dates");
+    }
+    if (!Number.isInteger(args.dayCount)) {
+      throw new ConvexError("dayCount must be an integer");
+    }
+    if (args.dayCount < 1 || args.dayCount > MAX_DAYS_IN_MEAL_PLAN) {
+      throw new ConvexError(
+        `dayCount must be between 1 and ${MAX_DAYS_IN_MEAL_PLAN}`,
+      );
+    }
+
+    const startDate = startOfDayMs(args.startDate);
+    const { endDate } = buildInclusiveWindow(startDate, args.dayCount);
+    const entries = await ctx.db
+      .query("mealPlanEntries")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
+      .collect();
+
+    const fallbackOrder = Math.max(0, args.dayCount - 1);
+    let autoMovedMealCount = 0;
+    for (const entry of entries) {
+      const entryDate = startOfDayMs(entry.date);
+      if (entryDate >= startDate && entryDate <= endDate) continue;
+      autoMovedMealCount += 1;
+      await ctx.db.patch(entry._id, {
+        date: endDate,
+        // Keep orders valid for the new window; user can fine-tune after save.
+        order: fallbackOrder,
+      });
+    }
+
+    await ctx.db.patch(args.mealPlanId, {
+      startDate,
+      endDate,
+      updatedAt: Date.now(),
+    });
+    return { success: true, autoMovedMealCount };
   },
 });
 

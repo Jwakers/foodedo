@@ -24,12 +24,14 @@ type DragOverEventArg = Parameters<
 type DragEndEventArg = Parameters<
   NonNullable<DragDropProviderProps["onDragEnd"]>
 >[0];
+type DragOperationTarget = DragOverEventArg["operation"]["target"];
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_PLAN_DAYS = 7;
 
 function dayLabel(dateMs: number): string {
   const d = new Date(dateMs);
@@ -39,6 +41,32 @@ function dayLabel(dateMs: number): string {
 function dayDateLabel(dateMs: number): string {
   const d = new Date(dateMs);
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function formatPlanRange(startDateMs: number, endDateMs: number): string {
+  const fmt = (ms: number) =>
+    new Date(ms).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+  return `${fmt(startDateMs)} - ${fmt(endDateMs)}`;
+}
+
+function dayIndexFromDropTarget(target: DragOperationTarget): number | null {
+  if (!target?.id) return null;
+  const id = String(target.id);
+  if (id.startsWith("day-")) {
+    const parsed = Number.parseInt(id.slice(4), 10);
+    return Number.isInteger(parsed) ? parsed : null;
+  }
+
+  const fromDayIndex = (target.data as { fromDayIndex?: unknown } | undefined)
+    ?.fromDayIndex;
+  if (typeof fromDayIndex !== "number" || !Number.isInteger(fromDayIndex)) {
+    return null;
+  }
+  return fromDayIndex;
 }
 
 type EntryLike = CurrentPlan["entries"][number];
@@ -230,18 +258,20 @@ export function MealPlanDayView({
     order: number,
   ) => void;
 }) {
-  const startDate = plan.startDate ?? plan.endDate - 7 * ONE_DAY_MS;
+  const planStartDate = startOfDayMs(plan.startDate ?? plan.endDate);
+  const inferredDayCount = Math.floor((plan.endDate - planStartDate) / ONE_DAY_MS) + 1;
+  const dayCount = Math.max(1, Math.min(MAX_PLAN_DAYS, inferredDayCount));
   const dayDates = useMemo(
     () =>
-      Array.from({ length: 7 }, (_, i) =>
-        startOfDayMs(startDate + i * ONE_DAY_MS),
+      Array.from({ length: dayCount }, (_, i) =>
+        startOfDayMs(planStartDate + i * ONE_DAY_MS),
       ),
-    [startDate],
+    [dayCount, planStartDate],
   );
 
   const entriesByDay = useMemo(() => {
     const map = new Map<number, EntryLike[]>();
-    for (let i = 0; i < 7; i++) map.set(dayDates[i], []);
+    for (const dayDate of dayDates) map.set(dayDate, []);
     const sorted = [...(plan.entries ?? [])].sort(
       (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
     );
@@ -268,18 +298,13 @@ export function MealPlanDayView({
   }, []);
 
   const handleDragOver = useCallback((event: DragOverEventArg) => {
-    const target = event.operation.target;
-    if (!target?.id) {
+    const toDayIndex = dayIndexFromDropTarget(event.operation.target);
+    if (toDayIndex === null || toDayIndex < 0 || toDayIndex >= dayDates.length) {
       setOverDayIndex(null);
       return;
     }
-    const id = String(target.id);
-    if (id.startsWith("day-")) {
-      setOverDayIndex(parseInt(id.slice(4), 10));
-    } else {
-      setOverDayIndex(null);
-    }
-  }, []);
+    setOverDayIndex(toDayIndex);
+  }, [dayDates.length]);
 
   /** Event shape: event.operation.source / event.operation.target, event.canceled (DragEndEventArg from provider props). */
   const handleDragEnd = useCallback(
@@ -288,10 +313,9 @@ export function MealPlanDayView({
       if (event.canceled) return;
       const { source, target } = event.operation;
       if (!source || !target?.id || source.id === target.id) return;
-      const id = String(target.id);
-      if (!id.startsWith("day-")) return;
-      const toDayIndex = parseInt(id.slice(4), 10);
-      if (toDayIndex < 0 || toDayIndex > 6) return;
+      const toDayIndex = dayIndexFromDropTarget(target);
+      if (toDayIndex === null || toDayIndex < 0 || toDayIndex >= dayDates.length)
+        return;
       const newDate = dayDates[toDayIndex];
       const entriesInDay = entriesByDay.get(newDate) ?? [];
       const data = source.data as
@@ -316,7 +340,7 @@ export function MealPlanDayView({
     >
       <p className="mb-3 text-center text-xs text-muted-foreground">
         Tap a meal to open the recipe. Hold the grip icon for a moment, then
-        drag to reorder.
+        drag to reorder. You can move meals between {formatPlanRange(planStartDate, plan.endDate)}.
       </p>
       {/* 2 columns on mobile, then 3, 4, 7 at larger breakpoints */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
