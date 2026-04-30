@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/react";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
+import { MAX_DAYS_IN_MEAL_PLAN } from "convex/lib/constants";
 import type { FunctionReturnType } from "convex/server";
 import { GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +25,8 @@ type DragOverEventArg = Parameters<
 type DragEndEventArg = Parameters<
   NonNullable<DragDropProviderProps["onDragEnd"]>
 >[0];
+type DragOperationTarget = DragOverEventArg["operation"]["target"];
+type DropPlacement = { dayIndex: number; order: number | null };
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getMealPlan>
@@ -39,6 +42,39 @@ function dayLabel(dateMs: number): string {
 function dayDateLabel(dateMs: number): string {
   const d = new Date(dateMs);
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function formatPlanRange(startDateMs: number, endDateMs: number): string {
+  const fmt = (ms: number) =>
+    new Date(ms).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+  return `${fmt(startDateMs)} - ${fmt(endDateMs)}`;
+}
+
+function dropPlacementFromTarget(target: DragOperationTarget): DropPlacement | null {
+  if (!target?.id) return null;
+  const id = String(target.id);
+  if (id.startsWith("day-")) {
+    const parsed = Number.parseInt(id.slice(4), 10);
+    return Number.isInteger(parsed) ? { dayIndex: parsed, order: null } : null;
+  }
+
+  const targetData = target.data as
+    | { fromDayIndex?: unknown; fromOrder?: unknown }
+    | undefined;
+  const fromDayIndex = targetData?.fromDayIndex;
+  if (typeof fromDayIndex !== "number" || !Number.isInteger(fromDayIndex)) {
+    return null;
+  }
+  const fromOrder = targetData?.fromOrder;
+  const order =
+    typeof fromOrder === "number" && Number.isInteger(fromOrder)
+      ? fromOrder
+      : null;
+  return { dayIndex: fromDayIndex, order };
 }
 
 type EntryLike = CurrentPlan["entries"][number];
@@ -230,18 +266,31 @@ export function MealPlanDayView({
     order: number,
   ) => void;
 }) {
-  const startDate = plan.startDate ?? plan.endDate - 7 * ONE_DAY_MS;
+  const earliestEntryDate = useMemo(() => {
+    const entries = plan.entries ?? [];
+    if (entries.length === 0) return undefined;
+    let minDate = entries[0]!.date;
+    for (const entry of entries) {
+      if (entry.date < minDate) minDate = entry.date;
+    }
+    return startOfDayMs(minDate);
+  }, [plan.entries]);
+  const planStartDate = startOfDayMs(
+    plan.startDate ?? earliestEntryDate ?? plan.endDate,
+  );
+  const inferredDayCount = Math.floor((plan.endDate - planStartDate) / ONE_DAY_MS) + 1;
+  const dayCount = Math.max(1, Math.min(MAX_DAYS_IN_MEAL_PLAN, inferredDayCount));
   const dayDates = useMemo(
     () =>
-      Array.from({ length: 7 }, (_, i) =>
-        startOfDayMs(startDate + i * ONE_DAY_MS),
+      Array.from({ length: dayCount }, (_, i) =>
+        startOfDayMs(planStartDate + i * ONE_DAY_MS),
       ),
-    [startDate],
+    [dayCount, planStartDate],
   );
 
   const entriesByDay = useMemo(() => {
     const map = new Map<number, EntryLike[]>();
-    for (let i = 0; i < 7; i++) map.set(dayDates[i], []);
+    for (const dayDate of dayDates) map.set(dayDate, []);
     const sorted = [...(plan.entries ?? [])].sort(
       (a, b) => a.date - b.date || (a.order ?? 0) - (b.order ?? 0),
     );
@@ -268,18 +317,13 @@ export function MealPlanDayView({
   }, []);
 
   const handleDragOver = useCallback((event: DragOverEventArg) => {
-    const target = event.operation.target;
-    if (!target?.id) {
+    const toDayIndex = dropPlacementFromTarget(event.operation.target)?.dayIndex;
+    if (toDayIndex == null || toDayIndex < 0 || toDayIndex >= dayDates.length) {
       setOverDayIndex(null);
       return;
     }
-    const id = String(target.id);
-    if (id.startsWith("day-")) {
-      setOverDayIndex(parseInt(id.slice(4), 10));
-    } else {
-      setOverDayIndex(null);
-    }
-  }, []);
+    setOverDayIndex(toDayIndex);
+  }, [dayDates.length]);
 
   /** Event shape: event.operation.source / event.operation.target, event.canceled (DragEndEventArg from provider props). */
   const handleDragEnd = useCallback(
@@ -288,21 +332,30 @@ export function MealPlanDayView({
       if (event.canceled) return;
       const { source, target } = event.operation;
       if (!source || !target?.id || source.id === target.id) return;
-      const id = String(target.id);
-      if (!id.startsWith("day-")) return;
-      const toDayIndex = parseInt(id.slice(4), 10);
-      if (toDayIndex < 0 || toDayIndex > 6) return;
+      const placement = dropPlacementFromTarget(target);
+      const toDayIndex = placement?.dayIndex;
+      if (toDayIndex == null || toDayIndex < 0 || toDayIndex >= dayDates.length)
+        return;
       const newDate = dayDates[toDayIndex];
       const entriesInDay = entriesByDay.get(newDate) ?? [];
+      const dayCapacity = dayDates.length;
       const data = source.data as
-        | { entry: EntryLike; fromDayIndex: number }
+        | { entry: EntryLike; fromDayIndex: number; fromOrder: number }
         | undefined;
       if (!data?.entry) return;
       const entryId = data.entry._id as Id<"mealPlanEntries">;
-      const newOrder =
-        data.fromDayIndex === toDayIndex
-          ? entriesInDay.length - 1
-          : entriesInDay.length;
+      const maxOrderForDay = Math.max(0, dayCapacity - 1);
+      const desiredIndex = Math.max(
+        0,
+        placement?.order ?? entriesInDay.length,
+      );
+      let newOrder = Math.max(0, Math.min(desiredIndex, maxOrderForDay));
+      if (data.fromDayIndex === toDayIndex) {
+        const lengthWithoutSource = Math.max(0, dayCapacity - 1);
+        const adjustedIndex =
+          data.fromOrder < desiredIndex ? desiredIndex - 1 : desiredIndex;
+        newOrder = Math.max(0, Math.min(adjustedIndex, lengthWithoutSource));
+      }
       onMoveEntry(entryId, newDate, Math.max(0, newOrder));
     },
     [dayDates, entriesByDay, onMoveEntry],
@@ -316,7 +369,7 @@ export function MealPlanDayView({
     >
       <p className="mb-3 text-center text-xs text-muted-foreground">
         Tap a meal to open the recipe. Hold the grip icon for a moment, then
-        drag to reorder.
+        drag to reorder. You can move meals between {formatPlanRange(planStartDate, plan.endDate)}.
       </p>
       {/* 2 columns on mobile, then 3, 4, 7 at larger breakpoints */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">

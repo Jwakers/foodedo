@@ -155,7 +155,30 @@ function mealPlanErrorMessage(e: unknown): string {
   if (msg.includes("No eligible recipes matched your current constraints")) {
     return "We couldn't find enough eligible meals with your current filters. Try loosening member preferences, quick-meal settings, or recency constraints.";
   }
+  if (msg.includes("Cannot set that date range because")) {
+    return "That date range excludes one or more existing meals. Move meals first or choose a wider range.";
+  }
+  if (
+    msg.includes("Only the plan owner can edit plan dates") ||
+    msg.includes("dayCount must be between")
+  ) {
+    return "Couldn't update plan dates. Check your inputs and try again.";
+  }
   return msg;
+}
+
+function mealPlanMoveErrorMessage(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (
+    msg.includes("Date must be on or after the plan start date") ||
+    msg.includes("Date must be on or before the plan end date")
+  ) {
+    return "That day is outside this meal plan's date range.";
+  }
+  if (msg.includes("Entry order must be")) {
+    return "We couldn't place that meal there. Try dropping it on another day.";
+  }
+  return mealPlanErrorMessage(e) || "Failed to move meal";
 }
 const MEAL_PLAN_EMPTY_VIEWED_SESSION_KEY =
   "foodedo_onboarding_meal_plan_empty_viewed";
@@ -176,6 +199,29 @@ function formatPlanRangeShort(start: number | undefined, end: number): string {
 }
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+function toDateInputValue(utcStartMs: number): string {
+  const d = new Date(utcStartMs);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateInputAsUtcStart(value: string): number | null {
+  const [year, month, day] = value.split("-").map(Number);
+  if (
+    Number.isNaN(year) ||
+    Number.isNaN(month) ||
+    Number.isNaN(day) ||
+    year <= 0 ||
+    month <= 0 ||
+    day <= 0
+  ) {
+    return null;
+  }
+  return Date.UTC(year, month - 1, day);
+}
 
 type MealPlanClientProps = {
   planId?: string;
@@ -642,6 +688,28 @@ export default function MealPlanClient({
   const regenerateWeeklyPlan = useMutation(api.mealPlans.regenerateWeeklyPlan);
   const removeEntry = useMutation(api.mealPlans.removeEntry);
   const updateEntry = useMutation(api.mealPlans.updateEntry);
+  const moveEntry = useMutation(api.mealPlans.updateEntry).withOptimisticUpdate(
+    (localStore, args) => {
+      if (resolvedPlanId === null || resolvedPlanId === undefined) return;
+      if (args.date === undefined || args.order === undefined) return;
+      const queryArgs = { mealPlanId: resolvedPlanId };
+      const current = localStore.getQuery(api.mealPlans.getMealPlan, queryArgs);
+      if (!current) return;
+      const nextEntries = (current.entries ?? []).map((entry) =>
+        entry._id === args.entryId
+          ? {
+              ...entry,
+              date: args.date!,
+              order: args.order!,
+            }
+          : entry,
+      );
+      localStore.setQuery(api.mealPlans.getMealPlan, queryArgs, {
+        ...current,
+        entries: nextEntries,
+      });
+    },
+  );
   const addEntry = useMutation(api.mealPlans.addEntry);
   const deleteMealPlan = useMutation(api.mealPlans.deleteMealPlan);
   const shareMealPlanWithHousehold = useMutation(
@@ -652,6 +720,7 @@ export default function MealPlanClient({
     api.shoppingLists.createShoppingListFromMealPlan,
   );
   const finaliseMealPlan = useMutation(api.mealPlans.finaliseMealPlan);
+  const updatePlanDateWindow = useMutation(api.mealPlans.updatePlanDateWindow);
 
   const [selectedChalkboardIds, setSelectedChalkboardIds] = useState<
     Set<Id<"chalkboardItems">>
@@ -667,6 +736,7 @@ export default function MealPlanClient({
   const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
     useState(false);
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
+  const [showEditDatesDialog, setShowEditDatesDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [targetServings, setTargetServings] = useState(1);
   const [hasManualServingOverride, setHasManualServingOverride] =
@@ -677,6 +747,9 @@ export default function MealPlanClient({
   >("");
 
   const [isFinalising, setIsFinalising] = useState(false);
+  const [isUpdatingDateWindow, setIsUpdatingDateWindow] = useState(false);
+  const [editStartDateInput, setEditStartDateInput] = useState("");
+  const [editDayCount, setEditDayCount] = useState(String(MAX_DAYS_IN_MEAL_PLAN));
   const [includedMemberIds, setIncludedMemberIds] = useState<Set<Id<"users">>>(
     new Set(),
   );
@@ -1325,14 +1398,64 @@ export default function MealPlanClient({
   const handleMoveEntryToDay = useCallback(
     async (entryId: Id<"mealPlanEntries">, date: number, order: number) => {
       try {
-        await updateEntry({ entryId, date, order });
+        await moveEntry({ entryId, date, order });
         toast.success("Meal moved");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Failed to move meal");
+        toast.error(mealPlanMoveErrorMessage(e));
       }
     },
-    [updateEntry],
+    [moveEntry],
   );
+
+  const handleSavePlanDates = useCallback(async () => {
+    if (!currentPlan) return;
+    const parsedStartDate = parseDateInputAsUtcStart(editStartDateInput);
+    const parsedDayCount = Number.parseInt(editDayCount, 10);
+    if (parsedStartDate === null) {
+      toast.error("Choose a valid start date.");
+      return;
+    }
+    if (
+      !Number.isInteger(parsedDayCount) ||
+      parsedDayCount < 1 ||
+      parsedDayCount > MAX_DAYS_IN_MEAL_PLAN
+    ) {
+      toast.error(`Plan length must be between 1 and ${MAX_DAYS_IN_MEAL_PLAN} days.`);
+      return;
+    }
+    setIsUpdatingDateWindow(true);
+    try {
+      const result = await updatePlanDateWindow({
+        mealPlanId: currentPlan._id,
+        startDate: parsedStartDate,
+        dayCount: parsedDayCount,
+      });
+      const autoMovedMealCount =
+        typeof result === "object" &&
+        result !== null &&
+        "autoMovedMealCount" in result &&
+        typeof result.autoMovedMealCount === "number"
+          ? result.autoMovedMealCount
+          : 0;
+      if (autoMovedMealCount > 0) {
+        toast.success(
+          `Plan dates updated. ${autoMovedMealCount} meal${autoMovedMealCount === 1 ? "" : "s"} moved to the final day.`,
+        );
+      } else {
+        toast.success("Plan dates updated");
+      }
+      setShowEditDatesDialog(false);
+    } catch (e) {
+      toast.error(mealPlanErrorMessage(e) || "Failed to update plan dates");
+    } finally {
+      setIsUpdatingDateWindow(false);
+    }
+  }, [
+    currentPlan,
+    editDayCount,
+    editStartDateInput,
+    updatePlanDateWindow,
+  ]);
 
   const handlePickerSelect = useCallback(
     async (recipeId: Id<"recipes">) => {
@@ -1399,6 +1522,17 @@ export default function MealPlanClient({
     resolvedPlanId !== null &&
     resolvedPlanId !== undefined &&
     currentPlan === undefined;
+
+  useEffect(() => {
+    if (!showEditDatesDialog || !currentPlan) return;
+    const planStartDate = currentPlan.startDate ?? currentPlan.endDate;
+    const planDayCount = Math.max(
+      1,
+      Math.floor((currentPlan.endDate - planStartDate) / ONE_DAY_MS) + 1,
+    );
+    setEditStartDateInput(toDateInputValue(planStartDate));
+    setEditDayCount(String(planDayCount));
+  }, [currentPlan, showEditDatesDialog]);
 
   if (isPlanListLoading || isPlanDetailLoading) {
     return (
@@ -1942,6 +2076,28 @@ export default function MealPlanClient({
     currentPlan.isOwner &&
     !isFinalised &&
     mealCount < MAX_DAYS_IN_MEAL_PLAN;
+  const currentPlanStartDate = currentPlan.startDate ?? currentPlan.endDate;
+  const currentPlanDayCount = Math.max(
+    1,
+    Math.floor((currentPlan.endDate - currentPlanStartDate) / ONE_DAY_MS) + 1,
+  );
+  const editPreviewEndDate = (() => {
+    const parsedStartDate = parseDateInputAsUtcStart(editStartDateInput);
+    const parsedDayCount = Number.parseInt(editDayCount, 10);
+    if (
+      parsedStartDate === null ||
+      !Number.isInteger(parsedDayCount) ||
+      parsedDayCount < 1 ||
+      parsedDayCount > MAX_DAYS_IN_MEAL_PLAN
+    ) {
+      return null;
+    }
+    return parsedStartDate + (parsedDayCount - 1) * ONE_DAY_MS;
+  })();
+  const isEditPlanDatesValid = editPreviewEndDate !== null;
+  const hasPlanDateEdits =
+    parseDateInputAsUtcStart(editStartDateInput) !== currentPlanStartDate ||
+    Number.parseInt(editDayCount, 10) !== currentPlanDayCount;
 
   return (
     <div className="bg-background min-w-0 w-full overflow-x-hidden">
@@ -1971,7 +2127,10 @@ export default function MealPlanClient({
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base truncate">
               {isFinalised
-                ? "Drag meals to change which day they fall on."
+                ? `Drag meals to change which day they fall on (${formatPlanRangeShort(
+                    currentPlanStartDate,
+                    currentPlan.endDate,
+                  )}).`
                 : "Review your week. Lock what you love, swap what you don't."}
             </p>
             {planSummaries.length > 1 ? (
@@ -2075,6 +2234,10 @@ export default function MealPlanClient({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowEditDatesDialog(true)}>
+                      <CalendarPlus className="size-4 mr-2" />
+                      Edit plan dates
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={() => setShowDeletePlanDialog(true)}
@@ -2176,8 +2339,8 @@ export default function MealPlanClient({
               <AlertDialogTitle>Save this plan?</AlertDialogTitle>
               <AlertDialogDescription>
                 Once saved, you can&apos;t add, remove, or swap meals, only move
-                them between days. To make bigger changes, you&apos;d need to
-                delete this plan and create a new one.
+                them between days. You can still adjust your plan dates later
+                from the plan options menu.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -2194,6 +2357,81 @@ export default function MealPlanClient({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <Dialog open={showEditDatesDialog} onOpenChange={setShowEditDatesDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit plan dates</DialogTitle>
+              <DialogDescription>
+                Choose a new start date and plan length. The end date is inferred
+                automatically.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-plan-start-date">Start date</Label>
+                <input
+                  id="edit-plan-start-date"
+                  type="date"
+                  title="Plan start date"
+                  value={editStartDateInput}
+                  onChange={(e) => setEditStartDateInput(e.target.value)}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-plan-day-count">
+                  Length (1-{MAX_DAYS_IN_MEAL_PLAN} days)
+                </Label>
+                <input
+                  id="edit-plan-day-count"
+                  type="number"
+                  title="Plan length in days"
+                  placeholder={`1-${MAX_DAYS_IN_MEAL_PLAN}`}
+                  min={1}
+                  max={MAX_DAYS_IN_MEAL_PLAN}
+                  value={editDayCount}
+                  onChange={(e) => setEditDayCount(e.target.value)}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {editPreviewEndDate !== null
+                  ? `Range preview: ${formatPlanRangeShort(
+                      parseDateInputAsUtcStart(editStartDateInput) ?? currentPlanStartDate,
+                      editPreviewEndDate,
+                    )}`
+                  : "Choose a valid date and length to preview the range."}
+              </p>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEditDatesDialog(false)}
+                disabled={isUpdatingDateWindow}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void handleSavePlanDates()}
+                disabled={
+                  isUpdatingDateWindow || !isEditPlanDatesValid || !hasPlanDateEdits
+                }
+              >
+                {isUpdatingDateWindow ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save dates"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {sharedHousehold && (
           <Card className="mb-4 py-4 border-primary/25 bg-primary/5">

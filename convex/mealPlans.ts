@@ -204,26 +204,13 @@ function buildInclusiveWindow(
   };
 }
 
-function resolveMealPlanWindow(args: {
-  startDate?: number;
-  dayCount?: number;
-  subscriptionTier: string | undefined;
+function validateMealPlanWindow(args: {
+  startDate: number;
+  dayCount: number;
 }): { startDate: number; endDate: number; dayCount: number } {
   const nowStart = startOfDayMs(Date.now());
-  const isEntitledToAdvancedControls = canUseAdvancedMealPlanControls(
-    args.subscriptionTier,
-  );
-
-  // Server-side source of truth: if advanced controls are not allowed, silently
-  // coerce to standard weekly defaults regardless of client payload.
-  const requestedStart = isEntitledToAdvancedControls
-    ? args.startDate !== undefined
-      ? startOfDayMs(args.startDate)
-      : nowStart
-    : nowStart;
-  const requestedDayCount = isEntitledToAdvancedControls
-    ? (args.dayCount ?? MAX_DAYS_IN_MEAL_PLAN)
-    : MAX_DAYS_IN_MEAL_PLAN;
+  const requestedStart = startOfDayMs(args.startDate);
+  const requestedDayCount = args.dayCount;
 
   if (!Number.isInteger(requestedDayCount)) {
     throw new ConvexError("dayCount must be an integer");
@@ -251,6 +238,32 @@ function resolveMealPlanWindow(args: {
     endDate,
     dayCount: requestedDayCount,
   };
+}
+
+function resolveMealPlanWindow(args: {
+  startDate?: number;
+  dayCount?: number;
+  subscriptionTier: string | undefined;
+}): { startDate: number; endDate: number; dayCount: number } {
+  const nowStart = startOfDayMs(Date.now());
+  const isEntitledToAdvancedControls = canUseAdvancedMealPlanControls(
+    args.subscriptionTier,
+  );
+
+  // Server-side source of truth: if advanced controls are not allowed, silently
+  // coerce to standard weekly defaults regardless of client payload.
+  const requestedStart = isEntitledToAdvancedControls
+    ? args.startDate !== undefined
+      ? startOfDayMs(args.startDate)
+      : nowStart
+    : nowStart;
+  const requestedDayCount = isEntitledToAdvancedControls
+    ? (args.dayCount ?? MAX_DAYS_IN_MEAL_PLAN)
+    : MAX_DAYS_IN_MEAL_PLAN;
+  return validateMealPlanWindow({
+    startDate: requestedStart,
+    dayCount: requestedDayCount,
+  });
 }
 
 async function assertCanCreateAnotherPlanForUser(
@@ -777,11 +790,14 @@ export const getActiveMealPlanSummaries = query({
  */
 export const getOwnedUnreplacedPlanCountForCreation = query({
   args: {
-    localDayStartMs: v.number(),
+    localDayStartMs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) return 0;
+    // During client hot-reloads or transitional renders, this query can be
+    // invoked without args. Treat as "not ready" instead of throwing.
+    if (args.localDayStartMs === undefined) return 0;
     const today = startOfDayMs(args.localDayStartMs);
     const ownedPlans = await ctx.db
       .query("mealPlans")
@@ -1734,6 +1750,67 @@ export const finaliseMealPlan = mutation({
       updatedAt: Date.now(),
     });
     return { success: true };
+  },
+});
+
+/**
+ * Update a meal plan window by setting startDate and dayCount (endDate inferred).
+ * Owner only. Existing entries must remain inside the new date range.
+ */
+export const updatePlanDateWindow = mutation({
+  args: {
+    mealPlanId: v.id("mealPlans"),
+    startDate: v.number(),
+    dayCount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const plan = await ctx.db.get(args.mealPlanId);
+    if (!plan) throw new ConvexError("Meal plan not found");
+    if (plan.userId !== user._id) {
+      throw new ConvexError("Only the plan owner can edit plan dates");
+    }
+    if (!canUseAdvancedMealPlanControls(user.subscriptionTier)) {
+      throw new ConvexError(
+        MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS,
+      );
+    }
+
+    const { startDate, endDate, dayCount } = validateMealPlanWindow({
+      startDate: args.startDate,
+      dayCount: args.dayCount,
+    });
+    const entries = await ctx.db
+      .query("mealPlanEntries")
+      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
+      .collect();
+
+    const fallbackOrder = Math.max(0, dayCount - 1);
+    let autoMovedMealCount = 0;
+    for (const entry of entries) {
+      const entryDate = startOfDayMs(entry.date);
+      const isDateOutsideWindow = entryDate < startDate || entryDate > endDate;
+      const currentOrder = entry.order ?? 0;
+      const needsOrderClamp = currentOrder >= dayCount;
+      if (!isDateOutsideWindow && !needsOrderClamp) continue;
+
+      if (isDateOutsideWindow) autoMovedMealCount += 1;
+      await ctx.db.patch(entry._id, {
+        ...(isDateOutsideWindow ? { date: endDate } : {}),
+        ...(needsOrderClamp
+          ? { order: fallbackOrder }
+          : isDateOutsideWindow
+            ? { order: fallbackOrder }
+            : {}),
+      });
+    }
+
+    await ctx.db.patch(args.mealPlanId, {
+      startDate,
+      endDate,
+      updatedAt: Date.now(),
+    });
+    return { success: true, autoMovedMealCount };
   },
 });
 
