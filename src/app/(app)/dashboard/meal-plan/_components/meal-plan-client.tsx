@@ -164,9 +164,6 @@ function mealPlanErrorMessage(e: unknown): string {
   ) {
     return "Couldn't update plan dates. Check your inputs and try again.";
   }
-  if (msg.includes(MEAL_PLAN_ERRORS.PREVENT_EDIT_FINALISED_PLAN)) {
-    return "Saved plans can only move meals within their current date range.";
-  }
   return msg;
 }
 

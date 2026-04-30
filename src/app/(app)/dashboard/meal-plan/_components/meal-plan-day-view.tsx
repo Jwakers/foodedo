@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/react";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
+import { MAX_DAYS_IN_MEAL_PLAN } from "convex/lib/constants";
 import type { FunctionReturnType } from "convex/server";
 import { GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -32,7 +33,6 @@ type CurrentPlan = NonNullable<
 >;
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-const MAX_PLAN_DAYS = 7;
 
 function dayLabel(dateMs: number): string {
   const d = new Date(dateMs);
@@ -279,7 +279,7 @@ export function MealPlanDayView({
     plan.startDate ?? earliestEntryDate ?? plan.endDate,
   );
   const inferredDayCount = Math.floor((plan.endDate - planStartDate) / ONE_DAY_MS) + 1;
-  const dayCount = Math.max(1, Math.min(MAX_PLAN_DAYS, inferredDayCount));
+  const dayCount = Math.max(1, Math.min(MAX_DAYS_IN_MEAL_PLAN, inferredDayCount));
   const dayDates = useMemo(
     () =>
       Array.from({ length: dayCount }, (_, i) =>
