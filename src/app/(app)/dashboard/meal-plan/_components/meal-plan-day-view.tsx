@@ -25,6 +25,7 @@ type DragEndEventArg = Parameters<
   NonNullable<DragDropProviderProps["onDragEnd"]>
 >[0];
 type DragOperationTarget = DragOverEventArg["operation"]["target"];
+type DropPlacement = { dayIndex: number; order: number | null };
 
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getMealPlan>
@@ -53,20 +54,27 @@ function formatPlanRange(startDateMs: number, endDateMs: number): string {
   return `${fmt(startDateMs)} - ${fmt(endDateMs)}`;
 }
 
-function dayIndexFromDropTarget(target: DragOperationTarget): number | null {
+function dropPlacementFromTarget(target: DragOperationTarget): DropPlacement | null {
   if (!target?.id) return null;
   const id = String(target.id);
   if (id.startsWith("day-")) {
     const parsed = Number.parseInt(id.slice(4), 10);
-    return Number.isInteger(parsed) ? parsed : null;
+    return Number.isInteger(parsed) ? { dayIndex: parsed, order: null } : null;
   }
 
-  const fromDayIndex = (target.data as { fromDayIndex?: unknown } | undefined)
-    ?.fromDayIndex;
+  const targetData = target.data as
+    | { fromDayIndex?: unknown; fromOrder?: unknown }
+    | undefined;
+  const fromDayIndex = targetData?.fromDayIndex;
   if (typeof fromDayIndex !== "number" || !Number.isInteger(fromDayIndex)) {
     return null;
   }
-  return fromDayIndex;
+  const fromOrder = targetData?.fromOrder;
+  const order =
+    typeof fromOrder === "number" && Number.isInteger(fromOrder)
+      ? fromOrder
+      : null;
+  return { dayIndex: fromDayIndex, order };
 }
 
 type EntryLike = CurrentPlan["entries"][number];
@@ -298,8 +306,8 @@ export function MealPlanDayView({
   }, []);
 
   const handleDragOver = useCallback((event: DragOverEventArg) => {
-    const toDayIndex = dayIndexFromDropTarget(event.operation.target);
-    if (toDayIndex === null || toDayIndex < 0 || toDayIndex >= dayDates.length) {
+    const toDayIndex = dropPlacementFromTarget(event.operation.target)?.dayIndex;
+    if (toDayIndex == null || toDayIndex < 0 || toDayIndex >= dayDates.length) {
       setOverDayIndex(null);
       return;
     }
@@ -313,20 +321,28 @@ export function MealPlanDayView({
       if (event.canceled) return;
       const { source, target } = event.operation;
       if (!source || !target?.id || source.id === target.id) return;
-      const toDayIndex = dayIndexFromDropTarget(target);
-      if (toDayIndex === null || toDayIndex < 0 || toDayIndex >= dayDates.length)
+      const placement = dropPlacementFromTarget(target);
+      const toDayIndex = placement?.dayIndex;
+      if (toDayIndex == null || toDayIndex < 0 || toDayIndex >= dayDates.length)
         return;
       const newDate = dayDates[toDayIndex];
       const entriesInDay = entriesByDay.get(newDate) ?? [];
       const data = source.data as
-        | { entry: EntryLike; fromDayIndex: number }
+        | { entry: EntryLike; fromDayIndex: number; fromOrder: number }
         | undefined;
       if (!data?.entry) return;
       const entryId = data.entry._id as Id<"mealPlanEntries">;
-      const newOrder =
-        data.fromDayIndex === toDayIndex
-          ? entriesInDay.length - 1
-          : entriesInDay.length;
+      const destinationIndex = Math.max(
+        0,
+        Math.min(placement?.order ?? entriesInDay.length, entriesInDay.length),
+      );
+      let newOrder = destinationIndex;
+      if (data.fromDayIndex === toDayIndex) {
+        const lengthWithoutSource = Math.max(0, entriesInDay.length - 1);
+        const adjustedIndex =
+          data.fromOrder < destinationIndex ? destinationIndex - 1 : destinationIndex;
+        newOrder = Math.max(0, Math.min(adjustedIndex, lengthWithoutSource));
+      }
       onMoveEntry(entryId, newDate, Math.max(0, newOrder));
     },
     [dayDates, entriesByDay, onMoveEntry],
