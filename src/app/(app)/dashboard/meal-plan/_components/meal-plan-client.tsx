@@ -231,6 +231,9 @@ type MealPlanClientProps = {
 type MealPlanSummary = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getActiveMealPlanSummaries>
 >[number];
+type MealPlanHistorySummary = NonNullable<
+  FunctionReturnType<typeof api.mealPlans.getRecentMealPlanHistory>
+>[number];
 
 type QuickMealsPresetId = "automatic" | "light" | "balanced" | "fast_focused";
 
@@ -625,6 +628,9 @@ export default function MealPlanClient({
   const planSummaries = useQuery(api.mealPlans.getActiveMealPlanSummaries, {
     localDayStartMs,
   });
+  const recentPlanHistory = useQuery(api.mealPlans.getRecentMealPlanHistory, {
+    localDayStartMs,
+  });
   const ownedPlanCountForCreation = useQuery(
     api.mealPlans.getOwnedUnreplacedPlanCountForCreation,
     { localDayStartMs },
@@ -735,6 +741,7 @@ export default function MealPlanClient({
   const [showDeletePlanDialog, setShowDeletePlanDialog] = useState(false);
   const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
     useState(false);
+  const [showRecentPlansDialog, setShowRecentPlansDialog] = useState(false);
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [showEditDatesDialog, setShowEditDatesDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -749,7 +756,9 @@ export default function MealPlanClient({
   const [isFinalising, setIsFinalising] = useState(false);
   const [isUpdatingDateWindow, setIsUpdatingDateWindow] = useState(false);
   const [editStartDateInput, setEditStartDateInput] = useState("");
-  const [editDayCount, setEditDayCount] = useState(String(MAX_DAYS_IN_MEAL_PLAN));
+  const [editDayCount, setEditDayCount] = useState(
+    String(MAX_DAYS_IN_MEAL_PLAN),
+  );
   const [includedMemberIds, setIncludedMemberIds] = useState<Set<Id<"users">>>(
     new Set(),
   );
@@ -935,12 +944,16 @@ export default function MealPlanClient({
           parsed.stage === "non_allergy_relaxed")
       ) {
         setGenerationFallbackStage(parsed.stage);
-        sessionStorage.removeItem(MEAL_PLAN_GENERATION_FALLBACK_NOTICE_SESSION_KEY);
+        sessionStorage.removeItem(
+          MEAL_PLAN_GENERATION_FALLBACK_NOTICE_SESSION_KEY,
+        );
       } else if (parsed.planId !== currentPlan._id) {
         setGenerationFallbackStage(null);
       }
     } catch {
-      sessionStorage.removeItem(MEAL_PLAN_GENERATION_FALLBACK_NOTICE_SESSION_KEY);
+      sessionStorage.removeItem(
+        MEAL_PLAN_GENERATION_FALLBACK_NOTICE_SESSION_KEY,
+      );
     }
   }, [currentPlan, generationOnly]);
 
@@ -1420,7 +1433,9 @@ export default function MealPlanClient({
       parsedDayCount < 1 ||
       parsedDayCount > MAX_DAYS_IN_MEAL_PLAN
     ) {
-      toast.error(`Plan length must be between 1 and ${MAX_DAYS_IN_MEAL_PLAN} days.`);
+      toast.error(
+        `Plan length must be between 1 and ${MAX_DAYS_IN_MEAL_PLAN} days.`,
+      );
       return;
     }
     setIsUpdatingDateWindow(true);
@@ -1450,12 +1465,7 @@ export default function MealPlanClient({
     } finally {
       setIsUpdatingDateWindow(false);
     }
-  }, [
-    currentPlan,
-    editDayCount,
-    editStartDateInput,
-    updatePlanDateWindow,
-  ]);
+  }, [currentPlan, editDayCount, editStartDateInput, updatePlanDateWindow]);
 
   const handlePickerSelect = useCallback(
     async (recipeId: Id<"recipes">) => {
@@ -1463,8 +1473,11 @@ export default function MealPlanClient({
       try {
         if (pickerState.mode === "add") {
           const date =
-            pickerState.targetDate ?? (currentPlan.startDate ?? currentPlan.endDate);
-          const order = pickerState.targetOrder ?? (currentPlan.entries?.length ?? 0);
+            pickerState.targetDate ??
+            currentPlan.startDate ??
+            currentPlan.endDate;
+          const order =
+            pickerState.targetOrder ?? currentPlan.entries?.length ?? 0;
           await addEntry({
             mealPlanId: currentPlan._id,
             date,
@@ -2070,12 +2083,12 @@ export default function MealPlanClient({
     : null;
   const hasList = listsForPlan && listsForPlan.length > 0;
   const firstListId = listsForPlan?.[0]?._id;
+  const hasRecentPlanHistory = (recentPlanHistory?.length ?? 0) > 0;
+  const shouldShowPlanOptionsMenu = currentPlan.isOwner || hasRecentPlanHistory;
 
   const isFinalised = currentPlan.isFinalised === true;
   const canShowAddAnotherMeal =
-    currentPlan.isOwner &&
-    !isFinalised &&
-    mealCount < MAX_DAYS_IN_MEAL_PLAN;
+    currentPlan.isOwner && !isFinalised && mealCount < MAX_DAYS_IN_MEAL_PLAN;
   const currentPlanStartDate = currentPlan.startDate ?? currentPlan.endDate;
   const currentPlanDayCount = Math.max(
     1,
@@ -2171,6 +2184,18 @@ export default function MealPlanClient({
                 </Select>
               </div>
             ) : null}
+            <div className="mt-2 flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => setShowRecentPlansDialog(true)}
+              >
+                <Clock3 className="size-3.5" />
+                Previous plans
+              </Button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2 items-center min-w-0 shrink-0">
             <Button variant="outline" asChild>
@@ -2223,32 +2248,43 @@ export default function MealPlanClient({
                     </span>
                   </Button>
                 )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Plan options"
-                    >
-                      <MoreVertical className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setShowEditDatesDialog(true)}>
-                      <CalendarPlus className="size-4 mr-2" />
-                      Edit plan dates
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => setShowDeletePlanDialog(true)}
-                    >
-                      <Trash2 className="size-4 mr-2" />
-                      Delete meal plan
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </>
             )}
+            {shouldShowPlanOptionsMenu ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Plan options">
+                    <MoreVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    disabled={!hasRecentPlanHistory}
+                    onClick={() => setShowRecentPlansDialog(true)}
+                  >
+                    <Clock3 className="size-4 mr-2" />
+                    Recent plans
+                  </DropdownMenuItem>
+                  {currentPlan.isOwner ? (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => setShowEditDatesDialog(true)}
+                      >
+                        <CalendarPlus className="size-4 mr-2" />
+                        Edit plan dates
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setShowDeletePlanDialog(true)}
+                      >
+                        <Trash2 className="size-4 mr-2" />
+                        Delete meal plan
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </div>
         </div>
 
@@ -2330,6 +2366,58 @@ export default function MealPlanClient({
           </AlertDialogContent>
         </AlertDialog>
 
+        <Dialog
+          open={showRecentPlansDialog}
+          onOpenChange={setShowRecentPlansDialog}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Recent meal plans</DialogTitle>
+              <DialogDescription>
+                Open any plan from the last 4 weeks.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              {hasRecentPlanHistory ? (
+                (recentPlanHistory ?? []).map(
+                  (summary: MealPlanHistorySummary) => (
+                    <Button
+                      key={summary._id}
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between"
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          sessionStorage.setItem(
+                            MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+                            summary._id,
+                          );
+                        }
+                        setShowRecentPlansDialog(false);
+                        router.push(ROUTES.mealPlanWithId(summary._id));
+                      }}
+                    >
+                      <span className="truncate">
+                        {formatPlanRangeShort(
+                          summary.startDate,
+                          summary.endDate,
+                        )}
+                      </span>
+                      <span className="ml-3 text-xs text-muted-foreground">
+                        {summary.isFinalised ? "Saved" : "Draft"}
+                      </span>
+                    </Button>
+                  ),
+                )
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No recent plans yet.
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <AlertDialog
           open={showFinaliseDialog}
           onOpenChange={setShowFinaliseDialog}
@@ -2358,13 +2446,16 @@ export default function MealPlanClient({
           </AlertDialogContent>
         </AlertDialog>
 
-        <Dialog open={showEditDatesDialog} onOpenChange={setShowEditDatesDialog}>
+        <Dialog
+          open={showEditDatesDialog}
+          onOpenChange={setShowEditDatesDialog}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit plan dates</DialogTitle>
               <DialogDescription>
-                Choose a new start date and plan length. The end date is inferred
-                automatically.
+                Choose a new start date and plan length. The end date is
+                inferred automatically.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
@@ -2398,7 +2489,8 @@ export default function MealPlanClient({
               <p className="text-sm text-muted-foreground">
                 {editPreviewEndDate !== null
                   ? `Range preview: ${formatPlanRangeShort(
-                      parseDateInputAsUtcStart(editStartDateInput) ?? currentPlanStartDate,
+                      parseDateInputAsUtcStart(editStartDateInput) ??
+                        currentPlanStartDate,
                       editPreviewEndDate,
                     )}`
                   : "Choose a valid date and length to preview the range."}
@@ -2417,7 +2509,9 @@ export default function MealPlanClient({
                 type="button"
                 onClick={() => void handleSavePlanDates()}
                 disabled={
-                  isUpdatingDateWindow || !isEditPlanDatesValid || !hasPlanDateEdits
+                  isUpdatingDateWindow ||
+                  !isEditPlanDatesValid ||
+                  !hasPlanDateEdits
                 }
               >
                 {isUpdatingDateWindow ? (
