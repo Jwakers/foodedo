@@ -43,6 +43,8 @@ import {
 import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const MEAL_PLAN_RETENTION_DAYS = 28;
+const MEAL_PLAN_RETENTION_MS = MEAL_PLAN_RETENTION_DAYS * ONE_DAY_MS;
 
 function phraseDisplayLabel(normalised: string): string {
   return normalised
@@ -780,6 +782,77 @@ export const getActiveMealPlanSummaries = query({
       entryCount: s.entryCount,
       entryMinDate: s.entryMinDate,
       entryMaxDate: s.entryMaxDate,
+    }));
+  },
+});
+
+/**
+ * Recent historical meal plans (ended before viewer's local day, within 4 weeks)
+ * for optional history UI. Excludes superseded plans.
+ */
+export const getRecentMealPlanHistory = query({
+  args: {
+    localDayStartMs: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const refLocalStart = resolveLocalDayRefMs(args.localDayStartMs);
+    const cutoffStart = startOfDayMs(refLocalStart - MEAL_PLAN_RETENTION_MS);
+
+    const ownedPlans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_and_endDate", (q) =>
+        q
+          .eq("userId", user._id)
+          .gte("endDate", cutoffStart)
+          .lt("endDate", refLocalStart),
+      )
+      .order("desc")
+      .collect();
+
+    const memberships = await ctx.db
+      .query("householdMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const householdIds = memberships.map((m) => m.householdId);
+
+    const sharedPlanGroups = await Promise.all(
+      householdIds.map((householdId) =>
+        ctx.db
+          .query("mealPlans")
+          .withIndex("by_household_and_endDate", (q) =>
+            q
+              .eq("householdId", householdId)
+              .gte("endDate", cutoffStart)
+              .lt("endDate", refLocalStart),
+          )
+          .order("desc")
+          .collect(),
+      ),
+    );
+
+    const seenIds = new Set<Id<"mealPlans">>();
+    const recentPlans = [...ownedPlans, ...sharedPlanGroups.flat()]
+      .filter((plan) => {
+        if (plan.replacedByPlanId !== undefined) return false;
+        if (seenIds.has(plan._id)) return false;
+        seenIds.add(plan._id);
+        return true;
+      })
+      .sort(
+        (a, b) => b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+      );
+
+    return recentPlans.map((plan) => ({
+      _id: plan._id,
+      startDate: plan.startDate,
+      endDate: plan.endDate,
+      isFinalised: plan.isFinalised === true,
+      updatedAt: plan.updatedAt,
+      isOwner: plan.userId === user._id,
+      householdId: plan.householdId,
     }));
   },
 });
@@ -1863,3 +1936,4 @@ export const deleteMealPlan = mutation({
     return { success: true };
   },
 });
+
