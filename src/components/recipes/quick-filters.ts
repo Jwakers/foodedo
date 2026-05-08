@@ -1,15 +1,13 @@
 import type { RecipeListItem } from "./types";
 import { isUnder30Minutes } from "./recipe-time";
+import {
+  RECIPE_QUICK_FILTER_VALUES,
+  type RecipeQuickFilterValue,
+} from "convex/lib/recipeListFilters";
 
-export const QUICK_FILTER_KEYS = [
-  "vegetarian",
-  "vegan",
-  "quick",
-  "simple",
-  "dinner",
-] as const;
+export const QUICK_FILTER_KEYS = RECIPE_QUICK_FILTER_VALUES;
 
-export type RecipeQuickFilterKey = (typeof QUICK_FILTER_KEYS)[number];
+export type RecipeQuickFilterKey = RecipeQuickFilterValue;
 
 export type RecipeQuickFilterDefinition = {
   key: RecipeQuickFilterKey;

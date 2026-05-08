@@ -1,15 +1,22 @@
 "use client";
 
+import {
+  applyRecipeFilterStateToSearchParams,
+  recipeFilterStateFromSearchParams,
+  toRecipeListServerFilter,
+} from "@/components/recipes/recipe-filter-utils";
 import { RecipeFilters } from "@/components/recipes/recipe-filters";
+import { RecipeLoadMore } from "@/components/recipes/recipe-listing";
 import {
   RecipeListingProvider,
   useRecipeListing,
 } from "@/components/recipes/recipe-listing-context";
-import { RecipeLoadMore } from "@/components/recipes/recipe-listing";
 import { Button } from "@/components/ui/button";
-import { DiscoverRecipeGrid } from "./discover-recipe-grid";
 import { api } from "convex/_generated/api";
 import { usePaginatedQuery } from "convex/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
+import { DiscoverRecipeGrid } from "./discover-recipe-grid";
 
 function DiscoverLoadingSkeleton() {
   return (
@@ -51,11 +58,7 @@ function DiscoverRecipeListing() {
               Try different ingredients or clear the list.
             </p>
             {hasActiveFilters && (
-              <Button
-                className="mt-4"
-                variant="outline"
-                onClick={clearFilters}
-              >
+              <Button className="mt-4" variant="outline" onClick={clearFilters}>
                 Clear filters
               </Button>
             )}
@@ -70,11 +73,7 @@ function DiscoverRecipeListing() {
               adjust your ingredient list.
             </p>
             {hasActiveFilters && (
-              <Button
-                className="mt-4"
-                variant="outline"
-                onClick={clearFilters}
-              >
+              <Button className="mt-4" variant="outline" onClick={clearFilters}>
                 Clear filters
               </Button>
             )}
@@ -96,11 +95,7 @@ function DiscoverRecipeListing() {
           No recipes match your search or filters.
         </p>
         {hasActiveFilters && (
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={clearFilters}
-          >
+          <Button className="mt-4" variant="outline" onClick={clearFilters}>
             Clear filters
           </Button>
         )}
@@ -117,19 +112,50 @@ function DiscoverRecipeListing() {
 }
 
 export default function DiscoverRecipesClient() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const filterState = useMemo(
+    () => recipeFilterStateFromSearchParams(searchParams),
+    [searchParams],
+  );
+  const serverFilter = useMemo(
+    () => toRecipeListServerFilter(filterState),
+    [filterState],
+  );
+
+  const handleFilterStateChange = (nextFilterState: typeof filterState) => {
+    const nextParams = applyRecipeFilterStateToSearchParams(
+      nextFilterState,
+      new URLSearchParams(searchParams.toString()),
+    );
+    const nextQuery = nextParams.toString();
+    const currentQuery = searchParams.toString();
+    if (nextQuery === currentQuery) return;
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  };
+
   const { results, status, loadMore } = usePaginatedQuery(
-    api.recipes.listSystemRecipesPaginated,
-    {},
+    api.recipes.listRecipesPaginatedUnified,
+    { scope: "discover", filter: serverFilter },
     { initialNumItems: 20 },
   );
-  const isInitialLoading = status === "LoadingFirstPage" && results.length === 0;
+  const isInitialLoading =
+    status === "LoadingFirstPage" && results.length === 0;
 
   if (isInitialLoading) {
     return <DiscoverLoadingSkeleton />;
   }
 
   return (
-    <RecipeListingProvider recipes={results}>
+    <RecipeListingProvider
+      recipes={results}
+      serverFiltered
+      filterState={filterState}
+      onFilterStateChange={handleFilterStateChange}
+    >
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <RecipeFilters />

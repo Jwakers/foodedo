@@ -1,24 +1,29 @@
 "use client";
 
 import { ROUTES } from "@/app/constants";
+import { LimitIndicator } from "@/components/limit-indicator";
 import {
   getCurrentTab,
-  RecipeLoadMore,
   RecipeListingLayout,
   RecipeListingProvider,
+  RecipeLoadMore,
   TAB_ALL,
   TAB_DISCOVER,
   TAB_MY_RECIPES,
 } from "@/components/recipes";
-import { LimitIndicator } from "@/components/limit-indicator";
+import {
+  applyRecipeFilterStateToSearchParams,
+  recipeFilterStateFromSearchParams,
+  toRecipeListServerFilter,
+} from "@/components/recipes/recipe-filter-utils";
 import { Button } from "@/components/ui/button";
 import useSubscription from "@/lib/hooks/use-subscription";
 import { api } from "convex/_generated/api";
 import { usePaginatedQuery } from "convex/react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { AddRecipeDrawer } from "../../../_components.tsx/add-recipe-drawer";
 
 function EmptyState({
@@ -48,73 +53,57 @@ function EmptyState({
 
 export default function RecipeListingPage() {
   const [showAddRecipeDrawer, setShowAddRecipeDrawer] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const filterState = useMemo(
+    () => recipeFilterStateFromSearchParams(searchParams),
+    [searchParams],
+  );
+  const serverFilter = useMemo(
+    () => toRecipeListServerFilter(filterState),
+    [filterState],
+  );
   const currentTab = getCurrentTab(searchParams);
+  const unifiedScope =
+    currentTab === TAB_DISCOVER
+      ? "discover"
+      : currentTab === TAB_ALL
+        ? "all"
+        : "my";
 
-  const {
-    results: recipes,
-    status: myRecipesStatus,
-    loadMore: loadMoreMyRecipes,
-  } = usePaginatedQuery(
-    api.recipes.listUserRecipesPaginated,
-    {},
+  const handleFilterStateChange = (nextFilterState: typeof filterState) => {
+    const nextParams = applyRecipeFilterStateToSearchParams(
+      nextFilterState,
+      new URLSearchParams(searchParams.toString()),
+    );
+    const nextQuery = nextParams.toString();
+    const currentQuery = searchParams.toString();
+    if (nextQuery === currentQuery) return;
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.recipes.listRecipesPaginatedUnified,
+    { scope: unifiedScope, filter: serverFilter },
     { initialNumItems: 20 },
   );
-  const {
-    results: systemRecipes,
-    status: systemRecipesStatus,
-    loadMore: loadMoreSystemRecipes,
-  } = usePaginatedQuery(
-    api.recipes.listSystemRecipesPaginated,
-    {},
-    { initialNumItems: 20 },
-  );
+
+  const recipes = currentTab === TAB_MY_RECIPES ? results : [];
+  const systemRecipes = currentTab === TAB_DISCOVER ? results : [];
+  const allRecipes = currentTab === TAB_ALL ? results : [];
   const subscription = useSubscription();
-  const isMyRecipesInitialLoading =
-    myRecipesStatus === "LoadingFirstPage" && recipes.length === 0;
-  const isSystemRecipesInitialLoading =
-    systemRecipesStatus === "LoadingFirstPage" && systemRecipes.length === 0;
+  const isInitialLoading =
+    status === "LoadingFirstPage" && results.length === 0;
 
   const isMyRecipesTab = currentTab === TAB_MY_RECIPES;
   const isDiscoverTab = currentTab === TAB_DISCOVER;
   const showEmptyState =
-    isMyRecipesTab && !isMyRecipesInitialLoading && recipes.length === 0;
-  const canLoadMoreMyRecipes = myRecipesStatus === "CanLoadMore";
-  const canLoadMoreSystemRecipes = systemRecipesStatus === "CanLoadMore";
-  const canLoadMoreCurrentTab =
-    currentTab === TAB_MY_RECIPES
-      ? canLoadMoreMyRecipes
-      : currentTab === TAB_DISCOVER
-        ? canLoadMoreSystemRecipes
-        : canLoadMoreMyRecipes || canLoadMoreSystemRecipes;
-  const isLoadingMoreCurrentTab =
-    currentTab === TAB_MY_RECIPES
-      ? myRecipesStatus === "LoadingMore"
-      : currentTab === TAB_DISCOVER
-        ? systemRecipesStatus === "LoadingMore"
-        : myRecipesStatus === "LoadingMore" ||
-          systemRecipesStatus === "LoadingMore";
-
-  const handleLoadMore = () => {
-    if (currentTab === TAB_MY_RECIPES) {
-      if (canLoadMoreMyRecipes) {
-        loadMoreMyRecipes(20);
-      }
-      return;
-    }
-    if (currentTab === TAB_DISCOVER) {
-      if (canLoadMoreSystemRecipes) {
-        loadMoreSystemRecipes(20);
-      }
-      return;
-    }
-    if (canLoadMoreMyRecipes) {
-      loadMoreMyRecipes(20);
-    }
-    if (canLoadMoreSystemRecipes) {
-      loadMoreSystemRecipes(20);
-    }
-  };
+    isMyRecipesTab && !isInitialLoading && recipes.length === 0;
+  const canLoadMoreCurrentTab = status === "CanLoadMore";
+  const isLoadingMoreCurrentTab = status === "LoadingMore";
 
   return (
     <div className="bg-background">
@@ -181,18 +170,31 @@ export default function RecipeListingPage() {
         ) : (
           <>
             <RecipeListingProvider
-              myRecipes={isMyRecipesInitialLoading ? undefined : recipes}
-              systemRecipes={
-                isSystemRecipesInitialLoading ? undefined : systemRecipes
+              myRecipes={
+                isInitialLoading
+                  ? undefined
+                  : currentTab === TAB_ALL
+                    ? allRecipes
+                    : recipes
               }
+              systemRecipes={
+                isInitialLoading
+                  ? undefined
+                  : currentTab === TAB_DISCOVER
+                    ? systemRecipes
+                    : []
+              }
+              serverFiltered
+              filterState={filterState}
+              onFilterStateChange={handleFilterStateChange}
             >
               <RecipeListingLayout />
+              <RecipeLoadMore
+                canLoadMore={canLoadMoreCurrentTab}
+                loadingMore={isLoadingMoreCurrentTab}
+                onLoadMore={() => loadMore(20)}
+              />
             </RecipeListingProvider>
-            <RecipeLoadMore
-              canLoadMore={canLoadMoreCurrentTab}
-              loadingMore={isLoadingMoreCurrentTab}
-              onLoadMore={handleLoadMore}
-            />
           </>
         )}
 

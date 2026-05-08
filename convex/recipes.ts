@@ -1,5 +1,5 @@
-import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
+import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
@@ -16,15 +16,24 @@ import {
 import {
   canUseLeftoverIngredients,
   clampEditorialBias,
+  COMPLEXITY_TIERS,
   CUISINE_MAX_SELECTIONS,
   LEFTOVER_INGREDIENTS_MAX,
   MAX_WEEKLY_PLAN_POOL_SIZE,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
   recipeIsInMealPlanGeneratorPool,
 } from "./lib/constants";
 import {
   countRecipeLeftoverTargetMatches,
   normaliseLeftoverPhrasesList,
 } from "./lib/leftoverIngredients";
+import {
+  normalizeRecipeListServerFilter,
+  recipeMatchesServerFilter,
+  type RecipeListServerFilter,
+} from "./lib/recipeListFilters";
+import { recipeListServerFilterValidator } from "./lib/recipeListFilterValidation";
 import { RECIPE_PUBLIC_SLUG_PATTERN } from "./lib/recipePublicSlug";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import {
@@ -116,6 +125,45 @@ async function attachRecipeImageUrls(
   );
 }
 
+type PaginatedResult<T> = {
+  page: T[];
+  isDone: boolean;
+  continueCursor: string;
+  splitCursor?: string | null;
+};
+
+const recipeListingScopeValidator = v.union(
+  v.literal("my"),
+  v.literal("discover"),
+  v.literal("all"),
+);
+type RecipeListingScope = "my" | "discover" | "all";
+
+async function paginateRecipesWithFilter(
+  args: { paginationOpts: { numItems: number; cursor: string | null } },
+  filter: RecipeListServerFilter | undefined,
+  fetchPage: (paginationOpts: {
+    numItems: number;
+    cursor: string | null;
+  }) => Promise<PaginatedResult<Doc<"recipes">>>,
+): Promise<PaginatedResult<Doc<"recipes">>> {
+  const normalizedFilter = normalizeRecipeListServerFilter(filter);
+  const batch = await fetchPage({
+    numItems: Math.max(args.paginationOpts.numItems, 1),
+    cursor: args.paginationOpts.cursor,
+  });
+  const out = batch.page.filter((recipe) =>
+    recipeMatchesServerFilter(recipe, normalizedFilter),
+  );
+
+  return {
+    page: out,
+    isDone: batch.isDone,
+    continueCursor: batch.continueCursor,
+    splitCursor: batch.splitCursor,
+  };
+}
+
 export const getRecipe = query({
   args: {
     recipeId: v.id("recipes"),
@@ -192,9 +240,7 @@ export const getSystemRecipeBySlug = query({
       return null;
     }
 
-    const image = recipe.image
-      ? await ctx.storage.getUrl(recipe.image)
-      : null;
+    const image = recipe.image ? await ctx.storage.getUrl(recipe.image) : null;
     const methodWithUrls = await resolveMethodImageUrls(
       ctx,
       recipe.method ?? [],
@@ -294,28 +340,14 @@ export const getAllUserRecipes = query({
 export const listUserRecipesPaginated = query({
   args: {
     paginationOpts: paginationOptsValidator,
+    filter: v.optional(recipeListServerFilterValidator),
   },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      return {
-        page: [],
-        continueCursor: "",
-        isDone: true,
-      };
-    }
-
-    const result = await ctx.db
-      .query("recipes")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .order("desc")
-      .paginate(args.paginationOpts);
-
-    return {
-      ...result,
-      page: await attachRecipeImageUrls(ctx, result.page),
-    };
-  },
+  handler: async (ctx, args) =>
+    listRecipesPaginatedUnifiedHandler(ctx, {
+      scope: "my",
+      filter: args.filter,
+      paginationOpts: args.paginationOpts,
+    }),
 });
 
 /**
@@ -369,19 +401,162 @@ export const getSystemRecipes = query({
 export const listSystemRecipesPaginated = query({
   args: {
     paginationOpts: paginationOptsValidator,
+    filter: v.optional(recipeListServerFilterValidator),
   },
-  handler: async (ctx, args) => {
-    const result = await ctx.db
-      .query("recipes")
-      .withIndex("by_source_and_title", (q) => q.eq("source", "system"))
-      .order("asc")
-      .paginate(args.paginationOpts);
+  handler: async (ctx, args) =>
+    listRecipesPaginatedUnifiedHandler(ctx, {
+      scope: "discover",
+      filter: args.filter,
+      paginationOpts: args.paginationOpts,
+    }),
+});
 
-    return {
-      ...result,
-      page: await attachRecipeImageUrls(ctx, result.page),
-    };
+async function listRecipesPaginatedUnifiedHandler(
+  ctx: QueryCtx,
+  args: {
+    scope: RecipeListingScope;
+    filter?: RecipeListServerFilter;
+    paginationOpts: { numItems: number; cursor: string | null };
   },
+) {
+  const normalizedFilter = normalizeRecipeListServerFilter(args.filter);
+  const indexedCategory = RECIPE_CATEGORIES.includes(
+    normalizedFilter.selectedCategory as (typeof RECIPE_CATEGORIES)[number],
+  )
+    ? (normalizedFilter.selectedCategory as (typeof RECIPE_CATEGORIES)[number])
+    : null;
+  const indexedProtein = PRIMARY_PROTEINS.includes(
+    normalizedFilter.selectedProtein as (typeof PRIMARY_PROTEINS)[number],
+  )
+    ? (normalizedFilter.selectedProtein as (typeof PRIMARY_PROTEINS)[number])
+    : null;
+  const indexedComplexity = COMPLEXITY_TIERS.includes(
+    normalizedFilter.selectedComplexity as (typeof COMPLEXITY_TIERS)[number],
+  )
+    ? (normalizedFilter.selectedComplexity as (typeof COMPLEXITY_TIERS)[number])
+    : null;
+  const user = await getCurrentUser(ctx);
+
+  if ((args.scope === "my" || args.scope === "all") && !user) {
+    return {
+      page: [],
+      continueCursor: "",
+      isDone: true,
+      splitCursor: null,
+    };
+  }
+
+  const result = await paginateRecipesWithFilter(
+    args,
+    normalizedFilter,
+    (paginationOpts) => {
+      if (args.scope === "discover") {
+        if (indexedProtein != null) {
+          return ctx.db
+            .query("recipes")
+            .withIndex("by_source_and_primaryProtein", (q) =>
+              q.eq("source", "system").eq("primaryProtein", indexedProtein),
+            )
+            .order("asc")
+            .paginate(paginationOpts);
+        }
+        if (indexedCategory != null) {
+          return ctx.db
+            .query("recipes")
+            .withIndex("by_source_and_category", (q) =>
+              q.eq("source", "system").eq("category", indexedCategory),
+            )
+            .order("asc")
+            .paginate(paginationOpts);
+        }
+        if (indexedComplexity != null) {
+          return ctx.db
+            .query("recipes")
+            .withIndex("by_source_and_complexityTier", (q) =>
+              q.eq("source", "system").eq("complexityTier", indexedComplexity),
+            )
+            .order("asc")
+            .paginate(paginationOpts);
+        }
+        return ctx.db
+          .query("recipes")
+          .withIndex("by_source_and_title", (q) => q.eq("source", "system"))
+          .order("asc")
+          .paginate(paginationOpts);
+      }
+
+      if (args.scope === "my") {
+        if (!user) {
+          return Promise.resolve({
+            page: [],
+            continueCursor: "",
+            isDone: true,
+            splitCursor: null,
+          });
+        }
+        const queryBuilder =
+          indexedCategory != null
+            ? ctx.db
+                .query("recipes")
+                .withIndex("by_user_and_category", (q) =>
+                  q.eq("userId", user._id).eq("category", indexedCategory),
+                )
+                .order("desc")
+            : indexedProtein != null
+              ? ctx.db
+                  .query("recipes")
+                  .withIndex("by_user_and_primaryProtein", (q) =>
+                    q
+                      .eq("userId", user._id)
+                      .eq("primaryProtein", indexedProtein),
+                  )
+                  .order("desc")
+              : indexedComplexity != null
+                ? ctx.db
+                    .query("recipes")
+                    .withIndex("by_user_and_complexityTier", (q) =>
+                      q
+                        .eq("userId", user._id)
+                        .eq("complexityTier", indexedComplexity),
+                    )
+                    .order("desc")
+                : ctx.db
+                    .query("recipes")
+                    .withIndex("by_user", (q) => q.eq("userId", user._id))
+                    .order("desc");
+        return queryBuilder.paginate(paginationOpts);
+      }
+
+      return ctx.db
+        .query("recipes")
+        .withIndex("by_source_and_title")
+        .order("asc")
+        .paginate(paginationOpts);
+    },
+  );
+
+  const scopedPage =
+    args.scope === "all" && user
+      ? result.page.filter(
+          (recipe) =>
+            recipe.source === "system" ||
+            (recipe.source === "user" && recipe.userId === user._id),
+        )
+      : result.page;
+
+  return {
+    ...result,
+    page: await attachRecipeImageUrls(ctx, scopedPage),
+  };
+}
+
+export const listRecipesPaginatedUnified = query({
+  args: {
+    scope: recipeListingScopeValidator,
+    filter: v.optional(recipeListServerFilterValidator),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: listRecipesPaginatedUnifiedHandler,
 });
 
 async function collectRecipesForLeftoverSearch(

@@ -17,6 +17,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -108,6 +109,8 @@ export type RecipeListingContextValue = {
   canUseLeftoverFeatures: boolean;
   /** Recipes for the current tab before leftover filter (for empty-state copy). */
   baseRecipesForTab: RecipeListItem[] | undefined;
+  /** Active list is sourced from leftover search rather than paginated streams. */
+  isUsingLeftoverSource: boolean;
 };
 
 const RecipeListingContext = createContext<RecipeListingContextValue | null>(
@@ -120,12 +123,18 @@ const RecipeListingContext = createContext<RecipeListingContextValue | null>(
 
 type RecipeListingProviderPropsSingle = {
   recipes: RecipeListItem[] | undefined;
+  filterState?: RecipeListingFilterState;
+  serverFiltered?: boolean;
+  onFilterStateChange?: (next: RecipeListingFilterState) => void;
   children: ReactNode;
 };
 
 type RecipeListingProviderPropsTabbed = {
   myRecipes: RecipeListItem[] | undefined;
   systemRecipes: RecipeListItem[] | undefined;
+  filterState?: RecipeListingFilterState;
+  serverFiltered?: boolean;
+  onFilterStateChange?: (next: RecipeListingFilterState) => void;
   children: ReactNode;
 };
 
@@ -171,8 +180,9 @@ function getRecipesForTab(
 
 export function RecipeListingProvider(props: RecipeListingProviderProps) {
   const searchParams = useSearchParams();
-  const [filterState, setFilterState] =
+  const [internalFilterState, setInternalFilterState] =
     useState<RecipeListingFilterState>(initialFilterState);
+  const filterState = props.filterState ?? internalFilterState;
   const [leftoverIngredientIds, setLeftoverIngredientIds] = useState<
     Id<"ingredients">[]
   >([]);
@@ -228,6 +238,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
   const baseRecipesForTab: RecipeListItem[] | undefined = useMemo(() => {
     return getRecipesForTab(props, currentTab);
   }, [props, currentTab]);
+  const isUsingLeftoverSource = hasLeftoverTargets && canUseLeftoverFeatures;
 
   const leftoverListingMeta = useMemo((): LeftoverListingMeta | null => {
     if (
@@ -248,9 +259,30 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
     leftoverSearch,
   ]);
 
-  const filteredRecipes = useMemo(
-    () => applyRecipeCoreFilters(recipes, filterState),
-    [recipes, filterState],
+  const filteredRecipes = useMemo(() => {
+    if (props.serverFiltered) {
+      return recipes ?? [];
+    }
+    return applyRecipeCoreFilters(recipes, filterState);
+  }, [recipes, filterState, props.serverFiltered]);
+
+  useEffect(() => {
+    props.onFilterStateChange?.(filterState);
+  }, [filterState, props.onFilterStateChange]);
+
+  const updateFilterState = useCallback(
+    (updater: (prev: RecipeListingFilterState) => RecipeListingFilterState) => {
+      if (props.filterState !== undefined) {
+        props.onFilterStateChange?.(updater(props.filterState));
+        return;
+      }
+      setInternalFilterState((prev) => {
+        const next = updater(prev);
+        props.onFilterStateChange?.(next);
+        return next;
+      });
+    },
+    [props.filterState, props.onFilterStateChange],
   );
 
   const hasActiveFilters =
@@ -274,33 +306,33 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
   );
 
   const clearFilters = useCallback(() => {
-    setFilterState(initialFilterState);
+    updateFilterState(() => initialFilterState);
     setLeftoverIngredientIds([]);
     setLeftoverIngredientPhrases([]);
-  }, []);
+  }, [updateFilterState]);
 
   const setSearchQuery = useCallback(
-    (v: string) => setFilterState((s) => ({ ...s, searchQuery: v })),
-    [],
+    (v: string) => updateFilterState((s) => ({ ...s, searchQuery: v })),
+    [updateFilterState],
   );
   const setSelectedCategory = useCallback(
-    (v: string) => setFilterState((s) => ({ ...s, selectedCategory: v })),
-    [],
+    (v: string) => updateFilterState((s) => ({ ...s, selectedCategory: v })),
+    [updateFilterState],
   );
   const setSelectedProtein = useCallback(
-    (v: string) => setFilterState((s) => ({ ...s, selectedProtein: v })),
-    [],
+    (v: string) => updateFilterState((s) => ({ ...s, selectedProtein: v })),
+    [updateFilterState],
   );
   const setSelectedDuration = useCallback(
-    (v: string) => setFilterState((s) => ({ ...s, selectedDuration: v })),
-    [],
+    (v: string) => updateFilterState((s) => ({ ...s, selectedDuration: v })),
+    [updateFilterState],
   );
   const setSelectedComplexity = useCallback(
-    (v: string) => setFilterState((s) => ({ ...s, selectedComplexity: v })),
-    [],
+    (v: string) => updateFilterState((s) => ({ ...s, selectedComplexity: v })),
+    [updateFilterState],
   );
   const toggleQuickFilter = useCallback((v: RecipeQuickFilterKey) => {
-    setFilterState((s) => {
+    updateFilterState((s) => {
       if (s.selectedQuickFilters.includes(v)) {
         return {
           ...s,
@@ -314,7 +346,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
         selectedQuickFilters: [...s.selectedQuickFilters, v],
       };
     });
-  }, []);
+  }, [updateFilterState]);
 
   const value: RecipeListingContextValue = useMemo(
     () => ({
@@ -338,6 +370,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       leftoverListingMeta,
       canUseLeftoverFeatures,
       baseRecipesForTab,
+      isUsingLeftoverSource,
     }),
     [
       recipes,
@@ -359,6 +392,7 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
       leftoverListingMeta,
       canUseLeftoverFeatures,
       baseRecipesForTab,
+      isUsingLeftoverSource,
     ],
   );
 

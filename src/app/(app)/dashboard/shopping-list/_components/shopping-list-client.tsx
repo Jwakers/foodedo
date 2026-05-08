@@ -1,11 +1,7 @@
 "use client";
 
 import { CATEGORY_COLORS, ROUTES } from "@/app/constants";
-import {
-  applyRecipeCoreFilters,
-  initialRecipeCoreFilterState,
-  type RecipeCoreFilterState,
-} from "@/components/recipes/recipe-filter-utils";
+import { LimitIndicator } from "@/components/limit-indicator";
 import {
   RecipeSourceSwitcher,
   TAB_ALL,
@@ -14,8 +10,13 @@ import {
   type RecipeListingTab,
 } from "@/components/recipes";
 import { RECIPE_QUICK_FILTERS } from "@/components/recipes/quick-filters";
+import {
+  applyRecipeCoreFilters,
+  initialRecipeCoreFilterState,
+  toRecipeListServerFilter,
+  type RecipeCoreFilterState,
+} from "@/components/recipes/recipe-filter-utils";
 import { RecipeLoadMore } from "@/components/recipes/recipe-listing";
-import { LimitIndicator } from "@/components/limit-indicator";
 import {
   Accordion,
   AccordionContent,
@@ -47,19 +48,19 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import useSubscription from "@/lib/hooks/use-subscription";
 import { navigateBackOr } from "@/lib/navigation";
-import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
-import { scaleAmountForServings } from "convex/lib/servings";
 import { isPantryStaple } from "@/lib/pantry-staples";
-import { combineAmounts } from "convex/lib/unitConversion";
-import {
-  TARGET_SERVINGS_MIN,
-  COMPLEXITY_TIERS,
-  PRIMARY_PROTEINS,
-  RECIPE_CATEGORIES,
-} from "convex/lib/constants";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
+import {
+  COMPLEXITY_TIERS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+  TARGET_SERVINGS_MIN,
+} from "convex/lib/constants";
+import { normaliseNameForGrouping } from "convex/lib/ingredientGrouping";
+import { scaleAmountForServings } from "convex/lib/servings";
+import { combineAmounts } from "convex/lib/unitConversion";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import {
@@ -74,8 +75,8 @@ import {
   ListChecks,
   Plus,
   Search,
-  SlidersHorizontal,
   ShoppingCart,
+  SlidersHorizontal,
   Users,
   X,
 } from "lucide-react";
@@ -86,15 +87,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import ShoppingList from "./shopping-list";
 
-type UserRecipe = FunctionReturnType<
-  typeof api.recipes.listUserRecipesPaginated
+type UnifiedRecipe = FunctionReturnType<
+  typeof api.recipes.listRecipesPaginatedUnified
 >["page"][number];
+type UserRecipe = UnifiedRecipe;
 type HouseholdRecipe = FunctionReturnType<
   typeof api.households.getAllHouseholdRecipes
 >[number];
-type SystemRecipe = FunctionReturnType<
-  typeof api.recipes.listSystemRecipesPaginated
->["page"][number];
+type SystemRecipe = UnifiedRecipe;
 type SelectionSource = "user" | "household" | "discover";
 type Recipe = (UserRecipe | HouseholdRecipe | SystemRecipe) & {
   selectionSource: SelectionSource;
@@ -157,14 +157,42 @@ export default function ShoppingListClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const listIdFromUrl = searchParams.get("listId");
+  const [tab, setTab] = useState<RecipeListingTab>(TAB_MY_RECIPES);
+  const [myFilters, setMyFilters] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
+  const [discoverFilters, setDiscoverFilters] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
+  const [allFilters, setAllFilters] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
+  const userQueryFilter = useMemo(() => {
+    const sourceFilters =
+      tab === TAB_MY_RECIPES
+        ? myFilters
+        : tab === TAB_ALL
+          ? allFilters
+          : initialRecipeCoreFilterState;
+    return toRecipeListServerFilter(sourceFilters);
+  }, [allFilters, myFilters, tab]);
+  const systemQueryFilter = useMemo(() => {
+    const sourceFilters =
+      tab === TAB_DISCOVER
+        ? discoverFilters
+        : tab === TAB_ALL
+          ? allFilters
+          : initialRecipeCoreFilterState;
+    return toRecipeListServerFilter(sourceFilters);
+  }, [allFilters, discoverFilters, tab]);
 
   const {
     results: userRecipes,
     status: userRecipesStatus,
     loadMore: loadMoreUserRecipes,
   } = usePaginatedQuery(
-    api.recipes.listUserRecipesPaginated,
-    {},
+    api.recipes.listRecipesPaginatedUnified,
+    { scope: "my", filter: userQueryFilter },
     { initialNumItems: 20 },
   );
   const {
@@ -172,8 +200,8 @@ export default function ShoppingListClient() {
     status: systemRecipesStatus,
     loadMore: loadMoreSystemRecipes,
   } = usePaginatedQuery(
-    api.recipes.listSystemRecipesPaginated,
-    {},
+    api.recipes.listRecipesPaginatedUnified,
+    { scope: "discover", filter: systemQueryFilter },
     { initialNumItems: 20 },
   );
   const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
@@ -204,16 +232,6 @@ export default function ShoppingListClient() {
     return activeShoppingList ?? null;
   }, [listIdFromUrl, listFromUrl, accessibleLists, activeShoppingList]);
 
-  const [tab, setTab] = useState<RecipeListingTab>(TAB_MY_RECIPES);
-  const [myFilters, setMyFilters] = useState<RecipeCoreFilterState>(
-    initialRecipeCoreFilterState,
-  );
-  const [discoverFilters, setDiscoverFilters] = useState<RecipeCoreFilterState>(
-    initialRecipeCoreFilterState,
-  );
-  const [allFilters, setAllFilters] = useState<RecipeCoreFilterState>(
-    initialRecipeCoreFilterState,
-  );
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<
     Set<Id<"recipes">>
   >(new Set());
@@ -236,7 +254,9 @@ export default function ShoppingListClient() {
     [myRecipes, discoverRecipes],
   );
   const targetServings = useMemo(() => {
-    const selected = allRecipes.filter((recipe) => selectedRecipeIds.has(recipe._id));
+    const selected = allRecipes.filter((recipe) =>
+      selectedRecipeIds.has(recipe._id),
+    );
     if (selected.length === 0) {
       return TARGET_SERVINGS_MIN;
     }
@@ -244,7 +264,10 @@ export default function ShoppingListClient() {
       (sum, recipe) => sum + (recipe.serves ?? TARGET_SERVINGS_MIN),
       0,
     );
-    return Math.max(TARGET_SERVINGS_MIN, Math.round(totalServes / selected.length));
+    return Math.max(
+      TARGET_SERVINGS_MIN,
+      Math.round(totalServes / selected.length),
+    );
   }, [allRecipes, selectedRecipeIds]);
 
   const selectedRecipes = useMemo(
@@ -264,10 +287,7 @@ export default function ShoppingListClient() {
     const main: typeof flatIngredients = [];
     const pantry: typeof flatIngredients = [];
     for (const item of flatIngredients) {
-      if (
-        !item.addedFromChalkboard &&
-        isPantryStaple(getCanonicalKey(item))
-      ) {
+      if (!item.addedFromChalkboard && isPantryStaple(getCanonicalKey(item))) {
         pantry.push(item);
       } else {
         main.push(item);
@@ -716,10 +736,17 @@ export default function ShoppingListClient() {
                 </Card>
 
                 <div className="space-y-4">
-                  <RecipeSourceSwitcher value={tab} onValueChange={setTab} compact />
+                  <RecipeSourceSwitcher
+                    value={tab}
+                    onValueChange={setTab}
+                    compact
+                  />
 
                   <Accordion type="single" collapsible>
-                    <AccordionItem value="filters" className="rounded-xl border px-4">
+                    <AccordionItem
+                      value="filters"
+                      className="rounded-xl border px-4"
+                    >
                       <AccordionTrigger className="py-3 text-sm hover:no-underline">
                         <span className="inline-flex items-center gap-2">
                           <SlidersHorizontal className="size-4 text-muted-foreground" />
@@ -767,9 +794,10 @@ export default function ShoppingListClient() {
                           </div>
                           <div className="flex flex-wrap items-center gap-2">
                             {RECIPE_QUICK_FILTERS.map((filter) => {
-                              const isActive = activeFilters.selectedQuickFilters.includes(
-                                filter.key,
-                              );
+                              const isActive =
+                                activeFilters.selectedQuickFilters.includes(
+                                  filter.key,
+                                );
                               return (
                                 <Button
                                   key={filter.key}
@@ -822,7 +850,9 @@ export default function ShoppingListClient() {
                                 <SelectValue placeholder="Protein" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="all">All proteins</SelectItem>
+                                <SelectItem value="all">
+                                  All proteins
+                                </SelectItem>
                                 {PRIMARY_PROTEINS.filter(
                                   (protein) =>
                                     protein !== "none" && protein !== "other",
@@ -846,7 +876,9 @@ export default function ShoppingListClient() {
                                 <SelectValue placeholder="Category" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="all">All categories</SelectItem>
+                                <SelectItem value="all">
+                                  All categories
+                                </SelectItem>
                                 {RECIPE_CATEGORIES.map((category) => (
                                   <SelectItem key={category} value={category}>
                                     {titleCase(category)}
@@ -868,7 +900,10 @@ export default function ShoppingListClient() {
                               </SelectTrigger>
                               <SelectContent>
                                 {DURATION_OPTIONS.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
                                     {option.label}
                                   </SelectItem>
                                 ))}
@@ -887,7 +922,9 @@ export default function ShoppingListClient() {
                                 <SelectValue placeholder="Complexity" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="all">Any complexity</SelectItem>
+                                <SelectItem value="all">
+                                  Any complexity
+                                </SelectItem>
                                 {COMPLEXITY_TIERS.map((tier) => (
                                   <SelectItem key={tier} value={tier}>
                                     {titleCase(tier)}
@@ -908,7 +945,8 @@ export default function ShoppingListClient() {
 
               {/* Recipe List */}
               {(tab === TAB_MY_RECIPES &&
-                (isUserRecipesInitialLoading || householdRecipes === undefined)) ||
+                (isUserRecipesInitialLoading ||
+                  householdRecipes === undefined)) ||
               (tab === TAB_DISCOVER && isSystemRecipesInitialLoading) ||
               (tab === TAB_ALL &&
                 (isUserRecipesInitialLoading ||
@@ -969,7 +1007,9 @@ export default function ShoppingListClient() {
                         Share new list with household
                       </Label>
                       <Select
-                        value={recipeListHouseholdId || households[0]?._id || ""}
+                        value={
+                          recipeListHouseholdId || households[0]?._id || ""
+                        }
                         onValueChange={(v) =>
                           setRecipeListHouseholdId(v as Id<"households">)
                         }
