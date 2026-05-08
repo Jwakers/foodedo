@@ -1,5 +1,5 @@
-import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
+import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { Doc, Id } from "./_generated/dataModel";
 import {
@@ -9,6 +9,11 @@ import {
   QueryCtx,
 } from "./_generated/server";
 import { canUseHouseholdPreferences } from "./lib/constants";
+import {
+  recipeMatchesServerFilter,
+  type RecipeListServerFilter,
+} from "./lib/recipeListFilters";
+import { recipeListServerFilterValidator } from "./lib/recipeListFilterValidation";
 import {
   getCurrentUser,
   getCurrentUserOrThrow,
@@ -454,6 +459,7 @@ export const listHouseholdRecipesPaginated = query({
   args: {
     householdId: v.id("households"),
     paginationOpts: paginationOptsValidator,
+    filter: v.optional(recipeListServerFilterValidator),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -470,14 +476,23 @@ export const listHouseholdRecipesPaginated = query({
       )
       .order("desc")
       .paginate(args.paginationOpts);
+    const filter: RecipeListServerFilter | undefined = args.filter;
 
     const recipes = await Promise.all(
-      result.page.map((shared) => enrichSharedRecipe(ctx, shared, user._id, false)),
+      result.page.map((shared) =>
+        enrichSharedRecipe(ctx, shared, user._id, false),
+      ),
+    );
+    const out = recipes.filter(
+      (recipe): recipe is NonNullable<typeof recipe> =>
+        recipe != null && recipeMatchesServerFilter(recipe, filter),
     );
 
     return {
-      ...result,
-      page: recipes.filter((r): r is NonNullable<typeof r> => r !== null),
+      page: out,
+      isDone: result.isDone,
+      continueCursor: result.continueCursor,
+      splitCursor: result.splitCursor,
     };
   },
 });

@@ -10,6 +10,28 @@
  */
 
 import { CATEGORY_COLORS } from "@/app/constants";
+import { RECIPE_QUICK_FILTERS } from "@/components/recipes/quick-filters";
+import {
+  applyRecipeCoreFilters,
+  initialRecipeCoreFilterState,
+  toRecipeListServerFilter,
+  type RecipeCoreFilterState,
+} from "@/components/recipes/recipe-filter-utils";
+import {
+  TAB_ALL,
+  TAB_DISCOVER,
+  TAB_MY_RECIPES,
+  type RecipeListingTab,
+} from "@/components/recipes/recipe-listing-context";
+import { RecipeSourceSwitcher } from "@/components/recipes/recipe-source-switcher";
+import type { RecipeListItem } from "@/components/recipes/types";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -18,13 +40,6 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   Select,
   SelectContent,
@@ -33,20 +48,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import {
-  applyRecipeCoreFilters,
-  initialRecipeCoreFilterState,
-  type RecipeCoreFilterState,
-} from "@/components/recipes/recipe-filter-utils";
-import { RecipeSourceSwitcher } from "@/components/recipes/recipe-source-switcher";
-import {
-  TAB_ALL,
-  TAB_DISCOVER,
-  TAB_MY_RECIPES,
-  type RecipeListingTab,
-} from "@/components/recipes/recipe-listing-context";
-import { RECIPE_QUICK_FILTERS } from "@/components/recipes/quick-filters";
-import type { RecipeListItem } from "@/components/recipes/types";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -57,7 +58,14 @@ import {
 } from "convex/lib/constants";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { ChefHat, Clock, Search, SlidersHorizontal, Users, X } from "lucide-react";
+import {
+  ChefHat,
+  Clock,
+  Search,
+  SlidersHorizontal,
+  Users,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
@@ -68,15 +76,14 @@ import { useMemo, useState } from "react";
 type CurrentPlan = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getMealPlan>
 >;
-type UserRecipe = FunctionReturnType<
-  typeof api.recipes.listUserRecipesPaginated
+type UnifiedRecipe = FunctionReturnType<
+  typeof api.recipes.listRecipesPaginatedUnified
 >["page"][number];
+type UserRecipe = UnifiedRecipe;
 type HouseholdRecipe = FunctionReturnType<
   typeof api.households.getAllHouseholdRecipes
 >[number];
-type SystemRecipe = FunctionReturnType<
-  typeof api.recipes.listSystemRecipesPaginated
->["page"][number];
+type SystemRecipe = UnifiedRecipe;
 
 /** Normalised recipe for list display; source indicates which tab it came from. */
 type PickerRecipe = RecipeListItem & {
@@ -194,6 +201,24 @@ export function MealPlanRecipePickerModal({
   const [allFilters, setAllFilters] = useState<RecipeCoreFilterState>(
     initialRecipeCoreFilterState,
   );
+  const userQueryFilter = useMemo(() => {
+    const sourceFilters =
+      tab === TAB_MY_RECIPES
+        ? myFilters
+        : tab === TAB_ALL
+          ? allFilters
+          : initialRecipeCoreFilterState;
+    return toRecipeListServerFilter(sourceFilters);
+  }, [allFilters, myFilters, tab]);
+  const systemQueryFilter = useMemo(() => {
+    const sourceFilters =
+      tab === TAB_DISCOVER
+        ? discoverFilters
+        : tab === TAB_ALL
+          ? allFilters
+          : initialRecipeCoreFilterState;
+    return toRecipeListServerFilter(sourceFilters);
+  }, [allFilters, discoverFilters, tab]);
 
   // Load recipe sources in parallel (household-all remains non-paginated in phase 1)
   const {
@@ -201,8 +226,8 @@ export function MealPlanRecipePickerModal({
     status: userRecipesStatus,
     loadMore: loadMoreUserRecipes,
   } = usePaginatedQuery(
-    api.recipes.listUserRecipesPaginated,
-    {},
+    api.recipes.listRecipesPaginatedUnified,
+    { scope: "my", filter: userQueryFilter },
     { initialNumItems: 20 },
   );
   const householdRecipes = useQuery(api.households.getAllHouseholdRecipes);
@@ -211,8 +236,8 @@ export function MealPlanRecipePickerModal({
     status: systemRecipesStatus,
     loadMore: loadMoreSystemRecipes,
   } = usePaginatedQuery(
-    api.recipes.listSystemRecipesPaginated,
-    {},
+    api.recipes.listRecipesPaginatedUnified,
+    { scope: "discover", filter: systemQueryFilter },
     { initialNumItems: 20 },
   );
   const isUserRecipesInitialLoading =
@@ -311,7 +336,9 @@ export function MealPlanRecipePickerModal({
       if (prev.selectedQuickFilters.includes(key)) {
         return {
           ...prev,
-          selectedQuickFilters: prev.selectedQuickFilters.filter((k) => k !== key),
+          selectedQuickFilters: prev.selectedQuickFilters.filter(
+            (k) => k !== key,
+          ),
         };
       }
       return {
@@ -345,11 +372,7 @@ export function MealPlanRecipePickerModal({
           className="flex min-h-0 flex-1 flex-col"
         >
           <div className="mt-1 px-4">
-            <RecipeSourceSwitcher
-              value={tab}
-              onValueChange={setTab}
-              compact
-            />
+            <RecipeSourceSwitcher value={tab} onValueChange={setTab} compact />
           </div>
           <Accordion
             type="single"
@@ -406,9 +429,8 @@ export function MealPlanRecipePickerModal({
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {RECIPE_QUICK_FILTERS.map((filter) => {
-                      const isActive = activeFilters.selectedQuickFilters.includes(
-                        filter.key,
-                      );
+                      const isActive =
+                        activeFilters.selectedQuickFilters.includes(filter.key);
                       return (
                         <Button
                           key={filter.key}
@@ -440,7 +462,8 @@ export function MealPlanRecipePickerModal({
                       <SelectContent>
                         <SelectItem value="all">All proteins</SelectItem>
                         {PRIMARY_PROTEINS.filter(
-                          (protein) => protein !== "none" && protein !== "other",
+                          (protein) =>
+                            protein !== "none" && protein !== "other",
                         ).map((protein) => (
                           <SelectItem key={protein} value={protein}>
                             {titleCase(protein)}
@@ -526,7 +549,8 @@ export function MealPlanRecipePickerModal({
                 <RecipeListSkeleton />
               ) : filteredMy.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
-                  {myRecipesNormalized.length === 0 && !hasActiveFilters(myFilters)
+                  {myRecipesNormalized.length === 0 &&
+                  !hasActiveFilters(myFilters)
                     ? "No recipes yet. Create or import recipes first."
                     : "No recipes match your filters."}
                 </p>
@@ -613,7 +637,8 @@ export function MealPlanRecipePickerModal({
                 <RecipeListSkeleton />
               ) : filteredAll.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
-                  {allRecipesNormalized.length === 0 && !hasActiveFilters(allFilters)
+                  {allRecipesNormalized.length === 0 &&
+                  !hasActiveFilters(allFilters)
                     ? "No recipes available yet."
                     : "No recipes match your filters."}
                 </p>
