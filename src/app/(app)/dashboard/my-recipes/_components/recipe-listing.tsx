@@ -24,7 +24,7 @@ import { usePaginatedQuery } from "convex/react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AddRecipeDrawer } from "../../../_components.tsx/add-recipe-drawer";
 
 function EmptyState({
@@ -72,19 +72,22 @@ export default function RecipeListingPage() {
       : currentTab === TAB_ALL
         ? "all"
         : "my";
+  const searchParamsString = useMemo(
+    () => searchParams.toString(),
+    [searchParams],
+  );
 
-  const handleFilterStateChange = (nextFilterState: typeof filterState) => {
+  const handleFilterStateChange = useCallback((nextFilterState: typeof filterState) => {
     const nextParams = applyRecipeFilterStateToSearchParams(
       nextFilterState,
-      new URLSearchParams(searchParams.toString()),
+      new URLSearchParams(searchParamsString),
     );
     const nextQuery = nextParams.toString();
-    const currentQuery = searchParams.toString();
-    if (nextQuery === currentQuery) return;
+    if (nextQuery === searchParamsString) return;
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
       scroll: false,
     });
-  };
+  }, [pathname, router, searchParamsString]);
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.recipes.listRecipesPaginatedUnified,

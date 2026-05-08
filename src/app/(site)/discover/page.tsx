@@ -47,12 +47,21 @@ export default function DiscoverPage() {
 
 function DiscoverPageLoadingFallback() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="h-10 w-48 animate-pulse rounded bg-muted" />
-        <div className="mt-2 h-5 w-72 animate-pulse rounded bg-muted" />
+    <div
+      className="container mx-auto px-4 py-8"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span className="sr-only">Loading content…</span>
+      <div className="mb-8" aria-hidden="true">
+        <div className="h-10 w-48 animate-pulse rounded bg-muted" aria-hidden="true" />
+        <div
+          className="mt-2 h-5 w-72 animate-pulse rounded bg-muted"
+          aria-hidden="true"
+        />
       </div>
-      <div className="h-64 animate-pulse rounded-lg bg-muted" />
+      <div className="h-64 animate-pulse rounded-lg bg-muted" aria-hidden="true" />
     </div>
   );
 }
