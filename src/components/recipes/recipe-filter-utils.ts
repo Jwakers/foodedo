@@ -2,6 +2,18 @@
 
 import type { RecipeListItem } from "./types";
 import {
+  COMPLEXITY_TIERS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
+import {
+  RECIPE_DURATION_FILTER_VALUES,
+  type RecipeCategoryFilterValue,
+  type RecipeComplexityFilterValue,
+  type RecipeDurationFilterValue,
+  type RecipeProteinFilterValue,
+} from "convex/lib/recipeListFilters";
+import {
   getRecipeQuickFilter,
   isRecipeQuickFilterKey,
   type RecipeQuickFilterKey,
@@ -26,6 +38,19 @@ export const initialRecipeCoreFilterState: RecipeCoreFilterState = {
   selectedComplexity: "all",
   selectedQuickFilters: [],
 };
+
+export function isDefaultRecipeFilterState(
+  filterState: RecipeCoreFilterState,
+): boolean {
+  return (
+    filterState.searchQuery.trim() === "" &&
+    filterState.selectedCategory === "all" &&
+    filterState.selectedProtein === "all" &&
+    filterState.selectedDuration === "all" &&
+    filterState.selectedComplexity === "all" &&
+    filterState.selectedQuickFilters.length === 0
+  );
+}
 
 export function matchesRecipeDuration(
   recipe: RecipeListItem,
@@ -94,17 +119,46 @@ export function applyRecipeCoreFilters<T extends RecipeListItem>(
 export function toRecipeListServerFilter(
   filterState: RecipeCoreFilterState,
 ): RecipeListServerFilter {
+  const normalizedDuration: RecipeDurationFilterValue =
+    RECIPE_DURATION_FILTER_VALUES.includes(
+      filterState.selectedDuration as RecipeDurationFilterValue,
+    )
+      ? (filterState.selectedDuration as RecipeDurationFilterValue)
+      : "all";
+  const normalizedCategory: RecipeCategoryFilterValue =
+    filterState.selectedCategory === "all"
+      ? "all"
+      : RECIPE_CATEGORIES.includes(
+            filterState.selectedCategory as (typeof RECIPE_CATEGORIES)[number],
+          )
+        ? (filterState.selectedCategory as (typeof RECIPE_CATEGORIES)[number])
+        : "all";
+  const normalizedProtein: RecipeProteinFilterValue =
+    filterState.selectedProtein === "all"
+      ? "all"
+      : PRIMARY_PROTEINS.includes(
+            filterState.selectedProtein as (typeof PRIMARY_PROTEINS)[number],
+          )
+        ? (filterState.selectedProtein as (typeof PRIMARY_PROTEINS)[number])
+        : "all";
+  const normalizedComplexity: RecipeComplexityFilterValue =
+    filterState.selectedComplexity === "all"
+      ? "all"
+      : COMPLEXITY_TIERS.includes(
+            filterState.selectedComplexity as (typeof COMPLEXITY_TIERS)[number],
+          )
+        ? (filterState.selectedComplexity as (typeof COMPLEXITY_TIERS)[number])
+        : "all";
+
   return {
     searchQuery: filterState.searchQuery,
-    selectedCategory: filterState.selectedCategory,
-    selectedProtein: filterState.selectedProtein,
-    selectedDuration: filterState.selectedDuration as
-      | "all"
-      | "under-30"
-      | "30-60"
-      | "60-plus",
-    selectedComplexity: filterState.selectedComplexity,
-    selectedQuickFilters: filterState.selectedQuickFilters,
+    selectedCategory: normalizedCategory,
+    selectedProtein: normalizedProtein,
+    selectedDuration: normalizedDuration,
+    selectedComplexity: normalizedComplexity,
+    selectedQuickFilters: filterState.selectedQuickFilters.filter(
+      isRecipeQuickFilterKey,
+    ),
   };
 }
 

@@ -17,7 +17,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -265,10 +264,6 @@ export function RecipeListingProvider(props: RecipeListingProviderProps) {
     }
     return applyRecipeCoreFilters(recipes, filterState);
   }, [recipes, filterState, props.serverFiltered]);
-
-  useEffect(() => {
-    props.onFilterStateChange?.(filterState);
-  }, [filterState, props.onFilterStateChange]);
 
   const updateFilterState = useCallback(
     (updater: (prev: RecipeListingFilterState) => RecipeListingFilterState) => {

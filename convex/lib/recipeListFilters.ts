@@ -1,3 +1,9 @@
+import {
+  COMPLEXITY_TIERS,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "./constants";
+
 export const RECIPE_QUICK_FILTER_VALUES = [
   "vegetarian",
   "vegan",
@@ -19,21 +25,31 @@ export const RECIPE_DURATION_FILTER_VALUES = [
 export type RecipeDurationFilterValue =
   (typeof RECIPE_DURATION_FILTER_VALUES)[number];
 
+export type RecipeCategoryFilterValue =
+  | "all"
+  | (typeof RECIPE_CATEGORIES)[number];
+export type RecipeProteinFilterValue =
+  | "all"
+  | (typeof PRIMARY_PROTEINS)[number];
+export type RecipeComplexityFilterValue =
+  | "all"
+  | (typeof COMPLEXITY_TIERS)[number];
+
 export type RecipeListServerFilter = {
   searchQuery?: string;
-  selectedCategory?: string;
-  selectedProtein?: string;
+  selectedCategory?: RecipeCategoryFilterValue;
+  selectedProtein?: RecipeProteinFilterValue;
   selectedDuration?: RecipeDurationFilterValue;
-  selectedComplexity?: string;
+  selectedComplexity?: RecipeComplexityFilterValue;
   selectedQuickFilters?: RecipeQuickFilterValue[];
 };
 
 export type NormalizedRecipeListServerFilter = {
   searchQuery: string;
-  selectedCategory: string;
-  selectedProtein: string;
+  selectedCategory: RecipeCategoryFilterValue;
+  selectedProtein: RecipeProteinFilterValue;
   selectedDuration: RecipeDurationFilterValue;
-  selectedComplexity: string;
+  selectedComplexity: RecipeComplexityFilterValue;
   selectedQuickFilters: RecipeQuickFilterValue[];
 };
 

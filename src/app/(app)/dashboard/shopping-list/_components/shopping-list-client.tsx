@@ -346,6 +346,9 @@ export default function ShoppingListClient() {
   );
   const deleteShoppingList = useMutation(api.shoppingLists.deleteShoppingList);
 
+  // applyRecipeCoreFilters stays client-side here: server filters are applied for
+  // paginated unified endpoints, but householdRecipes bypass that endpoint and
+  // are merged locally, so we need a final local filter pass.
   const filteredMyRecipes = useMemo(
     () => applyRecipeCoreFilters(myRecipes, myFilters),
     [myRecipes, myFilters],

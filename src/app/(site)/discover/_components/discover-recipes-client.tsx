@@ -44,9 +44,11 @@ function DiscoverRecipeListing() {
 
   const hasLeftoverFilter =
     leftoverIngredientIds.length > 0 || leftoverIngredientPhrases.length > 0;
+  const isFilteredEmpty = recipes != null && recipes.length === 0;
   const hasSourceRecipes = recipes != null && recipes.length > 0;
   const sourceListEmpty =
-    baseRecipesForTab === undefined || baseRecipesForTab.length === 0;
+    baseRecipesForTab === undefined ||
+    (baseRecipesForTab.length === 0 && !hasActiveFilters);
 
   if (filteredRecipes.length === 0) {
     if (hasLeftoverFilter && leftoverListingMeta) {
@@ -82,7 +84,7 @@ function DiscoverRecipeListing() {
       }
     }
 
-    if (!hasSourceRecipes && sourceListEmpty) {
+    if (!hasSourceRecipes && sourceListEmpty && !isFilteredEmpty) {
       return (
         <div className="text-center py-16">
           <p className="text-muted-foreground">No recipes found.</p>

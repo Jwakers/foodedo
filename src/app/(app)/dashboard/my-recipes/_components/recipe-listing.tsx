@@ -13,6 +13,7 @@ import {
 } from "@/components/recipes";
 import {
   applyRecipeFilterStateToSearchParams,
+  isDefaultRecipeFilterState,
   recipeFilterStateFromSearchParams,
   toRecipeListServerFilter,
 } from "@/components/recipes/recipe-filter-utils";
@@ -101,7 +102,10 @@ export default function RecipeListingPage() {
   const isMyRecipesTab = currentTab === TAB_MY_RECIPES;
   const isDiscoverTab = currentTab === TAB_DISCOVER;
   const showEmptyState =
-    isMyRecipesTab && !isInitialLoading && recipes.length === 0;
+    isMyRecipesTab &&
+    !isInitialLoading &&
+    recipes.length === 0 &&
+    isDefaultRecipeFilterState(filterState);
   const canLoadMoreCurrentTab = status === "CanLoadMore";
   const isLoadingMoreCurrentTab = status === "LoadingMore";
 

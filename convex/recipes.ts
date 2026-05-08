@@ -147,6 +147,10 @@ async function paginateRecipesWithFilter(
     cursor: string | null;
   }) => Promise<PaginatedResult<Doc<"recipes">>>,
 ): Promise<PaginatedResult<Doc<"recipes">>> {
+  // Note: we intentionally filter within a single fetched page because Convex
+  // only permits one paginated query execution per function invocation.
+  // As a result, returned `page.length` can be less than requested `numItems`
+  // when filter selectivity is high.
   const normalizedFilter = normalizeRecipeListServerFilter(filter);
   const batch = await fetchPage({
     numItems: Math.max(args.paginationOpts.numItems, 1),
