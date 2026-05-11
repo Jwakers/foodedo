@@ -7,6 +7,7 @@ import {
   RECIPE_CATEGORIES,
 } from "convex/lib/constants";
 import {
+  getRecipeSearchScore,
   RECIPE_DURATION_FILTER_VALUES,
   type RecipeCategoryFilterValue,
   type RecipeComplexityFilterValue,
@@ -84,13 +85,13 @@ export function applyRecipeCoreFilters<T extends RecipeListItem>(
     .filter(isRecipeQuickFilterKey)
     .map((key) => getRecipeQuickFilter(key));
 
-  return recipes.filter((recipe) => {
+  const filtered = recipes.filter((recipe) => {
     const matchesQuickFilters =
       activeQuickFilters.length === 0 ||
       activeQuickFilters.some((filter) => filter.matches(recipe));
     const matchesSearch =
-      recipe.title.toLowerCase().includes(normalizedSearch) ||
-      (recipe.description ?? "").toLowerCase().includes(normalizedSearch);
+      normalizedSearch.length === 0 ||
+      getRecipeSearchScore(recipe, normalizedSearch) >= 0;
     const matchesCategory =
       filterState.selectedCategory === "all" ||
       recipe.category === filterState.selectedCategory;
@@ -114,6 +115,22 @@ export function applyRecipeCoreFilters<T extends RecipeListItem>(
       matchesComplexity
     );
   });
+
+  if (normalizedSearch.length === 0 || filtered.length <= 1) {
+    return filtered;
+  }
+
+  return filtered
+    .map((recipe, index) => ({
+      recipe,
+      index,
+      score: getRecipeSearchScore(recipe, normalizedSearch),
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.index - b.index;
+    })
+    .map((entry) => entry.recipe);
 }
 
 export function toRecipeListServerFilter(

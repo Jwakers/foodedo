@@ -2,6 +2,16 @@
 
 import { api } from "@/../convex/_generated/api";
 import { Id } from "@/../convex/_generated/dataModel";
+import {
+  RecipeFilterAccordion,
+  RecipeFilterControls,
+} from "@/components/recipes";
+import {
+  initialRecipeCoreFilterState,
+  isDefaultRecipeFilterState,
+  toRecipeListServerFilter,
+  type RecipeCoreFilterState,
+} from "@/components/recipes/recipe-filter-utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +19,7 @@ import { usePaginatedQuery, useQuery } from "convex/react";
 import { FunctionReturnType } from "convex/server";
 import { ArrowLeft, Settings, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { use, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { HouseholdMemberList } from "./_components/household-member-list";
 import { HouseholdRecipeList } from "./_components/household-recipe-list";
 import { InviteMemberDialog } from "./_components/invite-member-dialog";
@@ -28,6 +38,29 @@ export default function HouseholdDetailPage({
   params,
 }: HouseholdDetailPageProps) {
   const { id } = use(params);
+  const [recipeFilterState, setRecipeFilterState] = useState<RecipeCoreFilterState>(
+    initialRecipeCoreFilterState,
+  );
+  const [searchDraft, setSearchDraft] = useState(
+    initialRecipeCoreFilterState.searchQuery,
+  );
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setRecipeFilterState((current) =>
+        current.searchQuery === searchDraft
+          ? current
+          : { ...current, searchQuery: searchDraft },
+      );
+    }, 250);
+    return () => clearTimeout(timeoutId);
+  }, [searchDraft]);
+
+  const serverFilter = useMemo(
+    () => toRecipeListServerFilter(recipeFilterState),
+    [recipeFilterState],
+  );
+  const hasActiveRecipeFilters = !isDefaultRecipeFilterState(recipeFilterState);
+
   const household = useQuery(api.households.getHousehold, { householdId: id });
   const members = useQuery(api.households.getHouseholdMembers, {
     householdId: id,
@@ -38,7 +71,7 @@ export default function HouseholdDetailPage({
     loadMore: loadMoreRecipes,
   } = usePaginatedQuery(
     api.households.listHouseholdRecipesPaginated,
-    { householdId: id },
+    { householdId: id, filter: serverFilter },
     { initialNumItems: 20 },
   );
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -123,12 +156,68 @@ export default function HouseholdDetailPage({
         </TabsList>
 
         <TabsContent value="recipes" className="space-y-4">
+          <RecipeFilterAccordion hasActiveFilters={hasActiveRecipeFilters}>
+            <RecipeFilterControls
+              filterState={{ ...recipeFilterState, searchQuery: searchDraft }}
+              searchDescription="Search and filter household-shared recipes."
+              searchPlaceholder="Search by title, description, or ingredient"
+              onSearchQueryChange={setSearchDraft}
+              onSelectedCategoryChange={(value) =>
+                setRecipeFilterState((current) => ({
+                  ...current,
+                  selectedCategory: value,
+                }))
+              }
+              onSelectedProteinChange={(value) =>
+                setRecipeFilterState((current) => ({
+                  ...current,
+                  selectedProtein: value,
+                }))
+              }
+              onSelectedDurationChange={(value) =>
+                setRecipeFilterState((current) => ({
+                  ...current,
+                  selectedDuration: value,
+                }))
+              }
+              onSelectedComplexityChange={(value) =>
+                setRecipeFilterState((current) => ({
+                  ...current,
+                  selectedComplexity: value,
+                }))
+              }
+              onToggleQuickFilter={(quickFilterKey) =>
+                setRecipeFilterState((current) => {
+                  if (current.selectedQuickFilters.includes(quickFilterKey)) {
+                    return {
+                      ...current,
+                      selectedQuickFilters: current.selectedQuickFilters.filter(
+                        (key) => key !== quickFilterKey,
+                      ),
+                    };
+                  }
+                  return {
+                    ...current,
+                    selectedQuickFilters: [
+                      ...current.selectedQuickFilters,
+                      quickFilterKey,
+                    ],
+                  };
+                })
+              }
+              onClearFilters={() => {
+                setRecipeFilterState(initialRecipeCoreFilterState);
+                setSearchDraft(initialRecipeCoreFilterState.searchQuery);
+              }}
+            />
+          </RecipeFilterAccordion>
           <HouseholdRecipeList
             recipes={recipes}
             householdId={id}
             canLoadMore={canLoadMoreRecipes}
             loadingMore={loadingMoreRecipes}
             onLoadMore={() => loadMoreRecipes(20)}
+            hasActiveFilters={hasActiveRecipeFilters}
           />
         </TabsContent>
 

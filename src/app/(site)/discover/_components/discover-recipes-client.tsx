@@ -18,15 +18,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { DiscoverRecipeGrid } from "./discover-recipe-grid";
 
-function DiscoverLoadingSkeleton() {
+function DiscoverResultsLoadingSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="h-10 w-48 animate-pulse rounded bg-muted" />
-        <div className="mt-2 h-5 w-72 animate-pulse rounded bg-muted" />
-      </div>
-      <div className="h-64 animate-pulse rounded-lg bg-muted" />
-    </div>
+    <div className="h-64 animate-pulse rounded-lg bg-muted" />
   );
 }
 
@@ -147,10 +141,6 @@ export default function DiscoverRecipesClient() {
   const isInitialLoading =
     status === "LoadingFirstPage" && results.length === 0;
 
-  if (isInitialLoading) {
-    return <DiscoverLoadingSkeleton />;
-  }
-
   return (
     <RecipeListingProvider
       recipes={results}
@@ -162,7 +152,7 @@ export default function DiscoverRecipesClient() {
         <div className="mb-8">
           <RecipeFilters />
         </div>
-        <DiscoverRecipeListing />
+        {isInitialLoading ? <DiscoverResultsLoadingSkeleton /> : <DiscoverRecipeListing />}
         <RecipeLoadMore
           canLoadMore={status === "CanLoadMore"}
           loadingMore={status === "LoadingMore"}

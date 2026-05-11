@@ -29,6 +29,7 @@ import {
   allocateUniquePublicSlugs,
   nextUniqueSystemRecipePublicSlug,
 } from "./lib/recipePublicSlug";
+import { buildRecipeSearchText } from "./lib/recipeSearchText";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
 /**
@@ -106,6 +107,11 @@ export const patchSystemRecipesFromFile = internalMutation({
         await ctx.db.patch(id, {
           ingredients,
           method,
+          searchText: buildRecipeSearchText({
+            title: existing.title,
+            description: existing.description,
+            ingredients,
+          }),
           updatedAt: r.updatedAt ?? now,
         });
         patched++;
@@ -136,6 +142,14 @@ export const patchSystemRecipesFromFile = internalMutation({
           ...(r.cuisine != null &&
             r.cuisine.length > 0 && { cuisine: r.cuisine as Cuisine[] }),
           totalTimeMinutes: r.prepTime + (r.cookTime ?? 0),
+          searchText: buildRecipeSearchText({
+            title: r.title,
+            description:
+              r.description != null && r.description !== ""
+                ? r.description
+                : undefined,
+            ingredients,
+          }),
           ...(r.isGeneratorEligible != null && {
             isGeneratorEligible: r.isGeneratorEligible,
           }),
@@ -846,5 +860,32 @@ export const backfillMethodStepIngredientRefs = internalMutation({
     }
 
     return { recipesUpdated, scheduled: hasMore };
+  },
+});
+
+/**
+ * Backfill normalized full-text search blobs on recipes.
+ * Safe to re-run; only patches rows where value changed.
+ */
+export const backfillRecipeSearchText = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const recipes = await ctx.db.query("recipes").collect();
+    let patched = 0;
+    for (const recipe of recipes) {
+      const nextSearchText = buildRecipeSearchText({
+        title: recipe.title,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+      });
+      if ((recipe.searchText ?? "") === nextSearchText) continue;
+      await ctx.db.patch(recipe._id, { searchText: nextSearchText });
+      patched += 1;
+    }
+    return {
+      total: recipes.length,
+      patched,
+      unchanged: recipes.length - patched,
+    };
   },
 });

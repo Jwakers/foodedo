@@ -36,6 +36,7 @@ interface HouseholdRecipeListProps {
   canLoadMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
+  hasActiveFilters?: boolean;
 }
 
 export function HouseholdRecipeList({
@@ -44,6 +45,7 @@ export function HouseholdRecipeList({
   canLoadMore,
   loadingMore,
   onLoadMore,
+  hasActiveFilters = false,
 }: HouseholdRecipeListProps) {
   const [recipeToUnshare, setRecipeToUnshare] = useState<Recipe | null>(null);
   const [isUnsharing, setIsUnsharing] = useState(false);
@@ -73,13 +75,19 @@ export function HouseholdRecipeList({
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-16">
           <ChefHat className="h-16 w-16 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No recipes yet</h3>
+          <h3 className="text-xl font-semibold mb-2">
+            {hasActiveFilters ? "No matching recipes" : "No recipes yet"}
+          </h3>
           <p className="text-muted-foreground text-center max-w-md mb-4">
-            Share your recipes with this household to get started
+            {hasActiveFilters
+              ? "Try adjusting your search or filters."
+              : "Share your recipes with this household to get started"}
           </p>
-          <Button asChild>
-            <Link href={ROUTES.MY_RECIPES}>Go to My Recipes</Link>
-          </Button>
+          {!hasActiveFilters ? (
+            <Button asChild>
+              <Link href={ROUTES.MY_RECIPES}>Go to My Recipes</Link>
+            </Button>
+          ) : null}
         </CardContent>
       </Card>
     );
