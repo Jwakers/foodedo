@@ -29,11 +29,14 @@ import {
   normaliseLeftoverPhrasesList,
 } from "./lib/leftoverIngredients";
 import {
+  sortRecipesBySearchScore,
   normalizeRecipeListServerFilter,
+  recipeMatchesServerFilterIgnoringSearch,
   recipeMatchesServerFilter,
   type RecipeListServerFilter,
 } from "./lib/recipeListFilters";
 import { recipeListServerFilterValidator } from "./lib/recipeListFilterValidation";
+import { buildRecipeSearchText } from "./lib/recipeSearchText";
 import {
   nextUniqueSystemRecipePublicSlug,
   RECIPE_PUBLIC_SLUG_PATTERN,
@@ -211,9 +214,10 @@ async function paginateRecipesWithFilter(
   const out = batch.page.filter((recipe) =>
     recipeMatchesServerFilter(recipe, normalizedFilter),
   );
+  const ranked = sortRecipesBySearchScore(out, normalizedFilter);
 
   return {
-    page: out,
+    page: ranked,
     isDone: batch.isDone,
     continueCursor: batch.continueCursor,
     splitCursor: batch.splitCursor,
@@ -499,6 +503,49 @@ async function listRecipesPaginatedUnifiedHandler(
       continueCursor: "",
       isDone: true,
       splitCursor: null,
+    };
+  }
+
+  if (normalizedFilter.searchQuery.length > 0) {
+    let searchQuery = ctx.db.query("recipes").withSearchIndex(
+      "search_text",
+      (q) => {
+        let builder = q.search("searchText", normalizedFilter.searchQuery);
+        if (args.scope === "discover") {
+          builder = builder.eq("source", "system");
+        } else if (args.scope === "my" && user) {
+          builder = builder.eq("userId", user._id);
+        }
+        if (indexedCategory != null) {
+          builder = builder.eq("category", indexedCategory);
+        }
+        if (indexedProtein != null) {
+          builder = builder.eq("primaryProtein", indexedProtein);
+        }
+        if (indexedComplexity != null) {
+          builder = builder.eq("complexityTier", indexedComplexity);
+        }
+        return builder;
+      },
+    );
+
+    if (args.scope === "all" && user) {
+      searchQuery = searchQuery.filter((q) =>
+        q.or(
+          q.eq(q.field("source"), "system"),
+          q.eq(q.field("userId"), user._id),
+        ),
+      );
+    }
+
+    const searched = await searchQuery.paginate(args.paginationOpts);
+    const filtered = searched.page.filter((recipe) =>
+      recipeMatchesServerFilterIgnoringSearch(recipe, normalizedFilter),
+    );
+
+    return {
+      ...searched,
+      page: await attachRecipeImageUrls(ctx, filtered),
     };
   }
 
@@ -1043,6 +1090,7 @@ export const createEmptyRecipe = mutation({
       category: "main",
       creationSource: "manual",
       source: "user",
+      searchText: "",
       updatedAt: Date.now(),
     });
 
@@ -1181,6 +1229,11 @@ export const createRecipe = mutation({
       method: methodWithRefs,
       creationSource: args.creationSource,
       source: "user",
+      searchText: buildRecipeSearchText({
+        title: args.title,
+        description: args.description,
+        ingredients,
+      }),
       nutrition: normalizedNutrition,
       originalUrl: args.originalUrl,
       originalAuthor: args.originalAuthor,
@@ -1357,6 +1410,14 @@ export const createSystemRecipe = mutation({
       ingredients,
       method: methodWithRefs,
       source: "system",
+      searchText: buildRecipeSearchText({
+        title: args.title.trim(),
+        description:
+          args.description == null || args.description.trim().length === 0
+            ? undefined
+            : args.description.trim(),
+        ingredients,
+      }),
       nutrition: normalizedNutrition,
       primaryProtein,
       complexityTier,
@@ -1544,20 +1605,28 @@ export const updateRecipe = mutation({
     const hasGeneratorMetadata =
       primaryProtein != null && complexityTier != null;
 
+    const nextTitle = args.title ?? recipe.title;
+    const nextDescription =
+      args.description === undefined
+        ? recipe.description
+        : args.description === null
+          ? undefined
+          : args.description;
+
     await ctx.db.patch(args.recipeId, {
-      title: args.title ?? recipe.title,
-      description:
-        args.description === undefined
-          ? recipe.description
-          : args.description === null
-            ? undefined
-            : args.description,
+      title: nextTitle,
+      description: nextDescription,
       prepTime,
       cookTime,
       serves: args.serves ?? recipe.serves,
       category: args.category ?? recipe.category,
       ingredients,
       method: methodToPersist ?? recipe.method,
+      searchText: buildRecipeSearchText({
+        title: nextTitle,
+        description: nextDescription,
+        ingredients,
+      }),
       updatedAt: Date.now(),
       primaryProtein,
       complexityTier,

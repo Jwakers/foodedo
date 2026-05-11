@@ -10,6 +10,7 @@ import {
 } from "./_generated/server";
 import { canUseHouseholdPreferences } from "./lib/constants";
 import {
+  sortRecipesBySearchScore,
   recipeMatchesServerFilter,
   type RecipeListServerFilter,
 } from "./lib/recipeListFilters";
@@ -46,6 +47,32 @@ function buildPreferenceSummary(
     excludedProteinCount: prefs.excludedPrimaryProteins?.length ?? 0,
   };
 }
+
+function paginateArray<T>(
+  items: T[],
+  paginationOpts: { numItems: number; cursor: string | null },
+): {
+  page: T[];
+  isDone: boolean;
+  continueCursor: string;
+  splitCursor: null;
+} {
+  const start = Number.parseInt(paginationOpts.cursor ?? "0", 10);
+  const safeStart = Number.isFinite(start) && start >= 0 ? start : 0;
+  const size = Math.max(1, paginationOpts.numItems);
+  const page = items.slice(safeStart, safeStart + size);
+  const nextOffset = safeStart + page.length;
+  const isDone = nextOffset >= items.length;
+
+  return {
+    page,
+    isDone,
+    continueCursor: String(nextOffset),
+    splitCursor: null,
+  };
+}
+
+const MAX_SHARED_RECIPES_TO_SEARCH = 500;
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -469,6 +496,30 @@ export const listHouseholdRecipesPaginated = query({
       throw new ConvexError("You are not a member of this household");
     }
 
+    const filter: RecipeListServerFilter | undefined = args.filter;
+    const searchQuery = filter?.searchQuery?.trim() ?? "";
+
+    if (searchQuery.length > 0) {
+      const sharedRows = await ctx.db
+        .query("householdRecipes")
+        .withIndex("by_household_and_sharedAt", (q) =>
+          q.eq("householdId", args.householdId),
+        )
+        .order("desc")
+        // TODO: Replace this capped in-memory path with proper indexed search for household-shared recipes.
+        .take(MAX_SHARED_RECIPES_TO_SEARCH);
+
+      const recipes = await Promise.all(
+        sharedRows.map((row) => enrichSharedRecipe(ctx, row, user._id, false)),
+      );
+      const filtered = recipes.filter(
+        (recipe): recipe is NonNullable<typeof recipe> =>
+          recipe != null && recipeMatchesServerFilter(recipe, filter),
+      );
+      const ranked = sortRecipesBySearchScore(filtered, filter);
+      return paginateArray(ranked, args.paginationOpts);
+    }
+
     const result = await ctx.db
       .query("householdRecipes")
       .withIndex("by_household_and_sharedAt", (q) =>
@@ -476,7 +527,6 @@ export const listHouseholdRecipesPaginated = query({
       )
       .order("desc")
       .paginate(args.paginationOpts);
-    const filter: RecipeListServerFilter | undefined = args.filter;
 
     const recipes = await Promise.all(
       result.page.map((shared) =>
@@ -487,9 +537,10 @@ export const listHouseholdRecipesPaginated = query({
       (recipe): recipe is NonNullable<typeof recipe> =>
         recipe != null && recipeMatchesServerFilter(recipe, filter),
     );
+    const ranked = sortRecipesBySearchScore(out, filter);
 
     return {
-      page: out,
+      page: ranked,
       isDone: result.isDone,
       continueCursor: result.continueCursor,
       splitCursor: result.splitCursor,

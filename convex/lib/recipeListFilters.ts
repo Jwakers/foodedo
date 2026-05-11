@@ -56,6 +56,7 @@ export type NormalizedRecipeListServerFilter = {
 export type RecipeListFilterable = {
   title: string;
   description?: string | null;
+  ingredients?: { name?: string | null }[] | null;
   category?: string | null;
   primaryProtein?: string | null;
   complexityTier?: string | null;
@@ -169,6 +170,110 @@ function matchesQuickFilter(
   }
 }
 
+function matchesSearchQuery(
+  recipe: RecipeListFilterable,
+  searchQuery: string,
+): boolean {
+  return searchQuery.length === 0 || getRecipeSearchScore(recipe, searchQuery) >= 0;
+}
+
+function normalizeSearchText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function tokenizeSearchQuery(searchQuery: string): string[] {
+  return searchQuery
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0);
+}
+
+function expandSearchToken(token: string): string[] {
+  const variants = new Set<string>([token]);
+  if (token.endsWith("es") && token.length > 3) {
+    variants.add(token.slice(0, -2));
+  }
+  if (token.endsWith("s") && token.length > 2) {
+    variants.add(token.slice(0, -1));
+  }
+  return Array.from(variants);
+}
+
+function includesAnyTokenVariant(text: string, token: string): boolean {
+  const variants = expandSearchToken(token);
+  return variants.some((variant) => text.includes(variant));
+}
+
+export function getRecipeSearchScore(
+  recipe: RecipeListFilterable,
+  searchQuery: string,
+): number {
+  const normalizedQuery = normalizeSearchText(searchQuery);
+  if (normalizedQuery.length === 0) return 0;
+
+  const title = normalizeSearchText(recipe.title);
+  const description = normalizeSearchText(recipe.description ?? "");
+  const ingredients = normalizeSearchText(
+    (recipe.ingredients ?? [])
+      .map((ingredient) => ingredient?.name ?? "")
+      .join(" "),
+  );
+  const tokens = tokenizeSearchQuery(normalizedQuery);
+  if (tokens.length === 0) return 0;
+
+  const tokenMatched = tokens.every((token) => {
+    return (
+      includesAnyTokenVariant(title, token) ||
+      includesAnyTokenVariant(description, token) ||
+      includesAnyTokenVariant(ingredients, token)
+    );
+  });
+  if (!tokenMatched) return -1;
+
+  let score = 0;
+  if (title === normalizedQuery) score += 120;
+  else if (title.startsWith(normalizedQuery)) score += 80;
+  else if (title.includes(normalizedQuery)) score += 60;
+
+  if (ingredients.includes(normalizedQuery)) score += 45;
+  if (description.includes(normalizedQuery)) score += 30;
+
+  for (const token of tokens) {
+    if (title.startsWith(token)) score += 18;
+    else if (title.includes(token)) score += 12;
+
+    if (ingredients.includes(token)) score += 10;
+    if (description.includes(token)) score += 6;
+  }
+
+  return score;
+}
+
+export function sortRecipesBySearchScore<T extends RecipeListFilterable>(
+  recipes: T[],
+  filter: RecipeListServerFilter | NormalizedRecipeListServerFilter | undefined,
+): T[] {
+  const normalized =
+    filter && "selectedCategory" in filter
+      ? (filter as NormalizedRecipeListServerFilter)
+      : normalizeRecipeListServerFilter(filter as RecipeListServerFilter | undefined);
+  if (normalized.searchQuery.length === 0 || recipes.length <= 1) {
+    return recipes;
+  }
+
+  return recipes
+    .map((recipe, index) => ({
+      recipe,
+      index,
+      score: getRecipeSearchScore(recipe, normalized.searchQuery),
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.index - b.index;
+    })
+    .map((entry) => entry.recipe);
+}
+
 export function recipeMatchesServerFilter(
   recipe: RecipeListFilterable,
   filter: RecipeListServerFilter | null | undefined,
@@ -181,12 +286,7 @@ export function recipeMatchesServerFilter(
       matchesQuickFilter(recipe, quickFilter),
     );
 
-  const title = recipe.title.toLowerCase();
-  const description = (recipe.description ?? "").toLowerCase();
-  const matchesSearch =
-    normalized.searchQuery.length === 0 ||
-    title.includes(normalized.searchQuery) ||
-    description.includes(normalized.searchQuery);
+  const matchesSearch = matchesSearchQuery(recipe, normalized.searchQuery);
 
   const matchesCategory =
     normalized.selectedCategory === "all" ||
@@ -207,4 +307,16 @@ export function recipeMatchesServerFilter(
     matchesComplexity &&
     matchesTime
   );
+}
+
+export function recipeMatchesServerFilterIgnoringSearch(
+  recipe: RecipeListFilterable,
+  filter: RecipeListServerFilter | null | undefined,
+): boolean {
+  const normalized = normalizeRecipeListServerFilter(filter);
+  const noSearchFilter: NormalizedRecipeListServerFilter = {
+    ...normalized,
+    searchQuery: "",
+  };
+  return recipeMatchesServerFilter(recipe, noSearchFilter);
 }

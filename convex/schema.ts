@@ -149,6 +149,8 @@ export default defineSchema({
     excludeFromMealPlanGenerator: v.optional(v.boolean()),
     /** URL segment for public discover pages; unique among system recipes when set */
     publicSlug: v.optional(v.string()),
+    /** Normalized full-text blob for search index queries. */
+    searchText: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_category", ["category"])
@@ -165,7 +167,17 @@ export default defineSchema({
     .index("by_primaryProtein", ["primaryProtein"])
     .index("by_complexityTier", ["complexityTier"])
     .index("by_isGeneratorEligible", ["isGeneratorEligible"])
-    .index("by_publicSlug", ["publicSlug"]),
+    .index("by_publicSlug", ["publicSlug"])
+    .searchIndex("search_text", {
+      searchField: "searchText",
+      filterFields: [
+        "source",
+        "userId",
+        "category",
+        "primaryProtein",
+        "complexityTier",
+      ],
+    }),
 
   /** Audit + quota for Pro AI recipe image generation (one row per attempt/job). */
   recipeAiHeroImageAttempts: defineTable({

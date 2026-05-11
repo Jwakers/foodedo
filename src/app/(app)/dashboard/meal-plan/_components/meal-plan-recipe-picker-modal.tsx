@@ -10,7 +10,10 @@
  */
 
 import { CATEGORY_COLORS } from "@/app/constants";
-import { RECIPE_QUICK_FILTERS } from "@/components/recipes/quick-filters";
+import {
+  RecipeFilterAccordion,
+  RecipeFilterControls,
+} from "@/components/recipes/recipe-filters";
 import {
   applyRecipeCoreFilters,
   initialRecipeCoreFilterState,
@@ -25,12 +28,6 @@ import {
 } from "@/components/recipes/recipe-listing-context";
 import { RecipeSourceSwitcher } from "@/components/recipes/recipe-source-switcher";
 import type { RecipeListItem } from "@/components/recipes/types";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -39,33 +36,13 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { cn, titleCase } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import {
-  COMPLEXITY_TIERS,
-  PRIMARY_PROTEINS,
-  RECIPE_CATEGORIES,
-} from "convex/lib/constants";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import {
-  ChefHat,
-  Clock,
-  Search,
-  SlidersHorizontal,
-  Users,
-  X,
-} from "lucide-react";
+import { ChefHat, Clock, Users } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
@@ -160,13 +137,6 @@ function mergeRecipeSources(
   }
   return Array.from(byId.values());
 }
-
-const DURATION_OPTIONS = [
-  { value: "all", label: "Any duration" },
-  { value: "under-30", label: "Under 30 min" },
-  { value: "30-60", label: "30-60 min" },
-  { value: "60-plus", label: "60+ min" },
-] as const;
 
 function hasActiveFilters(filterState: RecipeCoreFilterState): boolean {
   return (
@@ -329,9 +299,7 @@ export function MealPlanRecipePickerModal({
     setAllFilters(initialRecipeCoreFilterState);
   };
 
-  const toggleQuickFilter = (
-    key: (typeof RECIPE_QUICK_FILTERS)[number]["key"],
-  ) => {
+  const toggleQuickFilter = (key: RecipeCoreFilterState["selectedQuickFilters"][number]) => {
     setActiveFilters((prev) => {
       if (prev.selectedQuickFilters.includes(key)) {
         return {
@@ -374,170 +342,38 @@ export function MealPlanRecipePickerModal({
           <div className="mt-1 px-4">
             <RecipeSourceSwitcher value={tab} onValueChange={setTab} compact />
           </div>
-          <Accordion
-            type="single"
-            collapsible
+          <RecipeFilterAccordion
             className="border-b px-4"
-            value={filtersExpanded ? "filters" : ""}
-            onValueChange={(value) => setFiltersExpanded(value === "filters")}
+            hasActiveFilters={hasActiveFilters(activeFilters)}
+            expanded={filtersExpanded}
+            onExpandedChange={setFiltersExpanded}
           >
-            <AccordionItem value="filters" className="border-b-0">
-              <AccordionTrigger className="py-2 text-sm hover:no-underline">
-                <span className="inline-flex items-center gap-2">
-                  <SlidersHorizontal className="size-4 text-muted-foreground" />
-                  Search and filters
-                  {hasActiveFilters(activeFilters) ? (
-                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
-                      Active
-                    </span>
-                  ) : null}
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="pb-3 pt-1">
-                <div className="space-y-3">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by title or description"
-                      value={activeFilters.searchQuery}
-                      onChange={(e) =>
-                        setActiveFilters((prev) => ({
-                          ...prev,
-                          searchQuery: e.target.value,
-                        }))
-                      }
-                      className="pl-9"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <SlidersHorizontal className="size-3.5" />
-                      Core filters
-                    </div>
-                    {hasActiveFilters(activeFilters) && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs"
-                        onClick={clearActiveFilters}
-                      >
-                        <X className="size-3.5" />
-                        Clear
-                      </Button>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {RECIPE_QUICK_FILTERS.map((filter) => {
-                      const isActive =
-                        activeFilters.selectedQuickFilters.includes(filter.key);
-                      return (
-                        <Button
-                          key={filter.key}
-                          type="button"
-                          size="sm"
-                          variant={isActive ? "default" : "outline"}
-                          className={cn("h-8 rounded-full px-3 text-xs")}
-                          aria-pressed={isActive}
-                          onClick={() => toggleQuickFilter(filter.key)}
-                        >
-                          {filter.label}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Select
-                      value={activeFilters.selectedProtein}
-                      onValueChange={(value) =>
-                        setActiveFilters((prev) => ({
-                          ...prev,
-                          selectedProtein: value,
-                        }))
-                      }
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="Protein" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All proteins</SelectItem>
-                        {PRIMARY_PROTEINS.filter(
-                          (protein) =>
-                            protein !== "none" && protein !== "other",
-                        ).map((protein) => (
-                          <SelectItem key={protein} value={protein}>
-                            {titleCase(protein)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={activeFilters.selectedCategory}
-                      onValueChange={(value) =>
-                        setActiveFilters((prev) => ({
-                          ...prev,
-                          selectedCategory: value,
-                        }))
-                      }
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All categories</SelectItem>
-                        {RECIPE_CATEGORIES.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {titleCase(category)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={activeFilters.selectedDuration}
-                      onValueChange={(value) =>
-                        setActiveFilters((prev) => ({
-                          ...prev,
-                          selectedDuration: value,
-                        }))
-                      }
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="Duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DURATION_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={activeFilters.selectedComplexity}
-                      onValueChange={(value) =>
-                        setActiveFilters((prev) => ({
-                          ...prev,
-                          selectedComplexity: value,
-                        }))
-                      }
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="Complexity" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any complexity</SelectItem>
-                        {COMPLEXITY_TIERS.map((tier) => (
-                          <SelectItem key={tier} value={tier}>
-                            {titleCase(tier)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+            <RecipeFilterControls
+              compact
+              filterState={activeFilters}
+              searchPlaceholder="Search by title, description, or ingredient"
+              onSearchQueryChange={(value) =>
+                setActiveFilters((prev) => ({ ...prev, searchQuery: value }))
+              }
+              onSelectedCategoryChange={(value) =>
+                setActiveFilters((prev) => ({ ...prev, selectedCategory: value }))
+              }
+              onSelectedProteinChange={(value) =>
+                setActiveFilters((prev) => ({ ...prev, selectedProtein: value }))
+              }
+              onSelectedDurationChange={(value) =>
+                setActiveFilters((prev) => ({ ...prev, selectedDuration: value }))
+              }
+              onSelectedComplexityChange={(value) =>
+                setActiveFilters((prev) => ({
+                  ...prev,
+                  selectedComplexity: value,
+                }))
+              }
+              onToggleQuickFilter={toggleQuickFilter}
+              onClearFilters={clearActiveFilters}
+            />
+          </RecipeFilterAccordion>
 
           {/* My recipes: user + household */}
           <TabsContent value={TAB_MY_RECIPES} className="mt-0 min-h-0 flex-1">

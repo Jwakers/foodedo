@@ -29,6 +29,7 @@ import {
   allocateUniquePublicSlugs,
   nextUniqueSystemRecipePublicSlug,
 } from "./lib/recipePublicSlug";
+import { buildRecipeSearchText } from "./lib/recipeSearchText";
 import { SYSTEM_RECIPES } from "./lib/systemRecipes";
 
 /**
@@ -106,6 +107,11 @@ export const patchSystemRecipesFromFile = internalMutation({
         await ctx.db.patch(id, {
           ingredients,
           method,
+          searchText: buildRecipeSearchText({
+            title: existing.title,
+            description: existing.description,
+            ingredients,
+          }),
           updatedAt: r.updatedAt ?? now,
         });
         patched++;
@@ -136,6 +142,14 @@ export const patchSystemRecipesFromFile = internalMutation({
           ...(r.cuisine != null &&
             r.cuisine.length > 0 && { cuisine: r.cuisine as Cuisine[] }),
           totalTimeMinutes: r.prepTime + (r.cookTime ?? 0),
+          searchText: buildRecipeSearchText({
+            title: r.title,
+            description:
+              r.description != null && r.description !== ""
+                ? r.description
+                : undefined,
+            ingredients,
+          }),
           ...(r.isGeneratorEligible != null && {
             isGeneratorEligible: r.isGeneratorEligible,
           }),
@@ -701,6 +715,7 @@ export const getRecipeIngredientAssociations = internalMutation({
 });
 
 const METHOD_INGREDIENT_REFS_BATCH = 50;
+const SEARCH_TEXT_BACKFILL_BATCH = 100;
 
 function methodStepsIngredientBackfillPatchNeeded(
   old: Doc<"recipes">["method"] | undefined,
@@ -846,5 +861,71 @@ export const backfillMethodStepIngredientRefs = internalMutation({
     }
 
     return { recipesUpdated, scheduled: hasMore };
+  },
+});
+
+/**
+ * Backfill normalized full-text search blobs on recipes.
+ * Safe to re-run; only patches rows where value changed.
+ */
+export const backfillRecipeSearchText = internalMutation({
+  args: {
+    recipeCursor: v.optional(recipeCursorValidator),
+  },
+  handler: async (ctx, args) => {
+    type RecipeCursor = { creationTime: number; id: Id<"recipes"> };
+    let recipeCursor: RecipeCursor | null = args.recipeCursor ?? null;
+
+    const recipes: Doc<"recipes">[] =
+      recipeCursor === null
+        ? await ctx.db
+            .query("recipes")
+            .order("asc")
+            .take(SEARCH_TEXT_BACKFILL_BATCH)
+        : await ctx.db
+            .query("recipes")
+            .order("asc")
+            .filter((q) =>
+              q.or(
+                q.gt(q.field("_creationTime"), recipeCursor!.creationTime),
+                q.and(
+                  q.eq(q.field("_creationTime"), recipeCursor!.creationTime),
+                  q.gt(q.field("_id"), recipeCursor!.id),
+                ),
+              ),
+            )
+            .take(SEARCH_TEXT_BACKFILL_BATCH);
+
+    let patched = 0;
+    for (const recipe of recipes) {
+      const nextSearchText = buildRecipeSearchText({
+        title: recipe.title,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+      });
+      if ((recipe.searchText ?? "") === nextSearchText) continue;
+      await ctx.db.patch(recipe._id, { searchText: nextSearchText });
+      patched += 1;
+    }
+
+    if (recipes.length > 0) {
+      const last = recipes[recipes.length - 1]!;
+      recipeCursor = { creationTime: last._creationTime, id: last._id };
+    }
+    const hasMore = recipes.length === SEARCH_TEXT_BACKFILL_BATCH;
+    if (hasMore) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.backfillRecipeSearchText,
+        { recipeCursor: recipeCursor! },
+      );
+    }
+
+    return {
+      total: recipes.length,
+      patched,
+      unchanged: recipes.length - patched,
+      scheduled: hasMore,
+    };
   },
 });

@@ -7,7 +7,11 @@ export {
   RecipeListing,
   RecipeListingLayout,
 } from "./recipe-listing";
-export { RecipeFilters } from "./recipe-filters";
+export {
+  RecipeFilterAccordion,
+  RecipeFilterControls,
+  RecipeFilters,
+} from "./recipe-filters";
 export {
   LeftoverIngredientsPicker,
   type LeftoverPickerSelection,

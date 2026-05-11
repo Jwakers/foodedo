@@ -25,6 +25,7 @@ import type * as lib_recipeAiHeroImageQuota from "../lib/recipeAiHeroImageQuota.
 import type * as lib_recipeListFilterValidation from "../lib/recipeListFilterValidation.js";
 import type * as lib_recipeListFilters from "../lib/recipeListFilters.js";
 import type * as lib_recipePublicSlug from "../lib/recipePublicSlug.js";
+import type * as lib_recipeSearchText from "../lib/recipeSearchText.js";
 import type * as lib_recipeStepIngredientMatch from "../lib/recipeStepIngredientMatch.js";
 import type * as lib_servings from "../lib/servings.js";
 import type * as lib_systemRecipes from "../lib/systemRecipes.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "lib/recipeListFilterValidation": typeof lib_recipeListFilterValidation;
   "lib/recipeListFilters": typeof lib_recipeListFilters;
   "lib/recipePublicSlug": typeof lib_recipePublicSlug;
+  "lib/recipeSearchText": typeof lib_recipeSearchText;
   "lib/recipeStepIngredientMatch": typeof lib_recipeStepIngredientMatch;
   "lib/servings": typeof lib_servings;
   "lib/systemRecipes": typeof lib_systemRecipes;
