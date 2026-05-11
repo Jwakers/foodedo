@@ -72,6 +72,8 @@ function paginateArray<T>(
   };
 }
 
+const MAX_SHARED_RECIPES_TO_SEARCH = 500;
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -504,7 +506,8 @@ export const listHouseholdRecipesPaginated = query({
           q.eq("householdId", args.householdId),
         )
         .order("desc")
-        .collect();
+        // TODO: Replace this capped in-memory path with proper indexed search for household-shared recipes.
+        .take(MAX_SHARED_RECIPES_TO_SEARCH);
 
       const recipes = await Promise.all(
         sharedRows.map((row) => enrichSharedRecipe(ctx, row, user._id, false)),
