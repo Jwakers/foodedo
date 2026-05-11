@@ -4,6 +4,10 @@ import {
   enhanceRecipeWithAI,
   type EnhancedRecipePayload,
 } from "@/app/(app)/actions/enhance-recipe";
+import {
+  generateSystemRecipeWithAI,
+  type GeneratedSystemRecipePayload,
+} from "@/app/(app)/actions/generate-system-recipe";
 import { generateRecipeImageWithAI } from "@/app/(app)/actions/generate-recipe-image";
 import { ROUTES } from "@/app/constants";
 import { Button } from "@/components/ui/button";
@@ -13,6 +17,10 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import {
+  validatePreparation,
+  validateUnit,
+} from "@/lib/utils/recipe-validation";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -30,6 +38,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  COMPLEXITY_TIERS,
+  CUISINES,
+  PRIMARY_PROTEINS,
+  RECIPE_CATEGORIES,
+} from "convex/lib/constants";
 
 type Recipe = NonNullable<FunctionReturnType<typeof api.recipes.getRecipe>>;
 type SystemRecipe = FunctionReturnType<
@@ -86,9 +100,14 @@ export function RecipeEnhanceClient() {
   const [enhanced, setEnhanced] = useState<EnhancedRecipePayload | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-  const [activePanel, setActivePanel] = useState<"enhancement" | "image">(
-    "enhancement",
-  );
+  const [activePanel, setActivePanel] = useState<
+    "enhancement" | "generator" | "image"
+  >("enhancement");
+  const [generatorGuidance, setGeneratorGuidance] = useState("");
+  const [generatedSystemRecipe, setGeneratedSystemRecipe] =
+    useState<GeneratedSystemRecipePayload | null>(null);
+  const [isGeneratingSystemRecipe, setIsGeneratingSystemRecipe] = useState(false);
+  const [isSavingSystemRecipe, setIsSavingSystemRecipe] = useState(false);
 
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imageBeforeUrl, setImageBeforeUrl] = useState<string | null>(null);
@@ -98,6 +117,7 @@ export function RecipeEnhanceClient() {
   const [isSavingImage, setIsSavingImage] = useState(false);
 
   const updateRecipe = useMutation(api.recipes.updateRecipe);
+  const createSystemRecipe = useMutation(api.recipes.createSystemRecipe);
   const generateUploadUrl = useMutation(api.recipes.generateUploadUrl);
   const updateRecipeImage = useMutation(
     api.recipes.updateRecipeImageAndDeleteOld,
@@ -213,6 +233,84 @@ export function RecipeEnhanceClient() {
       setIsGenerating(false);
     }
   }, [recipe, selectedRecipeId, prompt]);
+
+  const handleGenerateSystemRecipe = useCallback(async () => {
+    if (!generatorGuidance.trim()) return;
+    setIsGeneratingSystemRecipe(true);
+    try {
+      const result = await generateSystemRecipeWithAI({
+        guidance: generatorGuidance.trim(),
+      });
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      setGeneratedSystemRecipe(result.recipe);
+      toast.success("System recipe generated");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to generate recipe",
+      );
+    } finally {
+      setIsGeneratingSystemRecipe(false);
+    }
+  }, [generatorGuidance]);
+
+  const handleSaveSystemRecipe = useCallback(async () => {
+    if (!generatedSystemRecipe) return;
+    setIsSavingSystemRecipe(true);
+    try {
+      const result = await createSystemRecipe({
+        title: generatedSystemRecipe.title.trim(),
+        description: generatedSystemRecipe.description,
+        prepTime: Math.max(0, Math.round(generatedSystemRecipe.prepTime)),
+        cookTime:
+          generatedSystemRecipe.cookTime == null
+            ? null
+            : Math.max(0, Math.round(generatedSystemRecipe.cookTime)),
+        serves: Math.max(1, Math.round(generatedSystemRecipe.serves)),
+        category: generatedSystemRecipe.category,
+        ingredients: generatedSystemRecipe.ingredients
+          .filter((ingredient) => ingredient.name.trim().length > 0)
+          .map((ingredient) => ({
+            name: ingredient.name.trim(),
+            ...(ingredient.amount != null && { amount: ingredient.amount }),
+            ...(ingredient.unit != null && { unit: ingredient.unit }),
+            ...(ingredient.preparation != null && {
+              preparation: ingredient.preparation,
+            }),
+          })),
+        method: generatedSystemRecipe.method
+          .filter((step) => step.title.trim().length > 0)
+          .map((step) => ({
+            title: step.title.trim(),
+            ...(step.description != null && { description: step.description }),
+          })),
+        nutrition: generatedSystemRecipe.nutrition,
+        ...(generatedSystemRecipe.primaryProtein != null && {
+          primaryProtein: generatedSystemRecipe.primaryProtein,
+        }),
+        ...(generatedSystemRecipe.complexityTier != null && {
+          complexityTier: generatedSystemRecipe.complexityTier,
+        }),
+        ...(generatedSystemRecipe.cuisine != null && {
+          cuisine: generatedSystemRecipe.cuisine,
+        }),
+      });
+      setSelectedRecipeId(result.recipeId);
+      setGeneratedSystemRecipe(null);
+      setGeneratedImage(null);
+      setImagePreviewUrl(null);
+      setActivePanel("image");
+      toast.success(
+        "System recipe saved. You can now generate and save its image.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save recipe");
+    } finally {
+      setIsSavingSystemRecipe(false);
+    }
+  }, [generatedSystemRecipe, createSystemRecipe]);
 
   const handleApply = useCallback(async () => {
     if (!enhanced || !selectedRecipeId) return;
@@ -421,6 +519,67 @@ export function RecipeEnhanceClient() {
     updateRecipeImage,
   ]);
 
+  const patchGeneratedRecipe = useCallback(
+    (updater: (current: GeneratedSystemRecipePayload) => GeneratedSystemRecipePayload) => {
+      setGeneratedSystemRecipe((current) => (current ? updater(current) : current));
+    },
+    [],
+  );
+
+  const setGeneratedIngredientField = useCallback(
+    (
+      index: number,
+      field: "name" | "amount" | "unit" | "preparation",
+      value: string,
+    ) => {
+      patchGeneratedRecipe((current) => {
+        const ingredients = [...current.ingredients];
+        const ingredient = ingredients[index];
+        if (!ingredient) return current;
+        if (field === "amount") {
+          const nextAmount = value.trim().length === 0 ? undefined : Number(value);
+          ingredients[index] = {
+            ...ingredient,
+            amount:
+              nextAmount == null || Number.isNaN(nextAmount)
+                ? undefined
+                : nextAmount,
+          };
+        } else if (field === "preparation") {
+          ingredients[index] = {
+            ...ingredient,
+            preparation: validatePreparation(value),
+          };
+        } else if (field === "unit") {
+          ingredients[index] = {
+            ...ingredient,
+            unit: validateUnit(value),
+          };
+        } else {
+          ingredients[index] = { ...ingredient, name: value };
+        }
+        return { ...current, ingredients };
+      });
+    },
+    [patchGeneratedRecipe],
+  );
+
+  const setGeneratedMethodField = useCallback(
+    (index: number, field: "title" | "description", value: string) => {
+      patchGeneratedRecipe((current) => {
+        const method = [...current.method];
+        const step = method[index];
+        if (!step) return current;
+        method[index] =
+          field === "title"
+            ? { ...step, title: value }
+            : { ...step, description: value };
+        return { ...current, method };
+      });
+    },
+    [patchGeneratedRecipe],
+  );
+
   if (user === undefined) {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-12">
@@ -458,12 +617,11 @@ export function RecipeEnhanceClient() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="size-5" />
-            Recipe enhancer
+            Recipe management
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Pick a recipe, describe how you want it improved, then generate and
-            apply enhanced description, timing, ingredients, and method. You can
-            regenerate the saved recipe image separately.
+            Enhance existing recipes or generate new system recipes. Image
+            generation is always manual and only saved when you choose.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -473,7 +631,14 @@ export function RecipeEnhanceClient() {
               variant={activePanel === "enhancement" ? "default" : "secondary"}
               onClick={() => setActivePanel("enhancement")}
             >
-              Enhancement
+              Enhance existing
+            </Button>
+            <Button
+              type="button"
+              variant={activePanel === "generator" ? "default" : "secondary"}
+              onClick={() => setActivePanel("generator")}
+            >
+              Generate system
             </Button>
             <Button
               type="button"
@@ -484,105 +649,109 @@ export function RecipeEnhanceClient() {
             </Button>
           </div>
 
-          <Tabs defaultValue="discover">
-            <TabsList>
-              <TabsTrigger value="discover">Discover</TabsTrigger>
-              <TabsTrigger value="my">My recipes</TabsTrigger>
-            </TabsList>
-            <TabsContent value="discover" className="mt-4">
-              <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="search-discover"
-                  aria-label="Search Discover recipes"
-                  placeholder="Search…"
-                  value={searchDiscover}
-                  onChange={(e) => setSearchDiscover(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-2">
-                {systemRecipes === undefined ? (
-                  <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-                    <Loader2 className="size-4 animate-spin" />
-                    Loading…
-                  </div>
-                ) : filteredDiscover.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    {discoverList.length === 0
-                      ? "No Discover recipes."
-                      : "No matches."}
-                  </p>
-                ) : (
-                  filteredDiscover.map((r) => (
-                    <PickerRow
-                      key={r._id}
-                      recipe={r}
-                      isSelected={selectedRecipeId === r._id}
-                      onSelect={() => {
-                        setSelectedRecipeId(r._id);
-                        setEnhanced(null);
-                        setImageBeforeUrl(null);
-                        setImagePreviewUrl(null);
-                        setGeneratedImage(null);
-                      }}
+          {activePanel !== "generator" ? (
+            <>
+              <Tabs defaultValue="discover">
+                <TabsList>
+                  <TabsTrigger value="discover">Discover</TabsTrigger>
+                  <TabsTrigger value="my">My recipes</TabsTrigger>
+                </TabsList>
+                <TabsContent value="discover" className="mt-4">
+                  <div className="relative mb-3">
+                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="search-discover"
+                      aria-label="Search Discover recipes"
+                      placeholder="Search…"
+                      value={searchDiscover}
+                      onChange={(e) => setSearchDiscover(e.target.value)}
+                      className="pl-9"
                     />
-                  ))
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="my" className="mt-4">
-              <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="search-my"
-                  aria-label="Search My recipes"
-                  placeholder="Search…"
-                  value={searchMy}
-                  onChange={(e) => setSearchMy(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-2">
-                {userRecipes === undefined ? (
-                  <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-                    <Loader2 className="size-4 animate-spin" />
-                    Loading…
                   </div>
-                ) : filteredMy.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    {myList.length === 0 ? "No recipes." : "No matches."}
-                  </p>
-                ) : (
-                  filteredMy.map((r) => (
-                    <PickerRow
-                      key={r._id}
-                      recipe={r}
-                      isSelected={selectedRecipeId === r._id}
-                      onSelect={() => {
-                        setSelectedRecipeId(r._id);
-                        setEnhanced(null);
-                        setImageBeforeUrl(null);
-                        setImagePreviewUrl(null);
-                        setGeneratedImage(null);
-                      }}
+                  <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-2">
+                    {systemRecipes === undefined ? (
+                      <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                        <Loader2 className="size-4 animate-spin" />
+                        Loading…
+                      </div>
+                    ) : filteredDiscover.length === 0 ? (
+                      <p className="py-4 text-center text-sm text-muted-foreground">
+                        {discoverList.length === 0
+                          ? "No Discover recipes."
+                          : "No matches."}
+                      </p>
+                    ) : (
+                      filteredDiscover.map((r) => (
+                        <PickerRow
+                          key={r._id}
+                          recipe={r}
+                          isSelected={selectedRecipeId === r._id}
+                          onSelect={() => {
+                            setSelectedRecipeId(r._id);
+                            setEnhanced(null);
+                            setImageBeforeUrl(null);
+                            setImagePreviewUrl(null);
+                            setGeneratedImage(null);
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="my" className="mt-4">
+                  <div className="relative mb-3">
+                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="search-my"
+                      aria-label="Search My recipes"
+                      placeholder="Search…"
+                      value={searchMy}
+                      onChange={(e) => setSearchMy(e.target.value)}
+                      className="pl-9"
                     />
-                  ))
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                  <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-2">
+                    {userRecipes === undefined ? (
+                      <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                        <Loader2 className="size-4 animate-spin" />
+                        Loading…
+                      </div>
+                    ) : filteredMy.length === 0 ? (
+                      <p className="py-4 text-center text-sm text-muted-foreground">
+                        {myList.length === 0 ? "No recipes." : "No matches."}
+                      </p>
+                    ) : (
+                      filteredMy.map((r) => (
+                        <PickerRow
+                          key={r._id}
+                          recipe={r}
+                          isSelected={selectedRecipeId === r._id}
+                          onSelect={() => {
+                            setSelectedRecipeId(r._id);
+                            setEnhanced(null);
+                            setImageBeforeUrl(null);
+                            setImagePreviewUrl(null);
+                            setGeneratedImage(null);
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
 
-          {recipe && (
-            <div className="rounded-md border bg-muted/30 p-3">
-              <p className="text-sm font-medium">Selected: {recipe.title}</p>
-              <p className="text-xs text-muted-foreground">
-                {recipe.source === "system" ? "Discover" : "My recipe"} ·{" "}
-                {(recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)} min · Serves{" "}
-                {recipe.serves}
-              </p>
-            </div>
-          )}
+              {recipe && (
+                <div className="rounded-md border bg-muted/30 p-3">
+                  <p className="text-sm font-medium">Selected: {recipe.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {recipe.source === "system" ? "Discover" : "My recipe"} ·{" "}
+                    {(recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)} min ·
+                    Serves {recipe.serves}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : null}
 
           {activePanel === "enhancement" ? (
             <div className="space-y-2">
@@ -616,6 +785,333 @@ export function RecipeEnhanceClient() {
                   Pick a recipe to enhance.
                 </p>
               )}
+            </div>
+          ) : activePanel === "generator" ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="system-recipe-guidance">Generation guidance</Label>
+                <Textarea
+                  id="system-recipe-guidance"
+                  placeholder="Describe the meal you want to generate. Include cuisine, constraints, and serving preferences."
+                  value={generatorGuidance}
+                  onChange={(event) => setGeneratorGuidance(event.target.value)}
+                  className="min-h-28"
+                />
+                <Button
+                  type="button"
+                  onClick={handleGenerateSystemRecipe}
+                  disabled={!generatorGuidance.trim() || isGeneratingSystemRecipe}
+                >
+                  {isGeneratingSystemRecipe ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    "Generate system recipe"
+                  )}
+                </Button>
+              </div>
+
+              {generatedSystemRecipe ? (
+                <div className="space-y-4 rounded-md border p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Review and tweak this draft before saving it directly as a
+                    system recipe.
+                  </p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-title">Title</Label>
+                      <Input
+                        id="generated-title"
+                        value={generatedSystemRecipe.title}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            title: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-category">Category</Label>
+                      <select
+                        id="generated-category"
+                        aria-label="Generated recipe category"
+                        className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                        value={generatedSystemRecipe.category}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            category: event.target.value as (typeof RECIPE_CATEGORIES)[number],
+                          }))
+                        }
+                      >
+                        {RECIPE_CATEGORIES.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-prep-time">Prep time (min)</Label>
+                      <Input
+                        id="generated-prep-time"
+                        type="number"
+                        min={0}
+                        value={generatedSystemRecipe.prepTime}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            prepTime: Number(event.target.value) || 0,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-cook-time">Cook time (min)</Label>
+                      <Input
+                        id="generated-cook-time"
+                        type="number"
+                        min={0}
+                        value={generatedSystemRecipe.cookTime ?? ""}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            cookTime:
+                              event.target.value === ""
+                                ? null
+                                : Number(event.target.value),
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-serves">Serves</Label>
+                      <Input
+                        id="generated-serves"
+                        type="number"
+                        min={1}
+                        value={generatedSystemRecipe.serves}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            serves: Math.max(1, Number(event.target.value) || 1),
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-primary-protein">
+                        Primary protein
+                      </Label>
+                      <select
+                        id="generated-primary-protein"
+                        aria-label="Generated recipe primary protein"
+                        className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                        value={generatedSystemRecipe.primaryProtein ?? ""}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            primaryProtein:
+                              event.target.value.length > 0
+                                ? (event.target.value as (typeof PRIMARY_PROTEINS)[number])
+                                : undefined,
+                          }))
+                        }
+                      >
+                        <option value="">None</option>
+                        {PRIMARY_PROTEINS.map((protein) => (
+                          <option key={protein} value={protein}>
+                            {protein}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="generated-description">Description</Label>
+                    <Textarea
+                      id="generated-description"
+                      value={generatedSystemRecipe.description ?? ""}
+                      onChange={(event) =>
+                        patchGeneratedRecipe((current) => ({
+                          ...current,
+                          description:
+                            event.target.value.trim().length > 0
+                              ? event.target.value
+                              : null,
+                        }))
+                      }
+                      className="min-h-20"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Ingredients</Label>
+                    <div className="space-y-2">
+                      {generatedSystemRecipe.ingredients.map((ingredient, index) => (
+                        <div
+                          key={`ingredient-${index}`}
+                          className="grid gap-2 rounded-md border p-3 md:grid-cols-4"
+                        >
+                          <Input
+                            placeholder="Ingredient"
+                            value={ingredient.name}
+                            onChange={(event) =>
+                              setGeneratedIngredientField(
+                                index,
+                                "name",
+                                event.target.value,
+                              )
+                            }
+                          />
+                          <Input
+                            placeholder="Amount"
+                            type="number"
+                            value={ingredient.amount ?? ""}
+                            onChange={(event) =>
+                              setGeneratedIngredientField(
+                                index,
+                                "amount",
+                                event.target.value,
+                              )
+                            }
+                          />
+                          <Input
+                            placeholder="Unit"
+                            value={ingredient.unit ?? ""}
+                            onChange={(event) =>
+                              setGeneratedIngredientField(
+                                index,
+                                "unit",
+                                event.target.value,
+                              )
+                            }
+                          />
+                          <Input
+                            placeholder="Preparation"
+                            value={ingredient.preparation ?? ""}
+                            onChange={(event) =>
+                              setGeneratedIngredientField(
+                                index,
+                                "preparation",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Method</Label>
+                    <div className="space-y-2">
+                      {generatedSystemRecipe.method.map((step, index) => (
+                        <div
+                          key={`method-${index}`}
+                          className="space-y-2 rounded-md border p-3"
+                        >
+                          <Input
+                            placeholder={`Step ${index + 1} title`}
+                            value={step.title}
+                            onChange={(event) =>
+                              setGeneratedMethodField(
+                                index,
+                                "title",
+                                event.target.value,
+                              )
+                            }
+                          />
+                          <Textarea
+                            placeholder="Step instructions"
+                            value={step.description ?? ""}
+                            onChange={(event) =>
+                              setGeneratedMethodField(
+                                index,
+                                "description",
+                                event.target.value,
+                              )
+                            }
+                            className="min-h-20"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-complexity">Complexity</Label>
+                      <select
+                        id="generated-complexity"
+                        aria-label="Generated recipe complexity tier"
+                        className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                        value={generatedSystemRecipe.complexityTier ?? ""}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            complexityTier:
+                              event.target.value.length > 0
+                                ? (event.target.value as (typeof COMPLEXITY_TIERS)[number])
+                                : undefined,
+                          }))
+                        }
+                      >
+                        <option value="">None</option>
+                        {COMPLEXITY_TIERS.map((tier) => (
+                          <option key={tier} value={tier}>
+                            {tier}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="generated-cuisine">Cuisine</Label>
+                      <select
+                        id="generated-cuisine"
+                        aria-label="Generated recipe cuisine"
+                        className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                        value={generatedSystemRecipe.cuisine?.[0] ?? ""}
+                        onChange={(event) =>
+                          patchGeneratedRecipe((current) => ({
+                            ...current,
+                            cuisine:
+                              event.target.value.length > 0
+                                ? [event.target.value as (typeof CUISINES)[number]]
+                                : undefined,
+                          }))
+                        }
+                      >
+                        <option value="">None</option>
+                        {CUISINES.map((cuisine) => (
+                          <option key={cuisine} value={cuisine}>
+                            {cuisine}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleSaveSystemRecipe}
+                    disabled={isSavingSystemRecipe}
+                  >
+                    {isSavingSystemRecipe ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Saving…
+                      </>
+                    ) : (
+                      "Save as system recipe"
+                    )}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="space-y-4">

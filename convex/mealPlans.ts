@@ -645,6 +645,14 @@ export async function canAccessMealPlan(
   return false;
 }
 
+export async function canWriteMealPlan(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+  plan: { userId: Id<"users">; householdId?: Id<"households"> },
+): Promise<boolean> {
+  return canAccessMealPlan(ctx, userId, plan);
+}
+
 export async function isMealPlanOwner(
   _ctx: QueryCtx,
   userId: Id<"users">,
@@ -1269,8 +1277,11 @@ export const regenerateWeeklyPlan = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const previousPlan = await ctx.db.get(args.previousPlanId);
     if (!previousPlan) throw new ConvexError("Meal plan not found");
-    if (previousPlan.userId !== user._id) {
-      throw new ConvexError("Only the plan owner can regenerate");
+    const owner = await ctx.db.get(previousPlan.userId);
+    if (!owner) throw new ConvexError("Meal plan owner not found");
+    const canWrite = await canWriteMealPlan(ctx, user._id, previousPlan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
     if (previousPlan.isFinalised) {
       throw new ConvexError("Cannot regenerate a finalised plan");
@@ -1283,7 +1294,7 @@ export const regenerateWeeklyPlan = mutation({
       args.leftoverIngredientPhrases,
     );
     const wantsLeftovers = leftover.wantsLeftovers;
-    if (wantsLeftovers && !canUseLeftoverIngredients(user.subscriptionTier)) {
+    if (wantsLeftovers && !canUseLeftoverIngredients(owner.subscriptionTier)) {
       throw new ConvexError(
         MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_LEFTOVER_INGREDIENTS,
       );
@@ -1321,7 +1332,8 @@ export const regenerateWeeklyPlan = mutation({
     const generationSeed = `gen-${now}-${Math.random().toString(36).slice(2, 11)}`;
 
     const newPlanId = await ctx.db.insert("mealPlans", {
-      userId: user._id,
+      // Keep ownership stable so share/unshare remains owner-controlled.
+      userId: previousPlan.userId,
       endDate,
       startDate,
       updatedAt: now,
@@ -1352,7 +1364,7 @@ export const regenerateWeeklyPlan = mutation({
       targetServings: resolveDefaultTargetServings({
         requestedTargetServings: args.targetServings,
         includedMemberUserIds: previousPlan.includedMemberUserIds,
-        subscriptionTier: user.subscriptionTier,
+        subscriptionTier: owner.subscriptionTier,
       }),
     });
 
@@ -1595,7 +1607,8 @@ export const unshareMealPlan = mutation({
 });
 
 /**
- * Add an entry to a meal plan. Owner only. Date must be <= plan endDate; user must have access to recipe.
+ * Add an entry to a meal plan. Writable by plan owner or household members on a shared plan.
+ * Date must be <= plan endDate; user must have access to recipe.
  */
 export const addEntry = mutation({
   args: {
@@ -1609,8 +1622,9 @@ export const addEntry = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const plan = await ctx.db.get(args.mealPlanId);
     if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("Only the plan owner can add meals");
+    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
     if (plan.isFinalised) {
       throw new ConvexError("Cannot add meals to a finalised plan");
@@ -1665,6 +1679,16 @@ export const addEntry = mutation({
     if (!canAccess) {
       throw new ConvexError("You do not have access to this recipe");
     }
+    const { canAccess: ownerCanAccess } = await canAccessRecipe(
+      ctx,
+      plan.userId,
+      args.recipeId,
+    );
+    if (!ownerCanAccess) {
+      throw new ConvexError(
+        "This recipe cannot be added because the meal plan owner does not have access to it",
+      );
+    }
     const recipeDoc = await ctx.db.get(args.recipeId);
     if (!recipeDoc) throw new ConvexError("Recipe not found");
 
@@ -1686,7 +1710,7 @@ export const addEntry = mutation({
 });
 
 /**
- * Update an entry (date, recipe, label). Owner only.
+ * Update an entry (date, recipe, label). Writable by plan owner or household members on a shared plan.
  */
 export const updateEntry = mutation({
   args: {
@@ -1703,8 +1727,9 @@ export const updateEntry = mutation({
     if (!entry) throw new ConvexError("Entry not found");
     const plan = await ctx.db.get(entry.mealPlanId);
     if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("Only the plan owner can update meals");
+    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
     if (plan.isFinalised) {
       if (args.recipeId !== undefined || args.isLocked !== undefined) {
@@ -1735,6 +1760,16 @@ export const updateEntry = mutation({
       const { canAccess } = await canAccessRecipe(ctx, user._id, args.recipeId);
       if (!canAccess) {
         throw new ConvexError("You do not have access to this recipe");
+      }
+      const { canAccess: ownerCanAccess } = await canAccessRecipe(
+        ctx,
+        plan.userId,
+        args.recipeId,
+      );
+      if (!ownerCanAccess) {
+        throw new ConvexError(
+          "This recipe cannot be added because the meal plan owner does not have access to it",
+        );
       }
       // Spec 4.3: swap — increment swappedCount for old recipe, suggestedCount for new (actor from plan)
       if (args.recipeId !== entry.recipeId) {
@@ -1779,8 +1814,9 @@ export const finaliseMealPlan = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const plan = await ctx.db.get(args.mealPlanId);
     if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("Only the plan owner can finalise the plan");
+    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
     if (plan.isFinalised) {
       throw new ConvexError("Plan is already finalised");
@@ -1828,7 +1864,8 @@ export const finaliseMealPlan = mutation({
 
 /**
  * Update a meal plan window by setting startDate and dayCount (endDate inferred).
- * Owner only. Existing entries must remain inside the new date range.
+ * Writable by plan owner or household members on a shared plan.
+ * Existing entries must remain inside the new date range.
  */
 export const updatePlanDateWindow = mutation({
   args: {
@@ -1840,10 +1877,13 @@ export const updatePlanDateWindow = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const plan = await ctx.db.get(args.mealPlanId);
     if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("Only the plan owner can edit plan dates");
+    const owner = await ctx.db.get(plan.userId);
+    if (!owner) throw new ConvexError("Meal plan owner not found");
+    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
-    if (!canUseAdvancedMealPlanControls(user.subscriptionTier)) {
+    if (!canUseAdvancedMealPlanControls(owner.subscriptionTier)) {
       throw new ConvexError(
         MEAL_PLAN_ERRORS.PREMIUM_REQUIRED_ADVANCED_MEAL_PLAN_CONTROLS,
       );
@@ -1888,7 +1928,7 @@ export const updatePlanDateWindow = mutation({
 });
 
 /**
- * Remove an entry. Owner only.
+ * Remove an entry. Writable by plan owner or household members on a shared plan.
  * Spec 4.3: increment removedCount for the recipe (actor from plan).
  */
 export const removeEntry = mutation({
@@ -1899,8 +1939,9 @@ export const removeEntry = mutation({
     if (!entry) throw new ConvexError("Entry not found");
     const plan = await ctx.db.get(entry.mealPlanId);
     if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("Only the plan owner can remove meals");
+    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
     if (plan.isFinalised) {
       throw new ConvexError("Cannot remove meals from a finalised plan");
@@ -1914,7 +1955,7 @@ export const removeEntry = mutation({
 });
 
 /**
- * Delete a meal plan and all its entries. Owner only.
+ * Delete a meal plan and all its entries. Writable by plan owner or household members on a shared plan.
  */
 export const deleteMealPlan = mutation({
   args: { mealPlanId: v.id("mealPlans") },
@@ -1922,8 +1963,9 @@ export const deleteMealPlan = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const plan = await ctx.db.get(args.mealPlanId);
     if (!plan) throw new ConvexError("Meal plan not found");
-    if (plan.userId !== user._id) {
-      throw new ConvexError("You can only delete your own meal plans");
+    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+    if (!canWrite) {
+      throw new ConvexError("You do not have permission to modify this meal plan");
     }
     const entries = await ctx.db
       .query("mealPlanEntries")

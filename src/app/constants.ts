@@ -81,7 +81,7 @@ export const ROUTES = {
   ADMIN_BLOG_GENERATOR: "/dashboard/admin/blog-generator",
   /** Super user: generate blog hero images (admin only) */
   ADMIN_BLOG_IMAGES: "/dashboard/admin/blog-images",
-  /** Super user: enhance recipe ingredients and method with AI (admin only) */
+  /** Super user: recipe management tooling (admin only) */
   ADMIN_RECIPE_ENHANCE: "/dashboard/admin/recipe-enhance",
 } as const;
 

@@ -225,7 +225,7 @@ export function MealPlanOverviewSection() {
                           {formatDayColumnUtc(date)}
                         </p>
                       </div>
-                      <div className="min-h-0 max-h-64 space-y-2 overflow-y-auto pr-0.5">
+                      <div className="space-y-2 pr-0.5">
                         {meals.map((meal) => (
                           <Link
                             key={meal.key}
