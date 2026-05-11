@@ -11,12 +11,15 @@ const withSerwist = withSerwistInit({
 const nextConfig: NextConfig = {
   turbopack: {},
   /**
-   * Blog generator server actions read `docs/BLOG-CREATION-BRIEF.md` at runtime.
-   * Without this, Vercel/serverless bundles omit `docs/`, causing ENOENT at
-   * `/var/task/docs/BLOG-CREATION-BRIEF.md`.
+   * Admin generator server actions read docs files at runtime.
+   * Without tracing includes, Vercel/serverless bundles omit `docs/`, causing ENOENT.
    */
   outputFileTracingIncludes: {
     "/dashboard/admin/blog-generator": ["./docs/BLOG-CREATION-BRIEF.md"],
+    "/dashboard/admin/recipe-enhance": [
+      "./docs/RECIPE-GENERATION-PROMPT.md",
+      "./docs/RECIPE_AUTHORING_METHODOLOGY.md",
+    ],
   },
   async rewrites() {
     return [
