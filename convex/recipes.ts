@@ -34,7 +34,10 @@ import {
   type RecipeListServerFilter,
 } from "./lib/recipeListFilters";
 import { recipeListServerFilterValidator } from "./lib/recipeListFilterValidation";
-import { RECIPE_PUBLIC_SLUG_PATTERN } from "./lib/recipePublicSlug";
+import {
+  nextUniqueSystemRecipePublicSlug,
+  RECIPE_PUBLIC_SLUG_PATTERN,
+} from "./lib/recipePublicSlug";
 import { getSuggestedIngredientRefsForStep } from "./lib/recipeStepIngredientMatch";
 import {
   categoriesUnion,
@@ -1161,6 +1164,162 @@ export const createRecipe = mutation({
       validationErrors: errors.length > 0 ? errors : null,
       error: null,
     };
+  },
+});
+
+export const createSystemRecipe = mutation({
+  args: {
+    title: v.string(),
+    description: v.optional(v.union(v.string(), v.null())),
+    prepTime: v.number(),
+    cookTime: v.optional(v.union(v.number(), v.null())),
+    serves: v.number(),
+    category: categoriesUnion,
+    ingredients: v.array(
+      v.object({
+        name: v.string(),
+        amount: v.optional(v.number()),
+        unit: v.optional(unitsUnion),
+        preparation: v.optional(v.union(preparationUnion, v.null())),
+      }),
+    ),
+    method: v.array(
+      v.object({
+        title: v.string(),
+        description: v.optional(v.string()),
+      }),
+    ),
+    nutrition: v.optional(
+      v.object({
+        calories: v.optional(v.number()),
+        protein: v.optional(v.number()),
+        fat: v.optional(v.number()),
+        carbohydrates: v.optional(v.number()),
+      }),
+    ),
+    primaryProtein: v.optional(v.union(primaryProteinUnion, v.null())),
+    complexityTier: v.optional(v.union(complexityTierUnion, v.null())),
+    cuisine: v.optional(v.array(cuisineUnion)),
+    excludeFromMealPlanGenerator: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    if (user.isSuperUser !== true) {
+      throw new ConvexError("Unauthorised - super user access required");
+    }
+
+    if (args.title.trim().length === 0) {
+      throw new ConvexError("Recipe title is required");
+    }
+    if (args.prepTime < 0) {
+      throw new ConvexError("prepTime must be 0 or greater");
+    }
+    if (args.cookTime != null && args.cookTime < 0) {
+      throw new ConvexError("cookTime must be 0 or greater");
+    }
+    if (args.serves < 1) {
+      throw new ConvexError("serves must be at least 1");
+    }
+    if (args.ingredients.length === 0) {
+      throw new ConvexError("At least one ingredient is required");
+    }
+    if (args.method.length === 0) {
+      throw new ConvexError("At least one method step is required");
+    }
+    if (
+      args.cuisine !== undefined &&
+      args.cuisine.length > CUISINE_MAX_SELECTIONS
+    ) {
+      throw new ConvexError(
+        `cuisine must have at most ${CUISINE_MAX_SELECTIONS} items`,
+      );
+    }
+
+    const allIngredients = await ctx.db.query("ingredients").collect();
+    const usedIds = new Set<string>();
+    const ingredients = args.ingredients.map((ingredient) => {
+      if (ingredient.name.trim().length === 0) {
+        throw new ConvexError("Ingredient name cannot be blank");
+      }
+      if (ingredient.amount !== undefined && ingredient.amount <= 0) {
+        throw new ConvexError("Ingredient amount must be positive");
+      }
+      const ingredientId =
+        resolveIngredientIdFromList(allIngredients, ingredient.name) ?? undefined;
+      const id = generateRecipeIngredientId(usedIds);
+      usedIds.add(id);
+      return {
+        ...ingredient,
+        name: ingredient.name.trim(),
+        ingredientId,
+        id,
+      };
+    });
+
+    const lines = recipeLinesForMatcher(ingredients);
+    const canonMap = await buildCanonicalIngredientDocsMap(
+      ctx,
+      ingredients as { ingredientId?: Id<"ingredients"> }[],
+    );
+    const methodWithRefs = args.method.map((step) => {
+      if (step.title.trim().length === 0) {
+        throw new ConvexError("Method step title cannot be blank");
+      }
+      const suggested = getSuggestedIngredientRefsForStep(
+        { title: step.title, description: step.description ?? null },
+        lines,
+        canonMap,
+      );
+      return {
+        title: step.title.trim(),
+        ...(step.description != null && { description: step.description }),
+        ingredientRefs: suggested.length > 0 ? suggested : undefined,
+        ingredientRefsSource: "auto" as const,
+      };
+    });
+
+    const prepTime = Math.round(args.prepTime);
+    const cookTime =
+      args.cookTime == null ? undefined : Math.max(0, Math.round(args.cookTime));
+    const totalTimeMinutes = prepTime + (cookTime ?? 0);
+    const primaryProtein =
+      args.primaryProtein == null ? undefined : args.primaryProtein;
+    const complexityTier =
+      args.complexityTier == null ? undefined : args.complexityTier;
+    const hasGeneratorMetadata =
+      primaryProtein != null && complexityTier != null;
+    const now = Date.now();
+    const publicSlug = await nextUniqueSystemRecipePublicSlug(ctx, {
+      title: args.title,
+    });
+
+    const recipeId = await ctx.db.insert("recipes", {
+      title: args.title.trim(),
+      description:
+        args.description == null || args.description.trim().length === 0
+          ? undefined
+          : args.description.trim(),
+      prepTime,
+      cookTime,
+      serves: Math.round(args.serves),
+      category: args.category,
+      ingredients,
+      method: methodWithRefs,
+      source: "system",
+      nutrition: args.nutrition,
+      primaryProtein,
+      complexityTier,
+      cuisine: args.cuisine,
+      totalTimeMinutes: totalTimeMinutes > 0 ? totalTimeMinutes : undefined,
+      isGeneratorEligible: hasGeneratorMetadata,
+      ...(args.excludeFromMealPlanGenerator !== undefined && {
+        excludeFromMealPlanGenerator: args.excludeFromMealPlanGenerator,
+      }),
+      publicSlug,
+      updatedAt: now,
+    });
+
+    return { recipeId, publicSlug };
   },
 });
 

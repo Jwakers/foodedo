@@ -396,9 +396,11 @@ export function Header() {
                           >
                             <Sparkles className="size-4 mr-3" />
                             <div className="text-left">
-                              <div className="font-medium">Recipe enhancer</div>
+                              <div className="font-medium">
+                                Recipe management
+                              </div>
                               <div className="text-sm text-muted-foreground">
-                                Improve recipe ingredients and method with AI
+                                Enhance, generate, and manage system recipes
                               </div>
                             </div>
                           </Link>
