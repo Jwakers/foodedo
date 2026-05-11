@@ -57,6 +57,7 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
       at handler (../../convex/mealPlans.ts:1634:32)
 - [x] Need means to view older meal plans up to 2 weeks. Over 4 weeks should be deleted.
 - [x] Load more behaviour is not working as expected on filtered lists, not showing the correct additional amount after clicked. Not responding to the initial click only the second. Loading states are not correct changing before the new data is in. Still shows the button even though there are no more results (possible just when results are filtered)
+- [ ] Search is completely broken on mobile. Typing in a single letter resets the page.
 - [ ] Search on recipes does not work very well at all.
 - [x] Desktop, dashboard meal overview, the cards have scroll bars and overflow
 - [ ] Manual meal selection UI card does not work on android (validate fix)
