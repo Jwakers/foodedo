@@ -299,6 +299,8 @@ export function RecipeEnhanceClient() {
       });
       setSelectedRecipeId(result.recipeId);
       setGeneratedSystemRecipe(null);
+      setGeneratedImage(null);
+      setImagePreviewUrl(null);
       setActivePanel("image");
       toast.success(
         "System recipe saved. You can now generate and save its image.",
@@ -873,11 +875,14 @@ export function RecipeEnhanceClient() {
                         id="generated-cook-time"
                         type="number"
                         min={0}
-                        value={generatedSystemRecipe.cookTime ?? 0}
+                        value={generatedSystemRecipe.cookTime ?? ""}
                         onChange={(event) =>
                           patchGeneratedRecipe((current) => ({
                             ...current,
-                            cookTime: Number(event.target.value) || 0,
+                            cookTime:
+                              event.target.value === ""
+                                ? null
+                                : Number(event.target.value),
                           }))
                         }
                       />

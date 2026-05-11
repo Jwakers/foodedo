@@ -650,11 +650,7 @@ export async function canWriteMealPlan(
   userId: Id<"users">,
   plan: { userId: Id<"users">; householdId?: Id<"households"> },
 ): Promise<boolean> {
-  if (plan.userId === userId) return true;
-  if (plan.householdId) {
-    return await isHouseholdMember(ctx, userId, plan.householdId);
-  }
-  return false;
+  return canAccessMealPlan(ctx, userId, plan);
 }
 
 export async function isMealPlanOwner(

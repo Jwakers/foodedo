@@ -92,6 +92,55 @@ type MethodStepWithImage = {
   ingredientRefsSource?: "auto" | "user";
 };
 
+type NutritionInput = {
+  calories?: number;
+  protein?: number;
+  fat?: number;
+  carbohydrates?: number;
+};
+
+function normalizeNutritionInput(
+  nutrition: NutritionInput | undefined,
+): NutritionInput | undefined {
+  if (!nutrition) return undefined;
+
+  const normalizeMetric = (
+    value: number | undefined,
+    label: string,
+  ): number | undefined => {
+    if (value === undefined) return undefined;
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+      throw new ConvexError(`${label} must be a valid number`);
+    }
+    if (numericValue < 0) {
+      throw new ConvexError(`${label} must be 0 or greater`);
+    }
+    return numericValue;
+  };
+
+  const normalized: NutritionInput = {
+    calories: normalizeMetric(nutrition.calories, "nutrition.calories"),
+    protein: normalizeMetric(nutrition.protein, "nutrition.protein"),
+    fat: normalizeMetric(nutrition.fat, "nutrition.fat"),
+    carbohydrates: normalizeMetric(
+      nutrition.carbohydrates,
+      "nutrition.carbohydrates",
+    ),
+  };
+
+  if (
+    normalized.calories === undefined &&
+    normalized.protein === undefined &&
+    normalized.fat === undefined &&
+    normalized.carbohydrates === undefined
+  ) {
+    return undefined;
+  }
+
+  return normalized;
+}
+
 /** Generate a stable id for a recipe ingredient row; unique within the given set. */
 export function generateRecipeIngredientId(existing: Set<string>): string {
   let id: string;
@@ -1098,6 +1147,7 @@ export const createRecipe = mutation({
     const totalTimeMinutes = args.prepTime + (args.cookTime ?? 0);
     const hasGeneratorMetadata =
       args.primaryProtein != null && args.complexityTier != null;
+    const normalizedNutrition = normalizeNutritionInput(args.nutrition);
 
     const lines = recipeLinesForMatcher(ingredients);
     const canonMap = await buildCanonicalIngredientDocsMap(
@@ -1131,7 +1181,7 @@ export const createRecipe = mutation({
       method: methodWithRefs,
       creationSource: args.creationSource,
       source: "user",
-      nutrition: args.nutrition,
+      nutrition: normalizedNutrition,
       originalUrl: args.originalUrl,
       originalAuthor: args.originalAuthor,
       importedAt: args.originalUrl ? now : undefined,
@@ -1281,6 +1331,7 @@ export const createSystemRecipe = mutation({
     const prepTime = Math.round(args.prepTime);
     const cookTime =
       args.cookTime == null ? undefined : Math.max(0, Math.round(args.cookTime));
+    const normalizedNutrition = normalizeNutritionInput(args.nutrition);
     const totalTimeMinutes = prepTime + (cookTime ?? 0);
     const primaryProtein =
       args.primaryProtein == null ? undefined : args.primaryProtein;
@@ -1306,7 +1357,7 @@ export const createSystemRecipe = mutation({
       ingredients,
       method: methodWithRefs,
       source: "system",
-      nutrition: args.nutrition,
+      nutrition: normalizedNutrition,
       primaryProtein,
       complexityTier,
       cuisine: args.cuisine,
