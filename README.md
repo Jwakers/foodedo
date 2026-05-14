@@ -57,8 +57,8 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
       at handler (../../convex/mealPlans.ts:1634:32)
 - [x] Need means to view older meal plans up to 2 weeks. Over 4 weeks should be deleted.
 - [x] Load more behaviour is not working as expected on filtered lists, not showing the correct additional amount after clicked. Not responding to the initial click only the second. Loading states are not correct changing before the new data is in. Still shows the button even though there are no more results (possible just when results are filtered)
-- [ ] Search is completely broken on mobile. Typing in a single letter resets the page.
-- [ ] Search on recipes does not work very well at all.
+- [x] Search is completely broken on mobile. Typing in a single letter resets the page.
+- [x] Search on recipes does not work very well at all.
 - [x] Desktop, dashboard meal overview, the cards have scroll bars and overflow
 - [ ] Manual meal selection UI card does not work on android (validate fix)
 - [ ] Build community and organic traffic, fix bugs. That is all I am allowed to do until the end of the month (April).
@@ -69,7 +69,6 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 - [ ] Plan and prioritize an SEO/AEO strategy; improving organic reach is a high priority. **Execution checklist + scoreboard:** [`docs/GROWTH.md`](docs/GROWTH.md).
 - [ ] Ordered beta outreach checklist: see **Beta visibility & user acquisition** (end of this file).
 - [x] Move all support documentation to public URLs.
-- [ ] Try out [Indie App Circle](https://www.indieappcircle.com/) too.
 - [ ] Launch on Product Hunt after initial traction (market as HelloFresh without the food delivery; ordering in **Beta visibility & user acquisition**).
 
 ---
@@ -78,11 +77,6 @@ The repo does not commit a machine-specific `store-dir`. To use a custom pnpm st
 
 - Prioritise **feedback over raw traffic**.
 - Prefer **small, relevant communities** over broad platforms.
-
-### High-intent beta platforms
-
-- [ ] Submit to BetaList (paid fast-track) delayed until the end of the month when I can pay for the package
-- [x] Submit to FirstUsers.tech
 
 ### Reddit
 

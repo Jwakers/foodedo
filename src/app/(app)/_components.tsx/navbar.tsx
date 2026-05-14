@@ -20,8 +20,7 @@ export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const { currentPlan } = useCurrentMealPlan();
-  const showPlanWeekFab =
-    currentPlan !== undefined && currentPlan === null;
+  const showPlanWeekFab = currentPlan !== undefined && currentPlan === null;
   const mealsHref = currentPlan
     ? ROUTES.mealPlanWithId(currentPlan._id)
     : ROUTES.MEAL_PLAN;
@@ -106,18 +105,7 @@ export function Navbar() {
             </Button>
           )}
 
-          {/* Chalkboard */}
-          <Link href={ROUTES.CHALKBOARD}>
-            <Button
-              variant="ghost"
-              className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
-            >
-              <Clipboard className="size-5" />
-              <span className="text-[0.625rem] sm:text-xs">Chalkboard</span>
-            </Button>
-          </Link>
-
-          {/* Households */}
+          {/* Recipes */}
           <Link href={ROUTES.MY_RECIPES}>
             <Button
               variant="ghost"
@@ -128,6 +116,17 @@ export function Navbar() {
                 <span className="sm:hidden">Recipes</span>
                 <span className="hidden sm:inline">My Recipes</span>
               </span>
+            </Button>
+          </Link>
+
+          {/* Chalkboard */}
+          <Link href={ROUTES.CHALKBOARD}>
+            <Button
+              variant="ghost"
+              className="h-auto w-full flex flex-col items-center gap-1 px-3 py-2"
+            >
+              <Clipboard className="size-5" />
+              <span className="text-[0.625rem] sm:text-xs">Chalkboard</span>
             </Button>
           </Link>
         </div>

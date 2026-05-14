@@ -109,7 +109,7 @@ export function Header() {
                 </SheetDescription>
               </SheetHeader>
               {/* Main Navigation Links - scrollable when content overflows */}
-              <nav className="flex-1 min-h-0 overflow-y-auto px-2">
+              <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-2">
                 <ul className="space-y-2">
                   <li>
                     <Button
