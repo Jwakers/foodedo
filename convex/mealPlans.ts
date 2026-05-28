@@ -1811,54 +1811,75 @@ export const updateEntry = mutation({
 export const finaliseMealPlan = mutation({
   args: { mealPlanId: v.id("mealPlans") },
   handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
-    const plan = await ctx.db.get(args.mealPlanId);
-    if (!plan) throw new ConvexError("Meal plan not found");
-    const canWrite = await canWriteMealPlan(ctx, user._id, plan);
-    if (!canWrite) {
-      throw new ConvexError("You do not have permission to modify this meal plan");
-    }
-    if (plan.isFinalised) {
-      throw new ConvexError("Plan is already finalised");
-    }
-
-    const entries = await ctx.db
-      .query("mealPlanEntries")
-      .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
-      .collect();
-
-    const planDayCount = getPlanDayCount(plan);
-    if (entries.length !== planDayCount) {
-      throw new ConvexError(
-        `This plan must have exactly ${planDayCount} meals before finalising.`,
-      );
-    }
-
-    const planStart = plan.startDate ?? plan.endDate;
-    const orderedEntries = [...entries].sort(
-      (a, b) =>
-        (a.order ?? Number.MAX_SAFE_INTEGER) -
-          (b.order ?? Number.MAX_SAFE_INTEGER) ||
-        a.date - b.date ||
-        a._creationTime - b._creationTime,
-    );
-
-    for (let i = 0; i < orderedEntries.length; i++) {
-      const entry = orderedEntries[i]!;
-      const expectedDate = startOfDayMs(planStart + i * ONE_DAY_MS);
-      if (entry.date !== expectedDate || entry.order !== i) {
-        await ctx.db.patch(entry._id, {
-          date: expectedDate,
-          order: i,
+    try {
+      const user = await getCurrentUserOrThrow(ctx);
+      const plan = await ctx.db.get(args.mealPlanId);
+      if (!plan) {
+        console.warn("finaliseMealPlan: plan not found", {
+          mealPlanId: args.mealPlanId,
+          userId: user._id,
         });
+        return { data: null, error: "Meal plan not found." };
+      }
+      const canWrite = await canWriteMealPlan(ctx, user._id, plan);
+      if (!canWrite) {
+        console.warn("finaliseMealPlan: permission denied", {
+          mealPlanId: args.mealPlanId,
+          userId: user._id,
+        });
+        return {
+          data: null,
+          error: "You do not have permission to save this meal plan.",
+        };
+      }
+      if (plan.isFinalised) {
+        return { data: null, error: "This meal plan is already saved." };
+      }
+
+      const entries = await ctx.db
+        .query("mealPlanEntries")
+        .withIndex("by_meal_plan", (q) => q.eq("mealPlanId", args.mealPlanId))
+        .collect();
+
+      if (entries.length < 1) {
+        return { data: null, error: "Add at least one meal before saving this plan." };
+      }
+
+      const planStart = plan.startDate ?? plan.endDate;
+      const orderedEntries = [...entries].sort(
+        (a, b) =>
+          (a.order ?? Number.MAX_SAFE_INTEGER) -
+            (b.order ?? Number.MAX_SAFE_INTEGER) ||
+          a.date - b.date ||
+          a._creationTime - b._creationTime,
+      );
+
+      for (let i = 0; i < orderedEntries.length; i++) {
+        const entry = orderedEntries[i]!;
+        const expectedDate = startOfDayMs(planStart + i * ONE_DAY_MS);
+        if (entry.date !== expectedDate || entry.order !== i) {
+          await ctx.db.patch(entry._id, {
+            date: expectedDate,
+            order: i,
+          });
+        }
+      }
+
+      await ctx.db.patch(args.mealPlanId, {
+        isFinalised: true,
+        updatedAt: Date.now(),
+      });
+      return { data: { success: true }, error: null };
+    } catch (error) {
+      console.error("finaliseMealPlan: unexpected error", {
+        mealPlanId: args.mealPlanId,
+        error,
+      });
+      return {
+        data: null,
+        error: "We couldn't save your meal plan right now. Please try again.",
       }
     }
-
-    await ctx.db.patch(args.mealPlanId, {
-      isFinalised: true,
-      updatedAt: Date.now(),
-    });
-    return { success: true };
   },
 });
 

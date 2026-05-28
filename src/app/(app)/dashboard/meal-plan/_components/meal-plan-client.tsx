@@ -1395,14 +1395,18 @@ export default function MealPlanClient({
     if (!currentPlan) return;
     setIsFinalising(true);
     try {
-      await finaliseMealPlan({ mealPlanId: currentPlan._id });
+      const result = await finaliseMealPlan({ mealPlanId: currentPlan._id });
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
       trackEvent(ANALYTICS_EVENTS.MEAL_PLAN_FINALISED, {
         meal_count: currentPlan.entries?.length ?? 0,
       });
       setShowFinaliseDialog(false);
       toast.success("Plan saved. You can still move meals between days.");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save plan");
+      toast.error("Couldn't save your plan right now. Please try again.");
     } finally {
       setIsFinalising(false);
     }
