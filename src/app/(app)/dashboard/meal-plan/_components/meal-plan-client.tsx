@@ -2446,7 +2446,7 @@ export default function MealPlanClient({
             <DialogHeader>
               <DialogTitle>Previous meal plans</DialogTitle>
               <DialogDescription>
-                Your recent plans and last saved plan.
+                Your recent plans and last earlier plan.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
