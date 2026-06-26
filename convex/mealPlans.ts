@@ -43,7 +43,7 @@ import {
 import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-const MEAL_PLAN_RETENTION_DAYS = 28;
+const MEAL_PLAN_RETENTION_DAYS = 30;
 const MEAL_PLAN_RETENTION_MS = MEAL_PLAN_RETENTION_DAYS * ONE_DAY_MS;
 
 function phraseDisplayLabel(normalised: string): string {
@@ -795,8 +795,15 @@ export const getActiveMealPlanSummaries = query({
 });
 
 /**
- * Recent historical meal plans (ended before viewer's local day, within 4 weeks)
- * for optional history UI. Excludes superseded plans.
+ * Recent historical meal plans (ended before viewer's local day) for history UI.
+ *
+ * Returns:
+ * - `recentPlans`: all plans (including replaced/regenerated ones) whose endDate
+ *   falls within the last MEAL_PLAN_RETENTION_DAYS days. Replaced plans are
+ *   intentionally included so users can navigate back to any past plan.
+ * - `previousPlan`: the single most recent plan whose endDate is older than the
+ *   retention window — always returned regardless of age so users can always reach
+ *   their last plan even after a long gap.
  */
 export const getRecentMealPlanHistory = query({
   args: {
@@ -804,12 +811,13 @@ export const getRecentMealPlanHistory = query({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
-    if (!user) return [];
+    if (!user) return { recentPlans: [], previousPlan: null };
 
     const refLocalStart = resolveLocalDayRefMs(args.localDayStartMs);
     const cutoffStart = startOfDayMs(refLocalStart - MEAL_PLAN_RETENTION_MS);
 
-    const ownedPlans = await ctx.db
+    // --- Recent plans (within the retention window) ---
+    const ownedRecent = await ctx.db
       .query("mealPlans")
       .withIndex("by_user_and_endDate", (q) =>
         q
@@ -826,7 +834,7 @@ export const getRecentMealPlanHistory = query({
       .collect();
     const householdIds = memberships.map((m) => m.householdId);
 
-    const sharedPlanGroups = await Promise.all(
+    const sharedRecentGroups = await Promise.all(
       householdIds.map((householdId) =>
         ctx.db
           .query("mealPlans")
@@ -842,26 +850,75 @@ export const getRecentMealPlanHistory = query({
     );
 
     const seenIds = new Set<Id<"mealPlans">>();
-    const recentPlans = [...ownedPlans, ...sharedPlanGroups.flat()]
+    const recentPlans = [...ownedRecent, ...sharedRecentGroups.flat()]
       .filter((plan) => {
-        if (plan.replacedByPlanId !== undefined) return false;
         if (seenIds.has(plan._id)) return false;
         seenIds.add(plan._id);
         return true;
       })
       .sort(
-        (a, b) => b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
-      );
+        (a, b) =>
+          b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+      )
+      .map((plan) => ({
+        _id: plan._id,
+        startDate: plan.startDate,
+        endDate: plan.endDate,
+        isFinalised: plan.isFinalised === true,
+        updatedAt: plan.updatedAt,
+        isOwner: plan.userId === user._id,
+        householdId: plan.householdId,
+      }));
 
-    return recentPlans.map((plan) => ({
-      _id: plan._id,
-      startDate: plan.startDate,
-      endDate: plan.endDate,
-      isFinalised: plan.isFinalised === true,
-      updatedAt: plan.updatedAt,
-      isOwner: plan.userId === user._id,
-      householdId: plan.householdId,
-    }));
+    // --- Previous plan (most recent plan older than the retention window) ---
+    // Always returned so users can navigate to their last plan no matter how old.
+    const ownedPrevious = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_and_endDate", (q) =>
+        q.eq("userId", user._id).lt("endDate", cutoffStart),
+      )
+      .order("desc")
+      .first();
+
+    const sharedPreviousGroups = await Promise.all(
+      householdIds.map((householdId) =>
+        ctx.db
+          .query("mealPlans")
+          .withIndex("by_household_and_endDate", (q) =>
+            q.eq("householdId", householdId).lt("endDate", cutoffStart),
+          )
+          .order("desc")
+          .first(),
+      ),
+    );
+
+    // Pick the most recent among owned + shared candidates
+    const previousCandidates = [
+      ownedPrevious,
+      ...sharedPreviousGroups,
+    ].filter((p): p is NonNullable<typeof p> => p !== null);
+    previousCandidates.sort(
+      (a, b) =>
+        b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+    );
+    const previousPlanDoc = previousCandidates[0] ?? null;
+
+    // Exclude if it was already captured in the recent window (edge case where
+    // cutoffStart rounding could overlap) or is the same as a recent plan.
+    const previousPlan =
+      previousPlanDoc && !seenIds.has(previousPlanDoc._id)
+        ? {
+            _id: previousPlanDoc._id,
+            startDate: previousPlanDoc.startDate,
+            endDate: previousPlanDoc.endDate,
+            isFinalised: previousPlanDoc.isFinalised === true,
+            updatedAt: previousPlanDoc.updatedAt,
+            isOwner: previousPlanDoc.userId === user._id,
+            householdId: previousPlanDoc.householdId,
+          }
+        : null;
+
+    return { recentPlans, previousPlan };
   },
 });
 
