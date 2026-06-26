@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -233,7 +234,7 @@ type MealPlanSummary = NonNullable<
 >[number];
 type MealPlanHistorySummary = NonNullable<
   FunctionReturnType<typeof api.mealPlans.getRecentMealPlanHistory>
->[number];
+>["recentPlans"][number];
 
 type QuickMealsPresetId = "automatic" | "light" | "balanced" | "fast_focused";
 
@@ -271,6 +272,31 @@ const QUICK_MEAL_PRESETS: Array<{
     maxMinutes: 35,
   },
 ];
+
+/** Reusable button for a single plan in the history dialog or generation page. */
+function PlanHistoryButton({
+  summary,
+  onClick,
+}: {
+  summary: MealPlanHistorySummary;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="w-full justify-between"
+      onClick={onClick}
+    >
+      <span className="truncate">
+        {formatPlanRangeShort(summary.startDate, summary.endDate)}
+      </span>
+      <span className="ml-3 text-xs text-muted-foreground">
+        {summary.isFinalised ? "Saved" : "Draft"}
+      </span>
+    </Button>
+  );
+}
 
 /** Shared header row for premium meal-plan generator sections (icon + title + Pro badge). */
 function MealPlanProSectionHeader({
@@ -1575,7 +1601,9 @@ export default function MealPlanClient({
               </p>
             </div>
           </div>
-          {planSummaries.length > 0 ? (
+          {(planSummaries.length > 0 ||
+            (recentPlanHistory?.recentPlans.length ?? 0) > 0 ||
+            recentPlanHistory?.previousPlan) ? (
             <Card className="mb-6 max-w-2xl mx-auto">
               <CardContent className="p-5 space-y-3">
                 <h2 className="font-semibold text-lg">Your Meal Plans</h2>
@@ -1600,6 +1628,44 @@ export default function MealPlanClient({
                       </span>
                     </Button>
                   ))}
+                  {(recentPlanHistory?.recentPlans.length ?? 0) > 0 && planSummaries.length > 0 && (
+                    <Separator className="my-1" />
+                  )}
+                  {(recentPlanHistory?.recentPlans ?? []).map(
+                    (summary: MealPlanHistorySummary) => (
+                      <PlanHistoryButton
+                        key={summary._id}
+                        summary={summary}
+                        onClick={() =>
+                          router.push(ROUTES.mealPlanWithId(summary._id))
+                        }
+                      />
+                    ),
+                  )}
+                  {recentPlanHistory?.previousPlan && (
+                    <>
+                      {((recentPlanHistory.recentPlans.length ?? 0) > 0 ||
+                        planSummaries.length > 0) && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <Separator className="flex-1" />
+                          <span className="text-xs text-muted-foreground">
+                            Earlier
+                          </span>
+                          <Separator className="flex-1" />
+                        </div>
+                      )}
+                      <PlanHistoryButton
+                        summary={recentPlanHistory.previousPlan}
+                        onClick={() =>
+                          router.push(
+                            ROUTES.mealPlanWithId(
+                              recentPlanHistory.previousPlan!._id,
+                            ),
+                          )
+                        }
+                      />
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2087,7 +2153,9 @@ export default function MealPlanClient({
     : null;
   const hasList = listsForPlan && listsForPlan.length > 0;
   const firstListId = listsForPlan?.[0]?._id;
-  const hasRecentPlanHistory = (recentPlanHistory?.length ?? 0) > 0;
+  const hasRecentPlanHistory =
+    (recentPlanHistory?.recentPlans.length ?? 0) > 0 ||
+    recentPlanHistory?.previousPlan != null;
   const shouldShowPlanOptionsMenu = currentPlan.isOwner || hasRecentPlanHistory;
 
   const isFinalised = currentPlan.isFinalised === true;
@@ -2376,46 +2444,66 @@ export default function MealPlanClient({
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Recent meal plans</DialogTitle>
+              <DialogTitle>Previous meal plans</DialogTitle>
               <DialogDescription>
-                Open any plan from the last 4 weeks.
+                Your recent plans and last earlier plan.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
               {hasRecentPlanHistory ? (
-                (recentPlanHistory ?? []).map(
-                  (summary: MealPlanHistorySummary) => (
-                    <Button
-                      key={summary._id}
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-between"
-                      onClick={() => {
-                        if (typeof window !== "undefined") {
-                          sessionStorage.setItem(
-                            MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
-                            summary._id,
+                <>
+                  {(recentPlanHistory?.recentPlans ?? []).map(
+                    (summary: MealPlanHistorySummary) => (
+                      <PlanHistoryButton
+                        key={summary._id}
+                        summary={summary}
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            sessionStorage.setItem(
+                              MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+                              summary._id,
+                            );
+                          }
+                          setShowRecentPlansDialog(false);
+                          router.push(ROUTES.mealPlanWithId(summary._id));
+                        }}
+                      />
+                    ),
+                  )}
+                  {recentPlanHistory?.previousPlan && (
+                    <>
+                      {(recentPlanHistory.recentPlans.length ?? 0) > 0 && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <Separator className="flex-1" />
+                          <span className="text-xs text-muted-foreground">
+                            Earlier
+                          </span>
+                          <Separator className="flex-1" />
+                        </div>
+                      )}
+                      <PlanHistoryButton
+                        summary={recentPlanHistory.previousPlan}
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            sessionStorage.setItem(
+                              MEAL_PLAN_LAST_VIEWED_STORAGE_KEY,
+                              recentPlanHistory.previousPlan!._id,
+                            );
+                          }
+                          setShowRecentPlansDialog(false);
+                          router.push(
+                            ROUTES.mealPlanWithId(
+                              recentPlanHistory.previousPlan!._id,
+                            ),
                           );
-                        }
-                        setShowRecentPlansDialog(false);
-                        router.push(ROUTES.mealPlanWithId(summary._id));
-                      }}
-                    >
-                      <span className="truncate">
-                        {formatPlanRangeShort(
-                          summary.startDate,
-                          summary.endDate,
-                        )}
-                      </span>
-                      <span className="ml-3 text-xs text-muted-foreground">
-                        {summary.isFinalised ? "Saved" : "Draft"}
-                      </span>
-                    </Button>
-                  ),
-                )
+                        }}
+                      />
+                    </>
+                  )}
+                </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No recent plans yet.
+                  No previous plans yet.
                 </p>
               )}
             </div>
