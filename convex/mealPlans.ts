@@ -938,7 +938,8 @@ export const getMealPlanSummariesPaged = query({
     const user = await getCurrentUser(ctx);
     if (!user) return { plans: [], hasMore: false };
 
-    const limit = Math.max(1, Math.min(args.limit, 50));
+    const MAX_LIMIT = 50;
+    const limit = Math.max(1, Math.min(args.limit, MAX_LIMIT));
     // The by_*_and_endDate indexes order by endDate only. The merge sort uses
     // updatedAt as a tie-breaker, so plans with the same endDate can appear in
     // a different order per source than the final merged order. Fetching a
@@ -982,7 +983,12 @@ export const getMealPlanSummariesPaged = query({
           b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
       );
 
-    const hasMore = merged.length > limit;
+    // When limit has been clamped to MAX_LIMIT, the client cannot receive more
+    // plans by incrementing further — returning hasMore=true would cause an
+    // infinite "Load more" loop with no new data. Force false at the cap so the
+    // client knows it has reached the maximum supported page size.
+    const atCap = limit === MAX_LIMIT;
+    const hasMore = !atCap && merged.length > limit;
     const plans = merged.slice(0, limit).map((plan) => ({
       _id: plan._id,
       startDate: plan.startDate,
