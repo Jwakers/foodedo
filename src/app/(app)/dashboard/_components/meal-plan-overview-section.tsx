@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, startOfDayMs } from "@/lib/utils";
+import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { CalendarCheck, ChefHat, Clock } from "lucide-react";
+import { CalendarCheck, CalendarDays, ChefHat, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+import { useQuery } from "convex/react";
 
 function formatDateShortUtc(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, {
@@ -269,6 +271,56 @@ export function MealPlanOverviewSection() {
               </div>
             </div>
           )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Shown on the dashboard when the user has no active plan but has at least one
+ * past plan. Surfaces the most recent plan as a lightweight nudge so users can
+ * quickly jump back in.
+ */
+export function PreviousMealPlanNudge() {
+  const { currentPlan } = useCurrentMealPlan();
+  const result = useQuery(
+    api.mealPlans.getMealPlanSummariesPaged,
+    currentPlan === null ? { limit: 1 } : "skip",
+  );
+
+  if (currentPlan !== null) return null;
+  if (!result || result.plans.length === 0) return null;
+
+  const plan = result.plans[0];
+  const planHref = ROUTES.mealPlanWithId(plan._id);
+  const displayStart = plan.startDate;
+  const displayEnd = plan.endDate;
+
+  return (
+    <Card className="mb-6 border-border/50 bg-muted/20">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="p-2 rounded-lg bg-muted shrink-0">
+              <CalendarDays className="size-5 text-muted-foreground" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-0.5">
+                Your last meal plan
+              </p>
+              <p className="text-sm font-semibold text-foreground truncate">
+                {formatDateShortUtc(displayStart ?? displayEnd)} –{" "}
+                {formatDateShortUtc(displayEnd)}
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  {plan.isFinalised ? "Saved" : "Draft"}
+                </span>
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="outline" size="sm" className="shrink-0 self-start sm:self-auto">
+            <Link href={planHref}>View plan</Link>
+          </Button>
         </div>
       </CardContent>
     </Card>

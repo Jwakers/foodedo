@@ -923,6 +923,76 @@ export const getRecentMealPlanHistory = query({
 });
 
 /**
+ * Paginated meal plan history (active + past) ordered by endDate desc.
+ * Used by the "Previous plans" dialog and dashboard nudge.
+ *
+ * Returns:
+ * - `plans`: up to `limit` plans across owned + household, sorted by endDate desc
+ * - `hasMore`: true if there are additional plans beyond the returned page
+ */
+export const getMealPlanSummariesPaged = query({
+  args: {
+    limit: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return { plans: [], hasMore: false };
+
+    const limit = Math.max(1, Math.min(args.limit, 50));
+    const fetch = limit + 1;
+
+    const ownedPlans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_and_endDate", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .take(fetch);
+
+    const memberships = await ctx.db
+      .query("householdMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const householdIds = memberships.map((m) => m.householdId);
+
+    const householdPlanGroups = await Promise.all(
+      householdIds.map((householdId) =>
+        ctx.db
+          .query("mealPlans")
+          .withIndex("by_household_and_endDate", (q) =>
+            q.eq("householdId", householdId),
+          )
+          .order("desc")
+          .take(fetch),
+      ),
+    );
+
+    const seenIds = new Set<Id<"mealPlans">>();
+    const merged = [...ownedPlans, ...householdPlanGroups.flat()]
+      .filter((plan) => {
+        if (seenIds.has(plan._id)) return false;
+        seenIds.add(plan._id);
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+      );
+
+    const hasMore = merged.length > limit;
+    const plans = merged.slice(0, limit).map((plan) => ({
+      _id: plan._id,
+      startDate: plan.startDate,
+      endDate: plan.endDate,
+      isFinalised: plan.isFinalised === true,
+      updatedAt: plan.updatedAt,
+      isOwner: plan.userId === user._id,
+      householdId: plan.householdId,
+    }));
+
+    return { plans, hasMore };
+  },
+});
+
+/**
  * Count owned plans that would block free-tier additional plan creation:
  * unreplaced plans with endDate >= today (UTC day start).
  */

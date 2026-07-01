@@ -65,6 +65,7 @@ import {
   Check,
   CheckCircle2,
   Clock3,
+  History,
   Home,
   Loader2,
   MoreVertical,
@@ -295,6 +296,89 @@ function PlanHistoryButton({
         {summary.isFinalised ? "Saved" : "Draft"}
       </span>
     </Button>
+  );
+}
+
+/** Paginated "Previous plans" dialog used on the generation page. */
+function PlanHistoryDialog({
+  open,
+  onOpenChange,
+  onNavigate,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onNavigate: (planId: Id<"mealPlans">) => void;
+}) {
+  const [limit, setLimit] = useState(4);
+  const result = useQuery(api.mealPlans.getMealPlanSummariesPaged, { limit });
+  const plans = result?.plans ?? [];
+  const hasMore = result?.hasMore ?? false;
+  const isLoading = result === undefined;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Your meal plans</DialogTitle>
+          <DialogDescription>
+            Browse and open any of your plans.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto space-y-1 pr-0.5">
+          {isLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-md" />
+              ))}
+            </div>
+          ) : plans.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              No meal plans yet.
+            </p>
+          ) : (
+            plans.map((plan) => (
+              <Button
+                key={plan._id}
+                type="button"
+                variant="ghost"
+                className="h-auto w-full justify-between px-3 py-2.5"
+                onClick={() => {
+                  onNavigate(plan._id);
+                  onOpenChange(false);
+                }}
+              >
+                <span className="font-medium">
+                  {formatPlanRangeShort(plan.startDate, plan.endDate)}
+                </span>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "ml-3 text-xs",
+                    plan.isFinalised
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+                  )}
+                >
+                  {plan.isFinalised ? "Saved" : "Draft"}
+                </Badge>
+              </Button>
+            ))
+          )}
+        </div>
+        {hasMore && (
+          <DialogFooter className="sm:justify-start pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLimit((l) => l + 4)}
+            >
+              Load more
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -768,6 +852,7 @@ export default function MealPlanClient({
   const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
     useState(false);
   const [showRecentPlansDialog, setShowRecentPlansDialog] = useState(false);
+  const [showPlanHistoryDialog, setShowPlanHistoryDialog] = useState(false);
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [showEditDatesDialog, setShowEditDatesDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1588,6 +1673,11 @@ export default function MealPlanClient({
   }
 
   if (generationOnly) {
+    const hasAnyPlans =
+      planSummaries.length > 0 ||
+      (recentPlanHistory?.recentPlans.length ?? 0) > 0 ||
+      recentPlanHistory?.previousPlan != null;
+
     return (
       <div className="bg-background w-full min-w-0 overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
@@ -1600,76 +1690,24 @@ export default function MealPlanClient({
                 Pick your timing, then generate a dedicated meal plan page.
               </p>
             </div>
+            {hasAnyPlans && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 self-start gap-1.5"
+                onClick={() => setShowPlanHistoryDialog(true)}
+              >
+                <History className="size-3.5" aria-hidden />
+                Previous plans
+              </Button>
+            )}
           </div>
-          {(planSummaries.length > 0 ||
-            (recentPlanHistory?.recentPlans.length ?? 0) > 0 ||
-            recentPlanHistory?.previousPlan) ? (
-            <Card className="mb-6 max-w-2xl mx-auto">
-              <CardContent className="p-5 space-y-3">
-                <h2 className="font-semibold text-lg">Your Meal Plans</h2>
-                <div className="space-y-2">
-                  {planSummaries.map((summary) => (
-                    <Button
-                      key={summary._id}
-                      variant="outline"
-                      className="w-full justify-between"
-                      onClick={() =>
-                        router.push(ROUTES.mealPlanWithId(summary._id))
-                      }
-                    >
-                      <span>
-                        {formatPlanRangeShort(
-                          summary.startDate,
-                          summary.endDate,
-                        )}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {summary.isFinalised ? "Saved" : "Draft"}
-                      </span>
-                    </Button>
-                  ))}
-                  {(recentPlanHistory?.recentPlans.length ?? 0) > 0 && planSummaries.length > 0 && (
-                    <Separator className="my-1" />
-                  )}
-                  {(recentPlanHistory?.recentPlans ?? []).map(
-                    (summary: MealPlanHistorySummary) => (
-                      <PlanHistoryButton
-                        key={summary._id}
-                        summary={summary}
-                        onClick={() =>
-                          router.push(ROUTES.mealPlanWithId(summary._id))
-                        }
-                      />
-                    ),
-                  )}
-                  {recentPlanHistory?.previousPlan && (
-                    <>
-                      {((recentPlanHistory.recentPlans.length ?? 0) > 0 ||
-                        planSummaries.length > 0) && (
-                        <div className="flex items-center gap-2 pt-1">
-                          <Separator className="flex-1" />
-                          <span className="text-xs text-muted-foreground">
-                            Earlier
-                          </span>
-                          <Separator className="flex-1" />
-                        </div>
-                      )}
-                      <PlanHistoryButton
-                        summary={recentPlanHistory.previousPlan}
-                        onClick={() =>
-                          router.push(
-                            ROUTES.mealPlanWithId(
-                              recentPlanHistory.previousPlan!._id,
-                            ),
-                          )
-                        }
-                      />
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : null}
+          <PlanHistoryDialog
+            open={showPlanHistoryDialog}
+            onOpenChange={setShowPlanHistoryDialog}
+            onNavigate={(id) => router.push(ROUTES.mealPlanWithId(id))}
+          />
           <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
             <CardContent className="p-3 space-y-3">
               <MealPlanProSectionHeader
