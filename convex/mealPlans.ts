@@ -939,13 +939,18 @@ export const getMealPlanSummariesPaged = query({
     if (!user) return { plans: [], hasMore: false };
 
     const limit = Math.max(1, Math.min(args.limit, 50));
-    const fetch = limit + 1;
+    // The by_*_and_endDate indexes order by endDate only. The merge sort uses
+    // updatedAt as a tie-breaker, so plans with the same endDate can appear in
+    // a different order per source than the final merged order. Fetching a
+    // larger buffer per source (4× + 1, capped at 100) ensures that even in
+    // pathological tie scenarios all relevant candidates reach the merge step.
+    const perSourceFetch = Math.min((limit + 1) * 4, 100);
 
     const ownedPlans = await ctx.db
       .query("mealPlans")
       .withIndex("by_user_and_endDate", (q) => q.eq("userId", user._id))
       .order("desc")
-      .take(fetch);
+      .take(perSourceFetch);
 
     const memberships = await ctx.db
       .query("householdMembers")
@@ -961,7 +966,7 @@ export const getMealPlanSummariesPaged = query({
             q.eq("householdId", householdId),
           )
           .order("desc")
-          .take(fetch),
+          .take(perSourceFetch),
       ),
     );
 
