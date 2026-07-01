@@ -923,6 +923,87 @@ export const getRecentMealPlanHistory = query({
 });
 
 /**
+ * Paginated meal plan history (active + past) ordered by endDate desc.
+ * Used by the "Previous plans" dialog and dashboard nudge.
+ *
+ * Returns:
+ * - `plans`: up to `limit` plans across owned + household, sorted by endDate desc
+ * - `hasMore`: true if there are additional plans beyond the returned page
+ */
+export const getMealPlanSummariesPaged = query({
+  args: {
+    limit: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return { plans: [], hasMore: false };
+
+    const MAX_LIMIT = 50;
+    const limit = Math.max(1, Math.min(args.limit, MAX_LIMIT));
+    // The by_*_and_endDate indexes order by endDate only. The merge sort uses
+    // updatedAt as a tie-breaker, so plans with the same endDate can appear in
+    // a different order per source than the final merged order. Fetching a
+    // larger buffer per source (4× + 1, capped at 100) ensures that even in
+    // pathological tie scenarios all relevant candidates reach the merge step.
+    const perSourceFetch = Math.min((limit + 1) * 4, 100);
+
+    const ownedPlans = await ctx.db
+      .query("mealPlans")
+      .withIndex("by_user_and_endDate", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .take(perSourceFetch);
+
+    const memberships = await ctx.db
+      .query("householdMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const householdIds = memberships.map((m) => m.householdId);
+
+    const householdPlanGroups = await Promise.all(
+      householdIds.map((householdId) =>
+        ctx.db
+          .query("mealPlans")
+          .withIndex("by_household_and_endDate", (q) =>
+            q.eq("householdId", householdId),
+          )
+          .order("desc")
+          .take(perSourceFetch),
+      ),
+    );
+
+    const seenIds = new Set<Id<"mealPlans">>();
+    const merged = [...ownedPlans, ...householdPlanGroups.flat()]
+      .filter((plan) => {
+        if (seenIds.has(plan._id)) return false;
+        seenIds.add(plan._id);
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          b.endDate - a.endDate || (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
+      );
+
+    // When limit has been clamped to MAX_LIMIT, the client cannot receive more
+    // plans by incrementing further — returning hasMore=true would cause an
+    // infinite "Load more" loop with no new data. Force false at the cap so the
+    // client knows it has reached the maximum supported page size.
+    const atCap = limit === MAX_LIMIT;
+    const hasMore = !atCap && merged.length > limit;
+    const plans = merged.slice(0, limit).map((plan) => ({
+      _id: plan._id,
+      startDate: plan.startDate,
+      endDate: plan.endDate,
+      isFinalised: plan.isFinalised === true,
+      updatedAt: plan.updatedAt,
+      isOwner: plan.userId === user._id,
+      householdId: plan.householdId,
+    }));
+
+    return { plans, hasMore };
+  },
+});
+
+/**
  * Count owned plans that would block free-tier additional plan creation:
  * unreplaced plans with endDate >= today (UTC day start).
  */

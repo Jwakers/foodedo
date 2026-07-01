@@ -65,6 +65,7 @@ import {
   Check,
   CheckCircle2,
   Clock3,
+  History,
   Home,
   Loader2,
   MoreVertical,
@@ -273,28 +274,133 @@ const QUICK_MEAL_PRESETS: Array<{
   },
 ];
 
-/** Reusable button for a single plan in the history dialog or generation page. */
-function PlanHistoryButton({
-  summary,
+/** Minimal shape required to render a plan row — compatible with both history query types. */
+type PlanRowData = {
+  _id: Id<"mealPlans">;
+  startDate?: number;
+  endDate: number;
+  isFinalised: boolean;
+};
+
+/** Unified plan-row button used in every meal-plan history list. */
+function PlanRow({
+  plan,
   onClick,
 }: {
-  summary: MealPlanHistorySummary;
+  plan: PlanRowData;
   onClick: () => void;
 }) {
   return (
     <Button
       type="button"
-      variant="outline"
-      className="w-full justify-between"
+      variant="ghost"
+      className="h-auto w-full justify-between px-3 py-2.5"
       onClick={onClick}
     >
-      <span className="truncate">
-        {formatPlanRangeShort(summary.startDate, summary.endDate)}
+      <span className="truncate font-medium">
+        {formatPlanRangeShort(plan.startDate, plan.endDate)}
       </span>
-      <span className="ml-3 text-xs text-muted-foreground">
-        {summary.isFinalised ? "Saved" : "Draft"}
-      </span>
+      <Badge
+        variant="secondary"
+        className={cn(
+          "ml-3 shrink-0 text-xs",
+          plan.isFinalised
+            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+            : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+        )}
+      >
+        {plan.isFinalised ? "Saved" : "Draft"}
+      </Badge>
     </Button>
+  );
+}
+
+/** Paginated "Previous plans" dialog used on the generation page. */
+function PlanHistoryDialog({
+  open,
+  onOpenChange,
+  onNavigate,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onNavigate: (planId: Id<"mealPlans">) => void;
+}) {
+  const [limit, setLimit] = useState(4);
+
+  // Gate query to open state — avoids a live subscription while dialog is closed.
+  const result = useQuery(
+    api.mealPlans.getMealPlanSummariesPaged,
+    open ? { limit } : "skip",
+  );
+
+  // Preserve the last known plans so "Load more" doesn't blank the list while
+  // the next page is in-flight (result goes undefined during a limit change).
+  const prevPlansRef = useRef<NonNullable<typeof result>["plans"]>([]);
+  if (result?.plans !== undefined) {
+    prevPlansRef.current = result.plans;
+  }
+  const displayedPlans = result?.plans ?? prevPlansRef.current;
+  const hasMore = result?.hasMore ?? false;
+  const isInitialLoading = result === undefined && displayedPlans.length === 0;
+  const isLoadingMore = result === undefined && displayedPlans.length > 0;
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) setLimit(4);
+    onOpenChange(isOpen);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Your meal plans</DialogTitle>
+          <DialogDescription>
+            Browse and open any of your plans.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto space-y-1 pr-0.5">
+          {isInitialLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-md" />
+              ))}
+            </div>
+          ) : displayedPlans.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              No meal plans yet.
+            </p>
+          ) : (
+            displayedPlans.map((plan) => (
+              <PlanRow
+                key={plan._id}
+                plan={plan}
+                onClick={() => {
+                  onNavigate(plan._id);
+                  handleOpenChange(false);
+                }}
+              />
+            ))
+          )}
+          {isLoadingMore && (
+            <div className="flex items-center justify-center py-2">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
+        {hasMore && !isLoadingMore && (
+          <DialogFooter className="sm:justify-start pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLimit((l) => l + 4)}
+            >
+              Load more
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -768,6 +874,7 @@ export default function MealPlanClient({
   const [showUnshareConfirmDialog, setShowUnshareConfirmDialog] =
     useState(false);
   const [showRecentPlansDialog, setShowRecentPlansDialog] = useState(false);
+  const [showPlanHistoryDialog, setShowPlanHistoryDialog] = useState(false);
   const [showFinaliseDialog, setShowFinaliseDialog] = useState(false);
   const [showEditDatesDialog, setShowEditDatesDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1588,6 +1695,11 @@ export default function MealPlanClient({
   }
 
   if (generationOnly) {
+    const hasAnyPlans =
+      planSummaries.length > 0 ||
+      (recentPlanHistory?.recentPlans.length ?? 0) > 0 ||
+      recentPlanHistory?.previousPlan != null;
+
     return (
       <div className="bg-background w-full min-w-0 overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
@@ -1600,76 +1712,24 @@ export default function MealPlanClient({
                 Pick your timing, then generate a dedicated meal plan page.
               </p>
             </div>
+            {hasAnyPlans && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 self-start gap-1.5"
+                onClick={() => setShowPlanHistoryDialog(true)}
+              >
+                <History className="size-3.5" aria-hidden />
+                Previous plans
+              </Button>
+            )}
           </div>
-          {(planSummaries.length > 0 ||
-            (recentPlanHistory?.recentPlans.length ?? 0) > 0 ||
-            recentPlanHistory?.previousPlan) ? (
-            <Card className="mb-6 max-w-2xl mx-auto">
-              <CardContent className="p-5 space-y-3">
-                <h2 className="font-semibold text-lg">Your Meal Plans</h2>
-                <div className="space-y-2">
-                  {planSummaries.map((summary) => (
-                    <Button
-                      key={summary._id}
-                      variant="outline"
-                      className="w-full justify-between"
-                      onClick={() =>
-                        router.push(ROUTES.mealPlanWithId(summary._id))
-                      }
-                    >
-                      <span>
-                        {formatPlanRangeShort(
-                          summary.startDate,
-                          summary.endDate,
-                        )}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {summary.isFinalised ? "Saved" : "Draft"}
-                      </span>
-                    </Button>
-                  ))}
-                  {(recentPlanHistory?.recentPlans.length ?? 0) > 0 && planSummaries.length > 0 && (
-                    <Separator className="my-1" />
-                  )}
-                  {(recentPlanHistory?.recentPlans ?? []).map(
-                    (summary: MealPlanHistorySummary) => (
-                      <PlanHistoryButton
-                        key={summary._id}
-                        summary={summary}
-                        onClick={() =>
-                          router.push(ROUTES.mealPlanWithId(summary._id))
-                        }
-                      />
-                    ),
-                  )}
-                  {recentPlanHistory?.previousPlan && (
-                    <>
-                      {((recentPlanHistory.recentPlans.length ?? 0) > 0 ||
-                        planSummaries.length > 0) && (
-                        <div className="flex items-center gap-2 pt-1">
-                          <Separator className="flex-1" />
-                          <span className="text-xs text-muted-foreground">
-                            Earlier
-                          </span>
-                          <Separator className="flex-1" />
-                        </div>
-                      )}
-                      <PlanHistoryButton
-                        summary={recentPlanHistory.previousPlan}
-                        onClick={() =>
-                          router.push(
-                            ROUTES.mealPlanWithId(
-                              recentPlanHistory.previousPlan!._id,
-                            ),
-                          )
-                        }
-                      />
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : null}
+          <PlanHistoryDialog
+            open={showPlanHistoryDialog}
+            onOpenChange={setShowPlanHistoryDialog}
+            onNavigate={(id) => router.push(ROUTES.mealPlanWithId(id))}
+          />
           <Card className="mb-6 border-border/80 bg-muted/20 max-w-2xl mx-auto">
             <CardContent className="p-3 space-y-3">
               <MealPlanProSectionHeader
@@ -2454,9 +2514,9 @@ export default function MealPlanClient({
                 <>
                   {(recentPlanHistory?.recentPlans ?? []).map(
                     (summary: MealPlanHistorySummary) => (
-                      <PlanHistoryButton
+                      <PlanRow
                         key={summary._id}
-                        summary={summary}
+                        plan={summary}
                         onClick={() => {
                           if (typeof window !== "undefined") {
                             sessionStorage.setItem(
@@ -2481,8 +2541,8 @@ export default function MealPlanClient({
                           <Separator className="flex-1" />
                         </div>
                       )}
-                      <PlanHistoryButton
-                        summary={recentPlanHistory.previousPlan}
+                      <PlanRow
+                        plan={recentPlanHistory.previousPlan}
                         onClick={() => {
                           if (typeof window !== "undefined") {
                             sessionStorage.setItem(

@@ -37,7 +37,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useCurrentMealPlan } from "@/app/(app)/_components.tsx/current-meal-plan-context";
-import { MealPlanOverviewSection } from "./meal-plan-overview-section";
+import { MealPlanOverviewSection, PreviousMealPlanNudge } from "./meal-plan-overview-section";
 import { TodaysMealSpotlight } from "./todays-meal-spotlight";
 
 type RecentActivity = FunctionReturnType<typeof api.recipes.getRecentActivity>;
@@ -516,6 +516,7 @@ export default function DashboardClient() {
       <HeroSection />
       <TodaysMealSpotlight />
       <MealPlanOverviewSection />
+      <PreviousMealPlanNudge />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Activity Feed */}
